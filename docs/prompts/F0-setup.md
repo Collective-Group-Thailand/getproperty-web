@@ -2,6 +2,7 @@
 
 > Repo ว่าง (ไม่มี legacy) · อ่าน `CLAUDE.md`, `docs/prompts/00-master-plan.md`, `docs/prompts/design-system.md` ก่อน · ทำ 2 session: **0.1** แล้ว `/clear` แล้ว **0.2**
 > ถ้ามี `../getpack-web` ให้ใช้เป็นตัวอย่าง tooling/`src/ui` foundation เท่านั้น (ห้าม copy brand tokens, designer, packaging screens)
+> **หมายเหตุ (D-154, 2026-10-16)**: F0 เสร็จแล้วด้วย 4 zones ตามข้อความด้านล่าง (บันทึกไว้เป็นประวัติ) — หลังจากนั้น `tenant` zone ถูกลบออก (`src/app/tenant`, `src/features/tenant`, `TENANT_HOST`, i18n `tenant`, Lighthouse `tenant` set) และย้ายไปเป็น repo `getproperty-liff` (session L0 ที่นั่นคือ F0 ของแอปผู้อยู่อาศัย) · repo นี้มี 3 zones: owner, staff, admin
 
 ---
 

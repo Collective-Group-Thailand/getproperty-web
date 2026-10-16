@@ -1,6 +1,7 @@
 # ADR-0003 — Theming through generated CSS variables (light / dark / high-contrast), cookie-persisted
 
-**Status:** Accepted (2026-10-16, F0 0.2) · Proposed 2026-10-16 (F0 0.1)
+**Status:** Accepted (2026-10-16, F0 0.2) · Proposed 2026-10-16 (F0 0.1) · Amended 2026-10-16 (D-154: the
+resident zone that followed the system theme moved to `getproperty-liff`; the three zones here default to light)
 
 ## Context
 design-system.md §2 requires primitive → semantic → component token tiers, OKLCH with CI contrast
