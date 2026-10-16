@@ -1,0 +1,30 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+import { Swatches, Scale } from "./tokens-blocks";
+
+<Meta title="Docs/Tokens" />
+
+# Tokens (ADR-0003)
+
+Three tiers, authored in TypeScript (`src/ui/tokens`) and generated into `src/ui/generated/tokens.css`
+by `pnpm tokens`:
+
+1. **Primitives** — OKLCH palettes on one shared lightness ramp (`teal`, `neutral`, `green`, `amber`, `red`, `blue`) and the warm paper. Never used by a component.
+2. **Semantic** — what a colour means, per theme: `bg`, `surface`, `fg`, `muted`, `primary`, `warning-subtle`… These are the only colours a component may name (`bg-surface`, `text-muted`).
+3. **Component** — CVA variants inside each component, written only in semantic utilities.
+
+Every text and UI pair is asserted at WCAG 2.2 AA in **light, dark and high contrast** by
+`scripts/check-contrast.ts`, which runs inside `pnpm test`. A new semantic key that no pair mentions fails the gate.
+
+## Semantic colours
+
+<Swatches />
+
+## Type, space, radius, motion
+
+<Scale />
+
+Fonts (ADR-0001): **Noto Sans Thai** for UI, **Anuphan** for display, **JetBrains Mono** for bill numbers and meter
+registers — self-hosted, Thai + Latin subsets, no Google Fonts at run time. Thai body line-height is 1.6; the staff zone
+raises the base size to 18 px.
+
+Money and quantities use `.tabular-nums` (lining, tabular figures) so columns line up: ฿1,234.56 · 123.456 kWh.

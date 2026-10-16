@@ -1,0 +1,9 @@
+/*
+ * The single CSS entry point. Every zone's root layout imports this file: tokens and base are
+ * zone-agnostic; the default theme is a `data-theme` attribute and the density a `data-zone`
+ * attribute, not a stylesheet.
+ */
+@import "tailwindcss";
+@import "../ui/generated/tokens.css";
+@import "../ui/styles/base.css";
+@import "../ui/styles/zones.css";

@@ -1,0 +1,17 @@
+{
+  "extends": "./shared.json",
+  "$comment": "Owner dashboard / list / detail: LCP ≤ 2.5 s, CLS ≤ 0.1, initial JS ≤ 250 KB gz (docs/performance-budgets.md). F0 measures the placeholder shell; F2 adds dashboard, rooms, bills, payments URLs and the workspaces set (300 KB).",
+  "ci": {
+    "collect": {
+      "url": ["http://localhost:3200/", "http://localhost:3200/en"],
+      "numberOfRuns": 3,
+      "settings": { "preset": "desktop", "throttlingMethod": "simulate" }
+    },
+    "assert": {
+      "assertions": {
+        "largest-contentful-paint": ["warn", { "maxNumericValue": 2500 }],
+        "resource-summary:script:size": ["error", { "maxNumericValue": 256000 }]
+      }
+    }
+  }
+}

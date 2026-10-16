@@ -1,0 +1,10 @@
+/* The app's own stylesheet, minus the Next-specific font loading. */
+@import "tailwindcss";
+@import "../src/ui/generated/tokens.css";
+@import "../src/ui/styles/base.css";
+@import "../src/ui/styles/zones.css";
+@import "./fonts.css";
+
+/* Tailwind v4 scans from the CSS file's directory, which here is .storybook/. */
+@source "../src/ui";
+@source "../src/features";

@@ -1,0 +1,13 @@
+{
+  "owner": {
+    "nav": {
+      "dashboard": "This morning",
+      "properties": "Properties & rooms",
+      "leases": "Leases",
+      "billing": "Bills",
+      "payments": "Payments",
+      "meters": "Meters",
+      "settings": "Settings"
+    }
+  }
+}

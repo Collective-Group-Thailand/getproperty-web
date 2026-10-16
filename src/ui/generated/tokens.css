@@ -1,0 +1,358 @@
+/*
+ * GENERATED FILE — do not edit.
+ * Source: src/ui/tokens/*.ts · Regenerate: pnpm tokens · Gate: pnpm tokens:check
+ * Contrast of every semantic pair is asserted by scripts/check-contrast.ts in pnpm test.
+ */
+
+@theme {
+  /*
+   * Tailwind's own palette, fonts, radii and shadows are replaced, not extended: `bg-teal-600`
+   * and `text-slate-500` must stop resolving, or the design system is a suggestion.
+   */
+  --color-*: initial;
+  --radius-*: initial;
+  --shadow-*: initial;
+
+  /* Tier 1 — primitive palette (OKLCH). Do not use directly in components. */
+  --color-neutral-50: oklch(98.5% 0.0007 75);
+  --color-neutral-100: oklch(96.2% 0.0017 75);
+  --color-neutral-200: oklch(91.8% 0.0034 75);
+  --color-neutral-300: oklch(85.5% 0.0058 75);
+  --color-neutral-400: oklch(76.2% 0.0089 75);
+  --color-neutral-500: oklch(65.8% 0.0113 75);
+  --color-neutral-600: oklch(56.8% 0.012 75);
+  --color-neutral-700: oklch(49% 0.0113 75);
+  --color-neutral-800: oklch(42% 0.0098 75);
+  --color-neutral-900: oklch(35% 0.0082 75);
+  --color-neutral-950: oklch(26.2% 0.006 75);
+  --color-teal-50: oklch(98.5% 0.0066 172);
+  --color-teal-100: oklch(96.2% 0.0154 172);
+  --color-teal-200: oklch(91.8% 0.0308 172);
+  --color-teal-300: oklch(85.5% 0.0528 172);
+  --color-teal-400: oklch(76.2% 0.0814 172);
+  --color-teal-500: oklch(65.8% 0.1034 172);
+  --color-teal-600: oklch(56.8% 0.11 172);
+  --color-teal-700: oklch(49% 0.1034 172);
+  --color-teal-800: oklch(42% 0.0902 172);
+  --color-teal-900: oklch(35% 0.0748 172);
+  --color-teal-950: oklch(26.2% 0.055 172);
+  --color-green-50: oklch(98.5% 0.009 145);
+  --color-green-100: oklch(96.2% 0.021 145);
+  --color-green-200: oklch(91.8% 0.042 145);
+  --color-green-300: oklch(85.5% 0.072 145);
+  --color-green-400: oklch(76.2% 0.111 145);
+  --color-green-500: oklch(65.8% 0.141 145);
+  --color-green-600: oklch(56.8% 0.15 145);
+  --color-green-700: oklch(49% 0.141 145);
+  --color-green-800: oklch(42% 0.123 145);
+  --color-green-900: oklch(35% 0.102 145);
+  --color-green-950: oklch(26.2% 0.075 145);
+  --color-amber-50: oklch(98.5% 0.0096 72);
+  --color-amber-100: oklch(96.2% 0.0224 72);
+  --color-amber-200: oklch(91.8% 0.0448 72);
+  --color-amber-300: oklch(85.5% 0.0768 72);
+  --color-amber-400: oklch(76.2% 0.1184 72);
+  --color-amber-500: oklch(65.8% 0.1504 72);
+  --color-amber-600: oklch(56.8% 0.16 72);
+  --color-amber-700: oklch(49% 0.1504 72);
+  --color-amber-800: oklch(42% 0.1312 72);
+  --color-amber-900: oklch(35% 0.1088 72);
+  --color-amber-950: oklch(26.2% 0.08 72);
+  --color-red-50: oklch(98.5% 0.0114 27);
+  --color-red-100: oklch(96.2% 0.0266 27);
+  --color-red-200: oklch(91.8% 0.0532 27);
+  --color-red-300: oklch(85.5% 0.0912 27);
+  --color-red-400: oklch(76.2% 0.1406 27);
+  --color-red-500: oklch(65.8% 0.1786 27);
+  --color-red-600: oklch(56.8% 0.19 27);
+  --color-red-700: oklch(49% 0.1786 27);
+  --color-red-800: oklch(42% 0.1558 27);
+  --color-red-900: oklch(35% 0.1292 27);
+  --color-red-950: oklch(26.2% 0.095 27);
+  --color-blue-50: oklch(98.5% 0.0102 255);
+  --color-blue-100: oklch(96.2% 0.0238 255);
+  --color-blue-200: oklch(91.8% 0.0476 255);
+  --color-blue-300: oklch(85.5% 0.0816 255);
+  --color-blue-400: oklch(76.2% 0.1258 255);
+  --color-blue-500: oklch(65.8% 0.1598 255);
+  --color-blue-600: oklch(56.8% 0.17 255);
+  --color-blue-700: oklch(49% 0.1598 255);
+  --color-blue-800: oklch(42% 0.1394 255);
+  --color-blue-900: oklch(35% 0.1156 255);
+  --color-blue-950: oklch(26.2% 0.085 255);
+  --color-white: oklch(100% 0 0);
+  --color-black: oklch(0% 0 0);
+  --color-transparent: transparent;
+
+  /* Tier 2 — semantic aliases. These are what components name; they follow the theme. */
+  --color-bg: var(--sem-bg);
+  --color-bg-subtle: var(--sem-bg-subtle);
+  --color-surface: var(--sem-surface);
+  --color-surface-subtle: var(--sem-surface-subtle);
+  --color-surface-raised: var(--sem-surface-raised);
+  --color-overlay: var(--sem-overlay);
+  --color-border: var(--sem-border);
+  --color-border-strong: var(--sem-border-strong);
+  --color-fg: var(--sem-fg);
+  --color-muted: var(--sem-muted);
+  --color-subtle: var(--sem-subtle);
+  --color-fg-inverse: var(--sem-fg-inverse);
+  --color-primary-hover: var(--sem-primary-hover);
+  --color-danger-hover: var(--sem-danger-hover);
+  --color-focus-ring: var(--sem-focus-ring);
+  --color-primary: var(--sem-primary);
+  --color-primary-fg: var(--sem-primary-fg);
+  --color-primary-subtle: var(--sem-primary-subtle);
+  --color-primary-subtle-fg: var(--sem-primary-subtle-fg);
+  --color-success: var(--sem-success);
+  --color-success-fg: var(--sem-success-fg);
+  --color-success-subtle: var(--sem-success-subtle);
+  --color-success-subtle-fg: var(--sem-success-subtle-fg);
+  --color-warning: var(--sem-warning);
+  --color-warning-fg: var(--sem-warning-fg);
+  --color-warning-subtle: var(--sem-warning-subtle);
+  --color-warning-subtle-fg: var(--sem-warning-subtle-fg);
+  --color-danger: var(--sem-danger);
+  --color-danger-fg: var(--sem-danger-fg);
+  --color-danger-subtle: var(--sem-danger-subtle);
+  --color-danger-subtle-fg: var(--sem-danger-subtle-fg);
+  --color-info: var(--sem-info);
+  --color-info-fg: var(--sem-info-fg);
+  --color-info-subtle: var(--sem-info-subtle);
+  --color-info-subtle-fg: var(--sem-info-subtle-fg);
+  --color-neutral: var(--sem-neutral);
+  --color-neutral-fg: var(--sem-neutral-fg);
+  --color-neutral-subtle: var(--sem-neutral-subtle);
+  --color-neutral-subtle-fg: var(--sem-neutral-subtle-fg);
+
+  /* Typography (ADR-0001). */
+  --font-*: initial;
+  --font-sans: var(--font-gp-sans-latin), var(--font-gp-sans-thai), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-gp-display-latin), var(--font-gp-display-thai), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-gp-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --leading-tight: 1.25;
+  --leading-snug: 1.4;
+  --leading-normal: 1.6;
+  --leading-relaxed: 1.75;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Space, radius, elevation. */
+  --spacing: 0.25rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+  --radius-control: 0.5rem;
+  --radius-card: 0.75rem;
+  --radius-panel: 1rem;
+  --shadow-none: none;
+  --shadow-card: 0 1px 2px rgb(40 35 28 / 0.06), 0 1px 1px rgb(40 35 28 / 0.04);
+  --shadow-raised: 0 4px 12px rgb(40 35 28 / 0.1);
+  --shadow-overlay: 0 12px 32px rgb(40 35 28 / 0.14);
+  --container-phone: 30rem;
+  --container-form: 40rem;
+  --container-console: 80rem;
+
+  /* Motion (respect prefers-reduced-motion — see src/ui/styles/base.css). */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --ease-standard: cubic-bezier(0, 0, 0.2, 1);
+  --ease-emphasised: cubic-bezier(0.3, 0, 0, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Stacking order. */
+  --z-base: 0;
+  --z-sticky: 30;
+  --z-overlay: 40;
+  --z-modal: 50;
+  --z-toast: 60;
+}
+
+/* Light is the base: no cookie, no OS preference, no surprises. */
+
+:root {
+  --sem-bg: oklch(97.8% 0.006 80);
+  --sem-bg-subtle: oklch(95.5% 0.008 80);
+  --sem-surface: oklch(100% 0 0);
+  --sem-surface-subtle: oklch(97.8% 0.006 80);
+  --sem-surface-raised: oklch(100% 0 0);
+  --sem-overlay: oklch(26.2% 0.006 75 / 0.55);
+  --sem-border: oklch(90% 0.008 80);
+  --sem-border-strong: oklch(56.8% 0.012 75);
+  --sem-fg: oklch(22% 0.012 75);
+  --sem-muted: oklch(44% 0.012 75);
+  --sem-subtle: oklch(58% 0.012 75);
+  --sem-fg-inverse: oklch(100% 0 0);
+  --sem-primary-hover: oklch(42% 0.0902 172);
+  --sem-danger-hover: oklch(42% 0.1558 27);
+  --sem-focus-ring: oklch(49% 0.1034 172);
+  --sem-primary: oklch(49% 0.1034 172);
+  --sem-primary-fg: oklch(100% 0 0);
+  --sem-primary-subtle: oklch(98.5% 0.0066 172);
+  --sem-primary-subtle-fg: oklch(35% 0.0748 172);
+  --sem-success: oklch(42% 0.123 145);
+  --sem-success-fg: oklch(100% 0 0);
+  --sem-success-subtle: oklch(98.5% 0.009 145);
+  --sem-success-subtle-fg: oklch(35% 0.102 145);
+  --sem-warning: oklch(42% 0.1312 72);
+  --sem-warning-fg: oklch(100% 0 0);
+  --sem-warning-subtle: oklch(96.2% 0.0224 72);
+  --sem-warning-subtle-fg: oklch(35% 0.1088 72);
+  --sem-danger: oklch(49% 0.1786 27);
+  --sem-danger-fg: oklch(100% 0 0);
+  --sem-danger-subtle: oklch(98.5% 0.0114 27);
+  --sem-danger-subtle-fg: oklch(35% 0.1292 27);
+  --sem-info: oklch(49% 0.1598 255);
+  --sem-info-fg: oklch(100% 0 0);
+  --sem-info-subtle: oklch(98.5% 0.0102 255);
+  --sem-info-subtle-fg: oklch(35% 0.1156 255);
+  --sem-neutral: oklch(49% 0.0113 75);
+  --sem-neutral-fg: oklch(100% 0 0);
+  --sem-neutral-subtle: oklch(96.2% 0.0017 75);
+  --sem-neutral-subtle-fg: oklch(35% 0.0082 75);
+}
+
+/* Nobody chose yet — follow the OS. Scoped to :root:not([data-theme]) so an explicit
+   choice always wins, and stamped server-side from gp_theme so there is no flash. */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --sem-bg: oklch(17% 0.008 75);
+    --sem-bg-subtle: oklch(20.5% 0.009 75);
+    --sem-surface: oklch(23.5% 0.01 75);
+    --sem-surface-subtle: oklch(20.5% 0.009 75);
+    --sem-surface-raised: oklch(27.5% 0.01 75);
+    --sem-overlay: oklch(0% 0 0 / 0.65);
+    --sem-border: oklch(32% 0.01 75);
+    --sem-border-strong: oklch(65.8% 0.0113 75);
+    --sem-fg: oklch(95% 0.006 80);
+    --sem-muted: oklch(78% 0.01 80);
+    --sem-subtle: oklch(64% 0.01 80);
+    --sem-fg-inverse: oklch(17% 0.008 75);
+    --sem-primary-hover: oklch(85.5% 0.0528 172);
+    --sem-danger-hover: oklch(85.5% 0.0912 27);
+    --sem-focus-ring: oklch(76.2% 0.0814 172);
+    --sem-primary: oklch(76.2% 0.0814 172);
+    --sem-primary-fg: oklch(17% 0.008 75);
+    --sem-primary-subtle: oklch(26.2% 0.055 172);
+    --sem-primary-subtle-fg: oklch(85.5% 0.0528 172);
+    --sem-success: oklch(76.2% 0.111 145);
+    --sem-success-fg: oklch(17% 0.008 75);
+    --sem-success-subtle: oklch(26.2% 0.075 145);
+    --sem-success-subtle-fg: oklch(85.5% 0.072 145);
+    --sem-warning: oklch(76.2% 0.1184 72);
+    --sem-warning-fg: oklch(17% 0.008 75);
+    --sem-warning-subtle: oklch(26.2% 0.08 72);
+    --sem-warning-subtle-fg: oklch(85.5% 0.0768 72);
+    --sem-danger: oklch(76.2% 0.1406 27);
+    --sem-danger-fg: oklch(17% 0.008 75);
+    --sem-danger-subtle: oklch(26.2% 0.095 27);
+    --sem-danger-subtle-fg: oklch(85.5% 0.0912 27);
+    --sem-info: oklch(76.2% 0.1258 255);
+    --sem-info-fg: oklch(17% 0.008 75);
+    --sem-info-subtle: oklch(26.2% 0.085 255);
+    --sem-info-subtle-fg: oklch(85.5% 0.0816 255);
+    --sem-neutral: oklch(76.2% 0.0089 75);
+    --sem-neutral-fg: oklch(17% 0.008 75);
+    --sem-neutral-subtle: oklch(42% 0.0098 75);
+    --sem-neutral-subtle-fg: oklch(91.8% 0.0034 75);
+  }
+}
+
+[data-theme="dark"] {
+  --sem-bg: oklch(17% 0.008 75);
+  --sem-bg-subtle: oklch(20.5% 0.009 75);
+  --sem-surface: oklch(23.5% 0.01 75);
+  --sem-surface-subtle: oklch(20.5% 0.009 75);
+  --sem-surface-raised: oklch(27.5% 0.01 75);
+  --sem-overlay: oklch(0% 0 0 / 0.65);
+  --sem-border: oklch(32% 0.01 75);
+  --sem-border-strong: oklch(65.8% 0.0113 75);
+  --sem-fg: oklch(95% 0.006 80);
+  --sem-muted: oklch(78% 0.01 80);
+  --sem-subtle: oklch(64% 0.01 80);
+  --sem-fg-inverse: oklch(17% 0.008 75);
+  --sem-primary-hover: oklch(85.5% 0.0528 172);
+  --sem-danger-hover: oklch(85.5% 0.0912 27);
+  --sem-focus-ring: oklch(76.2% 0.0814 172);
+  --sem-primary: oklch(76.2% 0.0814 172);
+  --sem-primary-fg: oklch(17% 0.008 75);
+  --sem-primary-subtle: oklch(26.2% 0.055 172);
+  --sem-primary-subtle-fg: oklch(85.5% 0.0528 172);
+  --sem-success: oklch(76.2% 0.111 145);
+  --sem-success-fg: oklch(17% 0.008 75);
+  --sem-success-subtle: oklch(26.2% 0.075 145);
+  --sem-success-subtle-fg: oklch(85.5% 0.072 145);
+  --sem-warning: oklch(76.2% 0.1184 72);
+  --sem-warning-fg: oklch(17% 0.008 75);
+  --sem-warning-subtle: oklch(26.2% 0.08 72);
+  --sem-warning-subtle-fg: oklch(85.5% 0.0768 72);
+  --sem-danger: oklch(76.2% 0.1406 27);
+  --sem-danger-fg: oklch(17% 0.008 75);
+  --sem-danger-subtle: oklch(26.2% 0.095 27);
+  --sem-danger-subtle-fg: oklch(85.5% 0.0912 27);
+  --sem-info: oklch(76.2% 0.1258 255);
+  --sem-info-fg: oklch(17% 0.008 75);
+  --sem-info-subtle: oklch(26.2% 0.085 255);
+  --sem-info-subtle-fg: oklch(85.5% 0.0816 255);
+  --sem-neutral: oklch(76.2% 0.0089 75);
+  --sem-neutral-fg: oklch(17% 0.008 75);
+  --sem-neutral-subtle: oklch(42% 0.0098 75);
+  --sem-neutral-subtle-fg: oklch(91.8% 0.0034 75);
+}
+
+[data-theme="hc"] {
+  --sem-bg: oklch(100% 0 0);
+  --sem-bg-subtle: oklch(100% 0 0);
+  --sem-surface: oklch(100% 0 0);
+  --sem-surface-subtle: oklch(97.8% 0.006 80);
+  --sem-surface-raised: oklch(100% 0 0);
+  --sem-overlay: oklch(0% 0 0 / 0.7);
+  --sem-border: oklch(49% 0.0113 75);
+  --sem-border-strong: oklch(0% 0 0);
+  --sem-fg: oklch(0% 0 0);
+  --sem-muted: oklch(35% 0.0082 75);
+  --sem-subtle: oklch(42% 0.0098 75);
+  --sem-fg-inverse: oklch(100% 0 0);
+  --sem-primary-hover: oklch(26.2% 0.055 172);
+  --sem-danger-hover: oklch(26.2% 0.095 27);
+  --sem-focus-ring: oklch(0% 0 0);
+  --sem-primary: oklch(35% 0.0748 172);
+  --sem-primary-fg: oklch(100% 0 0);
+  --sem-primary-subtle: oklch(98.5% 0.0066 172);
+  --sem-primary-subtle-fg: oklch(26.2% 0.055 172);
+  --sem-success: oklch(35% 0.102 145);
+  --sem-success-fg: oklch(100% 0 0);
+  --sem-success-subtle: oklch(98.5% 0.009 145);
+  --sem-success-subtle-fg: oklch(26.2% 0.075 145);
+  --sem-warning: oklch(35% 0.1088 72);
+  --sem-warning-fg: oklch(100% 0 0);
+  --sem-warning-subtle: oklch(98.5% 0.0096 72);
+  --sem-warning-subtle-fg: oklch(26.2% 0.08 72);
+  --sem-danger: oklch(35% 0.1292 27);
+  --sem-danger-fg: oklch(100% 0 0);
+  --sem-danger-subtle: oklch(98.5% 0.0114 27);
+  --sem-danger-subtle-fg: oklch(26.2% 0.095 27);
+  --sem-info: oklch(35% 0.1156 255);
+  --sem-info-fg: oklch(100% 0 0);
+  --sem-info-subtle: oklch(98.5% 0.0102 255);
+  --sem-info-subtle-fg: oklch(26.2% 0.085 255);
+  --sem-neutral: oklch(0% 0 0);
+  --sem-neutral-fg: oklch(100% 0 0);
+  --sem-neutral-subtle: oklch(96.2% 0.0017 75);
+  --sem-neutral-subtle-fg: oklch(0% 0 0);
+}
+

@@ -1,0 +1,12 @@
+{
+  "admin": {
+    "nav": {
+      "orgs": "Organisations",
+      "subscriptions": "Subscriptions",
+      "tariffs": "Tariffs",
+      "devices": "Devices",
+      "support": "Support",
+      "audit": "Audit"
+    }
+  }
+}

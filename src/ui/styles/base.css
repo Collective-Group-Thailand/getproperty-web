@@ -1,0 +1,177 @@
+/*
+ * Element defaults for every zone. Anything visual beyond this belongs in a component in
+ * src/ui/components — zones never restyle a primitive locally (design-system.md §1.8).
+ */
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    border-color: var(--color-border);
+  }
+
+  html {
+    /* Nothing here may depend on JavaScript: data-theme is stamped server-side. */
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    html:not([data-theme]) {
+      color-scheme: dark;
+    }
+  }
+
+  html[data-theme="dark"] {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    /* Thai needs room for upper vowels and tone marks (design-system.md §2). */
+    line-height: var(--leading-normal);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    line-height: var(--leading-tight);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  :where(.grid) > * {
+    min-width: 0;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /*
+   * Money, quantities and registers line up in columns (design-system.md §4). `.tabular-nums` is applied
+   * by the components that render them (MoneyDisplay, DataTable); monospace gets it unconditionally.
+   */
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /*
+   * One focus ring for the whole product, ≥ 2 px and offset so it is never mistaken for a border
+   * (design-system.md §6). Components must not override it.
+   */
+  :focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+
+  /* Placeholders are decorative text: the token is gated at 3:1, not 4.5:1. */
+  ::placeholder {
+    color: var(--color-subtle);
+    opacity: 1;
+  }
+
+  ::selection {
+    background-color: var(--color-primary-subtle);
+    color: var(--color-primary-subtle-fg);
+  }
+
+  /* An image or canvas must never push the layout around (CLS budget). */
+  img,
+  svg,
+  video,
+  canvas {
+    display: block;
+    max-width: 100%;
+  }
+
+  [hidden] {
+    display: none !important;
+  }
+}
+
+@layer utilities {
+  /* Skip link: visually hidden until focused, then pinned top-left. Every zone's AppShell renders one (WCAG 2.4.1). */
+  .skip-link {
+    position: fixed;
+    top: calc(var(--spacing) * 2);
+    left: calc(var(--spacing) * 2);
+    z-index: var(--z-toast);
+    border-radius: var(--radius-control);
+    background-color: var(--color-surface);
+    color: var(--color-fg);
+    box-shadow: var(--shadow-overlay);
+    padding: calc(var(--spacing) * 2) calc(var(--spacing) * 4);
+    transform: translateY(-200%);
+  }
+
+  .skip-link:focus-visible {
+    transform: translateY(0);
+  }
+}
+
+/* Stacking utilities from the `--z-*` tokens (Tailwind v4 has no z-index theme namespace). */
+@utility z-base {
+  z-index: var(--z-base);
+}
+@utility z-sticky {
+  z-index: var(--z-sticky);
+}
+@utility z-overlay {
+  z-index: var(--z-overlay);
+}
+@utility z-modal {
+  z-index: var(--z-modal);
+}
+@utility z-toast {
+  z-index: var(--z-toast);
+}
+
+/* Numbers that are compared — money, units, registers — in lining tabular figures (design-system.md §4). */
+@utility tabular-nums {
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* The display setting: Anuphan, for the one big figure on a screen (a bill amount, a KPI). */
+@utility font-display {
+  font-family: var(--font-display);
+}
+
+:root {
+  /* The phone bottom nav (56 px + the home indicator): what floats above it sits on this. */
+  --bottom-nav-h: calc(3.5rem + env(safe-area-inset-bottom));
+}
+
+/*
+ * design-system.md §2: motion tokens exist, but a user who asked for less motion gets it. Kept to
+ * 0.01ms rather than 0 so transitionend/animationend handlers still fire.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

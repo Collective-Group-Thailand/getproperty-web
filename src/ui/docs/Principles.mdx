@@ -1,0 +1,38 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Docs/Principles" />
+
+# getproperty design system
+
+**บิลทำเอง เก็บเงินเอง ถูกกฎหมาย** — operated by Collective Group (Thailand). The owner's screen is a
+*morning dashboard*: what needs me today. The tenant's screen is *a bill that is pleasant to pay* (D-100).
+
+## Experience principles (design-system.md §1)
+
+1. **Clarity over decoration** — every screen answers "where am I, what is the status, what should I do next?". One primary action per view.
+2. **Show the evidence** — a bill shows its readings and the meter photo; a deposit deduction shows the before/after photos.
+3. **Lawful by design, visibly** — the tariff cap, the deposit clock and the legal reference are part of the UI. A compliance refusal is explained (`<Callout tone="danger" legalRef>`), never hidden or overridden.
+4. **Money and dates are the API's** — the UI formats (`formatTHB`, `formatUnits`, `formatDate`), never calculates. The ESLint rule `getproperty/no-money-arithmetic` enforces it.
+5. **Thai-first, human copy** — short, polite, specific Thai. See *Voice & tone*.
+6. **Fast on real devices** — a mid-range Android on 4G inside LINE for tenants; a 6" phone in sunlight for staff.
+7. **Accessible by default** — WCAG 2.2 AA. Every story here is rendered through axe in `pnpm test`; the token pairs pass the contrast gate in all three themes.
+8. **Consistent and composable** — zones compose `src/ui`; they never restyle primitives locally.
+
+## Zones
+
+| Zone | Audience | Default theme | Density |
+|---|---|---|---|
+| owner | the landlord's console | light | console |
+| tenant | LINE Mini App / mobile web | follows the phone | 16 px base, 48 px targets, bottom nav |
+| staff | caretakers' PWA | light, high contrast one tap away | 18 px base, 48 px targets, camera-first |
+| admin | Collective Group back office | light | console, dense but calm |
+
+Use the **Theme** and **Zone** toolbar switches to view any story as any zone.
+
+## Colour has meaning
+
+- **Teal (`primary`)** — actions, links, focus. The brand.
+- **Amber (`warning`)** — needs attention: due soon, estimated reading, a slip waiting. *Never* for money that is merely due (D-100).
+- **Red (`danger`)** — overdue, refused by compliance, device offline, destructive actions (outline, never the loudest thing on the page).
+- **Green (`success`)** — paid, synced, healthy.
+- Status is always **icon + text** (`<StatusBadge>` from `src/domain/status`), never colour alone.

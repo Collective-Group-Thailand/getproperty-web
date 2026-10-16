@@ -1,0 +1,15 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Docs/Voice & tone" />
+
+# Voice & tone
+
+The full guide is `docs/ui/voice-and-tone.md`. The short version every component story follows:
+
+- **Polite, not servile.** สุภาพแบบคนทำงานด้วยกัน — ไม่ใช้ "ค่ะ/ครับ" ในปุ่มหรือสถานะ; ใช้ในข้อความถึงผู้เช่าได้
+- **Action verbs on buttons.** "ออกบิล", "บันทึกเลขมิเตอร์", "ยกเลิกบิล" — never "ตกลง" for an irreversible step.
+- **Say the thing.** "ไม่สามารถออกบิลค่าไฟหน่วยละ ฿8.00" then *why* and *what to change*, with the legal reference as "ตามประกาศ … ข้อ …".
+- **Urgency in words, not red.** "ครบกำหนดใน 3 วัน" (amber) → "ค้างชำระ 12 วัน" (red). Money that is merely due is never red.
+- **Numbers with separators, tabular.** ฿4,850.50 · 123.456 kWh · 17 ก.ย. 2569.
+- **Jargon explained inline.** "ค่า Ft คืออะไร?" opens a popover; the glossary (Ft, หน่วย, มิเตอร์สะสม, เงินประกัน) is shared with LINE messages and PDFs.
+- **Thai first, English complete.** Every key exists in `th` and `en` (`messages.test.ts`); tenant copy reads at a level everyone can follow.

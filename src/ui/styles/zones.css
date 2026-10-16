@@ -1,0 +1,19 @@
+/*
+ * Per-zone density (design-system.md §5). The zone is `data-zone` on `<html>`, stamped by the root
+ * layout. Staff: 18 px base, 48 px targets. Tenant: 16 px base, 48 px targets, safe-area insets.
+ * Owner and admin keep the shared scale.
+ */
+
+[data-zone="staff"] {
+  --text-base: 1.125rem;
+  --text-sm: 1rem;
+  --text-xs: 0.875rem;
+}
+
+:is([data-zone="staff"], [data-zone="tenant"]) main :is(button, a, [role="button"], input, select)[data-size="md"] {
+  min-height: 3rem;
+}
+
+[data-zone="tenant"] body {
+  padding-bottom: env(safe-area-inset-bottom);
+}

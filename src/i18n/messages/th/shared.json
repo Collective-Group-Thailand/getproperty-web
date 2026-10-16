@@ -1,0 +1,47 @@
+{
+  "brand": {
+    "name": "getproperty",
+    "tagline": "บิลทำเอง เก็บเงินเอง ถูกกฎหมาย",
+    "company": "Collective Group (Thailand)"
+  },
+  "shell": {
+    "skipToContent": "ข้ามไปยังเนื้อหา",
+    "mainNav": "เมนูหลัก",
+    "bottomNav": "เมนูด่วน",
+    "openMenu": "เปิดเมนู",
+    "closeMenu": "ปิดเมนู",
+    "theme": "ธีม",
+    "themeChoice": {
+      "system": "ตามอุปกรณ์",
+      "light": "สว่าง",
+      "dark": "มืด",
+      "hc": "คอนทราสต์สูง"
+    },
+    "language": "ภาษา",
+    "placeholder": {
+      "title": "โซน {zone}",
+      "body": "หน้านี้เป็นโครงชั่วคราวจาก F0 — หน้าจริงจะสร้างใน F1–F5",
+      "zone": {
+        "owner": "เจ้าของ",
+        "tenant": "ผู้เช่า",
+        "staff": "เจ้าหน้าที่",
+        "admin": "ผู้ดูแลระบบ"
+      }
+    }
+  },
+  "common": {
+    "cancel": "ยกเลิก",
+    "confirm": "ยืนยัน",
+    "close": "ปิด",
+    "save": "บันทึก",
+    "back": "ย้อนกลับ",
+    "next": "ถัดไป",
+    "retry": "ลองอีกครั้ง",
+    "loading": "กำลังโหลด…",
+    "required": "จำเป็น",
+    "optional": "ไม่บังคับ",
+    "search": "ค้นหา",
+    "noResults": "ไม่พบรายการ",
+    "requestId": "รหัสคำขอ"
+  }
+}

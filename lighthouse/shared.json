@@ -1,0 +1,20 @@
+{
+  "$comment": "Budgets from docs/performance-budgets.md (design-system.md §7). LCP/INP/CLS are warnings on a shared CI runner — a lab run cannot stand in for a p75 honestly; Web Vitals RUM (F1) is the real signal. Accessibility and initial JS are errors.",
+  "ci": {
+    "assert": {
+      "assertions": {
+        "categories:accessibility": ["error", { "minScore": 1 }],
+        "categories:best-practices": ["warn", { "minScore": 0.95 }],
+        "font-display": ["error", { "minScore": 1 }],
+        "unsized-images": ["error", { "minScore": 1 }],
+        "modern-image-formats": "warn",
+        "uses-responsive-images": "warn",
+        "unused-javascript": ["warn", { "maxNumericValue": 100000 }],
+        "cumulative-layout-shift": ["warn", { "maxNumericValue": 0.1 }],
+        "total-blocking-time": ["warn", { "maxNumericValue": 300 }],
+        "max-potential-fid": ["warn", { "maxNumericValue": 200 }]
+      }
+    },
+    "upload": { "target": "filesystem", "outputDir": ".lighthouseci" }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "owner": {
+    "nav": {
+      "dashboard": "เช้านี้",
+      "properties": "อาคารและห้อง",
+      "leases": "สัญญาเช่า",
+      "billing": "บิล",
+      "payments": "การชำระเงิน",
+      "meters": "มิเตอร์",
+      "settings": "ตั้งค่า"
+    }
+  }
+}

@@ -1,0 +1,27 @@
+import { useState } from "react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+
+import { SegmentedControl } from "./SegmentedControl";
+
+const meta: Meta<typeof SegmentedControl> = {
+  title: "Navigation/SegmentedControl",
+  component: SegmentedControl,
+  args: {
+    label: "สาธารณูปโภค",
+    value: "electric",
+    options: [
+      { value: "electric", label: "ไฟฟ้า", icon: "electric" },
+      { value: "water", label: "น้ำ", icon: "water" },
+    ],
+  },
+};
+export default meta;
+type Story = StoryObj<typeof SegmentedControl>;
+
+function Demo(args: React.ComponentProps<typeof SegmentedControl>) {
+  const [value, setValue] = useState(args.value);
+  return <SegmentedControl {...args} value={value} onValueChange={setValue} />;
+}
+
+export const Default: Story = { render: (args) => <Demo {...args} /> };
+export const Large: Story = { render: (args) => <Demo {...args} size="lg" /> };
