@@ -133,6 +133,7 @@
 | D-159 | Workflow engine (generic state machine + SLA timers, `workflow_instance`/`workflow_event`) is a platform module built in B1.3 and used by service requests, dunning, deposit settlement, AGM (later) and inspections; it is designed to move to `collective-shared`. | Accepted |
 | D-160 | Deployment target per blueprint: GCP (Cloud Run for web/api/liff, Cloud Run jobs for workers, GKE Autopilot for EMQX, Cloud SQL + TimescaleDB extension, GCS, Memorystore); the AWS-flavoured integrations from the getpack copy (S3/SES/Secrets Manager) are kept behind their ports and get GCS/SES-equivalent adapters in B6.5 — not a Phase 1 blocker. | Accepted |
 | D-161 | Platform admin extends with tenant onboarding (type, plan, import), IoT device inventory, support and **AI usage cost per tenant** (AI gateway shared with getbuild, Phase 2+). | Accepted |
+| D-162 | **Telemetry storage is portable** (resolves O-005; founder accepted the recommendation 2026-10-17): Cloud SQL for PostgreSQL does not offer the `timescaledb` extension, so `smart.telemetry_point` and `smart.device_health_sample` are created as **native PostgreSQL range-partitioned tables (monthly)** with hand-written rollup tables `smart.telemetry_15m/_1h/_1d` maintained by a worker job, and retention by dropping partitions. When `timescaledb` is available (compose, self-managed), a separate optional migration converts them to hypertables/continuous aggregates; application code reads only the rollup tables, never Timescale-specific functions. Production stays on Cloud SQL (D-160). ADR-0001 amended accordingly. | Accepted |
 
 ## Open
 | ID | Question | Owner |
@@ -141,3 +142,5 @@
 | O-002 | Exact สคบ. 2568 text: deposit cap values, late-fee permissibility, estimate billing permissibility. | Legal counsel |
 | O-003 | Meter models for the pilot (electric Modbus 1-phase class 1; water pulse) and the gateway model — after the site survey. | Founder + IoT engineer |
 | O-004 | Does the pilot org register for VAT? Decides whether tax-invoice documents are needed in R1. | Pilot org |
+| ~~O-005~~ | Resolved by D-162. | — |
+| O-006 | Utility tariff reference data (cap reference, D-021a/D-140): (a) the Ft of Jan–Apr and May–Aug 2026 and the exact block rates inside the first 200 kWh of the residential structure in force from the September 2026 bills (announced as "not exceeding 3.00 THB/kWh"), the monthly service charges after that change and whether the TOU rates changed; (b) MWA/PWA residential tables, service charges per meter size, minimum charges and effective dates. Seeded values are `entered` + `needs_check` (B1.2); there is no cap reference for Jan–Aug 2026 until (a) is entered and verified. | Platform admin (maker) + second admin (checker) |
