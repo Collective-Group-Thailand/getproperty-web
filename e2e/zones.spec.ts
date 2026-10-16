@@ -4,13 +4,12 @@ import { expect, test } from "@playwright/test";
 import { HOSTS } from "../playwright.config";
 
 /**
- * F0 smoke: each of the four hosts renders its own placeholder shell (00-master-plan.md §2) and the
+ * F0 smoke: each of the three hosts renders its own placeholder shell (00-master-plan.md §2) and the
  * shell is axe-clean (design-system.md §6). The hosts resolve to loopback through the browser's
  * `--host-resolver-rules`, so no /etc/hosts entry is needed.
  */
 const ZONES = [
   { zone: "owner", host: HOSTS.owner, lang: "th", theme: "light" },
-  { zone: "tenant", host: HOSTS.tenant, lang: "th", theme: null },
   { zone: "staff", host: HOSTS.staff, lang: "th", theme: "light" },
   { zone: "admin", host: HOSTS.admin, lang: "th", theme: "light" },
 ] as const;
@@ -24,8 +23,7 @@ for (const { zone, host, lang, theme } of ZONES) {
       const html = page.locator("html");
       await expect(html).toHaveAttribute("data-zone", zone);
       await expect(html).toHaveAttribute("lang", lang);
-      if (theme) await expect(html).toHaveAttribute("data-theme", theme);
-      else await expect(html).not.toHaveAttribute("data-theme", /.+/);
+      await expect(html).toHaveAttribute("data-theme", theme);
 
       await expect(page.getByTestId("zone-placeholder")).toHaveAttribute("data-zone", zone);
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -44,6 +42,11 @@ for (const { zone, host, lang, theme } of ZONES) {
     });
   });
 }
+
+test("there is no resident zone any more — /tenant is not a route (D-154)", async ({ page }) => {
+  const response = await page.goto(`${HOSTS.owner}/tenant`);
+  expect(response?.status()).toBe(404);
+});
 
 test("the owner host serves English under /en", async ({ page }) => {
   await page.goto(`${HOSTS.owner}/en`);

@@ -2,9 +2,9 @@ import { defineRouting } from "next-intl/routing";
 
 /**
  * Owner zone only. Thai is the default and carries no prefix (`/dashboard`), English lives under
- * `/en`. The tenant, staff and admin zones have no locale segment — their URLs are tools, not indexed
- * pages — so their locale lives in a host-only cookie instead (D-064: th/en in R1; the tenant zone
- * adds my/km/lo/zh in R2).
+ * `/en`. The staff and admin zones have no locale segment — their URLs are tools, not indexed pages —
+ * so their locale lives in a host-only cookie instead (D-064: th/en). The resident languages
+ * my/km/lo/zh belong to the resident app, `getproperty-liff` (D-154).
  */
 export const routing = defineRouting({
   locales: ["th", "en"],

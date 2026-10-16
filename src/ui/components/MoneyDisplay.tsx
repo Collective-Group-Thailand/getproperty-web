@@ -11,7 +11,7 @@ const moneyVariants = cva("tabular-nums", {
       sm: "text-sm",
       md: "text-base",
       lg: "text-xl font-semibold",
-      /** The tenant's bill hero: Anuphan, 36 px. */
+      /** The resident's invoice hero: Anuphan, 36 px. */
       hero: "font-display text-4xl font-semibold",
     },
     tone: {

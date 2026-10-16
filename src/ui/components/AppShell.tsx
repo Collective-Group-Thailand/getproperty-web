@@ -5,7 +5,7 @@ export interface AppShellProps {
   header: React.ReactNode;
   /** Collapsible side navigation — owner and admin consoles. */
   sidebar?: React.ReactNode;
-  /** Bottom nav on phones (tenant, staff; the owner's phone layout). */
+  /** Bottom nav on phones (staff, the resident app; the owner's phone layout). */
   bottomNav?: React.ReactNode;
   footer?: React.ReactNode;
   children: React.ReactNode;
@@ -14,7 +14,7 @@ export interface AppShellProps {
   /** Accessible name for the sidebar's `<nav>`. */
   sidebarLabel?: string;
   sidebarCollapsed?: boolean;
-  /** Tenant and staff pages are phone-width columns; consoles use the full width. */
+  /** Staff and resident pages are phone-width columns; consoles use the full width. */
   variant?: "console" | "mobile";
   className?: string;
 }

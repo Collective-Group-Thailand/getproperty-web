@@ -1,13 +1,13 @@
 /**
  * Runs Lighthouse CI once per URL set (`docs/performance-budgets.md`).
  *
- * `lhci autorun` takes one config, and the budgets differ per route type — 150 KB of initial JS on a
- * tenant page, 250 KB on an owner list — so each set is its own config in `lighthouse/`, they share
+ * `lhci autorun` takes one config, and the budgets differ per route type — 180 KB of initial JS on a
+ * staff page, 250 KB on an owner list — so each set is its own config in `lighthouse/`, they share
  * `lighthouse/shared.json`, and this runs them in turn against one production server that answers
- * all four hosts.
+ * all three hosts.
  *
  *   pnpm lhci                 every set
- *   pnpm lhci owner tenant    named sets only
+ *   pnpm lhci owner staff     named sets only
  *   LHCI_PORT=3201 pnpm lhci  another port, when 3200 is taken
  *
  * Needs a prior `pnpm build`. Not part of `pnpm test`; CI runs it in its own job from F1.
@@ -24,7 +24,6 @@ const SETS = process.argv.slice(2);
 const env = {
   ...process.env,
   OWNER_HOST: `localhost:${PORT}`,
-  TENANT_HOST: `tenant.localhost:${PORT}`,
   STAFF_HOST: `staff.localhost:${PORT}`,
   ADMIN_HOST: `admin.localhost:${PORT}`,
   // F1: mock mode, so Lighthouse measures the same thing every time and the zones have a session.

@@ -22,12 +22,11 @@ export const THEME_COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
 /**
  * Per-zone default when the visitor has not chosen (00-master-plan.md §2): owner and admin are
- * light-first consoles, the tenant app follows the phone, the staff PWA starts light with high
- * contrast one tap away.
+ * light-first consoles and the staff PWA starts light with high contrast one tap away. (The resident
+ * LINE Mini App, which follows the phone, is `getproperty-liff` since D-154.)
  */
 export const ZONE_DEFAULT_THEME = {
   owner: "light",
-  tenant: "system",
   staff: "light",
   admin: "light",
 } as const satisfies Record<Zone, ThemeChoice>;

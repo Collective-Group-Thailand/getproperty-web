@@ -10,20 +10,18 @@ const PORT = Number(process.env.E2E_PORT ?? 3100);
 const baseURL = `http://localhost:${PORT}`;
 
 /**
- * The four zone hosts, as the suite reaches them. Chromium resolves `*.localhost` to loopback by
+ * The three zone hosts, as the suite reaches them. Chromium resolves `*.localhost` to loopback by
  * itself, but the glibc resolver on CI does not, so `--host-resolver-rules` makes it the browser's
  * decision rather than the machine's.
  */
 export const HOSTS = {
   owner: baseURL,
-  tenant: `http://tenant.localhost:${PORT}`,
   staff: `http://staff.localhost:${PORT}`,
   admin: `http://admin.localhost:${PORT}`,
 } as const;
 
 const zoneEnv = {
   OWNER_HOST: `localhost:${PORT}`,
-  TENANT_HOST: `tenant.localhost:${PORT}`,
   STAFF_HOST: `staff.localhost:${PORT}`,
   ADMIN_HOST: `admin.localhost:${PORT}`,
 };

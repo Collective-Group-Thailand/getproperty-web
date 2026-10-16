@@ -5,7 +5,7 @@ import { resolveZone, ZONE_HEADER, ZONE_SEGMENT, zoneHosts, type Zone } from "@/
 
 /**
  * Next 16 replaces `middleware.ts` with `proxy.ts`. F0 ships the smallest version that makes the
- * four hosts render their own shells: map the `Host` to a zone and rewrite the path onto that
+ * three hosts render their own shells: map the `Host` to a zone and rewrite the path onto that
  * zone's internal route segment. F1 1.1 adds, in this order: unknown-host 404, refusal of the
  * internal prefixes from outside, token refresh, next-intl on the owner host, the per-zone CSP
  * and the security headers (00-master-plan.md §2, ADR-0004).

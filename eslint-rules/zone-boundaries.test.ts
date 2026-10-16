@@ -1,7 +1,7 @@
 import { type ESLint, Linter } from "eslint";
 import { describe, expect, it } from "vitest";
 
-import rule, { importedZone, zoneOf } from "./zone-boundaries.mjs";
+import rule, { importedRetiredZone, importedZone, retiredZoneOf, zoneOf } from "./zone-boundaries.mjs";
 
 /**
  * The fixture test F0 asks for: the rule must *fail* on the import it exists to catch, in every
@@ -29,9 +29,9 @@ function lint(file: string, code: string) {
 
 describe("zoneOf", () => {
   it("reads the zone from the path", () => {
-    expect(zoneOf("src/features/tenant/bills/BillCard.tsx")).toBe("tenant");
+    expect(zoneOf("src/features/staff/readings/Round.tsx")).toBe("staff");
     expect(zoneOf("src/app/staff/today/page.tsx")).toBe("staff");
-    expect(zoneOf("src/app/admin/(console)/orgs/page.tsx")).toBe("admin");
+    expect(zoneOf("src/app/admin/(console)/tenants/page.tsx")).toBe("admin");
     expect(zoneOf("src/app/[locale]/(console)/dashboard/page.tsx")).toBe("owner");
     expect(zoneOf("src/app/bff/[...path]/route.ts")).toBe("owner");
     expect(zoneOf("src/features/owner/dashboard/Queue.tsx")).toBe("owner");
@@ -45,17 +45,28 @@ describe("zoneOf", () => {
 
 describe("importedZone", () => {
   it("resolves alias and relative specifiers", () => {
-    expect(importedZone("@/features/admin/orgs", "src/features/owner/x.ts")).toBe("admin");
+    expect(importedZone("@/features/admin/tenants", "src/features/owner/x.ts")).toBe("admin");
     expect(importedZone("@/features/admin", "src/features/owner/x.ts")).toBe("admin");
-    expect(importedZone("../../admin/orgs", "src/features/owner/dashboard/x.ts")).toBe("admin");
+    expect(importedZone("../../admin/tenants", "src/features/owner/dashboard/x.ts")).toBe("admin");
     expect(importedZone("@/features/shared/bill", "src/features/owner/x.ts")).toBeNull();
     expect(importedZone("@/ui", "src/features/owner/x.ts")).toBeNull();
     expect(importedZone("react", "src/features/owner/x.ts")).toBeNull();
   });
 });
 
+describe("retired zones (D-151, D-154)", () => {
+  it("recognises files and imports under tenant/ and resident/", () => {
+    expect(retiredZoneOf("src/app/tenant/page.tsx")).toBe("tenant");
+    expect(retiredZoneOf("src/features/resident/bills/x.ts")).toBe("resident");
+    expect(retiredZoneOf("src/features/staff/x.ts")).toBeNull();
+    expect(importedRetiredZone("@/features/tenant/x", "src/features/owner/x.ts")).toBe("tenant");
+    expect(importedRetiredZone("../resident/x", "src/features/owner/x.ts")).toBe("resident");
+    expect(importedRetiredZone("@/features/staff/x", "src/features/owner/x.ts")).toBeNull();
+  });
+});
+
 describe("getproperty/zone-boundaries", () => {
-  const zones = ["owner", "tenant", "staff", "admin"] as const;
+  const zones = ["owner", "staff", "admin"] as const;
 
   it.each(zones.flatMap((from) => zones.filter((to) => to !== from).map((to) => [from, to] as const)))(
     "fails when %s features import features/%s",
@@ -67,19 +78,29 @@ describe("getproperty/zone-boundaries", () => {
   );
 
   it("fails on a relative import that climbs into another zone", () => {
-    const messages = lint("src/features/owner/dashboard/Queue.tsx", `import { Orgs } from "../../admin/orgs";`);
+    const messages = lint("src/features/owner/dashboard/Queue.tsx", `import { Tenants } from "../../admin/tenants";`);
     expect(messages).toHaveLength(1);
   });
 
   it("fails on a zone route importing another zone's features", () => {
-    const messages = lint("src/app/tenant/home/page.tsx", `import { Dashboard } from "@/features/owner/dashboard";`);
+    const messages = lint("src/app/staff/today/page.tsx", `import { Dashboard } from "@/features/owner/dashboard";`);
     expect(messages).toHaveLength(1);
-    expect(messages[0]?.message).toMatch(/tenant code may not import features\/owner/);
+    expect(messages[0]?.message).toMatch(/staff code may not import features\/owner/);
   });
 
   it("fails on re-exports and dynamic imports too", () => {
     expect(lint("src/features/staff/x.ts", `export * from "@/features/admin/x";`)).toHaveLength(1);
-    expect(lint("src/features/staff/x.ts", `const m = import("@/features/tenant/x");`)).toHaveLength(1);
+    expect(lint("src/features/staff/x.ts", `const m = import("@/features/owner/x");`)).toHaveLength(1);
+  });
+
+  it("fails on any file in a retired zone and on imports into one, from anywhere", () => {
+    const route = lint("src/app/tenant/page.tsx", `export default function Page() { return null; }`);
+    expect(route).toHaveLength(1);
+    expect(route[0]?.message).toMatch(/getproperty-liff/);
+    expect(lint("src/features/resident/home/Home.tsx", `export const x = 1;`)).toHaveLength(1);
+    expect(lint("src/features/owner/x.ts", `import { Bill } from "@/features/tenant/bills";`)).toHaveLength(1);
+    expect(lint("src/features/shared/x.ts", `const m = import("@/features/resident/x");`)).toHaveLength(1);
+    expect(lint("src/lib/x.ts", `import { y } from "../features/tenant/y";`)).toHaveLength(1);
   });
 
   it("allows the shared middle and a zone's own features", () => {

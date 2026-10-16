@@ -106,7 +106,7 @@ const light = build(
   },
 );
 
-/** Dark — the tenant zone follows the OS; every zone offers it through `gp_theme`. */
+/** Dark — the resident app follows the OS; every zone offers it through `gp_theme`. */
 const dark = build(
   {
     bg: DP.page,

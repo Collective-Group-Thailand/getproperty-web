@@ -9,7 +9,6 @@ import { LOCALE_COOKIE, routing } from "./routing";
 
 export default getRequestConfig(async ({ requestLocale }) => {
   const requested = await requestLocale;
-  console.log("[i18n] requestLocale =", requested);
 
   // A `[locale]` segment only exists in the owner zone, so a resolved `requestLocale` already answers
   // both questions.
@@ -25,7 +24,7 @@ export default getRequestConfig(async ({ requestLocale }) => {
   };
 });
 
-/** Tenant, staff, admin: zone from the proxy's header, locale from the cookie (th default). */
+/** Staff, admin: zone from the proxy's header, locale from the cookie (th default). */
 async function resolveFromRequest(): Promise<{ locale: (typeof routing.locales)[number]; zone: Zone }> {
   const zoneHeader = (await headers()).get(ZONE_HEADER);
   const zone = isZone(zoneHeader) ? zoneHeader : "owner";

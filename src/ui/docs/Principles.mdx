@@ -5,7 +5,7 @@ import { Meta } from "@storybook/addon-docs/blocks";
 # getproperty design system
 
 **บิลทำเอง เก็บเงินเอง ถูกกฎหมาย** — operated by Collective Group (Thailand). The owner's screen is a
-*morning dashboard*: what needs me today. The tenant's screen is *a bill that is pleasant to pay* (D-100).
+*morning dashboard*: what needs me today. The resident's screen is *a bill that is pleasant to pay* (D-100).
 
 ## Experience principles (design-system.md §1)
 
@@ -14,7 +14,7 @@ import { Meta } from "@storybook/addon-docs/blocks";
 3. **Lawful by design, visibly** — the tariff cap, the deposit clock and the legal reference are part of the UI. A compliance refusal is explained (`<Callout tone="danger" legalRef>`), never hidden or overridden.
 4. **Money and dates are the API's** — the UI formats (`formatTHB`, `formatUnits`, `formatDate`), never calculates. The ESLint rule `getproperty/no-money-arithmetic` enforces it.
 5. **Thai-first, human copy** — short, polite, specific Thai. See *Voice & tone*.
-6. **Fast on real devices** — a mid-range Android on 4G inside LINE for tenants; a 6" phone in sunlight for staff.
+6. **Fast on real devices** — a mid-range Android on 4G inside LINE for residents; a 6" phone in sunlight for staff.
 7. **Accessible by default** — WCAG 2.2 AA. Every story here is rendered through axe in `pnpm test`; the token pairs pass the contrast gate in all three themes.
 8. **Consistent and composable** — zones compose `src/ui`; they never restyle primitives locally.
 
@@ -23,11 +23,12 @@ import { Meta } from "@storybook/addon-docs/blocks";
 | Zone | Audience | Default theme | Density |
 |---|---|---|---|
 | owner | the landlord's console | light | console |
-| tenant | LINE Mini App / mobile web | follows the phone | 16 px base, 48 px targets, bottom nav |
 | staff | caretakers' PWA | light, high contrast one tap away | 18 px base, 48 px targets, camera-first |
 | admin | Collective Group back office | light | console, dense but calm |
 
-Use the **Theme** and **Zone** toolbar switches to view any story as any zone.
+Use the **Theme** and **Zone** toolbar switches to view any story as any zone. The resident LINE Mini
+App (follows the phone, 16 px base, 48 px targets, bottom nav) is the separate repository
+`getproperty-liff` (D-154), which copies these tokens and components until `collective-shared` exists.
 
 ## Colour has meaning
 

@@ -6,7 +6,7 @@ import type { Locale } from "./routing";
  * 1. **Money and meter quantities are decimal strings.** They are never parsed into a number to be
  *    added, subtracted or rounded — binary floating point cannot hold 0.1, and a baht is not ours to
  *    lose. The API computes every total and every consumption; this only renders them.
- * 2. **Dates are rendered in Asia/Bangkok**, in the Buddhist era for owners and tenants, wherever
+ * 2. **Dates are rendered in Asia/Bangkok**, in the Buddhist era for owners and residents, wherever
  *    the reader happens to be; ISO in exports.
  */
 
@@ -53,7 +53,7 @@ export function formatTHB(
 ): string {
   const { withSymbol = true, decimals = 2 } = options;
   const parts = splitDecimal(amount, locale);
-  // A malformed amount must never render as "NaN" in front of a tenant.
+  // A malformed amount must never render as "NaN" in front of a resident.
   if (!parts) return withSymbol ? "฿—" : "—";
   const fraction = decimals > 0 ? `.${parts.fraction.padEnd(decimals, "0").slice(0, decimals)}` : "";
   return `${parts.negative ? "-" : ""}${withSymbol ? "฿" : ""}${parts.whole}${fraction}`;
@@ -81,7 +81,7 @@ export function formatUnits(
   return withUnit ? `${number} ${UNIT_LABEL[unit]}` : number;
 }
 
-/** A plain count — rooms, tenants, days. */
+/** A plain count — units, residents, days. */
 export function formatNumber(value: number, locale: Locale = "th", options?: Intl.NumberFormatOptions): string {
   return new Intl.NumberFormat(localeTag(locale), options).format(value);
 }

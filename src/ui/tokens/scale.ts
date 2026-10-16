@@ -14,17 +14,17 @@ export const RADIUS = {
   md: "0.5rem",
   lg: "0.75rem",
   xl: "1rem",
-  /** Circles and pills — an avatar, a status dot, a tenant's pay button. */
+  /** Circles and pills — an avatar, a status dot, a resident's pay button. */
   full: "9999px",
   /** Buttons, inputs, selects, chips, segmented controls: 8 px. */
   control: "0.5rem",
   /** Cards, panels, list rows, dialogs: 12 px. */
   card: "0.75rem",
-  /** A tenant's full-bleed hero card and the bottom sheet: 16 px. */
+  /** A resident's full-bleed hero card and the bottom sheet: 16 px. */
   panel: "1rem",
 } as const;
 
-/** Content widths: the owner console at 1280, a tenant page at a phone's 480, a reading form at 640. */
+/** Content widths: the owner console at 1280, a resident page at a phone's 480, a reading form at 640. */
 export const CONTAINER = {
   phone: "30rem",
   form: "40rem",

@@ -22,7 +22,7 @@ const iconButtonVariants = cva(
         /** 32 px — in a dense table row. Still ≥ 24 px (WCAG 2.5.8). */
         sm: "size-8 text-base",
         md: "size-10 text-lg",
-        /** 48 px — staff and tenant zones. */
+        /** 48 px — staff zone and the resident app. */
         lg: "size-12 text-xl",
       },
     },

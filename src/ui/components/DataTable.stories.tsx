@@ -8,15 +8,15 @@ import { MoneyDisplay } from "./MoneyDisplay";
 
 interface Row {
   room: string;
-  tenant: string;
+  resident: string;
   amount: string;
   status: "paid" | "due" | "overdue";
 }
 
 const ROWS: Row[] = [
-  { room: "A-301", tenant: "คุณสมชาย", amount: "4850.50", status: "paid" },
-  { room: "A-302", tenant: "คุณมาลี", amount: "5120.00", status: "due" },
-  { room: "B-101", tenant: "คุณอนันต์", amount: "3980.25", status: "overdue" },
+  { room: "A-301", resident: "คุณสมชาย", amount: "4850.50", status: "paid" },
+  { room: "A-302", resident: "คุณมาลี", amount: "5120.00", status: "due" },
+  { room: "B-101", resident: "คุณอนันต์", amount: "3980.25", status: "overdue" },
 ];
 
 const STATUS = {
@@ -27,7 +27,7 @@ const STATUS = {
 
 const columns: ColumnDef<Row, unknown>[] = [
   { accessorKey: "room", header: "ห้อง", cell: (c) => <span className="font-mono">{c.getValue<string>()}</span> },
-  { accessorKey: "tenant", header: "ผู้เช่า" },
+  { accessorKey: "resident", header: "ผู้เช่า" },
   {
     accessorKey: "amount",
     header: "ยอดบิล",

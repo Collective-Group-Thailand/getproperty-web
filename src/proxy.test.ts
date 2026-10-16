@@ -8,7 +8,7 @@ const hosts = zoneHosts({});
 
 describe("hostname", () => {
   it("drops the port and lower-cases", () => {
-    expect(hostname("Tenant.localhost:3000")).toBe("tenant.localhost");
+    expect(hostname("Staff.localhost:3000")).toBe("staff.localhost");
     expect(hostname(null)).toBe("");
   });
 });
@@ -16,10 +16,10 @@ describe("hostname", () => {
 describe("zoneHosts", () => {
   it("defaults to *.localhost and reads the env", () => {
     expect(hosts).toEqual(DEFAULT_HOSTS);
-    expect(zoneHosts({ TENANT_HOST: "app.getproperty.co:443", OWNER_HOST: "my.getproperty.co" })).toMatchObject({
-      tenant: "app.getproperty.co",
+    expect(zoneHosts({ STAFF_HOST: "staff.getproperty.co:443", OWNER_HOST: "my.getproperty.co" })).toMatchObject({
+      staff: "staff.getproperty.co",
       owner: "my.getproperty.co",
-      staff: "staff.localhost",
+      admin: "admin.localhost",
     });
   });
 });
@@ -27,12 +27,15 @@ describe("zoneHosts", () => {
 describe("resolveZone", () => {
   it("maps each host to its zone, ignoring the port", () => {
     expect(resolveZone("localhost:3000", hosts)).toBe("owner");
-    expect(resolveZone("tenant.localhost:3100", hosts)).toBe("tenant");
     expect(resolveZone("staff.localhost", hosts)).toBe("staff");
     expect(resolveZone("admin.localhost:3000", hosts)).toBe("admin");
   });
   it("returns null for an unknown host", () => {
     expect(resolveZone("evil.example", hosts)).toBeNull();
+  });
+  it("has no resident zone — the resident app is getproperty-liff (D-154)", () => {
+    expect(resolveZone("tenant.localhost:3000", hosts)).toBeNull();
+    expect(Object.keys(hosts)).toEqual(["owner", "staff", "admin"]);
   });
 });
 
@@ -49,15 +52,14 @@ describe("zoneRewrite", () => {
   });
 
   it("prefixes the other zones' paths with their segment", () => {
-    expect(at("tenant.localhost:3000", "/").url.pathname).toBe("/tenant");
-    expect(at("tenant.localhost:3000", "/bills/42").url.pathname).toBe("/tenant/bills/42");
+    expect(at("staff.localhost:3000", "/").url.pathname).toBe("/staff");
     expect(at("staff.localhost:3000", "/today").url.pathname).toBe("/staff/today");
-    expect(at("admin.localhost:3000", "/orgs?page=2").url.pathname).toBe("/admin/orgs");
-    expect(at("admin.localhost:3000", "/orgs?page=2").url.search).toBe("?page=2");
+    expect(at("admin.localhost:3000", "/tenants?page=2").url.pathname).toBe("/admin/tenants");
+    expect(at("admin.localhost:3000", "/tenants?page=2").url.search).toBe("?page=2");
   });
 
   it("passes root assets through unprefixed on every host", () => {
-    expect(at("tenant.localhost:3000", "/favicon.ico").url.pathname).toBe("/favicon.ico");
+    expect(at("admin.localhost:3000", "/favicon.ico").url.pathname).toBe("/favicon.ico");
     expect(at("staff.localhost:3000", "/brand/wordmark.svg").url.pathname).toBe("/brand/wordmark.svg");
   });
 

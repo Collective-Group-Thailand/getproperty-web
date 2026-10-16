@@ -16,10 +16,9 @@ describe("theme selection", () => {
   it("offers high contrast to the staff zone only", () => {
     expect(themeChoicesFor("staff")).toContain("hc");
     expect(themeChoicesFor("owner")).not.toContain("hc");
-    expect(themeChoicesFor("tenant")).not.toContain("hc");
+    expect(themeChoicesFor("admin")).not.toContain("hc");
   });
-  it("defaults the tenant zone to the phone's setting and the consoles to light", () => {
-    expect(ZONE_DEFAULT_THEME.tenant).toBe("system");
-    expect(ZONE_DEFAULT_THEME.owner).toBe("light");
+  it("defaults every zone to light (the resident app that follows the phone is getproperty-liff)", () => {
+    expect(ZONE_DEFAULT_THEME).toEqual({ owner: "light", staff: "light", admin: "light" });
   });
 });

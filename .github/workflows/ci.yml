@@ -12,7 +12,6 @@ concurrency:
 env:
   NEXT_TELEMETRY_DISABLED: "1"
   OWNER_HOST: "localhost:3100"
-  TENANT_HOST: "tenant.localhost:3100"
   STAFF_HOST: "staff.localhost:3100"
   ADMIN_HOST: "admin.localhost:3100"
 
@@ -51,7 +50,7 @@ jobs:
         run: pnpm release:hygiene
 
   e2e:
-    name: e2e (four zone shells, axe)
+    name: e2e (three zone shells, axe)
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:

@@ -9,7 +9,7 @@
 - [ ] Tokens only — no raw palette steps, no hard-coded colours, spacing or durations; motion respects `prefers-reduced-motion`.
 - [ ] Thai copy reviewed against `docs/ui/voice-and-tone.md`; every string in `th` and `en`.
 - [ ] Status via `src/domain/status` (icon + text, never colour alone); compliance refusals show their `legalRef`.
-- [ ] Accessibility: keyboard path works, focus visible, axe clean in `pnpm test` and `pnpm e2e`, names on icon-only controls, 48 px targets on tenant/staff.
+- [ ] Accessibility: keyboard path works, focus visible, axe clean in `pnpm test` and `pnpm e2e`, names on icon-only controls, 48 px targets on staff.
 - [ ] Money and dates come from the API (`formatTHB`, `formatUnits`, Bangkok time, Buddhist era); no arithmetic on money.
 - [ ] Irreversible actions use `<AlertDialog confirmationPhrase>` restating room code + amount.
 

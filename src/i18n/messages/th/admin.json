@@ -1,7 +1,7 @@
 {
   "admin": {
     "nav": {
-      "orgs": "องค์กร",
+      "tenants": "องค์กรลูกค้า",
       "subscriptions": "แพ็กเกจ",
       "tariffs": "อัตราค่าไฟ-น้ำ",
       "devices": "อุปกรณ์",

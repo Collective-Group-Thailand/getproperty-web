@@ -10,7 +10,7 @@ import { controlVariants } from "./Input";
 export interface ComboboxOption {
   value: string;
   label: string;
-  /** Secondary text — a room's floor, a tenant's phone. */
+  /** Secondary text — a room's floor, a resident's phone. */
   description?: string;
 }
 
@@ -24,7 +24,7 @@ export interface ComboboxProps {
   /** Accessible name for the listbox, from `src/i18n`. */
   listLabel: string;
   inputSize?: "sm" | "md" | "lg";
-  /** Override the default label match — e.g. match a room code and its tenant's name. */
+  /** Override the default label match — e.g. match a room code and its resident's name. */
   filter?: (option: ComboboxOption, query: string) => boolean;
   className?: string;
 }
@@ -33,7 +33,7 @@ const defaultFilter = (option: ComboboxOption, query: string) =>
   `${option.label} ${option.description ?? ""}`.toLocaleLowerCase().includes(query.toLocaleLowerCase());
 
 /**
- * A searchable single choice — rooms, tenants, properties — following the WAI-ARIA combobox pattern
+ * A searchable single choice — rooms, residents, properties — following the WAI-ARIA combobox pattern
  * (editable input + listbox popup, `aria-activedescendant`). Built on plain elements rather than Radix
  * because Radix ships no combobox; the keyboard map is Down/Up to move, Enter to choose, Escape to
  * close, and typing filters.

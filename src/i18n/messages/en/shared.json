@@ -23,7 +23,6 @@
       "body": "This is the F0 placeholder shell — the real screens arrive in F1–F5",
       "zone": {
         "owner": "Owner",
-        "tenant": "Tenant",
         "staff": "Staff",
         "admin": "Admin"
       }

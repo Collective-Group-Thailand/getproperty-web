@@ -19,6 +19,6 @@ describe("messages", () => {
     expect(keys(en).sort()).toEqual(keys(th).sort());
   });
   it("has one file per zone plus shared", () => {
-    expect(files.sort()).toEqual(["admin.json", "owner.json", "shared.json", "staff.json", "tenant.json"]);
+    expect(files.sort()).toEqual(["admin.json", "owner.json", "shared.json", "staff.json"]);
   });
 });

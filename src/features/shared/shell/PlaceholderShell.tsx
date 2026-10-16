@@ -19,13 +19,6 @@ const NAV: Record<Zone, { key: string; href: string; icon: IconName }[]> = {
     { key: "meters", href: "/meters", icon: "meter" },
     { key: "settings", href: "/settings", icon: "settings" },
   ],
-  tenant: [
-    { key: "home", href: "/", icon: "home" },
-    { key: "bills", href: "/bills", icon: "bill" },
-    { key: "usage", href: "/usage", icon: "electric" },
-    { key: "lease", href: "/lease", icon: "lease" },
-    { key: "profile", href: "/profile", icon: "tenant" },
-  ],
   staff: [
     { key: "today", href: "/", icon: "ticket" },
     { key: "readings", href: "/readings", icon: "meter" },
@@ -34,7 +27,7 @@ const NAV: Record<Zone, { key: string; href: string; icon: IconName }[]> = {
     { key: "tickets", href: "/tickets", icon: "staff" },
   ],
   admin: [
-    { key: "orgs", href: "/orgs", icon: "building" },
+    { key: "tenants", href: "/tenants", icon: "building" },
     { key: "subscriptions", href: "/subscriptions", icon: "wallet" },
     { key: "tariffs", href: "/tariffs", icon: "electric" },
     { key: "devices", href: "/devices", icon: "gateway" },
@@ -45,8 +38,8 @@ const NAV: Record<Zone, { key: string; href: string; icon: IconName }[]> = {
 
 /**
  * The placeholder page of each zone (F0 0.1, rebuilt on `src/ui` AppShell in 0.2): the zone's name,
- * the wordmark, the zone's future navigation. Owner and admin get a sidebar; tenant and staff get a
- * phone column with a bottom nav. F1 replaces this with the real shells.
+ * the wordmark, the zone's future navigation. Owner and admin get a sidebar; staff gets a phone
+ * column with a bottom nav. F1 replaces this with the real shells.
  */
 export async function PlaceholderShell({ zone }: { zone: Zone }) {
   const t = await getTranslations("shell");

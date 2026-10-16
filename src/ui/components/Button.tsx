@@ -35,7 +35,7 @@ export const buttonVariants = cva(
         sm: "h-8 px-3 text-sm",
         md: "h-10 px-4 text-base",
         lg: "h-12 px-6 text-base",
-        /** Staff and tenant: 48 px+ targets and 18 px text (design-system.md §5). */
+        /** Staff and resident: 48 px+ targets and 18 px text (design-system.md §5). */
         xl: "h-14 px-8 text-lg",
       },
       block: { true: "w-full", false: "" },

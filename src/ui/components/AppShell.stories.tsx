@@ -12,11 +12,11 @@ const OWNER_NAV = [
   { href: "#", label: "มิเตอร์", icon: <Icon name="meter" /> },
 ];
 
-const TENANT_NAV = [
-  { href: "#", label: "หน้าแรก", icon: <Icon name="home" />, active: true },
-  { href: "#", label: "บิล", icon: <Icon name="bill" /> },
-  { href: "#", label: "การใช้", icon: <Icon name="electric" /> },
-  { href: "#", label: "ฉัน", icon: <Icon name="tenant" /> },
+const STAFF_NAV = [
+  { href: "#", label: "วันนี้", icon: <Icon name="ticket" />, active: true },
+  { href: "#", label: "จดมิเตอร์", icon: <Icon name="meter" /> },
+  { href: "#", label: "ตรวจห้อง", icon: <Icon name="camera" /> },
+  { href: "#", label: "อุปกรณ์", icon: <Icon name="gateway" /> },
 ];
 
 const meta: Meta<typeof AppShell> = {
@@ -82,10 +82,10 @@ export const Mobile: Story = {
           <Wordmark size="sm" />
         </TopBar>
       }
-      bottomNav={<BottomNav items={TENANT_NAV} label="เมนูด่วน" />}
+      bottomNav={<BottomNav items={STAFF_NAV} label="เมนูด่วน" />}
     >
       <div className="py-6">
-        <h1 className="text-2xl">สวัสดี คุณสมชาย</h1>
+        <h1 className="text-2xl">งานวันนี้</h1>
       </div>
     </AppShell>
   ),

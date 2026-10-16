@@ -34,7 +34,7 @@ const sansThai = localFont({
   preload: true,
 });
 
-/** Display — Anuphan variable (wght 100–700): the page title, the tenant's bill amount hero. */
+/** Display — Anuphan variable (wght 100–700): the page title, the resident's invoice amount hero. */
 const displayLatin = localFont({
   src: "./files/anuphan-latin.woff2",
   weight: "100 700",

@@ -55,7 +55,6 @@ const preview: Preview = {
         icon: "globe",
         items: [
           { value: "owner", title: "Owner" },
-          { value: "tenant", title: "Tenant" },
           { value: "staff", title: "Staff" },
           { value: "admin", title: "Admin" },
         ],

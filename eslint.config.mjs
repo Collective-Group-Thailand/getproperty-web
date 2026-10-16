@@ -131,8 +131,9 @@ const eslintConfig = [
   },
 
   {
-    // Zone isolation (00-master-plan.md §3). The rule reads the zone from the file's path.
-    files: ["src/app/**/*.{ts,tsx}", "src/features/**/*.{ts,tsx}"],
+    // Zone isolation (00-master-plan.md §3). The rule reads the zone from the file's path; it runs on
+    // all of src/ so the shared middle cannot import a retired zone either (D-154).
+    files: ["src/**/*.{ts,tsx}"],
     rules: { "getproperty/zone-boundaries": "error" },
   },
 

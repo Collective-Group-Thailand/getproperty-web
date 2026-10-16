@@ -122,8 +122,9 @@ export const ICONS = {
   // domain
   building: Building2,
   room: DoorOpen,
-  tenant: User,
-  tenants: Users,
+  // People who live in units are residents (D-151); "tenant" names the SaaS customer organisation.
+  resident: User,
+  residents: Users,
   staff: Wrench,
   lease: FileText,
   bill: Receipt,

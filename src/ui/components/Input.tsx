@@ -18,7 +18,7 @@ export const controlVariants = cva(
       inputSize: {
         sm: "h-8 px-2.5 text-sm",
         md: "h-10 px-3 text-base",
-        /** Staff and tenant: 48 px. */
+        /** Staff and resident: 48 px. */
         lg: "h-12 px-4 text-lg",
       },
       // border-strong, not border: an input outline is a UI component and needs 3:1 (1.4.11).

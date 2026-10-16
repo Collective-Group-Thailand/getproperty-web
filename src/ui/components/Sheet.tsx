@@ -15,7 +15,7 @@ const sheetVariants = cva(
   {
     variants: {
       side: {
-        /** The tenant's QR pay sheet, the staff's reading detail: slides up, respects the home indicator. */
+        /** The resident's QR pay sheet, the staff's reading detail: slides up, respects the home indicator. */
         bottom: "inset-x-0 bottom-0 max-h-[90dvh] rounded-t-panel border-t pb-[env(safe-area-inset-bottom)]",
         /** The owner's filters and detail panes on a desktop. */
         right: "inset-y-0 end-0 h-dvh w-[min(100vw,28rem)] border-s",
@@ -39,7 +39,7 @@ export interface SheetProps extends VariantProps<typeof sheetVariants> {
 }
 
 /**
- * A sheet: a dialog anchored to an edge (design-system.md §3). The bottom variant is the tenant's and
+ * A sheet: a dialog anchored to an edge (design-system.md §3). The bottom variant is the resident's and
  * staff's default overlay — thumb-reachable, with a grab handle, never hover-dependent. Focus trap,
  * Escape and scrim close come from Radix Dialog.
  */

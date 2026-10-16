@@ -5,7 +5,7 @@ import { Tooltip as TooltipPrimitive } from "radix-ui";
 export const TooltipProvider = TooltipPrimitive.Provider;
 
 export interface TooltipProps {
-  /** Short text; a tooltip is never the only way to learn something (no hover-only on tenant/staff). */
+  /** Short text; a tooltip is never the only way to learn something (no hover-only on staff/resident). */
   content: React.ReactNode;
   children: React.ReactElement;
   side?: "top" | "bottom" | "left" | "right";

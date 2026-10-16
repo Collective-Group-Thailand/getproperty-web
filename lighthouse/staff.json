@@ -1,0 +1,30 @@
+{
+  "extends": "./shared.json",
+  "$comment": "Staff PWA on a 6\" mid-range Android over 4G: LCP ≤ 2.5 s, CLS ≤ 0.1, initial JS ≤ 180 KB gz (docs/performance-budgets.md). Measured as a phone with the Lighthouse mobile preset; the staff host is reached through its Host header (`STAFF_HOST`). Replaces the tenant set removed with the resident zone (D-154 — the resident LIFF budget now lives in getproperty-liff). F4 adds today, readings and the capture flow.",
+  "ci": {
+    "collect": {
+      "url": ["http://staff.localhost:3200/"],
+      "numberOfRuns": 3,
+      "settings": {
+        "formFactor": "mobile",
+        "screenEmulation": {
+          "mobile": true,
+          "width": 360,
+          "height": 780,
+          "deviceScaleFactor": 2.625,
+          "disabled": false
+        },
+        "throttlingMethod": "simulate",
+        "throttling": { "rttMs": 150, "throughputKbps": 1638.4, "cpuSlowdownMultiplier": 4 },
+        "chromeFlags": "--host-resolver-rules=MAP *.localhost 127.0.0.1"
+      }
+    },
+    "assert": {
+      "assertions": {
+        "largest-contentful-paint": ["warn", { "maxNumericValue": 2500 }],
+        "cumulative-layout-shift": ["warn", { "maxNumericValue": 0.1 }],
+        "resource-summary:script:size": ["error", { "maxNumericValue": 184320 }]
+      }
+    }
+  }
+}
