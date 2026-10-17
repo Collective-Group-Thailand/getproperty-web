@@ -29,7 +29,16 @@ const zoneEnv = {
   STAFF_HOST: `staff.localhost:${PORT}`,
   ADMIN_HOST: `admin.localhost:${PORT}`,
   API_INTERNAL_URL: MOCK_API,
+  // The mock serves presigned uploads and signed downloads itself (mocks/server.ts `/__upload`, `/__files`):
+  // it is this suite's object storage, so the staff CSP must allow it like the real bucket.
+  NEXT_PUBLIC_ASSET_BASE_URL: MOCK_API,
 };
+
+/**
+ * Chromium's fake camera (a moving test pattern) and an auto-accepted permission prompt, so the staff
+ * capture flow runs with a live `getUserMedia` stream in headless runs (F4 4.1 §3).
+ */
+export const FAKE_CAMERA_ARGS = ["--use-fake-device-for-media-stream", "--use-fake-ui-for-media-stream"];
 
 /**
  * A pre-installed Chromium instead of the one this Playwright version would download: set
@@ -54,9 +63,10 @@ export default defineConfig({
     baseURL,
     trace: "on-first-retry",
     launchOptions: {
-      args: ["--host-resolver-rules=MAP *.localhost 127.0.0.1"],
+      args: ["--host-resolver-rules=MAP *.localhost 127.0.0.1", ...FAKE_CAMERA_ARGS],
       ...(executablePath ? { executablePath } : {}),
     },
+    permissions: ["camera"],
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: [

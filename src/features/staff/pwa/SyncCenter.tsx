@@ -29,6 +29,8 @@ export function SyncCenter() {
   const [open, setOpen] = useState(false);
   const [removing, setRemoving] = useState<{ id: string; label: string } | null>(null);
   const waiting = queue.pending + queue.conflicts;
+  const open_ = queue.entries.filter((entry) => entry.state !== "sent");
+  const sent = queue.entries.filter((entry) => entry.state === "sent").reverse();
 
   return (
     <div className="flex items-center gap-1">
@@ -39,6 +41,7 @@ export function SyncCenter() {
       )}
       <IconButton
         icon={queue.conflicts > 0 ? IconSyncFailed : IconSyncPending}
+        size="lg"
         label={t("syncLabel", { count: waiting })}
         onClick={() => setOpen(true)}
         data-testid="sync-badge"
@@ -48,11 +51,11 @@ export function SyncCenter() {
       />
       <LazySheet open={open} onOpenChange={setOpen} title={t("syncTitle")} closeLabel={common("close")} side="bottom">
         {queue.lastResult?.stopped === "signed-out" ? <Callout tone="warning">{t("signedOut")}</Callout> : null}
-        {queue.entries.length === 0 ? (
+        {open_.length === 0 ? (
           <p className="text-muted py-6 text-center">{t("syncEmpty")}</p>
         ) : (
-          <ul className="divide-border divide-y" data-testid="sync-list">
-            {queue.entries.map((entry) => (
+          <ul className="divide-border divide-y" data-testid="sync-list" aria-label={t("waitingTitle")}>
+            {open_.map((entry) => (
               <li key={entry.id} className="flex flex-col gap-2 py-3">
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-semibold">{entry.label}</span>
@@ -91,6 +94,28 @@ export function SyncCenter() {
             ))}
           </ul>
         )}
+        {sent.length > 0 ? (
+          <section className="mt-4" aria-labelledby="sync-sent">
+            <h3 id="sync-sent" className="text-muted text-sm font-semibold">
+              {t("recentTitle")}
+            </h3>
+            <ul className="divide-border divide-y" data-testid="sync-sent">
+              {sent.map((entry) => (
+                <li key={entry.id} className="flex min-h-12 items-center justify-between gap-2 py-2">
+                  <span className="flex flex-col">
+                    <span className="font-semibold">{entry.label}</span>
+                    <span className="text-muted text-sm">
+                      {t("sentAt", { time: format.relativeTime(entry.sentAt ?? entry.createdAt) })}
+                    </span>
+                  </span>
+                  <Badge tone="success" size="sm">
+                    {t("sent")}
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
         {queue.pending > 0 && online ? (
           <Button block size="lg" className="mt-3" onClick={() => void queue.replayNow()}>
             {t("sendNow")}

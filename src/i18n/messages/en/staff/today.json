@@ -1,0 +1,43 @@
+{
+  "title": "Today",
+  "building": "Building",
+  "unavailable": "This list cannot be loaded right now. Try again when you have signal.",
+  "readings": {
+    "title": "Readings before the cut-off",
+    "action": "Start the reading round",
+    "done": "All meters read",
+    "label": "Readings, {count} left",
+    "cutoff": "Cut-off {date}",
+    "floor": "{floor} · {count} left",
+    "noFloor": "No floor",
+    "none": "No reading round for this building yet"
+  },
+  "inspections": {
+    "title": "Inspections",
+    "item": "{unit} · {type, select, move_in {move-in} move_out {move-out} other {inspection}}",
+    "when": "Scheduled {date}",
+    "none": "No units to inspect",
+    "status": {
+      "scheduled": "To do",
+      "in_progress": "In progress",
+      "completed": "Completed",
+      "signed": "Signed"
+    }
+  },
+  "installs": {
+    "title": "Installs",
+    "action": "Install devices",
+    "open": "Devices of the building",
+    "waiting": "Waiting: {gateways} gateways · {meters} meters",
+    "none": "No devices waiting to be installed"
+  },
+  "later": {
+    "title": "Other work",
+    "workOrders": "Work orders",
+    "parcels": "Parcels",
+    "soon": "Coming in a later release"
+  },
+  "allDone": "Nothing left for today",
+  "allDoneHint": "New work shows up here, and as a notification if you turned them on",
+  "count": "({count})"
+}

@@ -12,7 +12,16 @@
  *                                   X-Tenant-Id, Idempotency-Key, X-Request-Id)
  *   POST /__mock/notify?user=…      a new inbox item for a persona + a realtime `notification.created`
  *   POST /__mock/realtime/emit      {type, ids, surface?} to every open stream (of a surface)
- *   GET  /__mock/readings           readings received by POST /v1/staff/readings (by idempotency key)
+ *   GET  /__mock/readings           readings received by POST /v1/staff/meter-readings (by idempotency key)
+ *   GET  /__mock/staff/readings     the meter readings the staff world holds (incl. install/final readings)
+ *   GET  /__mock/staff/files        uploaded files: id, kind, mime type, declared and stored size
+ *   POST /__mock/staff/reset?part=  reset the staff world's readings | inspections | devices (or all)
+ *   POST /__mock/staff/ocr?mode=    the fake OCR reads (`ok`) or reads nothing (`unreadable`)
+ *   POST /__mock/staff/devices/online?serial=  a gateway bootstraps and comes online (realtime events)
+ *
+ * Object storage stand-in (what presigned URLs point at; CORS like a bucket):
+ *   PUT  /__upload/<fileId>         the presigned upload
+ *   GET  /__files/<fileId>          the signed download (uploaded bytes, or a placeholder picture)
  *   GET  /__mock/web-vitals         Web Vitals received through the BFFs
  *   GET  /__mock/health             liveness for the e2e web server
  */
@@ -25,7 +34,8 @@ import { getResponse } from "msw";
 import { OPERATORS, PLATFORM_USERS } from "./fixtures";
 import { handlers } from "./handlers";
 import { emit } from "./handlers/realtime";
-import { expireAccessTokens, resetState, state } from "./state";
+import { gatewayComesOnline, readUpload, storeUpload, UPLOAD_CORS } from "./handlers/staff";
+import { expireAccessTokens, initialStaffWorld, resetState, state } from "./state";
 
 const port = Number(process.env.MOCK_API_PORT ?? 4010);
 const all = handlers();
@@ -79,6 +89,48 @@ async function control(url: URL, req: IncomingMessage, res: ServerResponse) {
     }
     case "GET /__mock/readings":
       return sendJson(res, 200, [...state.readings.values()]);
+    case "GET /__mock/staff/readings":
+      return sendJson(res, 200, state.staff.readings);
+    case "GET /__mock/staff/files":
+      return sendJson(
+        res,
+        200,
+        [...state.staff.files.values()].map(({ file, bytes }) => ({
+          id: file.id,
+          kind: file.kind,
+          mimeType: file.mimeType,
+          sizeBytes: file.sizeBytes,
+          storedBytes: bytes?.byteLength ?? null,
+          uploadState: file.uploadState,
+        })),
+      );
+    case "POST /__mock/staff/reset": {
+      // One part of the staff world at a time, so parallel spec files do not reset each other.
+      const fresh = initialStaffWorld();
+      const part = url.searchParams.get("part");
+      if (part === "readings" || !part) {
+        Object.assign(state.staff, { meters: fresh.meters, readings: fresh.readings, ocr: "ok", requirePhoto: true });
+        state.readings.clear();
+      }
+      if (part === "inspections" || !part) state.staff.inspections = fresh.inspections;
+      if (part === "devices" || !part) {
+        Object.assign(state.staff, {
+          devices: fresh.devices,
+          channels: fresh.channels,
+          commands: [],
+          provisioning: new Map(),
+          swaps: [],
+        });
+      }
+      return sendJson(res, 200, { ok: true });
+    }
+    case "POST /__mock/staff/ocr":
+      state.staff.ocr = url.searchParams.get("mode") === "unreadable" ? "unreadable" : "ok";
+      return sendJson(res, 200, { ocr: state.staff.ocr });
+    case "POST /__mock/staff/devices/online": {
+      const found = gatewayComesOnline(url.searchParams.get("serial") ?? "");
+      return sendJson(res, found ? 200 : 404, { ok: found });
+    }
     case "GET /__mock/web-vitals":
       return sendJson(res, 200, state.webVitals);
     case "GET /__mock/requests": {
@@ -90,10 +142,35 @@ async function control(url: URL, req: IncomingMessage, res: ServerResponse) {
   }
 }
 
+/** The object-storage stand-in: presigned PUTs and signed GETs from the browser (cross-origin). */
+async function storage(url: URL, req: IncomingMessage, res: ServerResponse) {
+  const fileId = decodeURIComponent(url.pathname.split("/")[2] ?? "");
+  if (req.method === "OPTIONS") {
+    res.writeHead(204, UPLOAD_CORS);
+    return res.end();
+  }
+  if (req.method === "PUT" && url.pathname.startsWith("/__upload/")) {
+    const body = (await readBody(req)) ?? Buffer.alloc(0);
+    const status = storeUpload(fileId, new Uint8Array(body), req.headers["content-type"] ?? null);
+    res.writeHead(status, { ...UPLOAD_CORS, etag: `"${fileId.slice(0, 8)}"` });
+    return res.end();
+  }
+  if (req.method === "GET" && url.pathname.startsWith("/__files/")) {
+    const { body, contentType } = readUpload(fileId);
+    res.writeHead(200, { ...UPLOAD_CORS, "content-type": contentType, "cache-control": "private, max-age=300" });
+    return res.end(body);
+  }
+  res.writeHead(405, UPLOAD_CORS);
+  return res.end();
+}
+
 const server = createServer(async (req, res) => {
   const url = new URL(req.url ?? "/", `http://${req.headers.host ?? `127.0.0.1:${port}`}`);
   try {
     if (url.pathname.startsWith("/__mock/")) return await control(url, req, res);
+    if (url.pathname.startsWith("/__upload/") || url.pathname.startsWith("/__files/")) {
+      return await storage(url, req, res);
+    }
 
     const headers = new Headers();
     for (const [name, value] of Object.entries(req.headers)) {

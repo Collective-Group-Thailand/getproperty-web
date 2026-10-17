@@ -16,5 +16,9 @@
   "pushBody": "We will tell you about new work and anything that could not be sent",
   "pushEnable": "Turn on notifications",
   "pushLater": "Later",
-  "pushDenied": "Notifications are blocked in the browser settings"
+  "pushDenied": "Notifications are blocked in the browser settings",
+  "sent": "Sent",
+  "recentTitle": "Sent today",
+  "sentAt": "Sent {time}",
+  "waitingTitle": "Waiting"
 }

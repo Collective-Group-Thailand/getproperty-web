@@ -8,7 +8,9 @@ import type { Schemas } from "@/lib/api/types";
  * reading with its photo — is written to IndexedDB *first*, with its `Idempotency-Key` fixed at that
  * moment, and then replayed until the API answers:
  *
- * - 2xx → removed (a replay of an already-accepted request returns the original response, contract §3);
+ * - 2xx → kept as **sent** with the API's answer for a day, so the screen that queued it (the reading
+ *   round) can show what became of it — a replay of an accepted request returns the original response
+ *   (contract §3); sent entries are pruned after `SENT_TTL_MS` and never replayed again;
  * - a refusal (409, 412, 422 and other 4xx) → kept as a **conflict** with the API's problem, shown to the
  *   staff member, never retried blindly;
  * - 401 → replay stops until the staff member signs in again (nothing is dropped);
@@ -18,10 +20,25 @@ import type { Schemas } from "@/lib/api/types";
  * once; the resulting `fileId` is stored on the entry so a retry does not upload twice.
  */
 
-export type QueueState = "pending" | "conflict";
+export type QueueState = "pending" | "conflict" | "sent";
+
+/** What a queued submission is about, so screens can find their own entries (round items, …). */
+export type QueueMeta = {
+  kind: "meter-reading";
+  assetItemId: string;
+  buildingId: string;
+  /** Billing period of the round (`RoundBuildingDto.periodKey`). */
+  periodKey: string;
+  unitNo: string | null;
+  code: string;
+  utility: Schemas["Utility"];
+  /** The value typed on the keypad, or null when OCR reads the photo. */
+  typedValue: string | null;
+};
 
 export interface QueuedPhoto {
-  blob: Blob;
+  /** The compressed photo; dropped once uploaded and sent. */
+  blob?: Blob;
   fileName: string;
   kind: Schemas["UploadKind"];
   scopeType: Schemas["DocumentScope"];
@@ -43,11 +60,15 @@ export interface QueueEntry {
   photo?: QueuedPhoto;
   /** What the staff member sees in the sync sheet (unit code, meter). */
   label: string;
+  meta?: QueueMeta;
   createdAt: number;
   attempts: number;
   nextAttemptAt: number;
   state: QueueState;
   problem?: { status: number; code: string; detail: string; requestId?: string };
+  /** The API's answer (JSON) once sent. */
+  result?: unknown;
+  sentAt?: number;
 }
 
 interface QueueDb extends DBSchema {
@@ -56,6 +77,8 @@ interface QueueDb extends DBSchema {
 
 const DB_NAME = "gp-staff-queue";
 const BACKOFF_MS = [5_000, 15_000, 60_000, 5 * 60_000, 15 * 60_000];
+/** How long a sent entry (and its answer) stays visible. */
+export const SENT_TTL_MS = 24 * 3600_000;
 export const QUEUE_EVENT = "gp:offline-queue";
 
 let dbPromise: Promise<IDBPDatabase<QueueDb>> | undefined;
@@ -80,7 +103,7 @@ function notify(): void {
 }
 
 export async function enqueue(
-  entry: Pick<QueueEntry, "method" | "path" | "body" | "label" | "photo"> & { idempotencyKey?: string },
+  entry: Pick<QueueEntry, "method" | "path" | "body" | "label" | "photo" | "meta"> & { idempotencyKey?: string },
 ): Promise<QueueEntry> {
   const now = Date.now();
   const stored: QueueEntry = {
@@ -91,6 +114,7 @@ export async function enqueue(
     body: entry.body,
     photo: entry.photo,
     label: entry.label,
+    meta: entry.meta,
     createdAt: now,
     attempts: 0,
     nextAttemptAt: now,
@@ -101,8 +125,17 @@ export async function enqueue(
   return stored;
 }
 
-export async function listQueue(): Promise<QueueEntry[]> {
-  return (await db()).getAllFromIndex("entries", "byCreated");
+/** Every entry, oldest first; sent entries older than `SENT_TTL_MS` are pruned on the way. */
+export async function listQueue(now = Date.now()): Promise<QueueEntry[]> {
+  const database = await db();
+  const all = await database.getAllFromIndex("entries", "byCreated");
+  const expired = all.filter((entry) => entry.state === "sent" && (entry.sentAt ?? 0) < now - SENT_TTL_MS);
+  for (const entry of expired) await database.delete("entries", entry.id);
+  return all.filter((entry) => !expired.includes(entry));
+}
+
+export async function getEntry(id: string): Promise<QueueEntry | undefined> {
+  return (await db()).get("entries", id);
 }
 
 export async function discard(id: string): Promise<void> {
@@ -148,6 +181,8 @@ async function classify(response: Response): Promise<never> {
 }
 
 async function upload(photo: QueuedPhoto, fetchImpl: typeof fetch): Promise<string> {
+  if (!photo.blob) throw new Refused({ status: 422, code: "document.not_uploaded", detail: "" });
+  const blob = photo.blob;
   const presign = await fetchImpl("/bff/v1/staff/files/presign", {
     method: "POST",
     headers: jsonHeaders,
@@ -156,15 +191,15 @@ async function upload(photo: QueuedPhoto, fetchImpl: typeof fetch): Promise<stri
       scopeType: photo.scopeType,
       scopeId: photo.scopeId,
       fileName: photo.fileName,
-      mimeType: photo.blob.type || "image/jpeg",
-      sizeBytes: photo.blob.size,
-      sha256: await sha256Hex(photo.blob),
+      mimeType: blob.type || "image/jpeg",
+      sizeBytes: blob.size,
+      sha256: await sha256Hex(blob),
     }),
   });
   if (!presign.ok) await classify(presign);
   const signed = (await presign.json()) as Schemas["FilePresignedDto"];
   if (!signed.uploadUrl) throw new Refused({ status: 422, code: "document.multipart_unsupported", detail: "" });
-  const put = await fetchImpl(signed.uploadUrl, { method: "PUT", headers: signed.headers, body: photo.blob });
+  const put = await fetchImpl(signed.uploadUrl, { method: "PUT", headers: signed.headers, body: blob });
   if (!put.ok) throw new Transient(`upload ${put.status}`);
   const complete = await fetchImpl(`/bff/v1/staff/files/${encodeURIComponent(signed.file.id)}/actions/complete`, {
     method: "POST",
@@ -184,7 +219,7 @@ export interface ReplayResult {
 
 let replaying: Promise<ReplayResult> | undefined;
 
-/** Sends what is due, oldest first; one replay at a time per tab. */
+/** Sends what is due, oldest first (sent entries are skipped); one replay at a time per tab. */
 export function replayQueue(fetchImpl: typeof fetch = fetch, now = Date.now): Promise<ReplayResult> {
   replaying ??= run(fetchImpl, now).finally(() => {
     replaying = undefined;
@@ -215,7 +250,15 @@ async function run(fetchImpl: typeof fetch, now: () => number): Promise<ReplayRe
         body: JSON.stringify(body),
       });
       if (!response.ok) await classify(response);
-      await database.delete("entries", entry.id);
+      const answer: unknown = await response.json().catch(() => null);
+      await database.put("entries", {
+        ...entry,
+        state: "sent",
+        result: answer,
+        sentAt: now(),
+        problem: undefined,
+        photo: entry.photo ? { ...entry.photo, blob: undefined } : undefined,
+      });
       result.sent += 1;
     } catch (error) {
       if (error instanceof ReplayStop) {

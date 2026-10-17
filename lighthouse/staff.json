@@ -3,7 +3,7 @@
   "$comment": "Staff PWA on a 6\" mid-range Android over 4G: LCP ≤ 2.5 s, CLS ≤ 0.1, initial JS ≤ 200 KB gz (D-179, docs/performance-budgets.md) — a hard limit. Measured as a phone with the Lighthouse mobile preset, signed in as the staff persona (scripts/lhci.ts); the staff host is reached through its Host header (`STAFF_HOST`). F4 adds readings and the capture flow.",
   "ci": {
     "collect": {
-      "url": ["http://staff.localhost:3200/"],
+      "url": ["http://staff.localhost:3200/", "http://staff.localhost:3200/readings"],
       "numberOfRuns": 3,
       "settings": {
         "formFactor": "mobile",

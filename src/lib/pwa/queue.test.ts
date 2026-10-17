@@ -4,7 +4,7 @@ import "fake-indexeddb/auto";
 import { IDBFactory } from "fake-indexeddb";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { discard, enqueue, listQueue, replayQueue, resetQueueDb, retry } from "./queue";
+import { discard, enqueue, getEntry, listQueue, replayQueue, resetQueueDb, retry, SENT_TTL_MS } from "./queue";
 
 type Call = { url: string; method: string; headers: Headers; body: unknown };
 
@@ -25,8 +25,8 @@ function api(answer: (call: Call) => Response | Promise<Response>) {
 
 const reading = {
   method: "POST" as const,
-  path: "/v1/staff/readings",
-  body: { meterId: "m1", register: "123.4" },
+  path: "/v1/staff/meter-readings",
+  body: { assetItemId: "m1", typedValue: "123.4" },
   label: "A-201 ไฟ",
 };
 
@@ -36,15 +36,35 @@ beforeEach(() => {
 });
 
 describe("offline queue (ADR-0007)", () => {
-  it("replays through the BFF with the Idempotency-Key fixed at enqueue time, then forgets the entry", async () => {
+  it("replays through the BFF with the Idempotency-Key fixed at enqueue time, then keeps the answer", async () => {
     const entry = await enqueue(reading);
-    const { calls, fetchImpl } = api(() => Response.json({ id: "r1" }, { status: 201 }));
+    const { calls, fetchImpl } = api(() => Response.json({ id: "r1", reviewState: "accepted" }, { status: 201 }));
     const result = await replayQueue(fetchImpl);
     expect(result).toMatchObject({ sent: 1, conflicts: 0, remaining: 0 });
-    expect(calls[0]!.url).toBe("/bff/v1/staff/readings");
+    expect(calls[0]!.url).toBe("/bff/v1/staff/meter-readings");
     expect(calls[0]!.headers.get("idempotency-key")).toBe(entry.idempotencyKey);
     expect(calls[0]!.headers.get("x-getproperty-csrf")).toBe("1");
-    expect(await listQueue()).toEqual([]);
+    expect(await getEntry(entry.id)).toMatchObject({ state: "sent", result: { id: "r1", reviewState: "accepted" } });
+
+    // Sent is final: never replayed again, and pruned after a day.
+    await replayQueue(fetchImpl);
+    expect(calls).toHaveLength(1);
+    expect(await listQueue(Date.now() + SENT_TTL_MS + 1)).toEqual([]);
+  });
+
+  it("keeps what an entry is about (meta) for the screen that queued it", async () => {
+    const meta = {
+      kind: "meter-reading" as const,
+      assetItemId: "m1",
+      buildingId: "b1",
+      periodKey: "2026-10",
+      unitNo: "A-201",
+      code: "E-A-201",
+      utility: "electric" as const,
+      typedValue: "123.4",
+    };
+    const entry = await enqueue({ ...reading, meta });
+    expect((await getEntry(entry.id))?.meta).toEqual(meta);
   });
 
   it("keeps the same key across retries after a network failure or a 5xx", async () => {
@@ -117,7 +137,7 @@ describe("offline queue (ADR-0007)", () => {
         kind: "meter_photo",
         scopeType: "unit",
         scopeId: null,
-        bodyField: "photoFileId",
+        bodyField: "photoDocumentId",
       },
     });
     let readingAttempts = 0;
@@ -142,9 +162,13 @@ describe("offline queue (ADR-0007)", () => {
     const presign = calls.find((call) => call.url.endsWith("/presign"))!.body as Record<string, unknown>;
     expect(presign).toMatchObject({ kind: "meter_photo", sizeBytes: 3, mimeType: "image/jpeg" });
     expect(presign.sha256).toMatch(/^[0-9a-f]{64}$/);
-    const sent = calls.filter((call) => call.url === "/bff/v1/staff/readings");
+    const sent = calls.filter((call) => call.url === "/bff/v1/staff/meter-readings");
     expect(sent).toHaveLength(2);
-    expect((sent[1]!.body as Record<string, unknown>).photoFileId).toBe("f1");
+    expect((sent[1]!.body as Record<string, unknown>).photoDocumentId).toBe("f1");
+    // The photo bytes are dropped once sent; the file id stays.
+    const [stored] = await listQueue();
+    expect(stored!.photo).toMatchObject({ fileId: "f1" });
+    expect(stored!.photo!.blob).toBeUndefined();
   });
 
   it("discards on request", async () => {

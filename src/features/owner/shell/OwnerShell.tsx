@@ -13,7 +13,7 @@ import { clientEnv } from "@/lib/env/client";
 import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 
-import { BUILDING_COOKIE } from "./building";
+import { BUILDING_COOKIE } from "@/features/shared/shell/building";
 import { OWNER_BOTTOM_NAV, OWNER_MENU, OWNER_MENU_GROUPS } from "./menu";
 import { OwnerShellFrame } from "./OwnerShellFrame";
 

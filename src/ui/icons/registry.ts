@@ -36,6 +36,15 @@ import { IconRefresh } from "./glyphs/refresh";
 import { IconCamera } from "./glyphs/camera";
 import { IconScan } from "./glyphs/scan";
 import { IconQr } from "./glyphs/qr";
+import { IconTorch } from "./glyphs/torch";
+import { IconTorchOff } from "./glyphs/torch-off";
+import { IconBackspace } from "./glyphs/backspace";
+import { IconUndo } from "./glyphs/undo";
+import { IconSign } from "./glyphs/sign";
+import { IconImage } from "./glyphs/image";
+import { IconSwap } from "./glyphs/swap";
+import { IconIdentify } from "./glyphs/identify";
+import { IconPlay } from "./glyphs/play";
 import { IconShow } from "./glyphs/show";
 import { IconHide } from "./glyphs/hide";
 import { IconCheck } from "./glyphs/check";
@@ -49,12 +58,15 @@ import { IconClock } from "./glyphs/clock";
 import { IconSpinner } from "./glyphs/spinner";
 import { IconDot } from "./glyphs/dot";
 import { IconOffline } from "./glyphs/offline";
+import { IconOnline } from "./glyphs/online";
 import { IconSyncPending } from "./glyphs/sync-pending";
 import { IconSyncFailed } from "./glyphs/sync-failed";
 import { IconLock } from "./glyphs/lock";
 import { IconBell } from "./glyphs/bell";
 import { IconBuilding } from "./glyphs/building";
 import { IconRoom } from "./glyphs/room";
+import { IconFloor } from "./glyphs/floor";
+import { IconChecklist } from "./glyphs/checklist";
 import { IconResident } from "./glyphs/resident";
 import { IconResidents } from "./glyphs/residents";
 import { IconStaff } from "./glyphs/staff";
@@ -126,6 +138,15 @@ export const ICONS: { readonly [N in IconName]: IconGlyph<N> } = {
   camera: IconCamera,
   scan: IconScan,
   qr: IconQr,
+  torch: IconTorch,
+  "torch-off": IconTorchOff,
+  backspace: IconBackspace,
+  undo: IconUndo,
+  sign: IconSign,
+  image: IconImage,
+  swap: IconSwap,
+  identify: IconIdentify,
+  play: IconPlay,
   show: IconShow,
   hide: IconHide,
   check: IconCheck,
@@ -139,12 +160,15 @@ export const ICONS: { readonly [N in IconName]: IconGlyph<N> } = {
   spinner: IconSpinner,
   dot: IconDot,
   offline: IconOffline,
+  online: IconOnline,
   "sync-pending": IconSyncPending,
   "sync-failed": IconSyncFailed,
   lock: IconLock,
   bell: IconBell,
   building: IconBuilding,
   room: IconRoom,
+  floor: IconFloor,
+  checklist: IconChecklist,
   resident: IconResident,
   residents: IconResidents,
   staff: IconStaff,

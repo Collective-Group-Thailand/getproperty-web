@@ -40,6 +40,15 @@ export const CURATED_ICONS = {
   camera: "camera",
   scan: "scan-line",
   qr: "qr-code",
+  torch: "flashlight",
+  "torch-off": "flashlight-off",
+  backspace: "delete",
+  undo: "undo-2",
+  sign: "signature",
+  image: "image",
+  swap: "arrow-left-right",
+  identify: "lightbulb",
+  play: "play",
   show: "eye",
   hide: "eye-off",
   // status
@@ -54,6 +63,7 @@ export const CURATED_ICONS = {
   spinner: "loader-circle",
   dot: "circle",
   offline: "wifi-off",
+  online: "wifi",
   "sync-pending": "cloud-upload",
   "sync-failed": "cloud-off",
   lock: "lock",
@@ -61,6 +71,8 @@ export const CURATED_ICONS = {
   // domain
   building: "building-2",
   room: "door-open",
+  floor: "layers",
+  checklist: "list-checks",
   // People who live in units are residents (D-151); "tenant" names the SaaS customer organisation.
   resident: "user",
   residents: "users",

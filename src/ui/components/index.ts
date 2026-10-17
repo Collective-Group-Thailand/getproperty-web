@@ -4,7 +4,8 @@ export { Badge, badgeVariants, StatusBadge, type BadgeProps, type StatusBadgePro
 export { Breadcrumbs, type Crumb } from "./Breadcrumbs";
 export { Button, buttonVariants, type ButtonProps } from "./Button";
 export { Callout, type CalloutProps } from "./Callout";
-export { CameraCapture, ScanButton, type CameraCaptureProps, type ScanButtonProps } from "./CameraCapture";
+export { BigActionButton, type BigActionButtonProps } from "./BigActionButton";
+export { CameraCapture, type CameraCaptureLabels, type CameraCaptureProps } from "./CameraCapture";
 export { Card, CardHeader, type CardProps } from "./Card";
 export { Checkbox, type CheckboxProps } from "./Checkbox";
 export { Combobox, type ComboboxOption, type ComboboxProps } from "./Combobox";
@@ -28,17 +29,22 @@ export {
   type TextareaProps,
 } from "./Input";
 export { MoneyDisplay, type MoneyDisplayProps } from "./MoneyDisplay";
+export { applyKey, isCompleteDecimal, NumericKeypad, sanitizeDecimal, type NumericKeypadProps } from "./NumericKeypad";
 export { OTPInput, type OTPInputProps } from "./OTPInput";
 export { PhoneInput, toE164, type PhoneInputProps } from "./PhoneInput";
 export { LazyAlertDialog, LazyDialog, LazyDropdownMenu, LazyPopover, LazySheet } from "./overlays";
 export { Popover, type PopoverProps } from "./Popover";
+export { Progress, type ProgressProps } from "./Progress";
 export { RadioCards, type RadioCardOption, type RadioCardsProps } from "./RadioCards";
+export { ScanButton, type ScanButtonProps, type ScanPanelLabels } from "./ScanButton";
 export { SegmentedControl, type SegmentedControlProps, type SegmentOption } from "./SegmentedControl";
 export { Select, type SelectOption, type SelectProps } from "./Select";
 export { Sheet, type SheetProps } from "./Sheet";
 export { Skeleton, SkeletonText } from "./Skeleton";
 export { Spinner, type SpinnerProps } from "./Spinner";
+export { SignaturePad, blobToBase64, type SignaturePadProps } from "./SignaturePad";
 export { Stat, type StatProps } from "./Stat";
+export { Stepper, type StepperProps, type StepperStep } from "./Stepper";
 export { Switch, type SwitchProps } from "./Switch";
 export { TabPanel, Tabs, type TabItem, type TabsProps } from "./Tabs";
 export { Timeline, type TimelineEvent } from "./Timeline";

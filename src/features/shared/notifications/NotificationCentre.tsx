@@ -28,7 +28,7 @@ const NotificationPanel = lazyWarm<NotificationPanelProps>(() =>
  * page, fetched directly and refreshed on realtime events (any event may have produced a notification,
  * as `invalidationKeys` assumes); the panel — and TanStack Query — loads when the centre first opens.
  */
-export function NotificationCentre({ zone }: { zone: Zone }) {
+export function NotificationCentre({ zone, size = "md" }: { zone: Zone; size?: "md" | "lg" }) {
   const t = useTranslations("notifications");
   const common = useTranslations("common");
   const [open, setOpen] = useState(false);
@@ -61,6 +61,7 @@ export function NotificationCentre({ zone }: { zone: Zone }) {
       trigger={
         <IconButton
           icon={IconBell}
+          size={size}
           label={t("open", { count: unread })}
           data-testid="notification-centre"
           badge={<CountBadge count={unread} />}

@@ -96,11 +96,12 @@ const OWNER_MENU_BY_ROLE: Record<Schemas["TenantRole"], string[]> = {
   accountant: ["dashboard", "invoices", "payments", "deposits", "reports"],
   staff: ["readings"],
 };
-const STAFF_MENU_BY_ROLE: Record<Schemas["TenantRole"], string[]> = {
-  owner: ["readings", "inspections", "installs"],
-  manager: ["readings", "inspections", "installs"],
+/** Staff PWA menu keys per role (`STAFF_MENU` of the API's `src/core/rbac/menu.ts`, D-180). */
+const STAFF_MENU_BY_ROLE: Record<Schemas["TenantRole"], Schemas["StaffMenuKey"][]> = {
+  owner: ["readings", "reading_rounds", "inspections", "installs"],
+  manager: ["readings", "reading_rounds", "inspections", "installs"],
   accountant: [],
-  staff: ["readings", "inspections", "installs"],
+  staff: ["readings", "reading_rounds", "inspections", "installs"],
 };
 
 export function menuFor(surface: "owner" | "staff", role: Schemas["TenantRole"]): string[] {

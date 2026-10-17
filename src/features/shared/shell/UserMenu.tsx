@@ -31,11 +31,14 @@ export function UserMenu({
   roleLabel,
   loginHref,
   extraItems = [],
+  size = "md",
 }: {
   displayName: string;
   roleLabel?: string;
   loginHref: string;
   extraItems?: MenuItem[];
+  /** `lg` (48 px) in the staff PWA (design-system.md §5). */
+  size?: "md" | "lg";
 }) {
   const t = useTranslations();
   const { choice, choices, setChoice } = useTheme();
@@ -80,6 +83,7 @@ export function UserMenu({
       trigger={
         <IconButton
           icon={IconResident}
+          size={size}
           label={t("shell.user.signedInAs", { name: displayName })}
           data-testid="user-menu"
         />

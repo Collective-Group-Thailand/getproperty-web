@@ -11,6 +11,8 @@ getproperty-api `docs/contract-requests-triage.md` (D-180).
 |---|---|---|---|---|---|
 | 2026-10-17 | — | `InvoiceStatus`, `PaymentStatus`, `ServiceRequestStatus`, `WorkOrderStatus` | The remaining status enums as named components; `src/domain/status` keeps the planned values through `ContractEnum` until then. | named enum components | open — B4 (invoice, payment), B5 (service request, work order) per the triage |
 | 2026-10-17 | — | `PublicPlanDto.features` | The features are module keys (`A1`, `A2`, `C2`, `resident_liff`, …); the pricing page shows only the keys it has a label for. Publish `features` as a named enum (`PlanModuleKey`) or with display labels so a new module is never silently hidden. | `PlanModuleKey` enum, or `features: [{ key, labelTh, labelEn }]` | open |
+| 2026-10-17 | GET | `/v1/staff/buildings` | The staff PWA's building switcher (F4 4.1): the buildings of my scope (Staff: `currentTenant.buildingIds`, D-090) with names — `me` has ids only. Until then the list comes from `GET /v1/staff/reading-rounds/current` (one entry per building of the scope). Mocked in `mocks/handlers/contract-requests.ts`; shape in `src/lib/api/pending.ts`. | `{ data: [{ id, code, name, floorsCount\|null, unitCount }] }` | open |
+| 2026-10-17 | — | `RoundBuildingDto.total`, `RoundBuildingDto.read` | Round progress for the whole round (F4 4.1 progress bar): the API lists only meters still to read (`remaining`), so the PWA counts what *this device* read; another staff member's readings are invisible to the bar. | `total: integer` (meters in the round), `read: integer` (accepted or pending review in the window) | open |
 
 ## Closed
 

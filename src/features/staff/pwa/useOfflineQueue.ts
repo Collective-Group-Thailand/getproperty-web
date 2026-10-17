@@ -33,6 +33,30 @@ export function useOnlineStatus(): boolean {
   );
 }
 
+/**
+ * The queue's entries as React state, kept fresh on every queue change (`QUEUE_EVENT`) — without
+ * replaying anything (the shell's `SyncCenter` owns the replay timer).
+ */
+export function useQueueEntries(): QueueEntry[] {
+  const [entries, setEntries] = useState<QueueEntry[]>([]);
+  useEffect(() => {
+    let alive = true;
+    const refresh = () => {
+      listQueue().then(
+        (list) => alive && setEntries(list),
+        () => alive && setEntries([]),
+      );
+    };
+    refresh();
+    window.addEventListener(QUEUE_EVENT, refresh);
+    return () => {
+      alive = false;
+      window.removeEventListener(QUEUE_EVENT, refresh);
+    };
+  }, []);
+  return entries;
+}
+
 const REPLAY_EVERY_MS = 30_000;
 
 /**

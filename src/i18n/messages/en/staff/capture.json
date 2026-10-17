@@ -1,0 +1,32 @@
+{
+  "camera": {
+    "viewfinder": "Camera",
+    "torchOn": "Turn the torch on",
+    "torchOff": "Turn the torch off",
+    "done": "Use {count, plural, one {this photo} other {these # photos}}",
+    "remove": "Remove photo {index}",
+    "taken": "{count, plural, one {# photo} other {# photos}} taken",
+    "chooseFile": "Choose a photo",
+    "starting": "Starting the camera…",
+    "unavailable": "The camera cannot start. Allow the camera in the browser, or choose a photo instead."
+  },
+  "scan": {
+    "viewfinder": "Scanner",
+    "aim": "Point at the QR code or barcode on the label",
+    "manualLabel": "Serial number",
+    "manualSubmit": "Use this serial",
+    "cancel": "Cancel",
+    "starting": "Starting the camera…",
+    "unsupported": "This device cannot scan codes. Type the serial number from the label instead."
+  },
+  "signature": {
+    "placeholder": "Sign inside the box",
+    "clear": "Clear",
+    "undo": "Undo",
+    "upload": "Use a signature photo"
+  },
+  "keypad": {
+    "backspace": "Delete digit",
+    "decimal": "Decimal point"
+  }
+}

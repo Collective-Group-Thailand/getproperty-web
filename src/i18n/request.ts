@@ -10,11 +10,13 @@ import { LOCALE_COOKIE, routing } from "./routing";
 export default getRequestConfig(async ({ requestLocale }) => {
   const requested = await requestLocale;
 
-  // A `[locale]` segment only exists in the owner zone, so a resolved `requestLocale` already answers
-  // both questions.
+  // The zone always comes from the proxy's header: a locale can also be requested explicitly outside
+  // the owner zone (`getTranslations({ locale })` in the staff manifest route), and must not switch the
+  // catalog to the owner's. The owner's locale comes from its `[locale]` segment.
+  const fromRequest = await resolveFromRequest();
   const { locale, zone } = hasLocale(routing.locales, requested)
-    ? { locale: requested, zone: "owner" as const }
-    : await resolveFromRequest();
+    ? { locale: requested, zone: fromRequest.zone }
+    : fromRequest;
 
   return {
     locale,

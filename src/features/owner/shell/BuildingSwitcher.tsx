@@ -9,7 +9,7 @@ import { LazyDropdownMenu } from "@/ui/components/overlays";
 import { IconBuilding } from "@/ui/icons/glyphs/building";
 import { IconChevronDown } from "@/ui/icons/glyphs/chevron-down";
 
-import { writeBuildingCookie } from "./building";
+import { writeBuildingCookie } from "@/features/shared/shell/building";
 
 /**
  * Top-bar building switcher (design-system.md §5: always visible). The list is `GET /v1/owner/buildings`

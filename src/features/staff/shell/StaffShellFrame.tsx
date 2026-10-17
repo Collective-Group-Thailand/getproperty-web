@@ -82,14 +82,15 @@ export function StaffShellFrame(props: StaffShellFrameProps) {
               {props.roleLabel}
             </span>
           </div>
-          <span className="flex shrink-0 items-center gap-1">
+          <span className="flex shrink-0 items-center gap-0.5">
             <EnvBadge label={props.envBadge} className="hidden min-[400px]:inline" />
             <SyncCenter />
-            <NotificationCentre zone="staff" />
+            <NotificationCentre zone="staff" size="lg" />
             <UserMenu
               displayName={props.userName}
               roleLabel={props.roleLabel}
               loginHref="/login"
+              size="lg"
               extraItems={[
                 {
                   id: "pin",

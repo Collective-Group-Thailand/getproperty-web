@@ -1,4 +1,15 @@
+import type { components } from "../src/lib/api/schema";
 import { PLATFORM_USERS } from "./fixtures";
+import {
+  initialChannels,
+  initialDevices,
+  initialInspections,
+  initialMeters,
+  type MockChannel,
+  type MockMeter,
+} from "./staff-world";
+
+type Schemas = components["schemas"];
 
 /**
  * The mock API's memory: sessions, OTP challenges, TOTP enrolments, a request log the e2e suite reads
@@ -55,6 +66,47 @@ export interface QueuedReading {
   at: string;
 }
 
+export interface MockFile {
+  file: Schemas["FileDto"];
+  bytes: Uint8Array | null;
+}
+
+/** The staff PWA's world (F4): readings, files, inspections, devices — see staff-world.ts. */
+export interface StaffWorld {
+  meters: MockMeter[];
+  readings: (Schemas["MeterReadingDto"] & { idempotencyKey: string })[];
+  /** Idempotency-Key → the first answer (replayed verbatim, contract §3). */
+  replies: Map<string, { status: number; body: unknown; fingerprint: string }>;
+  files: Map<string, MockFile>;
+  inspections: Schemas["InspectionDto"][];
+  devices: Schemas["FleetDeviceDto"][];
+  channels: MockChannel[];
+  commands: Schemas["DeviceCommandDto"][];
+  provisioning: Map<string, { code: string; expiresAt: string }>;
+  swaps: unknown[];
+  /** The fake OCR: reads the typed value (or previous + 42.125), or nothing at all. */
+  ocr: "ok" | "unreadable";
+  /** `readings.require_photo` (D-035, default on). */
+  requirePhoto: boolean;
+}
+
+export function initialStaffWorld(): StaffWorld {
+  return {
+    meters: initialMeters(),
+    readings: [],
+    replies: new Map(),
+    files: new Map(),
+    inspections: initialInspections(),
+    devices: initialDevices(),
+    channels: initialChannels(),
+    commands: [],
+    provisioning: new Map(),
+    swaps: [],
+    ocr: "ok",
+    requirePhoto: true,
+  };
+}
+
 export interface MockState {
   access: Map<string, AccessGrant>;
   refresh: Map<string, RefreshGrant>;
@@ -66,6 +118,7 @@ export interface MockState {
   readNotifications: Set<string>;
   inbox: InboxItem[];
   readings: Map<string, QueuedReading>;
+  staff: StaffWorld;
   webVitals: unknown[];
   log: LoggedRequest[];
   /** Access token lifetime; the suite shortens it to exercise refresh. */
@@ -84,6 +137,7 @@ function initial(): MockState {
     readNotifications: new Set(),
     inbox: [],
     readings: new Map(),
+    staff: initialStaffWorld(),
     webVitals: [],
     log: [],
     accessTtlMs: 15 * 60_000,
