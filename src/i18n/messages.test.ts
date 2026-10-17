@@ -1,24 +1,60 @@
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { IntlMessageFormat } from "intl-messageformat";
 import { describe, expect, it } from "vitest";
 
-const dir = join(__dirname, "messages");
+import { MESSAGE_FILES } from "./messages";
 
-function keys(value: unknown, prefix = ""): string[] {
-  if (typeof value !== "object" || value === null) return [prefix];
-  return Object.entries(value).flatMap(([k, v]) => keys(v, prefix ? `${prefix}.${k}` : k));
+const dir = join(__dirname, "messages");
+const LOCALES = ["th", "en"] as const;
+
+function entries(value: unknown, prefix = ""): [string, string][] {
+  if (typeof value === "string") return [[prefix, value]];
+  if (typeof value !== "object" || value === null) return [[prefix, String(value)]];
+  return Object.entries(value).flatMap(([k, v]) => entries(v, prefix ? `${prefix}.${k}` : k));
 }
+
+const read = (locale: string, area: string, file: string) =>
+  JSON.parse(readFileSync(join(dir, locale, area, `${file}.json`), "utf8")) as unknown;
+
+const pairs = Object.entries(MESSAGE_FILES).flatMap(([area, files]) => files.map((file) => [area, file] as const));
 
 /** Every key in Thai exists in English and vice versa, so no screen is half-translated. */
 describe("messages", () => {
-  const files = readdirSync(join(dir, "th"));
-  it.each(files)("%s has the same keys in th and en", (file) => {
-    const th = JSON.parse(readFileSync(join(dir, "th", file), "utf8"));
-    const en = JSON.parse(readFileSync(join(dir, "en", file), "utf8"));
-    expect(keys(en).sort()).toEqual(keys(th).sort());
+  it.each(pairs)("%s/%s has the same keys in th and en", (area, file) => {
+    const th = entries(read("th", area, file)).map(([k]) => k);
+    const en = entries(read("en", area, file)).map(([k]) => k);
+    expect(en.sort()).toEqual(th.sort());
   });
-  it("has one file per zone plus shared", () => {
-    expect(files.sort()).toEqual(["admin.json", "owner.json", "shared.json", "staff.json"]);
+
+  it("the file list in messages.ts matches the files on disk", () => {
+    for (const locale of LOCALES) {
+      const areas = readdirSync(join(dir, locale)).sort();
+      expect(areas).toEqual(Object.keys(MESSAGE_FILES).sort());
+      for (const area of areas) {
+        const files = readdirSync(join(dir, locale, area))
+          .map((name) => name.replace(/\.json$/, ""))
+          .sort();
+        expect(files, `${locale}/${area}`).toEqual([...MESSAGE_FILES[area as keyof typeof MESSAGE_FILES]].sort());
+      }
+    }
   });
+
+  it("has no resident-app languages or zones here (D-154)", () => {
+    expect(readdirSync(dir).sort()).toEqual(["en", "th"]);
+    for (const locale of LOCALES) {
+      expect(existsSync(join(dir, locale, "tenant"))).toBe(false);
+      expect(existsSync(join(dir, locale, "resident"))).toBe(false);
+    }
+  });
+
+  it.each(LOCALES.flatMap((locale) => pairs.map(([area, file]) => [locale, area, file] as const)))(
+    "%s/%s/%s parses as ICU MessageFormat",
+    (locale, area, file) => {
+      for (const [key, message] of entries(read(locale, area, file))) {
+        expect(() => new IntlMessageFormat(message, locale), key).not.toThrow();
+      }
+    },
+  );
 });

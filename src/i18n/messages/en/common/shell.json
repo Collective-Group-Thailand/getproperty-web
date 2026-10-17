@@ -1,0 +1,24 @@
+{
+  "skipToContent": "Skip to content",
+  "mainNav": "Main navigation",
+  "bottomNav": "Quick navigation",
+  "openMenu": "Open menu",
+  "closeMenu": "Close menu",
+  "theme": "Theme",
+  "themeChoice": {
+    "system": "Follow device",
+    "light": "Light",
+    "dark": "Dark",
+    "hc": "High contrast"
+  },
+  "language": "Language",
+  "placeholder": {
+    "title": "{zone} zone",
+    "body": "This is the F0 placeholder shell — the real screens arrive in F1–F5",
+    "zone": {
+      "owner": "Owner",
+      "staff": "Staff",
+      "admin": "Admin"
+    }
+  }
+}

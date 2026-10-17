@@ -9,13 +9,16 @@ import { ThemeProvider } from "@/ui/theme/ThemeProvider";
 import { readThemeChoice } from "@/ui/theme/server";
 import { dataThemeAttribute } from "@/ui/theme/themes";
 
+import { QueryProvider } from "../providers/QueryProvider";
+
 import "@/app/globals.css";
 
 /**
  * The `<html>` every zone's root layout renders (00-master-plan.md §2: separate root layouts, no
  * `src/app/layout.tsx`). It stamps what must be there before the first paint — `lang`, `data-theme`
  * from the `gp_theme` cookie (ADR-0003), `data-zone` for the density rules, the font variables — and
- * mounts the providers. Zone-specific chrome (nav, auth, PWA manifest) is the page tree's job.
+ * mounts the providers (next-intl, theme, TanStack Query, tooltips, toasts). Zone-specific chrome (nav,
+ * auth, PWA manifest) is the page tree's job.
  */
 export async function ZoneDocument({ zone, children }: { zone: Zone; children: React.ReactNode }) {
   const [locale, choice] = await Promise.all([getLocale(), readThemeChoice(zone)]);
@@ -26,10 +29,12 @@ export async function ZoneDocument({ zone, children }: { zone: Zone; children: R
       <body>
         <NextIntlClientProvider>
           <ThemeProvider initialChoice={choice} zone={zone}>
-            <TooltipProvider>
-              {children}
-              <Toaster />
-            </TooltipProvider>
+            <QueryProvider>
+              <TooltipProvider>
+                {children}
+                <Toaster />
+              </TooltipProvider>
+            </QueryProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

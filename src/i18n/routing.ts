@@ -12,6 +12,8 @@ export const routing = defineRouting({
   localePrefix: "as-needed",
   // `/` is always Thai; a language switcher navigates to /en explicitly.
   localeDetection: false,
+  // The URL is the owner zone's only locale signal; staff and admin use `gp_locale` (below).
+  localeCookie: false,
 });
 
 export type Locale = (typeof routing.locales)[number];

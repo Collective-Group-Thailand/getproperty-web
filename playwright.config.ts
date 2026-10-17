@@ -24,6 +24,9 @@ const zoneEnv = {
   OWNER_HOST: `localhost:${PORT}`,
   STAFF_HOST: `staff.localhost:${PORT}`,
   ADMIN_HOST: `admin.localhost:${PORT}`,
+  // Never reached: the suite runs against the in-process mock API (F1 1.2). A production build
+  // requires the variable, and a closed port makes any leak past the mocks fail loudly.
+  API_INTERNAL_URL: process.env.E2E_API_INTERNAL_URL ?? "http://127.0.0.1:4999",
 };
 
 /**

@@ -1,0 +1,15 @@
+{
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "close": "Close",
+  "save": "Save",
+  "back": "Back",
+  "next": "Next",
+  "retry": "Try again",
+  "loading": "Loading…",
+  "required": "required",
+  "optional": "optional",
+  "search": "Search",
+  "noResults": "Nothing found",
+  "requestId": "Request id"
+}

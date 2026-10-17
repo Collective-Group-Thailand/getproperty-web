@@ -1,0 +1,11 @@
+{
+  "unexpected": {
+    "title": "Something went wrong",
+    "body": "Try again. If it keeps happening, contact support with the request id below."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "The link may be wrong, or the page has moved.",
+    "home": "Back to the start"
+  }
+}

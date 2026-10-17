@@ -1,7 +1,8 @@
 /**
- * Host → zone mapping (00-master-plan.md §2). F0 ships only what `src/proxy.ts` needs to render the
- * three placeholder shells on `*.localhost`; F1 1.1 adds the enabled-zones allow-list, the internal
- * path refusal, security headers and the per-zone CSP on top of this module.
+ * Host → zone mapping (00-master-plan.md §2, ADR-0004): which zone a `Host` belongs to, which zones a
+ * deployment answers for (`ZONES`), and which paths are never reachable from outside (another zone's
+ * internal segment, the retired resident segments). `src/proxy.ts` applies it; the security headers
+ * and CSP are `src/lib/security`.
  *
  * Three zones since D-154: the resident LINE Mini App lives in its own repository
  * (`getproperty-liff`), so there is no resident/"tenant" host here. In the platform's naming (D-151)
@@ -56,12 +57,37 @@ export function zoneHosts(env: Record<string, string | undefined> = process.env)
   ) as Record<Zone, string>;
 }
 
-/**
- * Which zone a request's `Host` belongs to. An unknown host is `null`: in F0 the proxy serves it
- * as the owner zone so a preview URL still renders; F1 makes unknown hosts a 404.
- */
+/** Which zone a request's `Host` belongs to; an unknown host is `null` (the proxy answers 404). */
 export function resolveZone(host: string | null | undefined, hosts: Record<Zone, string> = zoneHosts()): Zone | null {
   const name = hostname(host);
   for (const zone of ZONES) if (hosts[zone] === name) return zone;
   return null;
+}
+
+/**
+ * First path segments no external URL may start with, on any host: the internal segments of the
+ * staff and admin zones (the proxy rewrites *onto* them; a direct `/staff/x` on the owner host is
+ * another zone's page) and the retired resident segments (D-154 — the resident app is
+ * `getproperty-liff`).
+ */
+export const RESERVED_SEGMENTS = ["staff", "admin", "tenant", "resident"] as const;
+
+export function isReservedPath(pathname: string): boolean {
+  const first = pathname.split("/")[1]?.toLowerCase() ?? "";
+  // `%2F`-style tricks never reach here decoded, but a trailing dot or encoded segment must not slip by.
+  const decoded = safeDecode(first).replace(/\.+$/, "");
+  return (RESERVED_SEGMENTS as readonly string[]).includes(decoded);
+}
+
+function safeDecode(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+/** The zones this deployment answers for (`ZONES`, already parsed by `src/lib/env`). */
+export function isZoneEnabled(zone: Zone, enabled: readonly Zone[]): boolean {
+  return enabled.includes(zone);
 }

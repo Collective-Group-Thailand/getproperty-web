@@ -31,5 +31,8 @@ export default defineConfig({
     include: ["src/**/*.test.{ts,tsx}", "scripts/**/*.test.ts", "eslint-rules/**/*.test.ts"],
     exclude: ["node_modules", ".next", "e2e", "storybook-static"],
     css: false,
+    // next-intl's ESM middleware imports `next/server` without an extension, which Node's resolver
+    // refuses; inlining lets Vite resolve it the way Next does.
+    server: { deps: { inline: ["next-intl"] } },
   },
 });

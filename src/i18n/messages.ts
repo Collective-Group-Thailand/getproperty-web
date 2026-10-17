@@ -3,13 +3,32 @@ import type { Zone } from "@/lib/zones";
 import type { Locale } from "./routing";
 
 /**
- * Messages are split by zone so the staff bundle never carries the admin's copy. `shared` is loaded
- * for every zone. Files are `messages/<locale>/<namespace>.json`; F0 ships only the shells' strings.
+ * Messages are split by area and feature (F1 1.3 §2): `messages/<locale>/common/<file>.json` is loaded
+ * for every zone at the top level (`shell`, `errors`, `status`…), and
+ * `messages/<locale>/<zone>/<file>.json` only for that zone, under the zone's key (`owner.nav`,
+ * `staff.offline`…). The staff bundle therefore never carries the admin's copy.
+ *
+ * The file list is explicit so the bundler can resolve each import; `messages.test.ts` fails when a
+ * file on disk is missing here (or the other way round) and when th and en differ in keys.
  */
-export async function loadMessages(locale: Locale, zone: Zone) {
-  const [shared, zoneMessages] = await Promise.all([
-    import(`./messages/${locale}/shared.json`),
-    import(`./messages/${locale}/${zone}.json`),
+export const MESSAGE_FILES = {
+  common: ["brand", "common", "errors", "shell"],
+  owner: ["nav"],
+  staff: ["nav"],
+  admin: ["nav"],
+} as const satisfies Record<"common" | Zone, readonly string[]>;
+
+type Messages = Record<string, unknown>;
+
+async function load(locale: Locale, area: "common" | Zone, file: string): Promise<Messages> {
+  const loaded = (await import(`./messages/${locale}/${area}/${file}.json`)) as { default: Messages };
+  return loaded.default;
+}
+
+export async function loadMessages(locale: Locale, zone: Zone): Promise<Messages> {
+  const [common, own] = await Promise.all([
+    Promise.all(MESSAGE_FILES.common.map(async (file) => [file, await load(locale, "common", file)] as const)),
+    Promise.all(MESSAGE_FILES[zone].map(async (file) => [file, await load(locale, zone, file)] as const)),
   ]);
-  return { ...shared.default, ...zoneMessages.default };
+  return { ...Object.fromEntries(common), [zone]: Object.fromEntries(own) };
 }

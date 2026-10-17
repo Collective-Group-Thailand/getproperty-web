@@ -45,3 +45,31 @@ building staff) and the platform (Collective Group staff).
   `collective-shared` exists.
 - Operator invitations and invoice deliveries link residents to the `getproperty-liff` LIFF URL, never to
   a host of this app.
+
+## Implementation notes
+
+### F1 1.1 — zones, proxy, root layouts, security headers
+- **Environment** (`src/lib/env`): one zod schema validated at boot by `src/instrumentation.ts`; the
+  process refuses to start and lists every bad variable. Outside production the hosts and
+  `API_INTERNAL_URL` default to the local-dev values; in production they are required. `ZONES` is a
+  subset of `owner,staff,admin` (anything else, e.g. `tenant`, is refused).
+- **Proxy order** (`src/proxy.ts`): unknown/disabled host → plain 404 · reserved first segment
+  (`staff`, `admin`, `tenant`, `resident`, also percent-encoded or with a trailing dot) → the zone's own
+  not-found page (rewritten onto `/<segment>/_not-found-zone`, caught by the zone's `[...rest]` page,
+  status 404) · per-request nonce · routing (owner through next-intl with `localeCookie: false`; staff
+  and admin rewritten onto their segment) · security headers.
+- **BFF placement**: the owner BFF is `src/app/bff/[...path]`, the others `src/app/<zone>/bff/[...path]`;
+  since every path on the staff/admin hosts is rewritten under the zone's segment, `/bff/*` on a host
+  can only ever reach that host's BFF, and `/staff/bff/*` from outside is a reserved path.
+- **CSP per zone**: `script-src 'self' 'nonce-…' 'strict-dynamic'` (Next stamps the nonce on its scripts
+  from the request's CSP header, so every page is dynamically rendered — they all read cookies anyway);
+  `style-src 'self' 'unsafe-inline'` (Radix inline positioning and sonner's runtime stylesheet; style
+  injection cannot execute script); `img-src`/`connect-src` add only `NEXT_PUBLIC_ASSET_BASE_URL` and the
+  Sentry ingest origin; `worker-src 'self'` and `blob:` media on staff only; admin has no `blob:`;
+  `frame-ancestors 'none'`, `object-src 'none'`, `base-uri 'none'`, `form-action 'self'`; dev adds
+  `'unsafe-eval'` and `ws:` and drops `upgrade-insecure-requests`. No LINE/LIFF origin anywhere.
+- **Other headers**: `Permissions-Policy` (camera `self` on staff, `()` elsewhere, every other sensor
+  off), `Referrer-Policy: strict-origin-when-cross-origin`, `X-Frame-Options: DENY`, COOP/CORP
+  `same-origin`, HSTS (production), and `X-Robots-Tag: noindex, nofollow` on every response except the
+  owner marketing pages (`src/lib/zones/marketing.ts`). Files the proxy never sees (public assets) get
+  the zone-independent baseline from `next.config.ts`. `/robots.txt` on staff/admin disallows all.

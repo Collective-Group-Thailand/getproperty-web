@@ -1,8 +1,5 @@
-import { getTranslations } from "next-intl/server";
+import { ZoneNotFound } from "@/features/shared/errors/ZoneNotFound";
 
-import { ErrorState } from "@/ui/components/ErrorState";
-
-export default async function OwnerNotFound() {
-  const t = await getTranslations("common");
-  return <ErrorState title={t("noResults")} />;
+export default function OwnerNotFound() {
+  return <ZoneNotFound homeHref="/" />;
 }
