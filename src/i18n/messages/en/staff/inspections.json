@@ -1,1 +1,74 @@
-{}
+{
+  "title": "Inspections",
+  "open": "To do",
+  "done": "Done",
+  "noneOpen": "No units to inspect",
+  "noneOpenHint": "Move-outs and new leases waiting for their move-in inspection show up here",
+  "heading": "{unit} · {type, select, move_in {move-in} move_out {move-out} other {inspection}}",
+  "statusWord": {
+    "scheduled": "Scheduled",
+    "in_progress": "In progress",
+    "completed": "Completed",
+    "signed": "Signed"
+  },
+  "report": "Report {number}",
+  "doneTitle": "Inspection completed",
+  "doneBody": "Report closed {date}; it can no longer be changed",
+  "sync": {
+    "saving": "Saving…",
+    "local": "Saved on this phone, sending…",
+    "offline": "No signal. Saved on this phone; it is sent when you are online",
+    "saved": "All changes saved",
+    "error": "Could not save",
+    "idle": "{count, plural, =0 {Every line has a condition} one {# line without a condition} other {# lines without a condition}}",
+    "errorTitle": "The change was refused"
+  },
+  "cameraLoading": "Opening…",
+  "complete": {
+    "title": "Complete the inspection",
+    "missing": "{count, plural, one {Give # more line a condition} other {Give # more lines a condition}} before completing",
+    "start": "Sign and complete",
+    "notes": "Report notes",
+    "staffSignature": "Inspector's signature",
+    "residentSignature": "Resident's signature",
+    "residentHint": "If the resident is here, they sign on this device. If not, leave it empty; the report waits for their signature.",
+    "offline": "You need signal to complete the inspection. The signatures are saved on this phone.",
+    "tooLarge": "The signature is too large; clear it and sign again",
+    "errorTitle": "The inspection could not be completed",
+    "submit": "Complete the inspection",
+    "submitSigned": "Complete (both signed)",
+    "cancel": "Not yet"
+  },
+  "area": {
+    "room": "Room",
+    "bathroom": "Bathroom",
+    "kitchen": "Kitchen",
+    "balcony": "Balcony"
+  },
+  "moveIn": "At move-in:",
+  "noCondition": "not recorded",
+  "moveInPhoto": "{item} at move-in, photo {index}",
+  "conditionLabel": "Condition",
+  "condition": {
+    "good": "Good",
+    "fair": "Fair",
+    "damaged": "Damaged",
+    "missing": "Missing",
+    "not_applicable": "None"
+  },
+  "notes": "Note",
+  "register": "Meter register",
+  "registerSave": "Save the register",
+  "registerValue": "Register {value} (tap to change)",
+  "registerAdd": "Enter the register",
+  "photos": "Photos of this line",
+  "photoAlt": "{item}, photo {index}",
+  "removePhoto": "Remove photo {index}",
+  "photoWaiting": "Waiting",
+  "addPhotos": "Take photos",
+  "shoot": "Photograph {item}",
+  "sameAngle": "Move-in photo: take the same angle to compare",
+  "closeCamera": "Close the camera",
+  "downloadReport": "Open the report (PDF)",
+  "reportUnavailable": "The report is not ready yet; try again"
+}

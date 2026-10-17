@@ -1,10 +1,11 @@
 "use client";
 
+import { READING_STATUS } from "@/domain/status/reading";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useId, useRef, useState } from "react";
 
 import { ReadingSourceBadge } from "@/features/shared/status/ReadingSourceBadge";
-import { DomainStatusBadge } from "@/features/shared/status/DomainStatusBadge";
+import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { formatDate, formatDateTime, formatUnits } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
 import type { Schemas } from "@/lib/api/types";
@@ -18,6 +19,7 @@ import { IconCamera } from "@/ui/icons/glyphs/camera";
 import { IconForward } from "@/ui/icons/glyphs/forward";
 
 import { submitThroughQueue } from "../pwa/submit";
+import { useOnlineStatus } from "../pwa/useOfflineQueue";
 import { useCameraLabels, useKeypadLabels } from "../shared/labels";
 import { PhotoThumb } from "../shared/PhotoThumb";
 import { meterUnit, ratioToPercent, readingUnit } from "../shared/units";
@@ -54,6 +56,7 @@ export function ReadingCapture({ item, round, resume, onClose, onNext }: Reading
   const cameraLabels = useCameraLabels();
   const keypadLabels = useKeypadLabels();
   const headingId = useId();
+  const online = useOnlineStatus();
   const unit = meterUnit(item.utility);
 
   const [step, setStep] = useState<Step>(resume ? "result" : "photo");
@@ -68,12 +71,23 @@ export function ReadingCapture({ item, round, resume, onClose, onNext }: Reading
   }, [step]);
   useEffect(() => () => (photo && "url" in photo ? URL.revokeObjectURL(photo.url) : undefined), [photo]);
 
-  // Keep the result fresh while the entry waits in the queue (the shell replays it when online).
+  // Keep the result fresh while the entry waits in the queue (the shell replays it when online); while
+  // this screen is open and online, try again as soon as the entry's backoff is over (a photo still
+  // being virus-scanned is a matter of seconds).
   useEffect(() => {
     if (!entry || entry.state !== "pending") return;
     const refresh = () => void getEntry(entry.id).then((latest) => latest && setEntry(latest));
     window.addEventListener("gp:offline-queue", refresh);
-    return () => window.removeEventListener("gp:offline-queue", refresh);
+    const retryTimer = window.setTimeout(
+      () => {
+        if (navigator.onLine) void replayQueue().then(refresh, refresh);
+      },
+      Math.max(1000, entry.nextAttemptAt - Date.now() + 100),
+    );
+    return () => {
+      window.removeEventListener("gp:offline-queue", refresh);
+      window.clearTimeout(retryTimer);
+    };
   }, [entry]);
 
   const submit = async (typed: string | null) => {
@@ -267,7 +281,7 @@ export function ReadingCapture({ item, round, resume, onClose, onNext }: Reading
                 </span>
                 <span className="flex flex-wrap gap-2">
                   <ReadingSourceBadge source={reading.source} />
-                  <DomainStatusBadge domain="reading" value={reading.reviewState} size="sm" />
+                  <StatusBadgeOf map={READING_STATUS} value={reading.reviewState} size="sm" />
                 </span>
                 <dl className="text-muted mt-1 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
                   {reading.ocrRawValue ? (
@@ -308,9 +322,15 @@ export function ReadingCapture({ item, round, resume, onClose, onNext }: Reading
           ) : null}
 
           {entry.state === "pending" ? (
-            <Callout tone="info" title={t("queuedTitle")}>
-              {t("queuedBody")}
-            </Callout>
+            online ? (
+              <Callout tone="info" title={t("sendingTitle")}>
+                <span role="status">{t("sendingBody")}</span>
+              </Callout>
+            ) : (
+              <Callout tone="info" title={t("queuedTitle")}>
+                {t("queuedBody")}
+              </Callout>
+            )
           ) : null}
 
           {entry.state === "conflict" && entry.problem ? (

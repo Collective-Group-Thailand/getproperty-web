@@ -4,6 +4,7 @@ import { ReadingRound } from "@/features/staff/readings/ReadingRound";
 import { BuildingSelect } from "@/features/staff/shared/BuildingSelect";
 import { staffScope } from "@/features/staff/shared/server";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { ErrorState } from "@/ui/components/ErrorState";
 import { IconMeter } from "@/ui/icons/glyphs/meter";
 
 export async function generateMetadata() {
@@ -15,7 +16,7 @@ export async function generateMetadata() {
 export default async function StaffReadings() {
   const scope = await staffScope();
   const t = await getTranslations("staff.readings");
-  const round = scope.rounds.find((candidate) => candidate.buildingId === scope.buildingId);
+  const round = scope.rounds?.find((candidate) => candidate.buildingId === scope.buildingId);
   return (
     <div className="flex flex-col">
       {scope.buildings.length > 1 ? (
@@ -23,7 +24,9 @@ export default async function StaffReadings() {
           <BuildingSelect buildings={scope.buildings} buildingId={scope.buildingId} />
         </div>
       ) : null}
-      {round ? (
+      {scope.rounds === null ? (
+        <ErrorState title={t("unavailableTitle")} description={t("unavailable")} />
+      ) : round ? (
         <ReadingRound round={round} />
       ) : (
         <EmptyState icon={IconMeter} title={t("noRound")} description={t("noRoundHint")} />

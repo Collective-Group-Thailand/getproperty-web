@@ -15,7 +15,10 @@
  *   GET  /__mock/readings           readings received by POST /v1/staff/meter-readings (by idempotency key)
  *   GET  /__mock/staff/readings     the meter readings the staff world holds (incl. install/final readings)
  *   GET  /__mock/staff/files        uploaded files: id, kind, mime type, declared and stored size
- *   POST /__mock/staff/reset?part=  reset the staff world's readings | inspections | devices (or all)
+ *   GET  /__mock/staff/inspections  the inspections as the staff world holds them
+ *   GET  /__mock/staff/devices      devices, channels, commands and swaps of the staff world
+ *   POST /__mock/staff/reset?part=  reset the staff world's readings (building A) | inspections |
+ *                                   devices (building B + the devices), or all of it
  *   POST /__mock/staff/ocr?mode=    the fake OCR reads (`ok`) or reads nothing (`unreadable`)
  *   POST /__mock/staff/devices/online?serial=  a gateway bootstraps and comes online (realtime events)
  *
@@ -35,6 +38,7 @@ import { OPERATORS, PLATFORM_USERS } from "./fixtures";
 import { handlers } from "./handlers";
 import { emit } from "./handlers/realtime";
 import { gatewayComesOnline, readUpload, storeUpload, UPLOAD_CORS } from "./handlers/staff";
+import { BUILDING_A, BUILDING_B, buildingOf } from "./staff-world";
 import { expireAccessTokens, initialStaffWorld, resetState, state } from "./state";
 
 const port = Number(process.env.MOCK_API_PORT ?? 4010);
@@ -91,6 +95,15 @@ async function control(url: URL, req: IncomingMessage, res: ServerResponse) {
       return sendJson(res, 200, [...state.readings.values()]);
     case "GET /__mock/staff/readings":
       return sendJson(res, 200, state.staff.readings);
+    case "GET /__mock/staff/devices":
+      return sendJson(res, 200, {
+        devices: state.staff.devices,
+        channels: state.staff.channels,
+        commands: state.staff.commands,
+        swaps: state.staff.swaps,
+      });
+    case "GET /__mock/staff/inspections":
+      return sendJson(res, 200, state.staff.inspections);
     case "GET /__mock/staff/files":
       return sendJson(
         res,
@@ -105,15 +118,27 @@ async function control(url: URL, req: IncomingMessage, res: ServerResponse) {
         })),
       );
     case "POST /__mock/staff/reset": {
-      // One part of the staff world at a time, so parallel spec files do not reset each other.
+      // One part of the staff world at a time, so parallel spec files do not reset each other: the
+      // readings specs own building A's meters, the devices specs building B's meters and the devices.
       const fresh = initialStaffWorld();
       const part = url.searchParams.get("part");
+      const resetMeters = (building: string) => {
+        const ids = new Set(state.staff.meters.filter((m) => buildingOf(m) === building).map((m) => m.assetItemId));
+        state.staff.meters = [
+          ...state.staff.meters.filter((m) => buildingOf(m) !== building),
+          ...fresh.meters.filter((m) => buildingOf(m) === building),
+        ];
+        for (const meter of fresh.meters) if (buildingOf(meter) === building) ids.add(meter.assetItemId);
+        state.staff.readings = state.staff.readings.filter((reading) => !ids.has(reading.assetItemId));
+      };
       if (part === "readings" || !part) {
-        Object.assign(state.staff, { meters: fresh.meters, readings: fresh.readings, ocr: "ok", requirePhoto: true });
+        resetMeters(BUILDING_A);
+        Object.assign(state.staff, { ocr: "ok", requirePhoto: true });
         state.readings.clear();
       }
       if (part === "inspections" || !part) state.staff.inspections = fresh.inspections;
       if (part === "devices" || !part) {
+        resetMeters(BUILDING_B);
         Object.assign(state.staff, {
           devices: fresh.devices,
           channels: fresh.channels,

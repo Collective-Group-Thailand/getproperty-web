@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
-import { HOSTS, MOCK_API } from "../playwright.config";
-import { expectAxeClean, expectTargets48, mock, signInStaff } from "./support/staff";
+import { MOCK_API } from "../playwright.config";
+import { expectAxeClean, expectTargets48, gotoStaff, hydrated, mock, signInStaff } from "./support/staff";
 
 /**
  * F4 4.1 on the mock API: Today, the reading round, the capture flow with Chromium's fake camera, the
@@ -31,7 +31,7 @@ test.beforeAll(async () => {
 });
 
 async function openMeter(page: Page, assetItemId: string) {
-  await page.goto(`${HOSTS.staff}/readings`);
+  await gotoStaff(page, "/readings");
   await page.locator(`[data-testid="round-item"][data-asset="${assetItemId}"]`).click();
   await expect(page.getByTestId("reading-capture")).toHaveAttribute("data-step", "photo");
 }
@@ -60,9 +60,9 @@ test("Today groups the work with counts, by floor", async ({ page }) => {
   await expectAxeClean(page);
   await expectTargets48(page.locator("body"));
 
-  // Another building: the round follows the switcher.
+  // Another building: the round follows the switcher (building B's meters belong to the devices spec).
   await page.getByTestId("building-select").selectOption({ label: "อาคาร B" });
-  await expect(page.getByTestId("today-readings").getByTestId("big-action-count")).toHaveText("2");
+  await expect(page.getByTestId("today-floors")).toContainText("ชั้น 1");
   await page.getByTestId("building-select").selectOption({ label: "อาคาร A" });
   await expect(page.getByTestId("today-readings").getByTestId("big-action-count")).toHaveText("5");
 });
@@ -70,6 +70,7 @@ test("Today groups the work with counts, by floor", async ({ page }) => {
 test("capture with the camera: photo → keypad → accepted, with OCR and the previous reading", async ({ page }) => {
   await signInStaff(page);
   await page.getByTestId("today-readings").click();
+  await hydrated(page);
   await expect(page.getByTestId("round-items").first()).toBeVisible();
   await expect(page.getByRole("progressbar", { name: "Reading round progress" })).toHaveAttribute(
     "aria-valuetext",

@@ -1,12 +1,14 @@
 "use client";
 
+import { METER_HEALTH_STATUS } from "@/domain/status/meterHealth";
+import { READING_STATUS } from "@/domain/status/reading";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 
 import { useRealtimeEvents } from "@/features/shared/realtime/RealtimeProvider";
 import { ReadingSourceBadge } from "@/features/shared/status/ReadingSourceBadge";
-import { DomainStatusBadge } from "@/features/shared/status/DomainStatusBadge";
+import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { formatDate, formatUnits } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
 import type { Schemas } from "@/lib/api/types";
@@ -145,6 +147,9 @@ export function ReadingRound({ round }: { round: Schemas["RoundBuildingDto"] }) 
                 const conflict = view.local.find(
                   (e) => e.meta.assetItemId === item.assetItemId && e.state === "conflict",
                 );
+                const readEarly = view.local.find(
+                  (e) => e.meta.assetItemId === item.assetItemId && view.early.has(e.id),
+                );
                 return (
                   <li key={item.assetItemId}>
                     <button
@@ -182,11 +187,16 @@ export function ReadingRound({ round }: { round: Schemas["RoundBuildingDto"] }) 
                         <span className="flex flex-wrap gap-1">
                           {item.lastReading ? <ReadingSourceBadge source={item.lastReading.source} /> : null}
                           {item.iot && item.health ? (
-                            <DomainStatusBadge domain="meterHealth" value={item.health} size="sm" />
+                            <StatusBadgeOf map={METER_HEALTH_STATUS} value={item.health} size="sm" />
                           ) : null}
                           {conflict ? (
                             <Badge tone="danger" size="sm" icon={IconSyncFailed}>
                               {t("conflictBadge")}
+                            </Badge>
+                          ) : null}
+                          {readEarly ? (
+                            <Badge tone="info" size="sm">
+                              {t("earlyBadge", { date: formatDate(round.windowStart, locale) })}
                             </Badge>
                           ) : null}
                         </span>
@@ -201,7 +211,7 @@ export function ReadingRound({ round }: { round: Schemas["RoundBuildingDto"] }) 
         ))
       )}
 
-      {view.local.some((entry) => entry.state !== "conflict") ? (
+      {view.local.some((entry) => entry.state !== "conflict" && !view.early.has(entry.id)) ? (
         <section aria-labelledby="round-done" className="flex flex-col gap-2">
           <h2 id="round-done" className="text-lg font-semibold">
             {t("doneTitle")}{" "}
@@ -209,7 +219,7 @@ export function ReadingRound({ round }: { round: Schemas["RoundBuildingDto"] }) 
           </h2>
           <ul className="divide-border rounded-card border-border bg-surface divide-y border" data-testid="round-done">
             {view.local
-              .filter((entry) => entry.state !== "conflict")
+              .filter((entry) => entry.state !== "conflict" && !view.early.has(entry.id))
               .map((entry) => {
                 const reading = entry.state === "sent" ? (entry.result as Schemas["MeterReadingDto"] | null) : null;
                 const value = reading?.register ?? entry.meta.typedValue;
@@ -234,7 +244,7 @@ export function ReadingRound({ round }: { round: Schemas["RoundBuildingDto"] }) 
                         </span>
                       </span>
                       {reading ? (
-                        <DomainStatusBadge domain="reading" value={reading.reviewState} size="sm" />
+                        <StatusBadgeOf map={READING_STATUS} value={reading.reviewState} size="sm" />
                       ) : (
                         <Badge tone="neutral" size="sm" icon={IconSyncPending}>
                           {t("waiting")}

@@ -14,7 +14,7 @@ export interface CompressOptions {
   maxDimension?: number;
   /** Upper bound of the encoded file (default 400 KB). */
   maxBytes?: number;
-  /** First JPEG quality tried (default 0.82); lowered in steps of 0.08 down to `minQuality`. */
+  /** First JPEG quality tried (default 0.82); then `minQuality`, then one step between them. */
   quality?: number;
   /** Lowest quality before the image is scaled down further instead (default 0.5). */
   minQuality?: number;
@@ -37,11 +37,9 @@ export function fitWithin(width: number, height: number, maxDimension: number): 
   return { width: Math.max(1, Math.round(width * scale)), height: Math.max(1, Math.round(height * scale)) };
 }
 
-/** The qualities tried in order: `quality`, `quality − 0.08`, … ≥ `minQuality`. */
-export function qualitySteps(quality: number, minQuality: number): number[] {
-  const steps: number[] = [];
-  for (let q = quality; q >= minQuality - 1e-9; q -= 0.08) steps.push(Math.round(q * 100) / 100);
-  return steps.length ? steps : [minQuality];
+/** How much smaller the picture must get when even the lowest quality is over budget (0.3–0.9). */
+export function shrinkFactor(maxBytes: number, size: number): number {
+  return Math.max(0.3, Math.min(0.9, Math.sqrt(maxBytes / size) * 0.95));
 }
 
 type Drawable = CanvasImageSource & { width?: number; height?: number };
@@ -76,34 +74,48 @@ function encode(canvas: HTMLCanvasElement, type: string, quality: number): Promi
 }
 
 /**
- * Draws `source` scaled into a canvas and encodes it under `maxBytes` (quality first, then size). The
- * result is never larger than the original blob when one is given: an already small JPEG is kept.
+ * Draws `source` scaled into a canvas and encodes it under `maxBytes`: the first quality, else the
+ * lowest one (and, when that fits, one step in between to keep detail), else the picture is scaled
+ * down by the square root of the overshoot and tried again — a handful of encodes even for a noisy
+ * 12-megapixel photo. The result is never larger than the original when the original already fits.
  */
 export async function compressImage(source: Blob | Drawable, options: CompressOptions = {}): Promise<Blob> {
   const settings = { ...PHOTO_DEFAULTS, ...options };
+  if (source instanceof Blob && source.size <= settings.maxBytes && source.type === settings.mimeType) {
+    const decodedSize = await decode(source).then(({ source: image, release }) => {
+      const size = sourceSize(image);
+      release();
+      return size;
+    });
+    if (Math.max(decodedSize.width, decodedSize.height) <= settings.maxDimension) return source;
+  }
   const decoded = source instanceof Blob ? await decode(source) : { source, release: () => undefined };
   try {
     const original = sourceSize(decoded.source);
     let target = fitWithin(original.width, original.height, settings.maxDimension);
     const canvas = document.createElement("canvas");
     let best: Blob | null = null;
-    for (let round = 0; round < 4; round += 1) {
+    const keep = (blob: Blob) => {
+      if (!best || blob.size < best.size) best = blob;
+      return blob;
+    };
+    for (let round = 0; round < 5; round += 1) {
       canvas.width = target.width;
       canvas.height = target.height;
       const context = canvas.getContext("2d");
       if (!context) throw new Error("no 2d context");
       context.imageSmoothingQuality = "high";
       context.drawImage(decoded.source, 0, 0, target.width, target.height);
-      for (const quality of qualitySteps(settings.quality, settings.minQuality)) {
-        const blob = await encode(canvas, settings.mimeType, quality);
-        if (!best || blob.size < best.size) best = blob;
-        if (blob.size <= settings.maxBytes) {
-          return source instanceof Blob && source.size <= blob.size && source.type === settings.mimeType
-            ? source
-            : blob;
-        }
+      const first = keep(await encode(canvas, settings.mimeType, settings.quality));
+      if (first.size <= settings.maxBytes) return first;
+      const lowest = keep(await encode(canvas, settings.mimeType, settings.minQuality));
+      if (lowest.size <= settings.maxBytes) {
+        const middle = Math.round(((settings.quality + settings.minQuality) / 2) * 100) / 100;
+        const between = await encode(canvas, settings.mimeType, middle);
+        return between.size <= settings.maxBytes ? between : lowest;
       }
-      target = fitWithin(target.width, target.height, Math.round(Math.max(target.width, target.height) * 0.75));
+      const factor = shrinkFactor(settings.maxBytes, lowest.size);
+      target = fitWithin(target.width, target.height, Math.round(Math.max(target.width, target.height) * factor));
     }
     return best!;
   } finally {

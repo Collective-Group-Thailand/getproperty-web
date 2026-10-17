@@ -2,9 +2,21 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { browserApi } from "@/lib/api/browser";
-import { unwrap } from "@/lib/api/client";
+import type { Schemas } from "@/lib/api/types";
 import { cn } from "@/ui/lib/cn";
+
+/**
+ * `GET /v1/staff/files/{fileId}` through the BFF with a plain `fetch` (typed by the contract): the round
+ * list ships no API client until a capture is opened (D-179).
+ */
+async function signedUrl(fileId: string): Promise<string> {
+  const response = await fetch(`/bff/v1/staff/files/${encodeURIComponent(fileId)}`, {
+    headers: { accept: "application/json" },
+  });
+  if (!response.ok) throw new Error(`file ${response.status}`);
+  const file = (await response.json()) as Schemas["FileDownloadDto"];
+  return file.thumbnailUrl ?? file.url;
+}
 
 /**
  * Evidence photo by document id (D-035 "show the evidence"): the signed URL is asked for when the
@@ -32,8 +44,8 @@ export function PhotoThumb({
     if (!element) return;
     let cancelled = false;
     const load = () =>
-      unwrap(browserApi().GET("/v1/staff/files/{fileId}", { params: { path: { fileId } } }))
-        .then((file) => !cancelled && setUrl(file.thumbnailUrl ?? file.url))
+      signedUrl(fileId)
+        .then((signed) => !cancelled && setUrl(signed))
         .catch(() => !cancelled && setFailed(true));
     if (typeof IntersectionObserver === "undefined") {
       void load();

@@ -4,8 +4,10 @@
  * `ContractEnum`). Labels live in `common/status.json` under `status.<domain>.<value>`.
  */
 export { defineStatuses, type StatusMeta, type StatusTone } from "./define";
+export { COMMAND_STATUS, COMMAND_VALUES, type CommandStatus } from "./command";
 export { DEPOSIT_STATUS, DEPOSIT_VALUES, type DepositStatus } from "./deposit";
 export { DEVICE_STATUS, DEVICE_VALUES, type DeviceStatus } from "./device";
+export { INSPECTION_STATUS, INSPECTION_VALUES, type InspectionStatus } from "./inspection";
 export { INVOICE_STATUS, INVOICE_VALUES, type InvoiceStatus } from "./invoice";
 export { LEASE_STATUS, LEASE_VALUES, type LeaseStatus } from "./lease";
 export { METER_HEALTH_STATUS, METER_HEALTH_VALUES, type MeterHealth } from "./meterHealth";
@@ -17,8 +19,10 @@ export { SUBSCRIPTION_STATUS, SUBSCRIPTION_VALUES, type SubscriptionState } from
 export { UNIT_STATUS, UNIT_VALUES, type UnitStatus } from "./unit";
 export { WORK_ORDER_STATUS, WORK_ORDER_VALUES, type WorkOrderStatus } from "./workOrder";
 
+import { COMMAND_STATUS } from "./command";
 import { DEPOSIT_STATUS } from "./deposit";
 import { DEVICE_STATUS } from "./device";
+import { INSPECTION_STATUS } from "./inspection";
 import { INVOICE_STATUS } from "./invoice";
 import { LEASE_STATUS } from "./lease";
 import { METER_HEALTH_STATUS } from "./meterHealth";
@@ -40,6 +44,8 @@ export const STATUS_MAPS = {
   readingSource: READING_SOURCE,
   meterHealth: METER_HEALTH_STATUS,
   device: DEVICE_STATUS,
+  command: COMMAND_STATUS,
+  inspection: INSPECTION_STATUS,
   serviceRequest: SERVICE_REQUEST_STATUS,
   workOrder: WORK_ORDER_STATUS,
   unit: UNIT_STATUS,

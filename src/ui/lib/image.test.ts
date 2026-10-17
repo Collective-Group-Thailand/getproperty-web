@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { fitWithin, qualitySteps } from "./image";
+import { fitWithin, shrinkFactor } from "./image";
 
 describe("fitWithin", () => {
   it("scales the longer side down to the limit, keeping the ratio", () => {
@@ -13,9 +13,10 @@ describe("fitWithin", () => {
   });
 });
 
-describe("qualitySteps", () => {
-  it("steps down by 0.08 to the floor", () => {
-    expect(qualitySteps(0.82, 0.5)).toEqual([0.82, 0.74, 0.66, 0.58, 0.5]);
-    expect(qualitySteps(0.4, 0.5)).toEqual([0.5]);
+describe("shrinkFactor", () => {
+  it("scales by the square root of the overshoot, a little more, within 0.3–0.9", () => {
+    expect(shrinkFactor(400, 1600)).toBeCloseTo(0.475);
+    expect(shrinkFactor(400, 420)).toBe(0.9);
+    expect(shrinkFactor(400, 100_000)).toBe(0.3);
   });
 });

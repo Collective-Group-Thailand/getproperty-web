@@ -105,7 +105,11 @@ function roundOf(buildingId: string): Schemas["RoundBuildingDto"] {
   const building = BUILDINGS.find((b) => b.id === buildingId)!;
   const floors = Object.values(FLOORS).filter((floor) => floor.buildingId === buildingId);
   const p = period();
-  const batch = state.staff.readings.find((r) => buildingOf(meterById(r.assetItemId)!) === buildingId)?.readingBatchId;
+  // Retired (swapped) meters keep their readings: look them up among all meters, retired included.
+  const batch = state.staff.readings.find((r) => {
+    const meter = state.staff.meters.find((candidate) => candidate.assetItemId === r.assetItemId);
+    return meter !== undefined && buildingOf(meter) === buildingId && r.readingBatchId !== null;
+  })?.readingBatchId;
   const roundFloors = floors
     .map((floor) => ({
       floorId: floor.floorId,
@@ -415,6 +419,22 @@ const inspectionHandlers: HttpHandler[] = [
     };
     state.staff.inspections[index] = updated;
     return inspectionResponse(updated);
+  }),
+
+  http.get("*/v1/staff/inspections/:inspectionId/report", ({ request, params }) => {
+    const op = "staff.inspections.report";
+    const ok = operator(request, op);
+    if (ok instanceof Response) return ok;
+    const inspection = inWorld(ok) ? state.staff.inspections.find((i) => i.id === params.inspectionId) : undefined;
+    if (!inspection) return problem(op, "http.not_found");
+    if (inspection.status !== "completed" && inspection.status !== "signed")
+      return problem(op, "inspection.invalid_state");
+    return json({
+      documentId: crypto.randomUUID(),
+      number: inspection.reportNumber ?? "INS-2026-00000",
+      url: `${new URL(request.url).origin}/__files/report-${inspection.id}`,
+      expiresAt: new Date(Date.now() + 5 * 60_000).toISOString(),
+    } satisfies Schemas["DocumentDownloadDto"]);
   }),
 
   http.post("*/v1/staff/inspections/:inspectionId/actions/complete", async ({ request, params }) => {

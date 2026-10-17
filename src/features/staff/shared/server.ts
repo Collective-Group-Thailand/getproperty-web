@@ -15,8 +15,8 @@ export interface StaffScope {
   buildings: Pick<StaffBuilding, "id" | "name">[];
   /** The building the PWA is focused on (switcher cookie, else the first one). */
   buildingId: string | null;
-  /** The reading round of every building, read once for the scope (and reused by the pages). */
-  rounds: Schemas["RoundBuildingDto"][];
+  /** The reading round of every building, read once for the scope; `null` when the API did not answer. */
+  rounds: Schemas["RoundBuildingDto"][] | null;
 }
 
 /**
@@ -27,15 +27,13 @@ export interface StaffScope {
 export async function staffScope(): Promise<StaffScope> {
   const api = await serverApi("staff");
   const [rounds, listed, jar] = await Promise.all([
-    unwrap(api.GET("/v1/staff/reading-rounds/current", { params: { query: {} } })).catch(
-      () => [] as Schemas["RoundBuildingDto"][],
-    ),
+    unwrap(api.GET("/v1/staff/reading-rounds/current", { params: { query: {} } })).catch(() => null),
     getPending<{ data: StaffBuilding[] }>(api, "/v1/staff/buildings")
       .then((body) => body.data)
       .catch(() => null),
     cookies(),
   ]);
-  const buildings = listed ?? rounds.map((round) => ({ id: round.buildingId, name: round.buildingName }));
+  const buildings = listed ?? (rounds ?? []).map((round) => ({ id: round.buildingId, name: round.buildingName }));
   const wanted = jar.get(BUILDING_COOKIE)?.value;
   const buildingId = buildings.find((building) => building.id === wanted)?.id ?? buildings[0]?.id ?? null;
   return { api, buildings, buildingId, rounds };

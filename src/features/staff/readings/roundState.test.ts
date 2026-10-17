@@ -91,6 +91,16 @@ describe("roundView", () => {
     expect(view).toMatchObject({ done: 1, total: 3 });
   });
 
+  it("a reading taken before the round's window does not count: the meter stays, marked early", () => {
+    const before = entry("m1", "sent", { body: { readAt: "2026-10-10T09:00:00+07:00" } });
+    const inside = entry("m2", "sent", { body: { readAt: "2026-10-20T09:00:00+07:00" } });
+    const view = roundView(round, [before, inside]);
+    expect(view.early.has(before.id)).toBe(true);
+    expect(view.early.has(inside.id)).toBe(false);
+    expect(view.remaining.flatMap((group) => group.items).map((i) => i.assetItemId)).toEqual(["m1", "m3"]);
+    expect(view).toMatchObject({ done: 1, total: 3 });
+  });
+
   it("next() wraps around and returns null when everything is handled", () => {
     expect(roundView(round, [entry("m1", "sent")]).next("m3")?.assetItemId).toBe("m2");
     expect(roundView(round, [entry("m1", "sent"), entry("m2", "sent"), entry("m3", "sent")]).next("m3")).toBeNull();

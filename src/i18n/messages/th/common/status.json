@@ -93,5 +93,19 @@
     "past_due": "ค้างชำระค่าบริการ",
     "suspended": "ระงับชั่วคราว",
     "cancelled": "ยกเลิกแล้ว"
+  },
+  "inspection": {
+    "scheduled": "รอตรวจ",
+    "in_progress": "กำลังตรวจ",
+    "completed": "ตรวจเสร็จ",
+    "signed": "ลงนามครบ"
+  },
+  "command": {
+    "queued": "รอส่ง",
+    "sent": "ส่งแล้ว",
+    "accepted": "เครื่องรับแล้ว",
+    "done": "สำเร็จ",
+    "failed": "ไม่สำเร็จ",
+    "expired": "หมดเวลา"
   }
 }

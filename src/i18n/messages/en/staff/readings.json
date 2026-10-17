@@ -54,7 +54,12 @@
     "typeInstead": "Type the value (keep the photo)",
     "retry": "Send again",
     "discardAndRedo": "Remove and read again",
-    "next": "Next meter"
+    "next": "Next meter",
+    "sendingTitle": "Sending",
+    "sendingBody": "Saved on this phone. The photo is being checked and the reading is sent by itself; carry on with the next meter."
   },
-  "count": "({count})"
+  "count": "({count})",
+  "earlyBadge": "Read before the round; counts from {date}",
+  "unavailableTitle": "The reading round could not be loaded",
+  "unavailable": "Try again when you have signal; what you read on this phone is kept."
 }

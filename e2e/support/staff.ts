@@ -10,6 +10,21 @@ export const STAFF_PHONE = "0810000004";
 export async function signInStaff(page: Page): Promise<void> {
   await signInWithOtp(page, HOSTS.staff, STAFF_PHONE);
   await expect(page.getByTestId("staff-today")).toBeVisible();
+  await hydrated(page);
+}
+
+/**
+ * After a full page load: wait until React has hydrated the staff shell (and the page in it), so a tap
+ * reaches a handler rather than a server-rendered button that does nothing yet.
+ */
+export async function hydrated(page: Page): Promise<void> {
+  await page.waitForFunction(() => document.documentElement.dataset.hydrated === "staff");
+}
+
+/** A full navigation on the staff host, ready for interaction. */
+export async function gotoStaff(page: Page, path: string): Promise<void> {
+  await page.goto(`${HOSTS.staff}${path}`);
+  await hydrated(page);
 }
 
 export async function mock<T = unknown>(path: string, method: "GET" | "POST" = "GET"): Promise<T> {

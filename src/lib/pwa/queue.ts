@@ -14,7 +14,8 @@ import type { Schemas } from "@/lib/api/types";
  * - a refusal (409, 412, 422 and other 4xx) → kept as a **conflict** with the API's problem, shown to the
  *   staff member, never retried blindly;
  * - 401 → replay stops until the staff member signs in again (nothing is dropped);
- * - offline, 408, 429, 5xx → retried with backoff.
+ * - offline, 408, 429, 5xx, and "not yet" refusals (`document.scan_pending`, `idempotency.in_progress`)
+ *   → retried with backoff.
  *
  * The photo goes to object storage by presign (never through the BFF body): presign → PUT → complete,
  * once; the resulting `fileId` is stored on the entry so a retry does not upload twice.
@@ -167,11 +168,19 @@ class Transient extends Error {}
 
 const jsonHeaders = { "content-type": "application/json", accept: "application/json", [CSRF_HEADER]: "1" };
 
+/**
+ * Refusals that only mean "not yet": the photo is still being virus-scanned (D-025 — the API reads it
+ * for OCR only once clean), or the first attempt with this key is still running. Retried with backoff
+ * like a 503, never shown as a conflict.
+ */
+const NOT_YET = new Set(["document.scan_pending", "idempotency.in_progress"]);
+
 async function classify(response: Response): Promise<never> {
   if (response.status === 401) throw new ReplayStop("signed out");
   if (response.status === 408 || response.status === 429 || response.status >= 500)
     throw new Transient(String(response.status));
   const problem = (await response.json().catch(() => ({}))) as { code?: string; detail?: string; requestId?: string };
+  if (problem.code && NOT_YET.has(problem.code)) throw new Transient(problem.code);
   throw new Refused({
     status: response.status,
     code: problem.code ?? `http.${response.status}`,
@@ -208,6 +217,28 @@ async function upload(photo: QueuedPhoto, fetchImpl: typeof fetch): Promise<stri
   });
   if (!complete.ok) await classify(complete);
   return signed.file.id;
+}
+
+/** A photo upload that did not complete: the API's problem, or `network` when there was no answer. */
+export class UploadError extends Error {
+  constructor(readonly problem: NonNullable<QueueEntry["problem"]>) {
+    super(problem.code);
+    this.name = "UploadError";
+  }
+}
+
+/**
+ * Presign → PUT → complete for screens that upload directly (inspection photos, install photos) rather
+ * than through a queued submission; returns the document id. Errors are `UploadError`s.
+ */
+export async function uploadFile(photo: QueuedPhoto, fetchImpl: typeof fetch = fetch): Promise<string> {
+  try {
+    return await upload(photo, fetchImpl);
+  } catch (error) {
+    if (error instanceof Refused) throw new UploadError(error.problem);
+    if (error instanceof ReplayStop) throw new UploadError({ status: 401, code: "auth.unauthenticated", detail: "" });
+    throw new UploadError({ status: 0, code: "network", detail: "" });
+  }
 }
 
 export interface ReplayResult {

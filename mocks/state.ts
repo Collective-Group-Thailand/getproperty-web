@@ -140,7 +140,8 @@ function initial(): MockState {
     staff: initialStaffWorld(),
     webVitals: [],
     log: [],
-    accessTtlMs: 15 * 60_000,
+    // 15 minutes like the API; a long Lighthouse run sets MOCK_ACCESS_TTL_MS so its fixed session cookie lasts.
+    accessTtlMs: Number(process.env.MOCK_ACCESS_TTL_MS) || 15 * 60_000,
   };
 }
 

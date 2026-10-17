@@ -158,10 +158,13 @@ export function buildingOf(meter: MockMeter): string {
   return unitOf(meter)?.floor.buildingId ?? BUILDING_A;
 }
 
-/** The billing period of the mock: cut-off on the 25th, the round window the 7 days before it. */
-export function period(now = new Date()): { periodKey: string; cutoffAt: string; windowStart: string } {
-  const cutoff = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 25, 17, 0, 0));
-  if (now.getTime() > cutoff.getTime()) cutoff.setUTCMonth(cutoff.getUTCMonth() + 1);
+/**
+ * The billing period of the mock: the round window is open whatever the day the suite runs — the
+ * cut-off three days from the mock's start, the window the seven days before it.
+ */
+const STARTED = Date.now();
+export function period(): { periodKey: string; cutoffAt: string; windowStart: string } {
+  const cutoff = new Date(STARTED + 3 * 86_400_000);
   const key = `${cutoff.getUTCFullYear()}-${String(cutoff.getUTCMonth() + 1).padStart(2, "0")}`;
   return {
     periodKey: key,
@@ -282,7 +285,7 @@ function device(
   return {
     model: partial.kind === "gateway" ? "rpi-cm4" : "SDM120",
     vendor: partial.kind === "gateway" ? "Raspberry Pi" : "Eastron",
-    driver: partial.kind === "gateway" ? null : "sdm120",
+    driver: partial.kind === "gateway" ? null : "eastron_sdm120",
     ownership: "platform_haas",
     status: "assigned",
     tenantId: "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11",
@@ -387,7 +390,7 @@ export function initialChannels(): MockChannel[] {
       busType: "modbus_rtu",
       address: 11,
       pin: null,
-      driver: "sdm120",
+      driver: "eastron_sdm120",
       validFrom: daysAgo(90),
       validTo: null,
       unboundReason: null,

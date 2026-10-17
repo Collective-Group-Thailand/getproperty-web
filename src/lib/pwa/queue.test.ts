@@ -117,6 +117,25 @@ describe("offline queue (ADR-0007)", () => {
     expect((await replayQueue(ok.fetchImpl)).sent).toBe(1);
   });
 
+  it("retries a photo still being virus-scanned (or a key still in progress) instead of a conflict", async () => {
+    const entry = await enqueue(reading);
+    let clock = Date.now();
+    for (const code of ["document.scan_pending", "idempotency.in_progress"]) {
+      const notYet = api(() =>
+        Response.json(
+          { code, detail: "", requestId: "r" },
+          { status: 409, headers: { "content-type": "application/problem+json" } },
+        ),
+      );
+      expect(await replayQueue(notYet.fetchImpl, () => clock)).toMatchObject({ conflicts: 0, remaining: 1 });
+      expect((await getEntry(entry.id))!.state).toBe("pending");
+      clock += 20 * 60_000;
+    }
+    const ok = api(() => Response.json({ id: "r1" }, { status: 201 }));
+    expect((await replayQueue(ok.fetchImpl, () => clock)).sent).toBe(1);
+    expect(ok.calls[0]!.headers.get("idempotency-key")).toBe(entry.idempotencyKey);
+  });
+
   it("stops at a 401 and keeps everything for after the next sign-in", async () => {
     await enqueue(reading);
     await enqueue({ ...reading, label: "A-202 ไฟ" });

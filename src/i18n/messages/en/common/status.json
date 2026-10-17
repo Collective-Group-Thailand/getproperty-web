@@ -93,5 +93,19 @@
     "past_due": "Past due",
     "suspended": "Suspended",
     "cancelled": "Cancelled"
+  },
+  "inspection": {
+    "scheduled": "Scheduled",
+    "in_progress": "In progress",
+    "completed": "Completed",
+    "signed": "Signed"
+  },
+  "command": {
+    "queued": "Queued",
+    "sent": "Sent",
+    "accepted": "Accepted",
+    "done": "Done",
+    "failed": "Failed",
+    "expired": "Expired"
   }
 }

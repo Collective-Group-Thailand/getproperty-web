@@ -36,6 +36,8 @@ const env = {
   ADMIN_HOST: `admin.localhost:${PORT}`,
   API_INTERNAL_URL: MOCK_API,
   MOCK_API_PORT: String(MOCK_PORT),
+  // Lighthouse sends one fixed session cookie for the whole set (no refresh): keep it valid for the run.
+  MOCK_ACCESS_TTL_MS: String(3 * 3600_000),
   NEXT_TELEMETRY_DISABLED: "1",
 };
 

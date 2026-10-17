@@ -29,6 +29,8 @@ const CONTRACT_ENUM: Partial<Record<keyof typeof STATUS_MAPS, string>> = {
   readingSource: "ReadingSource",
   meterHealth: "MeterHealth",
   device: "DeviceStatus",
+  command: "CommandStatus",
+  inspection: "InspectionStatus",
   serviceRequest: "ServiceRequestStatus",
   workOrder: "WorkOrderStatus",
   unit: "UnitStatus",

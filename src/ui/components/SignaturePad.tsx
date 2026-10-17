@@ -26,6 +26,8 @@ export interface SignaturePadProps {
   labels: SignaturePadLabels;
   /** The signature as a PNG, or `null` when cleared. */
   onChange: (png: Blob | null) => void;
+  /** A signature to start from (a draft kept on the device); drawn as the background. */
+  initial?: Blob;
   /** CSS height of the pad (default 180 px); the width follows the container. */
   height?: number;
   disabled?: boolean;
@@ -66,13 +68,21 @@ function paint(canvas: HTMLCanvasElement, strokes: Stroke[], background: HTMLIma
  * cover finger, stylus and mouse; `touch-action: none` keeps the page from scrolling while signing.
  * The PNG is black ink on a transparent background, small enough for the API's 200 KB limit.
  */
-export function SignaturePad({ label, labels, onChange, height = 180, disabled, className }: SignaturePadProps) {
+export function SignaturePad({
+  label,
+  labels,
+  onChange,
+  initial,
+  height = 180,
+  disabled,
+  className,
+}: SignaturePadProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const strokes = useRef<Stroke[]>([]);
   const drawing = useRef<Stroke | null>(null);
   const background = useRef<HTMLImageElement | ImageBitmap | null>(null);
-  const [empty, setEmpty] = useState(true);
-  const [canUndo, setCanUndo] = useState(false);
+  const [empty, setEmpty] = useState(!initial);
+  const [canUndo, setCanUndo] = useState(Boolean(initial));
   const fileId = useId();
   const fileRef = useRef<HTMLInputElement>(null);
   const onChangeRef = useRef(onChange);
@@ -106,9 +116,17 @@ export function SignaturePad({ label, labels, onChange, height = 180, disabled, 
       redraw();
     };
     resize();
+    if (initial && typeof createImageBitmap === "function") {
+      void createImageBitmap(initial).then((bitmap) => {
+        background.current = bitmap;
+        redraw();
+      });
+    }
     const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(resize);
     observer?.observe(canvas);
     return () => observer?.disconnect();
+    // The starting signature is read once, on mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [redraw]);
 
   const at = (event: React.PointerEvent<HTMLCanvasElement>): Point => {

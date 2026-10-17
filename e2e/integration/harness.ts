@@ -10,9 +10,11 @@
  *   3. Boots the API in this process with `DATA_STORES_MODE=real` (PostgreSQL real; Redis/MQTT
  *      in-memory) and `INTEGRATIONS_MODE=fake`, listening on INT_API_PORT (4210).
  *   4. Onboards a tenant through the admin API (platform sign-in with TOTP enrolment, D-164) whose
- *      first Owner is +66810000001, and serves a side channel on INT_CONTROL_PORT (4211) for the suite:
- *      `GET /health`, `GET /invitation` (the onboarding invitation), `GET /sms/last-code?phone=` (the
- *      fake SMS outbox), `GET /totp?secret=` (an authenticator code).
+ *      first Owner is +66810000001, and a second tenant set up for the staff PWA (a building, two rooms
+ *      with electricity meters, a Staff invitation); serves a side channel on INT_CONTROL_PORT (4211):
+ *      `GET /health`, `GET /invitation` (the onboarding invitation), `GET /staff-invitation` (the staff
+ *      world), `GET /sms/last-code?phone=` (the fake SMS outbox), `GET /totp?secret=` (an authenticator
+ *      code), `PUT /storage?url=` (a presigned upload into the API's fake object storage).
  *
  * Nothing here is part of the app: it exists so the suite can run the real sign-in flows once.
  */
@@ -32,6 +34,8 @@ const CONTROL_PORT = Number(process.env.INT_CONTROL_PORT ?? 4211);
 const PG_PORT = Number(process.env.INT_PG_PORT ?? 55440);
 const DB = "getproperty_webint";
 const OWNER_PHONE = "+66810000001";
+const STAFF_OWNER_PHONE = "+66810000009";
+const STAFF_PHONE = "+66810000010";
 const ADMIN_EMAIL = "admin@getproperty.invalid";
 
 const log = (...args: unknown[]) => console.info("[integration]", ...args);
@@ -204,49 +208,187 @@ async function startApi(apiDir: string, databaseUrl: string) {
   await app.listen(API_PORT, "127.0.0.1");
   log(`getproperty-api listening on http://127.0.0.1:${API_PORT}`);
   const sms = app.get<{ lastCodeTo(phone: string): string | undefined }>(SMS);
-  return { app, sms, totpAt };
+  const { OBJECT_STORAGE } = require(join(apiDir, "dist/src/integrations/s3/object-storage.port.js")) as {
+    OBJECT_STORAGE: symbol;
+  };
+  const storage = app.get<{ putDirect(key: string, body: Buffer, contentType: string): void }>(OBJECT_STORAGE);
+  return { app, sms, totpAt, storage };
 }
 
-/** 4. A tenant whose first Owner signs in through the web app with the invitation (D-145). */
-async function onboardTenant(totpAt: (secret: string, at: Date) => string) {
-  const api = `http://127.0.0.1:${API_PORT}`;
-  const post = async (path: string, body: unknown, headers: Record<string, string> = {}) => {
-    const response = await fetch(`${api}${path}`, {
-      method: "POST",
-      headers: { "content-type": "application/json", ...headers },
-      body: JSON.stringify(body),
-    });
-    return { status: response.status, body: (await response.json().catch(() => ({}))) as Record<string, unknown> };
+const API = `http://127.0.0.1:${API_PORT}`;
+
+async function call(
+  method: "POST" | "PUT" | "GET",
+  path: string,
+  body?: unknown,
+  headers: Record<string, string> = {},
+): Promise<{ status: number; body: Record<string, unknown> & unknown[] }> {
+  const response = await fetch(`${API}${path}`, {
+    method,
+    headers: { "content-type": "application/json", ...headers },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+  return {
+    status: response.status,
+    body: (await response.json().catch(() => ({}))) as Record<string, unknown> & unknown[],
   };
+}
+
+/** 4a. The platform admin's session (password + TOTP enrolment, D-164). */
+async function platformToken(totpAt: (secret: string, at: Date) => string): Promise<string> {
   const password = "getproperty-dev-only-password";
-  const login = await post("/v1/auth/platform/login", { email: ADMIN_EMAIL, password });
+  const login = await call("POST", "/v1/auth/platform/login", { email: ADMIN_EMAIL, password });
   if (login.body.code !== "auth.totp_enrollment_required")
     throw new Error(`platform login: ${JSON.stringify(login.body)}`);
   const enrollmentToken = String(login.body.enrollmentToken);
-  const enrol = await post("/v1/auth/platform/totp/enroll", { enrollmentToken });
-  const activated = await post("/v1/auth/platform/totp/activate", {
+  const enrol = await call("POST", "/v1/auth/platform/totp/enroll", { enrollmentToken });
+  const activated = await call("POST", "/v1/auth/platform/totp/activate", {
     enrollmentToken,
     code: totpAt(String(enrol.body.secret), new Date()),
   });
   if (activated.status !== 200) throw new Error(`totp activate: ${JSON.stringify(activated.body)}`);
-  const token = String(activated.body.accessToken);
-  const created = await post(
+  return String(activated.body.accessToken);
+}
+
+/** 4b. A tenant whose first Owner (`phone`) is invited (D-145). */
+async function createTenant(token: string, slug: string, displayName: string, phone: string) {
+  const created = await call(
+    "POST",
     "/v1/admin/tenants",
     {
       type: "apartment",
-      slug: "web-integration",
-      displayName: "หอพักทดสอบเว็บ",
-      legalName: "บริษัท ทดสอบเว็บ จำกัด",
+      slug,
+      displayName,
+      legalName: `บริษัท ${displayName} จำกัด`,
       legalForm: "company",
-      owner: { phone: OWNER_PHONE, language: "th" },
+      owner: { phone, language: "th" },
     },
     { authorization: `Bearer ${token}`, "idempotency-key": randomUUID() },
   );
   if (created.status !== 201) throw new Error(`onboard tenant: ${created.status} ${JSON.stringify(created.body)}`);
   const invitation = created.body.invitation as { code: string };
   const tenant = created.body.tenant as { id: string; displayName: string };
-  log(`onboarded tenant ${tenant.displayName} (${tenant.id}); owner ${OWNER_PHONE}`);
-  return { code: invitation.code, phone: OWNER_PHONE, tenantId: tenant.id, tenantName: tenant.displayName };
+  log(`onboarded tenant ${tenant.displayName} (${tenant.id}); owner ${phone}`);
+  return { code: invitation.code, phone, tenantId: tenant.id, tenantName: tenant.displayName };
+}
+
+/**
+ * 4c. The staff PWA's world (F4): a second tenant whose owner — signed in through the API with the
+ * invitation — creates a property, a building with one floor of two rooms and their electricity
+ * meters, and invites a Staff member for that building. The staff test signs in with that invitation.
+ */
+async function setupStaffWorld(token: string, sms: { lastCodeTo(phone: string): string | undefined }) {
+  const owner = await createTenant(token, "web-integration-staff", "หอพักทดสอบพนักงาน", STAFF_OWNER_PHONE);
+  const challenge = await call("POST", "/v1/auth/operator/otp/request", { phone: owner.phone });
+  const pair = await call("POST", "/v1/auth/operator/otp/verify", {
+    challengeId: challenge.body.challengeId,
+    code: sms.lastCodeTo(owner.phone),
+    invitationCode: owner.code,
+  });
+  if (pair.status !== 200) throw new Error(`owner sign-in: ${JSON.stringify(pair.body)}`);
+  const auth = { authorization: `Bearer ${String(pair.body.accessToken)}` };
+  const ok = (step: string, result: { status: number; body: unknown }) => {
+    if (result.status >= 300) throw new Error(`${step}: ${result.status} ${JSON.stringify(result.body)}`);
+    return result.body as Record<string, unknown> & unknown[];
+  };
+  const property = ok(
+    "property",
+    await call("POST", "/v1/owner/properties", { code: "MAIN", name: "หอพักทดสอบ" }, auth),
+  );
+  const building = ok(
+    "building",
+    await call(
+      "POST",
+      "/v1/owner/buildings",
+      { propertyId: property.id, code: "S", name: "อาคาร S", type: "apartment" },
+      auth,
+    ),
+  );
+  const floor = ok(
+    "floor",
+    await call("POST", `/v1/owner/buildings/${String(building.id)}/floors`, { level: 1, name: "ชั้น 1" }, auth),
+  );
+  ok(
+    "units",
+    await call(
+      "POST",
+      `/v1/owner/buildings/${String(building.id)}/units/bulk`,
+      { floorIds: [floor.id], countPerFloor: 2, pattern: "{building}-{floor}{nn}" },
+      auth,
+    ),
+  );
+  const meters = ok(
+    "meters",
+    await call(
+      "POST",
+      `/v1/owner/buildings/${String(building.id)}/meters/actions/create-missing`,
+      { utilities: ["electric"] },
+      auth,
+    ),
+  );
+  // The round counts readings from N days before the cut-off (D-187, default 7): widen the window so a
+  // reading taken today counts whatever the day the suite runs.
+  ok(
+    "round window",
+    await call(
+      "PUT",
+      "/v1/owner/settings/readings.round_window_days",
+      { value: 31, reason: "web integration suite" },
+      auth,
+    ),
+  );
+  const invitation = ok(
+    "staff invitation",
+    await call(
+      "POST",
+      "/v1/owner/invitations",
+      { role: "staff", channel: "sms", phone: STAFF_PHONE, language: "en", buildingIds: [building.id] },
+      auth,
+    ),
+  );
+  log(`staff world: building ${String(building.name)}, ${meters.length} meters, staff ${STAFF_PHONE} invited`);
+  return {
+    code: String(invitation.code),
+    phone: STAFF_PHONE,
+    tenantName: owner.tenantName,
+    buildingName: String(building.name),
+    meters: meters.length,
+  };
+}
+
+/**
+ * 3b. The worker's `document-scan` subscriber, in this process: the harness runs the API only (no
+ * worker, no outbox relay), and the uploaded bytes live in the API process's fake object storage, so
+ * every completed upload is scanned here (checksum, fake virus scan, thumbnail) by the API's own
+ * `DocumentsService.scan` — what the worker does a moment after `document.uploaded` in production.
+ */
+function startDocumentScans(app: NestApp, apiDir: string) {
+  const require = createRequire(join(apiDir, "package.json"));
+  const { DocumentsService } = require(join(apiDir, "dist/src/core/documents/documents.service.js")) as {
+    DocumentsService: unknown;
+  };
+  const { TenantTx } = require(join(apiDir, "dist/src/database/tenant-tx.js")) as { TenantTx: unknown };
+  type Tx = { document: { findMany(args: unknown): Promise<{ id: string }[]> } };
+  const documents = app.get<{ scan(tx: Tx, id: string): Promise<unknown> }>(DocumentsService);
+  const db = app.get<{ platform<T>(work: (tx: Tx) => Promise<T>): Promise<T> }>(TenantTx);
+  let busy = false;
+  setInterval(() => {
+    if (busy) return;
+    busy = true;
+    void db
+      .platform(async (tx) => {
+        const pending = await tx.document.findMany({
+          where: { scanStatus: "pending", uploadState: { in: ["uploaded", "verified"] }, deletedAt: null },
+          select: { id: true },
+          take: 20,
+        });
+        for (const doc of pending) await documents.scan(tx, doc.id);
+      })
+      .catch((error: unknown) => log("document scan failed:", (error as Error).message))
+      .finally(() => {
+        busy = false;
+      });
+  }, 500).unref();
 }
 
 async function main() {
@@ -261,10 +403,13 @@ async function main() {
   process.on("SIGTERM", stop);
   process.on("exit", () => database.child.kill("SIGINT"));
 
-  const { sms, totpAt } = await startApi(apiDir, database.url);
-  const invitation = await onboardTenant(totpAt);
+  const { app, sms, totpAt, storage } = await startApi(apiDir, database.url);
+  const token = await platformToken(totpAt);
+  const invitation = await createTenant(token, "web-integration", "หอพักทดสอบเว็บ", OWNER_PHONE);
+  const staffWorld = await setupStaffWorld(token, sms);
+  startDocumentScans(app, apiDir);
 
-  createServer((req, res) => {
+  createServer(async (req, res) => {
     const url = new URL(req.url ?? "/", "http://127.0.0.1");
     const send = (status: number, body: unknown) => {
       res.writeHead(status, { "content-type": "application/json" });
@@ -272,6 +417,19 @@ async function main() {
     };
     if (url.pathname === "/health") return send(200, { ok: true });
     if (url.pathname === "/invitation") return send(200, invitation);
+    if (url.pathname === "/staff-invitation") return send(200, staffWorld);
+    // What a browser's presigned PUT to object storage does (the fake storage's URLs are not reachable).
+    if (url.pathname === "/storage" && req.method === "PUT") {
+      const target = new URL(url.searchParams.get("url") ?? "");
+      const chunks: Buffer[] = [];
+      for await (const chunk of req) chunks.push(chunk as Buffer);
+      storage.putDirect(
+        decodeURIComponent(target.pathname.slice(1)),
+        Buffer.concat(chunks),
+        String(req.headers["content-type"] ?? "application/octet-stream"),
+      );
+      return send(200, { ok: true });
+    }
     if (url.pathname === "/sms/last-code")
       return send(200, { code: sms.lastCodeTo(url.searchParams.get("phone") ?? "") ?? null });
     if (url.pathname === "/totp") return send(200, { code: totpAt(url.searchParams.get("secret") ?? "", new Date()) });

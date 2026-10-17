@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { NotificationCentre } from "@/features/shared/notifications/NotificationCentre";
 import { LanguageSwitch } from "@/features/shared/shell/LanguageSwitch";
@@ -49,6 +49,11 @@ export function StaffShellFrame(props: StaffShellFrameProps) {
   const pathname = usePathname();
   const lock = useDeviceLock();
   const [moreOpen, setMoreOpen] = useState(false);
+  // Marks the document interactive (hydrated): field automation and the e2e suite wait for it instead
+  // of tapping server-rendered buttons that do nothing yet.
+  useEffect(() => {
+    document.documentElement.dataset.hydrated = "staff";
+  }, []);
   const primary = props.items.slice(0, 3);
   const rest = props.items.slice(3);
 

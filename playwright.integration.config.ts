@@ -2,6 +2,8 @@ import { existsSync } from "node:fs";
 
 import { defineConfig, devices } from "@playwright/test";
 
+import { FAKE_CAMERA_ARGS } from "./playwright.config";
+
 /**
  * `pnpm e2e:integration` — the sign-in flows once against the real getproperty-api (F1 1.2): the API at
  * the commit pinned in contract.lock.json, on an embedded PostgreSQL with migrations and the dev seed,
@@ -37,9 +39,10 @@ export default defineConfig({
     baseURL: INT_HOSTS.owner,
     trace: "retain-on-failure",
     launchOptions: {
-      args: ["--host-resolver-rules=MAP *.localhost 127.0.0.1"],
+      args: ["--host-resolver-rules=MAP *.localhost 127.0.0.1", ...FAKE_CAMERA_ARGS],
       ...(executablePath ? { executablePath } : {}),
     },
+    permissions: ["camera"],
   },
   projects: [{ name: "integration", use: { ...devices["Desktop Chrome"] } }],
   webServer: [
@@ -62,6 +65,8 @@ export default defineConfig({
         STAFF_HOST: `staff.localhost:${PORT}`,
         ADMIN_HOST: `admin.localhost:${PORT}`,
         API_INTERNAL_URL: INT_API,
+        // The API's fake object storage hands out these presigned URLs; the suite answers them (route).
+        NEXT_PUBLIC_ASSET_BASE_URL: "https://fake-s3.invalid",
         NEXT_TELEMETRY_DISABLED: "1",
       },
     },

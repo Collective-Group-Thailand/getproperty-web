@@ -47,7 +47,7 @@ export async function TodayView({ scope, menu }: { scope: StaffScope; menu: read
       : Promise.resolve([]),
   ]);
 
-  const round = scope.rounds.find((candidate) => candidate.buildingId === scope.buildingId);
+  const round = scope.rounds?.find((candidate) => candidate.buildingId === scope.buildingId);
   const building = scope.buildings.find((candidate) => candidate.id === scope.buildingId);
   const nothing = (round?.remaining ?? 0) === 0 && (inspections?.length ?? 0) === 0 && (installs?.length ?? 0) === 0;
 
@@ -68,7 +68,9 @@ export async function TodayView({ scope, menu }: { scope: StaffScope; menu: read
           <h2 id="today-readings" className="text-lg font-semibold">
             {t("readings.title")}
           </h2>
-          {round ? (
+          {scope.rounds === null ? (
+            <Callout tone="warning">{t("unavailable")}</Callout>
+          ) : round ? (
             <>
               <BigActionButton
                 href="/readings"
