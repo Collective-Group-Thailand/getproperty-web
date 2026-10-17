@@ -1,0 +1,97 @@
+{
+  "invoice": {
+    "draft": "ร่าง",
+    "issued": "ออกบิลแล้ว",
+    "partially_paid": "ชำระบางส่วน",
+    "paid": "ชำระแล้ว",
+    "overdue": "เลยกำหนดชำระ",
+    "void": "ยกเลิก"
+  },
+  "lease": {
+    "draft": "ร่าง",
+    "pending_signature": "รอลงนาม",
+    "active": "มีผล",
+    "notice_given": "แจ้งย้ายออกแล้ว",
+    "ending": "ใกล้สิ้นสุด",
+    "ended": "สิ้นสุดแล้ว",
+    "terminated": "เลิกสัญญา",
+    "cancelled": "ยกเลิก"
+  },
+  "payment": {
+    "pending": "รอยืนยัน",
+    "confirmed": "ยืนยันแล้ว",
+    "failed": "ไม่สำเร็จ",
+    "refunded": "คืนเงินแล้ว",
+    "reversed": "กลับรายการ"
+  },
+  "deposit": {
+    "pending": "รอรับเงิน",
+    "held": "ถือไว้",
+    "settling": "กำลังหักลบ",
+    "refunded": "คืนแล้ว",
+    "forfeited_partially": "หักบางส่วน",
+    "forfeited": "ริบทั้งหมด",
+    "disputed": "มีข้อโต้แย้ง"
+  },
+  "reading": {
+    "accepted": "รับค่าแล้ว",
+    "pending_review": "รอตรวจ",
+    "rejected": "ไม่รับค่า",
+    "corrected": "แก้ไขแล้ว"
+  },
+  "readingSource": {
+    "iot": "มิเตอร์อัจฉริยะ",
+    "ocr": "อ่านจากรูป",
+    "manual": "จดด้วยมือ",
+    "estimated": "ประมาณการ"
+  },
+  "meterHealth": {
+    "ok": "ปกติ",
+    "stale": "ข้อมูลเก่า",
+    "silent": "ไม่ส่งข้อมูล",
+    "no_device": "ไม่มีอุปกรณ์",
+    "unknown": "ไม่ทราบสถานะ"
+  },
+  "device": {
+    "inventory": "ในคลัง",
+    "assigned": "จัดสรรแล้ว",
+    "provisioned": "ตั้งค่าแล้ว",
+    "online": "ออนไลน์",
+    "degraded": "ทำงานบางส่วน",
+    "offline": "ออฟไลน์",
+    "retired": "ปลดระวาง"
+  },
+  "serviceRequest": {
+    "new": "ใหม่",
+    "triaged": "คัดกรองแล้ว",
+    "assigned": "มอบหมายแล้ว",
+    "in_progress": "กำลังดำเนินการ",
+    "waiting_parts": "รออะไหล่",
+    "done": "เสร็จแล้ว",
+    "closed": "ปิดงาน",
+    "cancelled": "ยกเลิก"
+  },
+  "workOrder": {
+    "open": "เปิด",
+    "assigned": "มอบหมายแล้ว",
+    "accepted": "รับงานแล้ว",
+    "in_progress": "กำลังทำ",
+    "done": "ทำเสร็จ",
+    "verified": "ตรวจรับแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "unit": {
+    "vacant": "ว่าง",
+    "reserved": "จองแล้ว",
+    "occupied": "มีผู้เช่า",
+    "maintenance": "ปิดซ่อม",
+    "inactive": "ไม่ใช้งาน"
+  },
+  "subscription": {
+    "trial": "ทดลองใช้",
+    "active": "ใช้งานอยู่",
+    "past_due": "ค้างชำระค่าบริการ",
+    "suspended": "ระงับชั่วคราว",
+    "cancelled": "ยกเลิกแล้ว"
+  }
+}

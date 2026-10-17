@@ -68,7 +68,8 @@ test.describe("owner sign-in", () => {
 
   test("sign-out clears the session", async ({ page, context }) => {
     await signInWithOtp(page, HOSTS.owner, "0810000001");
-    await page.getByRole("button", { name: "ออกจากระบบ" }).click();
+    await page.getByTestId("user-menu").click();
+    await page.getByRole("menuitem", { name: "ออกจากระบบ" }).click();
     await expect(page).toHaveURL(`${HOSTS.owner}/login`);
     const names = (await context.cookies(HOSTS.owner)).map((cookie) => cookie.name);
     expect(names).not.toContain("__Host-gp_at");

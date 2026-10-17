@@ -1,0 +1,138 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+
+import { NotificationCentre } from "@/features/shared/notifications/NotificationCentre";
+import { LanguageSwitch } from "@/features/shared/shell/LanguageSwitch";
+import { isActive } from "@/features/shared/shell/menu";
+import { TenantSwitcher } from "@/features/shared/shell/TenantSwitcher";
+import type { ShellNavItem } from "@/features/shared/shell/types";
+import { UserMenu } from "@/features/shared/shell/UserMenu";
+import type { Schemas } from "@/lib/api/types";
+import { Mark } from "@/ui/brand";
+import { AppShell, BottomNav, TopBar, type NavItem } from "@/ui/components/AppShell";
+import { EnvBadge } from "@/ui/components/EnvBadge";
+import { Sheet } from "@/ui/components/Sheet";
+import { Icon } from "@/ui/icons";
+
+import { useDeviceLock } from "../lock/DeviceLock";
+import { PushPrompt } from "../pwa/PushPrompt";
+import { SyncCenter } from "../pwa/SyncCenter";
+
+export interface StaffShellFrameProps {
+  tenants: Schemas["OperatorTenantDto"][];
+  currentTenant: Schemas["CurrentTenantDto"];
+  userName: string;
+  roleLabel: string;
+  /** Today + the entitled work menus, in bottom-nav order. */
+  items: ShellNavItem[];
+  todayLabel: string;
+  envBadge?: string;
+  vapidPublicKey?: string;
+  banner?: React.ReactNode;
+  children: React.ReactNode;
+}
+
+/**
+ * The staff PWA frame (F1 1.3 §1): a phone column with big targets — top bar with the tenant, the
+ * offline indicator and sync badge, notifications and the account menu (theme incl. high contrast,
+ * device PIN); bottom nav Today · Readings · Inspect · Work orders (R2) / Devices · More.
+ */
+export function StaffShellFrame(props: StaffShellFrameProps) {
+  const t = useTranslations();
+  const pathname = usePathname();
+  const lock = useDeviceLock();
+  const [moreOpen, setMoreOpen] = useState(false);
+  const primary = props.items.slice(0, 3);
+  const rest = props.items.slice(3);
+
+  const bottom: NavItem[] = [
+    { href: "/", label: props.todayLabel, icon: <Icon name="home" />, active: pathname === "/" },
+    ...primary.map((item) => ({
+      href: item.href,
+      label: item.label,
+      icon: <Icon name={item.icon} />,
+      active: isActive(item.href, pathname),
+    })),
+    { href: "#more", label: t("staff.nav.more"), icon: <Icon name="more" />, onSelect: () => setMoreOpen(true) },
+  ];
+
+  return (
+    <AppShell
+      variant="mobile"
+      skipLabel={t("shell.skipToContent")}
+      header={
+        <TopBar className="gap-2">
+          <Mark size={28} className="text-primary shrink-0" aria-hidden="true" />
+          <div className="flex min-w-0 flex-1 items-center gap-2" data-testid="session-summary">
+            {props.tenants.length > 1 ? (
+              <TenantSwitcher zone="staff" tenants={props.tenants} currentTenantId={props.currentTenant.id} />
+            ) : (
+              <span className="truncate text-sm font-semibold" data-testid="tenant-name">
+                {props.currentTenant.displayName}
+              </span>
+            )}
+            <span className="sr-only" data-testid="tenant-role">
+              {props.roleLabel}
+            </span>
+          </div>
+          <span className="flex shrink-0 items-center gap-1">
+            <EnvBadge label={props.envBadge} className="hidden min-[400px]:inline" />
+            <SyncCenter />
+            <NotificationCentre zone="staff" />
+            <UserMenu
+              displayName={props.userName}
+              roleLabel={props.roleLabel}
+              loginHref="/login"
+              extraItems={[
+                {
+                  id: "pin",
+                  label: lock.enabled ? t("staff.lock.changePin") : t("staff.lock.setPin"),
+                  icon: "lock",
+                  separatorBefore: true,
+                  onSelect: lock.openSetup,
+                },
+                ...(lock.enabled
+                  ? [
+                      {
+                        id: "pin-remove",
+                        label: t("staff.lock.removePin"),
+                        icon: "close" as const,
+                        onSelect: lock.remove,
+                      },
+                    ]
+                  : []),
+              ]}
+            />
+          </span>
+        </TopBar>
+      }
+      bottomNav={<BottomNav items={bottom} label={t("shell.bottomNav")} size="lg" />}
+    >
+      {props.banner}
+      <PushPrompt vapidPublicKey={props.vapidPublicKey} />
+      {props.children}
+      <Sheet open={moreOpen} onOpenChange={setMoreOpen} title={t("shell.moreMenu")} closeLabel={t("common.close")}>
+        <ul className="flex flex-col gap-1">
+          {rest.map((item) => (
+            <li key={item.key}>
+              <a
+                href={item.href}
+                className="rounded-control hover:bg-bg-subtle flex min-h-12 items-center gap-3 px-3 text-lg"
+              >
+                <Icon name={item.icon} className="text-muted" />
+                {item.label}
+              </a>
+            </li>
+          ))}
+          <li className="flex items-center justify-between px-3 py-2">
+            <span className="text-muted">{t("shell.languageSwitch.label")}</span>
+            <LanguageSwitch zone="staff" />
+          </li>
+        </ul>
+      </Sheet>
+    </AppShell>
+  );
+}

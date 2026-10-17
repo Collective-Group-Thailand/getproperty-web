@@ -1,0 +1,17 @@
+{
+  "setPin": "Set a device PIN",
+  "changePin": "Change PIN",
+  "removePin": "Stop using a PIN",
+  "setupTitle": "Set a device PIN",
+  "setupBody": "The app locks after {minutes} minutes without use. Unlock with a 4–6 digit PIN that works on this device only.",
+  "pin": "PIN",
+  "pinAgain": "Repeat PIN",
+  "pinInvalid": "Enter 4–6 digits",
+  "pinMismatch": "The PINs do not match",
+  "save": "Save",
+  "lockedTitle": "App locked",
+  "lockedBody": "Enter your PIN to continue",
+  "unlock": "Unlock",
+  "wrongPin": "Wrong PIN{count, plural, =0 {} one { — # try left} other { — # tries left}}",
+  "signOutInstead": "Sign out"
+}

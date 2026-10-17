@@ -1,8 +1,22 @@
 {
+  "home": "ภาพรวม",
   "tenants": "องค์กรลูกค้า",
   "subscriptions": "แพ็กเกจ",
-  "tariffs": "อัตราค่าไฟ-น้ำ",
+  "support_grants": "สิทธิ์ซัพพอร์ต",
+  "data_subject_requests": "คำขอข้อมูลส่วนบุคคล",
+  "utility_tariffs": "อัตราค่าไฟ-น้ำ",
   "devices": "อุปกรณ์",
-  "support": "ซัพพอร์ต",
-  "audit": "บันทึกตรวจสอบ"
+  "notification_templates": "แม่แบบข้อความ",
+  "feature_flags": "ฟีเจอร์แฟล็ก",
+  "settings": "ตั้งค่าแพลตฟอร์ม",
+  "platform_users": "ผู้ใช้แพลตฟอร์ม",
+  "outbox": "คิวเหตุการณ์",
+  "integration_events": "เหตุการณ์เชื่อมระบบ",
+  "audit_log": "บันทึกตรวจสอบ",
+  "ai_usage": "ค่าใช้ AI",
+  "group": {
+    "customers": "ลูกค้า",
+    "platform": "แพลตฟอร์ม",
+    "operations": "ปฏิบัติการ"
+  }
 }

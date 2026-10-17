@@ -2,6 +2,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
 import { HOSTS } from "../playwright.config";
+import { signInWithOtp } from "./support/auth";
 
 /**
  * F1 1.1: each host renders its own shell inside its own root layout, with its own security headers;
@@ -46,13 +47,16 @@ for (const { zone, host, lang, theme } of ZONES) {
       expect(headers["content-security-policy"]).toMatch(/script-src 'self' 'nonce-[^']+' 'strict-dynamic'/);
       expect(headers["permissions-policy"]).toContain(zone === "staff" ? "camera=(self)" : "camera=()");
       expect(headers["referrer-policy"]).toBe("strict-origin-when-cross-origin");
-      // Every script Next rendered carries the nonce, so the strict policy did not break the page.
+      // Every script in the server-rendered HTML carries the nonce, so the strict policy did not break
+      // the page (chunks loaded later by those scripts are allowed by 'strict-dynamic').
       const nonce = /'nonce-([^']+)'/.exec(headers["content-security-policy"]!)![1];
-      const scripts = await page
-        .locator("script[src]")
-        .evaluateAll((nodes) => nodes.map((node) => (node as HTMLScriptElement).nonce));
+      const html = await response!.text();
+      const scripts = html.match(/<script\b[^>]*>/g) ?? [];
       expect(scripts.length).toBeGreaterThan(0);
-      for (const value of scripts) expect(value).toBe(nonce);
+      for (const tag of scripts) {
+        if (/type="application\/ld\+json"/.test(tag)) continue;
+        expect(tag).toContain(`nonce="${nonce}"`);
+      }
     });
 
     test("there is no resident zone — /tenant and /resident are 404 (D-154)", async ({ page }) => {
@@ -95,12 +99,12 @@ test("admin responses carry noindex; the owner landing does not", async ({ reque
 test("the owner host serves English under /en", async ({ page }) => {
   await page.goto(`${HOSTS.owner}/en`);
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(/Owner zone/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Billing you run yourself, collected lawfully");
 });
 
-test("the theme toggle stamps data-theme and the gp_theme cookie", async ({ page, context }) => {
-  await page.goto(`${HOSTS.owner}/`);
-  await page.getByRole("button", { name: "ธีม" }).click();
+test("the theme choice stamps data-theme and the gp_theme cookie", async ({ page, context }) => {
+  await signInWithOtp(page, HOSTS.owner, "0810000001");
+  await page.getByTestId("user-menu").click();
   await page.getByRole("menuitem", { name: "มืด" }).click();
   await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
   const cookie = (await context.cookies(HOSTS.owner)).find((c) => c.name === "gp_theme");

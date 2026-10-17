@@ -1,0 +1,8 @@
+{
+  "manifest": {
+    "name": "getproperty สำหรับเจ้าหน้าที่",
+    "shortName": "getproperty",
+    "description": "จดมิเตอร์ ตรวจห้อง และงานในอาคาร ใช้ได้แม้สัญญาณไม่ดี"
+  },
+  "install": "ติดตั้งแอป"
+}

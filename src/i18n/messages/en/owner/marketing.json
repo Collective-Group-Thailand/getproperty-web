@@ -1,0 +1,160 @@
+{
+  "meta": {
+    "title": "getproperty — billing you run yourself, collected lawfully",
+    "description": "Apartment operations: meter readings, invoices at the lawful utility rate, bills sent through LINE, payment by QR and receipts issued automatically",
+    "pricingTitle": "Pricing",
+    "pricingDescription": "getproperty plans for apartments, condominium juristic persons, property management companies and landlords"
+  },
+  "nav": {
+    "label": "Site menu",
+    "home": "Home",
+    "pricing": "Pricing",
+    "signIn": "Sign in",
+    "legal": "Terms and policies",
+    "contact": "Contact us on LINE"
+  },
+  "hero": {
+    "eyebrow": "For apartments of 30–300 units",
+    "title": "Billing you run yourself, collected lawfully",
+    "body": "Meters report themselves, utilities are charged at the lawful rate, residents get their bill in LINE with a QR to pay, and the receipt goes out the moment the bank confirms.",
+    "primary": "Sign in",
+    "secondary": "See pricing"
+  },
+  "features": {
+    "title": "Every morning, only the decisions are left",
+    "items": {
+      "readings": {
+        "title": "Readings without the walk",
+        "body": "Smart meters report on their own, or a photo is read for you — every number shows where it came from"
+      },
+      "billing": {
+        "title": "Invoices at the right rate",
+        "body": "Utilities never above the provider's rate under the consumer protection rules; you are warned before you issue"
+      },
+      "line": {
+        "title": "Bills in LINE",
+        "body": "Residents open their bill and pay by PromptPay QR from the chat"
+      },
+      "receipts": {
+        "title": "Receipts issue themselves",
+        "body": "When the bank confirms the payment, the receipt is issued and the invoice closed"
+      }
+    }
+  },
+  "loss": {
+    "title": "Are you charging above the lawful electricity rate?",
+    "body": "The 2025 contract-control announcement caps what you may charge residents for electricity at the provider's rate. Pick your provider to see the current maximum per unit.",
+    "provider": "Electricity provider",
+    "mea": "Metropolitan Electricity Authority (MEA)",
+    "pea": "Provincial Electricity Authority (PEA)",
+    "ceiling": "Charge at most",
+    "perUnit": "THB per unit (before VAT)",
+    "tariff": "{name}, effective {date}",
+    "source": "Source",
+    "cta": "Let every invoice be checked for you",
+    "unavailable": "The latest rate cannot be shown right now"
+  },
+  "pricing": {
+    "title": "Pricing",
+    "body": "Pay for the units you actually use. No software set-up fee; residents and technicians use it free.",
+    "perUnitMonth": "{price} / unit / month",
+    "perBuildingMonth": "{price} / building / month",
+    "perBuildingYear": "{price} / building / year",
+    "perMonth": "{price} / month",
+    "minimum": "Minimum {count} units",
+    "contact": "Ask for a quote",
+    "vat": "Prices exclude VAT",
+    "unavailable": "Prices cannot be shown right now. Contact us on LINE for a quote.",
+    "choose": "Get started"
+  },
+  "legal": {
+    "title": "Terms and policies",
+    "updated": "Last updated {date}",
+    "docs": {
+      "terms": {
+        "title": "Terms of service",
+        "sections": [
+          {
+            "heading": "Who provides the service",
+            "body": "getproperty is provided by Collective Group (Thailand) to building rental businesses and building managers (\"customers\")."
+          },
+          {
+            "heading": "Using the service",
+            "body": "Customers are responsible for the units, leases and rates they record. The service refuses to issue an invoice that breaks the law and shows the legal reference."
+          },
+          {
+            "heading": "Fees",
+            "body": "Fees follow the chosen plan and the number of units in use. While a subscription is unpaid the account is read-only; data can still be viewed and exported."
+          },
+          {
+            "heading": "Ending the service",
+            "body": "Customers may cancel at any time and export their data before the account closes."
+          }
+        ]
+      },
+      "privacy": {
+        "title": "Privacy policy",
+        "sections": [
+          {
+            "heading": "What we collect",
+            "body": "Account data (name, phone, email) and the data customers record to run their buildings, such as residents, leases, meter readings and payments."
+          },
+          {
+            "heading": "Why",
+            "body": "To provide the contracted service, issue invoices and receipts, verify identity, keep the service secure and comply with the law."
+          },
+          {
+            "heading": "Sharing",
+            "body": "Only as needed with processors acting for us, such as SMS providers, banks and cloud providers, under contracts that protect the data."
+          },
+          {
+            "heading": "Your rights",
+            "body": "You may ask to access, correct, delete, object to or receive a copy of your data under the Personal Data Protection Act B.E. 2562 (2019). Contact us on LINE or by the email in your account."
+          }
+        ]
+      },
+      "pdpa": {
+        "title": "Personal data protection notice",
+        "sections": [
+          {
+            "heading": "Controller and processor",
+            "body": "For residents' data the building owner (the customer) is the controller and getproperty processes it on the customer's instructions. For user-account data getproperty is the controller."
+          },
+          {
+            "heading": "Legal basis",
+            "body": "Performance of a contract, legal obligations, and the legitimate interest of keeping the service secure. Consent is used only where the law requires it."
+          },
+          {
+            "heading": "Retention",
+            "body": "Kept only as long as the purpose and accounting and tax laws require, then deleted or de-identified."
+          }
+        ]
+      },
+      "dpa": {
+        "title": "Data processing agreement",
+        "sections": [
+          {
+            "heading": "Scope",
+            "body": "getproperty processes the personal data of residents and parties only to provide the service as the customer instructs."
+          },
+          {
+            "heading": "Security measures",
+            "body": "Encryption in transit and of sensitive stored data, row-level isolation of each customer's data, and an audit trail of every access."
+          },
+          {
+            "heading": "Sub-processors",
+            "body": "Only the sub-processors the service needs; customers are told in advance of a change."
+          },
+          {
+            "heading": "Breach notification",
+            "body": "Customers are told without undue delay of a personal data breach, so they can notify the PDPC within the legal deadline."
+          }
+        ]
+      }
+    }
+  },
+  "footer": {
+    "company": "Operated by Collective Group (Thailand)",
+    "rights": "© {year} Collective Group (Thailand)"
+  }
+}

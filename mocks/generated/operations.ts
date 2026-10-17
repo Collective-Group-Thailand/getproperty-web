@@ -5,6 +5,7 @@ export interface MockOperation {
   readonly id: string;
   readonly method: "get" | "post" | "put" | "patch" | "delete";
   readonly path: string;
+  readonly secured: boolean;
   readonly status: number;
   readonly contentType: string | null;
   readonly example?: unknown;
@@ -15,6 +16,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.auditLog.list",
     "method": "get",
     "path": "/v1/admin/audit-log",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -50,6 +52,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.buildings.changeOperator",
     "method": "post",
     "path": "/v1/admin/buildings/{buildingId}/actions/change-operator",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -62,6 +65,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.dataSubjectRequests.list",
     "method": "get",
     "path": "/v1/admin/data-subject-requests",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -82,6 +86,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.devices.create",
     "method": "post",
     "path": "/v1/admin/devices",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -99,6 +104,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.devices.issueProvisioningCode",
     "method": "post",
     "path": "/v1/admin/devices/{deviceId}/provisioning-codes",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -111,6 +117,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.featureFlags.list",
     "method": "get",
     "path": "/v1/admin/feature-flags",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -133,6 +140,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.featureFlags.update",
     "method": "put",
     "path": "/v1/admin/feature-flags/{key}",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -153,6 +161,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.me.get",
     "method": "get",
     "path": "/v1/admin/me",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -185,6 +194,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.notifications.list",
     "method": "get",
     "path": "/v1/admin/notifications",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -208,6 +218,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.notifications.markRead",
     "method": "post",
     "path": "/v1/admin/notifications/{notificationId}/actions/read",
+    "secured": true,
     "status": 204,
     "contentType": null
   },
@@ -215,6 +226,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.notificationTemplates.createVersion",
     "method": "post",
     "path": "/v1/admin/notification-templates/versions",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -249,6 +261,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.notificationTemplates.list",
     "method": "get",
     "path": "/v1/admin/notification-templates",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -285,6 +298,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.notificationTemplates.preview",
     "method": "post",
     "path": "/v1/admin/notification-templates/versions/{versionId}/actions/preview",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -297,6 +311,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.notificationTemplates.publish",
     "method": "post",
     "path": "/v1/admin/notification-templates/versions/{versionId}/actions/publish",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -331,6 +346,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.notificationTemplates.testSend",
     "method": "post",
     "path": "/v1/admin/notification-templates/{templateId}/actions/test-send",
+    "secured": true,
     "status": 202,
     "contentType": "application/json",
     "example": {
@@ -341,6 +357,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.outbox.deadLetters",
     "method": "get",
     "path": "/v1/admin/outbox/dead-letters",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -360,6 +377,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.outbox.messages",
     "method": "get",
     "path": "/v1/admin/outbox/messages",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -380,6 +398,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.outbox.replayDeadLetter",
     "method": "post",
     "path": "/v1/admin/outbox/dead-letters/{deadLetterId}/actions/replay",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -397,6 +416,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.outbox.replayMessage",
     "method": "post",
     "path": "/v1/admin/outbox/messages/{messageId}/actions/replay",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -415,6 +435,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.platformUsers.create",
     "method": "post",
     "path": "/v1/admin/platform-users",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -436,6 +457,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.platformUsers.grantRole",
     "method": "post",
     "path": "/v1/admin/platform-users/{userId}/roles",
+    "secured": true,
     "status": 204,
     "contentType": null
   },
@@ -443,6 +465,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.platformUsers.list",
     "method": "get",
     "path": "/v1/admin/platform-users",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -466,6 +489,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.platformUsers.revokeRole",
     "method": "delete",
     "path": "/v1/admin/platform-users/{userId}/roles/{role}",
+    "secured": true,
     "status": 204,
     "contentType": null
   },
@@ -473,6 +497,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.pushSubscriptions.create",
     "method": "post",
     "path": "/v1/admin/push-subscriptions",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -484,6 +509,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.pushSubscriptions.delete",
     "method": "delete",
     "path": "/v1/admin/push-subscriptions/{subscriptionId}",
+    "secured": true,
     "status": 204,
     "contentType": null
   },
@@ -491,6 +517,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.realtime.auth",
     "method": "post",
     "path": "/v1/admin/realtime/auth",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -506,6 +533,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.realtime.stream",
     "method": "get",
     "path": "/v1/admin/realtime/stream",
+    "secured": false,
     "status": 200,
     "contentType": "text/event-stream",
     "example": "event: ready\ndata: {\"channels\":[\"user:3b241101-e2bb-4255-8caf-4136c566a962\"]}\n\nevent: notification.created\ndata: {\"type\":\"notification.created\",\"ids\":{\"notificationId\":\"3b241101-e2bb-4255-8caf-4136c566a962\"}}\n\n"
@@ -514,6 +542,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.settings.list",
     "method": "get",
     "path": "/v1/admin/settings",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -541,6 +570,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.settings.update",
     "method": "put",
     "path": "/v1/admin/settings/{key}",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -554,6 +584,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.supportGrants.approveIncident",
     "method": "post",
     "path": "/v1/admin/support-grants/{supportGrantId}/actions/approve-incident",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -572,6 +603,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.supportGrants.list",
     "method": "get",
     "path": "/v1/admin/support-grants",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -592,6 +624,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.supportGrants.revoke",
     "method": "post",
     "path": "/v1/admin/support-grants/{supportGrantId}/actions/revoke",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -610,6 +643,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.system.info",
     "method": "get",
     "path": "/v1/admin/system/info",
+    "secured": false,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -624,6 +658,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.system.ping",
     "method": "get",
     "path": "/v1/admin/ping",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -636,6 +671,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.tenants.auditLog",
     "method": "get",
     "path": "/v1/admin/tenants/{tenantId}/audit-log",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -671,6 +707,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.tenants.create",
     "method": "post",
     "path": "/v1/admin/tenants",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -715,6 +752,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.tenants.get",
     "method": "get",
     "path": "/v1/admin/tenants/{tenantId}",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -743,6 +781,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.tenants.list",
     "method": "get",
     "path": "/v1/admin/tenants",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -780,6 +819,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.tenants.members",
     "method": "get",
     "path": "/v1/admin/tenants/{tenantId}/members",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -802,6 +842,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.tenants.requestSupportGrant",
     "method": "post",
     "path": "/v1/admin/tenants/{tenantId}/support-grants",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -820,6 +861,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.tenants.updateSetting",
     "method": "put",
     "path": "/v1/admin/tenants/{tenantId}/settings/{key}",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -833,6 +875,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.utilityTariffs.enter",
     "method": "post",
     "path": "/v1/admin/utility-tariffs/{tariffId}/versions",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -858,6 +901,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.utilityTariffs.list",
     "method": "get",
     "path": "/v1/admin/utility-tariffs",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -894,6 +938,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.utilityTariffs.publish",
     "method": "post",
     "path": "/v1/admin/utility-tariffs/versions/{versionId}/actions/publish",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -919,6 +964,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.utilityTariffs.verify",
     "method": "post",
     "path": "/v1/admin/utility-tariffs/versions/{versionId}/actions/verify",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -944,6 +990,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "admin.workflowDefinitions.list",
     "method": "get",
     "path": "/v1/admin/workflow-definitions",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -972,6 +1019,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "auth.keys.jwks",
     "method": "get",
     "path": "/v1/auth/.well-known/jwks.json",
+    "secured": false,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -991,6 +1039,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "auth.operatorOtp.request",
     "method": "post",
     "path": "/v1/auth/operator/otp/request",
+    "secured": false,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1003,6 +1052,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "auth.operatorOtp.verify",
     "method": "post",
     "path": "/v1/auth/operator/otp/verify",
+    "secured": false,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1031,6 +1081,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "auth.operatorSessions.login",
     "method": "post",
     "path": "/v1/auth/operator/login",
+    "secured": false,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1059,6 +1110,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "auth.platformSessions.login",
     "method": "post",
     "path": "/v1/auth/platform/login",
+    "secured": false,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1086,6 +1138,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "auth.platformTotp.activate",
     "method": "post",
     "path": "/v1/auth/platform/totp/activate",
+    "secured": false,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1114,6 +1167,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "auth.platformTotp.enroll",
     "method": "post",
     "path": "/v1/auth/platform/totp/enroll",
+    "secured": false,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1125,6 +1179,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "auth.residentLine.exchange",
     "method": "post",
     "path": "/v1/auth/resident/line",
+    "secured": false,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1148,6 +1203,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "auth.residentOtp.request",
     "method": "post",
     "path": "/v1/auth/resident/otp/request",
+    "secured": false,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1160,6 +1216,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "auth.residentOtp.verify",
     "method": "post",
     "path": "/v1/auth/resident/otp/verify",
+    "secured": false,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1188,6 +1245,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "auth.sessions.logout",
     "method": "post",
     "path": "/v1/auth/logout",
+    "secured": false,
     "status": 204,
     "contentType": null
   },
@@ -1195,6 +1253,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "auth.sessions.refresh",
     "method": "post",
     "path": "/v1/auth/refresh",
+    "secured": false,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1223,6 +1282,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "auth.system.ping",
     "method": "get",
     "path": "/v1/auth/ping",
+    "secured": false,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1235,6 +1295,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "auth.technicianLine.exchange",
     "method": "post",
     "path": "/v1/auth/technician/line",
+    "secured": false,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1263,6 +1324,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "auth.webPush.publicKey",
     "method": "get",
     "path": "/v1/auth/web-push/public-key",
+    "secured": false,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1273,6 +1335,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.assetGrants.create",
     "method": "post",
     "path": "/v1/owner/asset-grants",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -1296,6 +1359,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.assetGrants.list",
     "method": "get",
     "path": "/v1/owner/asset-grants",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -1321,6 +1385,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.assetGrants.revoke",
     "method": "post",
     "path": "/v1/owner/asset-grants/{grantId}/actions/revoke",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1344,6 +1409,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.assetItems.create",
     "method": "post",
     "path": "/v1/owner/units/{unitId}/asset-items",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -1364,6 +1430,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.assetItems.list",
     "method": "get",
     "path": "/v1/owner/units/{unitId}/asset-items",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -1386,6 +1453,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.assetItems.retire",
     "method": "post",
     "path": "/v1/owner/asset-items/{assetItemId}/actions/retire",
+    "secured": true,
     "status": 204,
     "contentType": null
   },
@@ -1393,6 +1461,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.assetItems.update",
     "method": "patch",
     "path": "/v1/owner/asset-items/{assetItemId}",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1413,6 +1482,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.auditLog.list",
     "method": "get",
     "path": "/v1/owner/audit-log",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1448,6 +1518,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.bankAccounts.confirm",
     "method": "post",
     "path": "/v1/owner/bank-accounts/{bankAccountId}/actions/confirm",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1469,6 +1540,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.bankAccounts.create",
     "method": "post",
     "path": "/v1/owner/bank-accounts",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -1497,6 +1569,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.bankAccounts.list",
     "method": "get",
     "path": "/v1/owner/bank-accounts",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -1520,6 +1593,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.bankAccounts.remove",
     "method": "post",
     "path": "/v1/owner/bank-accounts/{bankAccountId}/actions/remove",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1541,6 +1615,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.bankAccounts.resendOtp",
     "method": "post",
     "path": "/v1/owner/bank-accounts/{bankAccountId}/actions/resend-otp",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1553,6 +1628,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.buildings.create",
     "method": "post",
     "path": "/v1/owner/buildings",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -1574,6 +1650,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.buildings.get",
     "method": "get",
     "path": "/v1/owner/buildings/{buildingId}",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1595,6 +1672,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.buildings.list",
     "method": "get",
     "path": "/v1/owner/buildings",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -1618,6 +1696,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.buildings.update",
     "method": "patch",
     "path": "/v1/owner/buildings/{buildingId}",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1639,6 +1718,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.complianceAcknowledgements.create",
     "method": "post",
     "path": "/v1/owner/compliance-acknowledgements",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -1657,6 +1737,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.consents.capture",
     "method": "post",
     "path": "/v1/owner/consents",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -1681,6 +1762,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.consents.list",
     "method": "get",
     "path": "/v1/owner/consents",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -1702,6 +1784,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.dataSubjectRequests.list",
     "method": "get",
     "path": "/v1/owner/data-subject-requests",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -1722,6 +1805,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.dataSubjectRequests.transition",
     "method": "post",
     "path": "/v1/owner/data-subject-requests/{requestId}/actions/{action}",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1740,6 +1824,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.files.complete",
     "method": "post",
     "path": "/v1/owner/files/{fileId}/actions/complete",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1763,6 +1848,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.files.get",
     "method": "get",
     "path": "/v1/owner/files/{fileId}",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1791,6 +1877,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.files.presign",
     "method": "post",
     "path": "/v1/owner/files/presign",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -1822,6 +1909,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.floors.create",
     "method": "post",
     "path": "/v1/owner/buildings/{buildingId}/floors",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -1837,6 +1925,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.floors.list",
     "method": "get",
     "path": "/v1/owner/buildings/{buildingId}/floors",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -1854,6 +1943,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.floors.update",
     "method": "patch",
     "path": "/v1/owner/buildings/{buildingId}/floors/{floorId}",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1869,6 +1959,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.invitations.create",
     "method": "post",
     "path": "/v1/owner/invitations",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -1890,6 +1981,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.invitations.list",
     "method": "get",
     "path": "/v1/owner/invitations",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -1911,6 +2003,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.invitations.revoke",
     "method": "post",
     "path": "/v1/owner/invitations/{invitationId}/actions/revoke",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1930,6 +2023,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.me.enableTotp",
     "method": "post",
     "path": "/v1/owner/me/totp/enable",
+    "secured": true,
     "status": 204,
     "contentType": null
   },
@@ -1937,6 +2031,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.me.get",
     "method": "get",
     "path": "/v1/owner/me",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -1997,6 +2092,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.me.setPassword",
     "method": "put",
     "path": "/v1/owner/me/password",
+    "secured": true,
     "status": 204,
     "contentType": null
   },
@@ -2004,6 +2100,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.me.setupTotp",
     "method": "post",
     "path": "/v1/owner/me/totp/setup",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -2015,6 +2112,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.members.list",
     "method": "get",
     "path": "/v1/owner/members",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -2037,6 +2135,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.members.remove",
     "method": "delete",
     "path": "/v1/owner/members/{membershipId}",
+    "secured": true,
     "status": 204,
     "contentType": null
   },
@@ -2044,6 +2143,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.members.update",
     "method": "patch",
     "path": "/v1/owner/members/{membershipId}",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -2064,6 +2164,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.meters.createCommon",
     "method": "post",
     "path": "/v1/owner/buildings/{buildingId}/meters",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -2087,6 +2188,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.meters.createForUnit",
     "method": "post",
     "path": "/v1/owner/units/{unitId}/meters",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -2110,6 +2212,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.meters.createMissing",
     "method": "post",
     "path": "/v1/owner/buildings/{buildingId}/meters/actions/create-missing",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": [
@@ -2135,6 +2238,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.meters.listForBuilding",
     "method": "get",
     "path": "/v1/owner/buildings/{buildingId}/meters",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -2160,6 +2264,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.meters.listForUnit",
     "method": "get",
     "path": "/v1/owner/units/{unitId}/meters",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -2185,6 +2290,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.notificationRoutes.list",
     "method": "get",
     "path": "/v1/owner/notification-routes",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -2202,6 +2308,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.notificationRoutes.update",
     "method": "put",
     "path": "/v1/owner/notification-routes",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -2217,6 +2324,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.notifications.list",
     "method": "get",
     "path": "/v1/owner/notifications",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -2240,6 +2348,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.notifications.markRead",
     "method": "post",
     "path": "/v1/owner/notifications/{notificationId}/actions/read",
+    "secured": true,
     "status": 204,
     "contentType": null
   },
@@ -2247,6 +2356,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.properties.create",
     "method": "post",
     "path": "/v1/owner/properties",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -2269,6 +2379,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.properties.get",
     "method": "get",
     "path": "/v1/owner/properties/{propertyId}",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -2291,6 +2402,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.properties.list",
     "method": "get",
     "path": "/v1/owner/properties",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -2315,6 +2427,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.properties.update",
     "method": "patch",
     "path": "/v1/owner/properties/{propertyId}",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -2337,6 +2450,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.propertySettings.update",
     "method": "put",
     "path": "/v1/owner/properties/{propertyId}/settings/{key}",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -2350,6 +2464,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.pushSubscriptions.create",
     "method": "post",
     "path": "/v1/owner/push-subscriptions",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -2361,6 +2476,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.pushSubscriptions.delete",
     "method": "delete",
     "path": "/v1/owner/push-subscriptions/{subscriptionId}",
+    "secured": true,
     "status": 204,
     "contentType": null
   },
@@ -2368,6 +2484,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.realtime.auth",
     "method": "post",
     "path": "/v1/owner/realtime/auth",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -2383,6 +2500,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.realtime.stream",
     "method": "get",
     "path": "/v1/owner/realtime/stream",
+    "secured": false,
     "status": 200,
     "contentType": "text/event-stream",
     "example": "event: ready\ndata: {\"channels\":[\"user:3b241101-e2bb-4255-8caf-4136c566a962\"]}\n\nevent: notification.created\ndata: {\"type\":\"notification.created\",\"ids\":{\"notificationId\":\"3b241101-e2bb-4255-8caf-4136c566a962\"}}\n\n"
@@ -2391,6 +2509,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.settings.list",
     "method": "get",
     "path": "/v1/owner/settings",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -2417,6 +2536,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.settings.update",
     "method": "put",
     "path": "/v1/owner/settings/{key}",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -2430,6 +2550,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.supportGrants.approve",
     "method": "post",
     "path": "/v1/owner/support-grants/{supportGrantId}/actions/approve",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -2448,6 +2569,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.supportGrants.deny",
     "method": "post",
     "path": "/v1/owner/support-grants/{supportGrantId}/actions/deny",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -2466,6 +2588,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.supportGrants.list",
     "method": "get",
     "path": "/v1/owner/support-grants",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -2486,6 +2609,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.supportGrants.revoke",
     "method": "post",
     "path": "/v1/owner/support-grants/{supportGrantId}/actions/revoke",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -2504,6 +2628,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.system.ping",
     "method": "get",
     "path": "/v1/owner/ping",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -2516,6 +2641,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.tenant.get",
     "method": "get",
     "path": "/v1/owner/tenant",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -2544,6 +2670,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.tenant.update",
     "method": "patch",
     "path": "/v1/owner/tenant",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -2572,6 +2699,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.unitBoard.get",
     "method": "get",
     "path": "/v1/owner/buildings/{buildingId}/board",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -2630,6 +2758,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.unitImports.commit",
     "method": "post",
     "path": "/v1/owner/buildings/{buildingId}/unit-imports/actions/commit",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -2664,6 +2793,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.unitImports.export",
     "method": "get",
     "path": "/v1/owner/buildings/{buildingId}/units/export",
+    "secured": true,
     "status": 200,
     "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     "example": "UEsDBBQABgAIAAAAIQ… (xlsx bytes)"
@@ -2672,6 +2802,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.unitImports.preview",
     "method": "post",
     "path": "/v1/owner/buildings/{buildingId}/unit-imports/actions/preview",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -2706,6 +2837,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.unitImports.template",
     "method": "get",
     "path": "/v1/owner/buildings/{buildingId}/unit-imports/template",
+    "secured": true,
     "status": 200,
     "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     "example": "UEsDBBQABgAIAAAAIQ… (xlsx bytes)"
@@ -2714,6 +2846,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.unitProfiles.create",
     "method": "post",
     "path": "/v1/owner/buildings/{buildingId}/unit-profiles",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -2739,6 +2872,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.unitProfiles.list",
     "method": "get",
     "path": "/v1/owner/buildings/{buildingId}/unit-profiles",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -2766,6 +2900,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.unitProfiles.remove",
     "method": "delete",
     "path": "/v1/owner/unit-profiles/{unitProfileId}",
+    "secured": true,
     "status": 204,
     "contentType": null
   },
@@ -2773,6 +2908,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.unitProfiles.update",
     "method": "patch",
     "path": "/v1/owner/unit-profiles/{unitProfileId}",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -2798,6 +2934,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.units.bulkCreate",
     "method": "post",
     "path": "/v1/owner/buildings/{buildingId}/units/bulk",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": [
@@ -2828,6 +2965,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.units.count",
     "method": "get",
     "path": "/v1/owner/units/count",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -2847,6 +2985,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.units.create",
     "method": "post",
     "path": "/v1/owner/units",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -2875,6 +3014,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.units.get",
     "method": "get",
     "path": "/v1/owner/units/{unitId}",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -2903,6 +3043,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.units.list",
     "method": "get",
     "path": "/v1/owner/units",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -2940,6 +3081,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.units.setStatus",
     "method": "post",
     "path": "/v1/owner/units/{unitId}/actions/set-status",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -2968,6 +3110,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.units.update",
     "method": "patch",
     "path": "/v1/owner/units/{unitId}",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -2996,6 +3139,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.utilityAccounts.create",
     "method": "post",
     "path": "/v1/owner/buildings/{buildingId}/utility-accounts",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -3012,6 +3156,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.utilityAccounts.list",
     "method": "get",
     "path": "/v1/owner/buildings/{buildingId}/utility-accounts",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -3030,6 +3175,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.utilityAccounts.remove",
     "method": "delete",
     "path": "/v1/owner/utility-accounts/{utilityAccountId}",
+    "secured": true,
     "status": 204,
     "contentType": null
   },
@@ -3037,6 +3183,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.utilityAccounts.update",
     "method": "patch",
     "path": "/v1/owner/utility-accounts/{utilityAccountId}",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -3053,6 +3200,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "owner.utilityTariffs.current",
     "method": "get",
     "path": "/v1/owner/utility-tariffs/current",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": [
@@ -3095,6 +3243,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "staff.files.complete",
     "method": "post",
     "path": "/v1/staff/files/{fileId}/actions/complete",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -3118,6 +3267,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "staff.files.get",
     "method": "get",
     "path": "/v1/staff/files/{fileId}",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -3146,6 +3296,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "staff.files.presign",
     "method": "post",
     "path": "/v1/staff/files/presign",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -3177,6 +3328,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "staff.me.get",
     "method": "get",
     "path": "/v1/staff/me",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -3236,6 +3388,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "staff.notifications.list",
     "method": "get",
     "path": "/v1/staff/notifications",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -3259,6 +3412,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "staff.notifications.markRead",
     "method": "post",
     "path": "/v1/staff/notifications/{notificationId}/actions/read",
+    "secured": true,
     "status": 204,
     "contentType": null
   },
@@ -3266,6 +3420,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "staff.pushSubscriptions.create",
     "method": "post",
     "path": "/v1/staff/push-subscriptions",
+    "secured": true,
     "status": 201,
     "contentType": "application/json",
     "example": {
@@ -3277,6 +3432,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "staff.pushSubscriptions.delete",
     "method": "delete",
     "path": "/v1/staff/push-subscriptions/{subscriptionId}",
+    "secured": true,
     "status": 204,
     "contentType": null
   },
@@ -3284,6 +3440,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "staff.realtime.auth",
     "method": "post",
     "path": "/v1/staff/realtime/auth",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {
@@ -3299,6 +3456,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "staff.realtime.stream",
     "method": "get",
     "path": "/v1/staff/realtime/stream",
+    "secured": false,
     "status": 200,
     "contentType": "text/event-stream",
     "example": "event: ready\ndata: {\"channels\":[\"user:3b241101-e2bb-4255-8caf-4136c566a962\"]}\n\nevent: notification.created\ndata: {\"type\":\"notification.created\",\"ids\":{\"notificationId\":\"3b241101-e2bb-4255-8caf-4136c566a962\"}}\n\n"
@@ -3307,6 +3465,7 @@ export const MOCK_OPERATIONS: readonly MockOperation[] = [
     "id": "staff.system.ping",
     "method": "get",
     "path": "/v1/staff/ping",
+    "secured": true,
     "status": 200,
     "contentType": "application/json",
     "example": {

@@ -35,19 +35,23 @@ export interface IconButtonProps
   name: IconName;
   /** Required: an icon-only control has no other accessible name. From `src/i18n`. */
   label: string;
+  /** A decorative count (`<CountBadge>`) on the icon; put the number in `label` too. */
+  badge?: React.ReactNode;
+  ref?: React.Ref<HTMLButtonElement>;
 }
 
-export function IconButton({ name, label, variant, size, className, type, ...props }: IconButtonProps) {
+export function IconButton({ name, label, variant, size, className, type, badge, ...props }: IconButtonProps) {
   return (
     <button
       type={type ?? "button"}
       aria-label={label}
       title={label}
       data-size={size ?? "md"}
-      className={cn(iconButtonVariants({ variant, size }), className)}
+      className={cn(iconButtonVariants({ variant, size }), badge ? "relative" : undefined, className)}
       {...props}
     >
       <Icon name={name} />
+      {badge}
     </button>
   );
 }

@@ -1,45 +1,49 @@
-import type { IconName } from "@/ui/icons/registry";
-
 /**
- * Status presentation (design-system.md §2): every status the API returns maps to a tone, an icon and
- * a translation key, here and nowhere else. Never colour alone — `<StatusBadge>` renders icon + text.
- *
- * F0 ships the generic shape and one worked example. F1 types each map to the generated contract
- * enums (`Record<Schemas["BillStatus"], StatusMeta>` …), so a new backend enum value fails the build
- * until it has a label, tone and icon (00-master-plan.md §5).
+ * `src/domain/status` — how each API status looks (F1 1.3 §3). One file per enum, each typed against
+ * the generated contract enum (or the backend's planned values until it is published, via
+ * `ContractEnum`). Labels live in `common/status.json` under `status.<domain>.<value>`.
  */
+export { defineStatuses, type StatusMeta, type StatusTone } from "./define";
+export { DEPOSIT_STATUS, DEPOSIT_VALUES, type DepositStatus } from "./deposit";
+export { DEVICE_STATUS, DEVICE_VALUES, type DeviceStatus } from "./device";
+export { INVOICE_STATUS, INVOICE_VALUES, type InvoiceStatus } from "./invoice";
+export { LEASE_STATUS, LEASE_VALUES, type LeaseStatus } from "./lease";
+export { METER_HEALTH_STATUS, METER_HEALTH_VALUES, type MeterHealth } from "./meterHealth";
+export { PAYMENT_STATUS, PAYMENT_VALUES, type PaymentStatus } from "./payment";
+export { READING_STATUS, READING_VALUES, type ReadingReviewState } from "./reading";
+export { READING_SOURCE, READING_SOURCE_VALUES, type ReadingSource } from "./readingSource";
+export { SERVICE_REQUEST_STATUS, SERVICE_REQUEST_VALUES, type ServiceRequestStatus } from "./serviceRequest";
+export { SUBSCRIPTION_STATUS, SUBSCRIPTION_VALUES, type SubscriptionState } from "./subscription";
+export { UNIT_STATUS, UNIT_VALUES, type UnitStatus } from "./unit";
+export { WORK_ORDER_STATUS, WORK_ORDER_VALUES, type WorkOrderStatus } from "./workOrder";
 
-export type StatusTone = "neutral" | "primary" | "success" | "warning" | "danger" | "info";
+import { DEPOSIT_STATUS } from "./deposit";
+import { DEVICE_STATUS } from "./device";
+import { INVOICE_STATUS } from "./invoice";
+import { LEASE_STATUS } from "./lease";
+import { METER_HEALTH_STATUS } from "./meterHealth";
+import { PAYMENT_STATUS } from "./payment";
+import { READING_STATUS } from "./reading";
+import { READING_SOURCE } from "./readingSource";
+import { SERVICE_REQUEST_STATUS } from "./serviceRequest";
+import { SUBSCRIPTION_STATUS } from "./subscription";
+import { UNIT_STATUS } from "./unit";
+import { WORK_ORDER_STATUS } from "./workOrder";
 
-export interface StatusMeta {
-  tone: StatusTone;
-  icon: IconName;
-  /** Key under `status.<domain>.<value>` in `src/i18n/messages`. */
-  labelKey: string;
-}
+/** Every status map by its domain key (the `status.<domain>` namespace of its labels). */
+export const STATUS_MAPS = {
+  invoice: INVOICE_STATUS,
+  lease: LEASE_STATUS,
+  payment: PAYMENT_STATUS,
+  deposit: DEPOSIT_STATUS,
+  reading: READING_STATUS,
+  readingSource: READING_SOURCE,
+  meterHealth: METER_HEALTH_STATUS,
+  device: DEVICE_STATUS,
+  serviceRequest: SERVICE_REQUEST_STATUS,
+  workOrder: WORK_ORDER_STATUS,
+  unit: UNIT_STATUS,
+  subscription: SUBSCRIPTION_STATUS,
+} as const;
 
-/** Builds a typed status map; the generic parameter is the contract enum in F1. */
-export function defineStatuses<Value extends string>(
-  domain: string,
-  entries: Record<Value, Omit<StatusMeta, "labelKey">>,
-): Record<Value, StatusMeta> {
-  return Object.fromEntries(
-    (Object.entries(entries) as [Value, Omit<StatusMeta, "labelKey">][]).map(([value, meta]) => [
-      value,
-      { ...meta, labelKey: `status.${domain}.${value}` },
-    ]),
-  ) as Record<Value, StatusMeta>;
-}
-
-/**
- * Reading sources (D-012) — the one enum the decisions already fix, so it can be typed now. The
- * tone says how much to trust the number: an estimate needs attention and is reconciled later (D-041).
- */
-export type ReadingSource = "iot" | "ocr" | "manual" | "estimated";
-
-export const READING_SOURCE = defineStatuses<ReadingSource>("readingSource", {
-  iot: { tone: "primary", icon: "gateway" },
-  ocr: { tone: "info", icon: "camera" },
-  manual: { tone: "neutral", icon: "edit" },
-  estimated: { tone: "warning", icon: "help" },
-});
+export type StatusDomain = keyof typeof STATUS_MAPS;

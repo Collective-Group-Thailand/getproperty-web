@@ -1,0 +1,17 @@
+{
+  "setPin": "ตั้งรหัส PIN เครื่องนี้",
+  "changePin": "เปลี่ยนรหัส PIN",
+  "removePin": "เลิกใช้รหัส PIN",
+  "setupTitle": "ตั้งรหัส PIN",
+  "setupBody": "ล็อกแอปเมื่อไม่ได้ใช้งาน {minutes} นาที ปลดล็อกด้วย PIN 4–6 หลักบนเครื่องนี้เท่านั้น",
+  "pin": "รหัส PIN",
+  "pinAgain": "ยืนยันรหัส PIN",
+  "pinInvalid": "กรอกตัวเลข 4–6 หลัก",
+  "pinMismatch": "รหัสไม่ตรงกัน",
+  "save": "บันทึก",
+  "lockedTitle": "แอปถูกล็อก",
+  "lockedBody": "กรอกรหัส PIN เพื่อทำงานต่อ",
+  "unlock": "ปลดล็อก",
+  "wrongPin": "รหัสไม่ถูกต้อง {count, plural, =0 {} other {เหลือ # ครั้ง}}",
+  "signOutInstead": "ออกจากระบบ"
+}

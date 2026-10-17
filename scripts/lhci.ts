@@ -9,8 +9,14 @@
  *   pnpm lhci                 every set
  *   pnpm lhci owner staff     named sets only
  *   LHCI_PORT=3201 pnpm lhci  another port, when 3200 is taken
+ *   LHCI_CHROME_FLAGS="--headless=new --no-sandbox" pnpm lhci   Chrome as root (containers)
  *
- * Needs a prior `pnpm build`. Not part of `pnpm test`; CI runs it in its own job from F1.
+ * Needs a prior `pnpm build`. Not part of `pnpm test`; CI runs it in its own job.
+ *
+ * The app runs against the mock API (mocks/server.ts) so every run measures the same data. Console
+ * sets are measured signed in: this script signs the set's persona in on the mock API and gives
+ * Lighthouse the session as a `Cookie` header (`settings.extraHeaders`) — the same httpOnly cookies the
+ * browser would hold.
  */
 
 import { spawn, spawnSync } from "node:child_process";
@@ -18,6 +24,8 @@ import { readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const PORT = Number(process.env.LHCI_PORT ?? 3200);
+const MOCK_PORT = Number(process.env.LHCI_MOCK_API_PORT ?? 4310);
+const MOCK_API = `http://127.0.0.1:${MOCK_PORT}`;
 const ROOT = new URL("..", import.meta.url).pathname;
 const SETS = process.argv.slice(2);
 
@@ -26,8 +34,8 @@ const env = {
   OWNER_HOST: `localhost:${PORT}`,
   STAFF_HOST: `staff.localhost:${PORT}`,
   ADMIN_HOST: `admin.localhost:${PORT}`,
-  // F1: mock mode, so Lighthouse measures the same thing every time and the zones have a session.
-  API_MOCKS: "1",
+  API_INTERNAL_URL: MOCK_API,
+  MOCK_API_PORT: String(MOCK_PORT),
   NEXT_TELEMETRY_DISABLED: "1",
 };
 
@@ -58,14 +66,66 @@ if (configs.length === 0) {
   process.exit(1);
 }
 
-/** The set's config with its URLs on `LHCI_PORT`, written beside the original and removed afterwards. */
-function configFor(name: string): { path: string; cleanup: () => void } {
-  if (PORT === 3200) return { path: `lighthouse/${name}.json`, cleanup: () => undefined };
+/** Which mock persona each console set is measured as (mocks/README.md). */
+const SESSIONS: Record<string, () => Promise<string>> = {
+  owner: () => operatorSession("+66810000001"),
+  staff: () => operatorSession("+66810000004"),
+  admin: () => platformSession("support@example.com"),
+};
+
+async function post(path: string, body: unknown): Promise<Record<string, unknown>> {
+  // A fresh connection per call: a pooled keep-alive socket the mock closed minutes ago fails with EPIPE.
+  const response = await fetch(`${MOCK_API}${path}`, {
+    method: "POST",
+    headers: { "content-type": "application/json", connection: "close" },
+    body: JSON.stringify(body),
+  });
+  return (await response.json()) as Record<string, unknown>;
+}
+
+const cookieHeader = (pair: Record<string, unknown>, extra = "") =>
+  `__Host-gp_at=${String(pair.accessToken)}; __Host-gp_rt=${String(pair.refreshToken)}${extra}`;
+
+async function operatorSession(phone: string): Promise<string> {
+  const challenge = await post("/v1/auth/operator/otp/request", { phone });
+  const pair = await post("/v1/auth/operator/otp/verify", { challengeId: challenge.challengeId, code: "123456" });
+  return cookieHeader(pair, "; __Host-gp_tenant=0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11");
+}
+
+async function platformSession(email: string): Promise<string> {
+  const pair = await post("/v1/auth/platform/login", {
+    email,
+    password: "correct horse battery staple",
+    totpCode: "123456",
+  });
+  return cookieHeader(pair);
+}
+
+/** The set's config with its URLs on `LHCI_PORT` and its session, written beside the original and removed afterwards. */
+async function configFor(name: string): Promise<{ path: string; cleanup: () => void }> {
+  const session = SESSIONS[name];
+  const extraFlags = process.env.LHCI_CHROME_FLAGS;
+  if (PORT === 3200 && !session && !extraFlags) return { path: `lighthouse/${name}.json`, cleanup: () => undefined };
   const path = `lighthouse/.port-${PORT}-${name}.json`;
-  writeFileSync(
-    join(ROOT, path),
+  const config = JSON.parse(
     readFileSync(join(ROOT, `lighthouse/${name}.json`), "utf8").replaceAll(":3200/", `:${PORT}/`),
-  );
+  ) as {
+    extends?: string;
+    ci: { collect: { settings?: Record<string, unknown> } };
+  };
+  if (session) {
+    config.ci.collect.settings = {
+      ...config.ci.collect.settings,
+      extraHeaders: JSON.stringify({ Cookie: await session() }),
+    };
+  }
+  if (extraFlags) {
+    // e.g. LHCI_CHROME_FLAGS="--headless=new --no-sandbox" where Chrome runs as root (containers).
+    const settings = config.ci.collect.settings ?? {};
+    settings.chromeFlags = [settings.chromeFlags, extraFlags].filter(Boolean).join(" ");
+    config.ci.collect.settings = settings;
+  }
+  writeFileSync(join(ROOT, path), JSON.stringify(config, null, 2));
   return { path, cleanup: () => rmSync(join(ROOT, path), { force: true }) };
 }
 
@@ -74,14 +134,25 @@ async function main(): Promise<void> {
     console.error(`Port ${PORT} is already in use. Set LHCI_PORT to a free port.`);
     process.exit(1);
   }
-  const server = spawn("pnpm", ["start", "-p", String(PORT)], { cwd: ROOT, env, stdio: "ignore" });
+  // Own process groups, so stopping them also stops the node processes pnpm started.
+  const mock = spawn("pnpm", ["exec", "tsx", "mocks/server.ts"], { cwd: ROOT, env, stdio: "ignore", detached: true });
+  const server = spawn("pnpm", ["start", "-p", String(PORT)], { cwd: ROOT, env, stdio: "ignore", detached: true });
+  const stop = () => {
+    for (const child of [server, mock]) {
+      try {
+        if (child.pid) process.kill(-child.pid, "SIGTERM");
+      } catch {
+        // already gone
+      }
+    }
+  };
   const failures: string[] = [];
 
   try {
     await waitForServer();
     for (const name of configs) {
       console.info(`\n── lighthouse: ${name} ──`);
-      const config = configFor(name);
+      const config = await configFor(name);
       const result = spawnSync("pnpm", ["exec", "lhci", "autorun", `--config=${config.path}`], {
         cwd: ROOT,
         env,
@@ -91,7 +162,7 @@ async function main(): Promise<void> {
       if (result.status !== 0) failures.push(name);
     }
   } finally {
-    server.kill();
+    stop();
   }
 
   if (failures.length > 0) {

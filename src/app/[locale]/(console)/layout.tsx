@@ -1,6 +1,7 @@
 import { setRequestLocale } from "next-intl/server";
 
 import { OwnerShell } from "@/features/owner/shell/OwnerShell";
+import { ConsoleProviders } from "@/features/shared/providers/ConsoleProviders";
 import { requireOperator } from "@/lib/auth/guards";
 import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
@@ -20,8 +21,10 @@ export default async function OwnerConsoleLayout({
     selectTenant: getPathname({ href: "/select-tenant", locale }),
   });
   return (
-    <OwnerShell me={actor.me} locale={locale}>
-      {children}
-    </OwnerShell>
+    <ConsoleProviders>
+      <OwnerShell me={actor.me} locale={locale}>
+        {children}
+      </OwnerShell>
+    </ConsoleProviders>
   );
 }

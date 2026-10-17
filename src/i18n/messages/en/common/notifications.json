@@ -1,0 +1,10 @@
+{
+  "title": "Notifications",
+  "open": "Notifications{count, plural, =0 {} other {, # unread}}",
+  "empty": "No notifications yet",
+  "markRead": "Mark as read",
+  "loadMore": "Load more",
+  "error": "Could not load notifications",
+  "live": "Live updates on",
+  "offline": "Live updates paused"
+}

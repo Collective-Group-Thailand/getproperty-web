@@ -102,6 +102,10 @@ export interface NavItem {
   label: string;
   icon: React.ReactNode;
   active?: boolean;
+  /** Renders a button instead of a link (the "More" entry that opens a sheet). Client components only. */
+  onSelect?: () => void;
+  /** Extra decoration after the icon (a count badge); decorative — the label carries the meaning. */
+  badge?: React.ReactNode;
 }
 
 /** Sidebar entries: 44-px rows, the active one marked for assistive tech with `aria-current`. */
@@ -130,23 +134,35 @@ export function SidebarNav({ items, collapsed = false }: { items: NavItem[]; col
 }
 
 /** The phone bottom nav: up to five 56-px targets, icon + label, never icon alone. */
-export function BottomNav({ items, label }: { items: NavItem[]; label: string }) {
+export function BottomNav({ items, label, size = "md" }: { items: NavItem[]; label: string; size?: "md" | "lg" }) {
+  const itemClass = (active?: boolean) =>
+    cn(
+      "relative flex h-full w-full flex-col items-center justify-center gap-0.5 font-medium",
+      size === "lg" ? "text-sm" : "text-xs",
+      active ? "text-primary" : "text-muted",
+    );
   return (
     <nav aria-label={label}>
-      <ul className="flex h-14">
+      <ul className={cn("flex", size === "lg" ? "h-16" : "h-14")}>
         {items.map((item) => (
           <li key={item.href} className="flex-1">
-            <a
-              href={item.href}
-              aria-current={item.active ? "page" : undefined}
-              className={cn(
-                "flex h-full flex-col items-center justify-center gap-0.5 text-xs font-medium",
-                item.active ? "text-primary" : "text-muted",
-              )}
-            >
-              <span className="text-xl">{item.icon}</span>
-              {item.label}
-            </a>
+            {item.onSelect ? (
+              <button type="button" onClick={item.onSelect} className={itemClass(item.active)}>
+                <span className={cn("relative", size === "lg" ? "text-2xl" : "text-xl")}>
+                  {item.icon}
+                  {item.badge}
+                </span>
+                {item.label}
+              </button>
+            ) : (
+              <a href={item.href} aria-current={item.active ? "page" : undefined} className={itemClass(item.active)}>
+                <span className={cn("relative", size === "lg" ? "text-2xl" : "text-xl")}>
+                  {item.icon}
+                  {item.badge}
+                </span>
+                {item.label}
+              </a>
+            )}
           </li>
         ))}
       </ul>

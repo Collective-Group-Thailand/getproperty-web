@@ -23,7 +23,7 @@ export function ErrorState({ title, description, requestId, requestIdLabel, acti
       {description ? <p className="text-muted mt-1 max-w-md text-sm">{description}</p> : null}
       {action ? <div className="mt-6">{action}</div> : null}
       {requestId ? (
-        <p className="text-subtle mt-6 font-mono text-xs">
+        <p className="text-muted mt-6 font-mono text-xs">
           {requestIdLabel ? `${requestIdLabel}: ` : null}
           {requestId}
         </p>

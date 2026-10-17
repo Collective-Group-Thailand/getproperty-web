@@ -1,0 +1,8 @@
+{
+  "manifest": {
+    "name": "getproperty for staff",
+    "shortName": "getproperty",
+    "description": "Meter readings, inspections and building work — even with a weak signal"
+  },
+  "install": "Install app"
+}

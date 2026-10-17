@@ -1,0 +1,20 @@
+{
+  "offline": "Offline",
+  "online": "Online",
+  "syncLabel": "Waiting to send{count, plural, =0 {} other { #}}",
+  "syncTitle": "Waiting to send",
+  "syncEmpty": "Everything has been sent",
+  "pending": "Waiting",
+  "conflict": "Refused",
+  "sendNow": "Send now",
+  "retry": "Try again",
+  "discard": "Remove",
+  "discardConfirm": "Remove \"{label}\" from the queue? Unsent data will be lost.",
+  "signedOut": "Sign in again to send what is waiting",
+  "queuedAt": "Saved {time}",
+  "pushTitle": "Get notified about new work?",
+  "pushBody": "We will tell you about new work and anything that could not be sent",
+  "pushEnable": "Turn on notifications",
+  "pushLater": "Later",
+  "pushDenied": "Notifications are blocked in the browser settings"
+}

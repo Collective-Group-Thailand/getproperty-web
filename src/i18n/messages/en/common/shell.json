@@ -12,15 +12,6 @@
     "hc": "High contrast"
   },
   "language": "Language",
-  "placeholder": {
-    "title": "{zone} zone",
-    "body": "This is the F0 placeholder shell — the real screens arrive in F1–F5",
-    "zone": {
-      "owner": "Owner",
-      "staff": "Staff",
-      "admin": "Admin"
-    }
-  },
   "tenantSwitcher": {
     "label": "Switch tenant",
     "current": "Tenant: {name}"
@@ -33,5 +24,44 @@
     "title": "This account is read-only",
     "body": "The subscription is suspended. You can view and export data, but cannot change it or issue invoices until the subscription is paid (D-082).",
     "action": "View subscription"
+  },
+  "breadcrumbs": "Breadcrumbs",
+  "collapseSidebar": "Collapse menu",
+  "expandSidebar": "Expand menu",
+  "moreMenu": "All menu items",
+  "home": "Home",
+  "buildingSwitcher": {
+    "label": "Choose building",
+    "all": "All buildings",
+    "none": "No buildings yet"
+  },
+  "search": {
+    "open": "Search",
+    "title": "Search",
+    "placeholder": "Search units, residents, invoices or menus",
+    "pages": "Menus",
+    "results": "Results",
+    "empty": "Nothing found for \"{query}\"",
+    "hint": "Press / to search"
+  },
+  "commandPalette": {
+    "open": "Open command palette",
+    "title": "Go to…",
+    "placeholder": "Type a menu name",
+    "hint": "Ctrl K"
+  },
+  "languageSwitch": {
+    "label": "Language",
+    "th": "ไทย",
+    "en": "English"
+  },
+  "user": {
+    "menu": "My account",
+    "signedInAs": "Signed in as {name}"
+  },
+  "zoneName": {
+    "owner": "Owner console",
+    "staff": "Staff app",
+    "admin": "Platform admin"
   }
 }

@@ -1,7 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
-import { z } from "zod";
+import type { z } from "zod";
 
 import {
   otpRequestSchema,

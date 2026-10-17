@@ -1,0 +1,97 @@
+{
+  "invoice": {
+    "draft": "Draft",
+    "issued": "Issued",
+    "partially_paid": "Partly paid",
+    "paid": "Paid",
+    "overdue": "Overdue",
+    "void": "Void"
+  },
+  "lease": {
+    "draft": "Draft",
+    "pending_signature": "Awaiting signature",
+    "active": "Active",
+    "notice_given": "Notice given",
+    "ending": "Ending",
+    "ended": "Ended",
+    "terminated": "Terminated",
+    "cancelled": "Cancelled"
+  },
+  "payment": {
+    "pending": "Pending",
+    "confirmed": "Confirmed",
+    "failed": "Failed",
+    "refunded": "Refunded",
+    "reversed": "Reversed"
+  },
+  "deposit": {
+    "pending": "Pending",
+    "held": "Held",
+    "settling": "Settling",
+    "refunded": "Refunded",
+    "forfeited_partially": "Partly forfeited",
+    "forfeited": "Forfeited",
+    "disputed": "Disputed"
+  },
+  "reading": {
+    "accepted": "Accepted",
+    "pending_review": "Needs review",
+    "rejected": "Rejected",
+    "corrected": "Corrected"
+  },
+  "readingSource": {
+    "iot": "Smart meter",
+    "ocr": "From photo",
+    "manual": "Typed in",
+    "estimated": "Estimated"
+  },
+  "meterHealth": {
+    "ok": "OK",
+    "stale": "Stale",
+    "silent": "Silent",
+    "no_device": "No device",
+    "unknown": "Unknown"
+  },
+  "device": {
+    "inventory": "In stock",
+    "assigned": "Assigned",
+    "provisioned": "Provisioned",
+    "online": "Online",
+    "degraded": "Degraded",
+    "offline": "Offline",
+    "retired": "Retired"
+  },
+  "serviceRequest": {
+    "new": "New",
+    "triaged": "Triaged",
+    "assigned": "Assigned",
+    "in_progress": "In progress",
+    "waiting_parts": "Waiting for parts",
+    "done": "Done",
+    "closed": "Closed",
+    "cancelled": "Cancelled"
+  },
+  "workOrder": {
+    "open": "Open",
+    "assigned": "Assigned",
+    "accepted": "Accepted",
+    "in_progress": "In progress",
+    "done": "Done",
+    "verified": "Verified",
+    "cancelled": "Cancelled"
+  },
+  "unit": {
+    "vacant": "Vacant",
+    "reserved": "Reserved",
+    "occupied": "Occupied",
+    "maintenance": "Maintenance",
+    "inactive": "Inactive"
+  },
+  "subscription": {
+    "trial": "Trial",
+    "active": "Active",
+    "past_due": "Past due",
+    "suspended": "Suspended",
+    "cancelled": "Cancelled"
+  }
+}

@@ -8,6 +8,8 @@
   --text-base: 1.125rem;
   --text-sm: 1rem;
   --text-xs: 0.875rem;
+  /* The staff bottom nav is the large (64 px) variant: gloved thumbs, one hand. */
+  --bottom-nav-h: calc(4rem + env(safe-area-inset-bottom));
 }
 
 [data-zone="staff"] main :is(button, a, [role="button"], input, select)[data-size="md"] {

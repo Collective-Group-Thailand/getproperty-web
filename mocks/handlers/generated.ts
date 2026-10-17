@@ -41,7 +41,7 @@ export function generatedHandlers(): HttpHandler[] {
   return MOCK_OPERATIONS.map((operation) =>
     http[operation.method](mswPath(operation.path), ({ request }) => {
       const surface = surfaceOf(operation.path);
-      if (surface === "auth" || operation.path.endsWith("/realtime/stream")) return respond(operation);
+      if (!operation.secured || surface === "auth") return respond(operation);
 
       const auth = authenticate(request, surface === "admin" ? "platform" : "operator");
       if (!auth.ok) {

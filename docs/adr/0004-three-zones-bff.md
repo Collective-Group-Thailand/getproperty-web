@@ -106,3 +106,18 @@ building staff) and the platform (Collective Group staff).
   request (React `cache`); `401`/`auth.wrong_audience` → sign-in with `?next=` (same-site paths only),
   a stale tenant choice is retried without `X-Tenant-Id`, no current tenant → picker. The API stays
   the enforcement point.
+
+### F1 1.3 — shells, realtime, observability
+- **Shells** are a server half (resolves `/me` menu entitlements to routes, labels and groups; fetches
+  the buildings for the switcher) and a client frame (sidebar collapse, overlays). Menu keys the web does
+  not know are skipped (contract request: named enums). Console providers (TanStack Query, tooltips,
+  toasts) are added by the console layouts, never by the root document, so the owner host's public
+  pages do not ship them.
+- **Realtime**: `POST /bff/v1/{zone}/realtime/auth` then the stream through the same BFF (read with
+  fetch and parsed in `src/lib/realtime/sse.ts`, because `EventSource` only delivers events subscribed
+  by name); events invalidate TanStack Query keys (`invalidationKeys`); re-authorised with backoff.
+- **Observability**: `@vercel/otel` when `OTEL_EXPORTER_OTLP_ENDPOINT` is set (trace context propagated
+  to `API_INTERNAL_URL` only); Sentry server and browser only when a DSN is set (browser SDK
+  dynamically imported), tagged with the zone, events scrubbed of cookies, headers, bodies and secret
+  query values; `onRequestError` logs Next's digest with the API request id; Web Vitals through the
+  zone BFF (`POST /v1/{zone}/telemetry/web-vitals`, contract request).

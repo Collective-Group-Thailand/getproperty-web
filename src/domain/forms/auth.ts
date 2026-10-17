@@ -2,42 +2,52 @@ import { z } from "zod";
 
 import { toE164 } from "@/ui/lib/phone";
 
-/**
- * Sign-in form schemas (client-side validation; the API validates again and its field errors are
- * mapped back onto the form). Messages are i18n keys under `auth.errors`, resolved by the form.
- */
+import { isEmail, isOptionalOtpCode, isOtpCode, isPassword, isPhone, type Rule } from "./auth-rules";
 
-/** Thai mobile number as typed (`081 000 1234`), sent to the API as E.164. */
+/**
+ * Sign-in input schemas of the Server Actions (`src/lib/auth/actions.ts`). The rules are the ones the
+ * browser forms apply (`./auth-rules.ts`), so a request that passes the form passes here; the API
+ * validates again. Server-only: zod is not shipped to the browser for the sign-in pages.
+ */
+const rule = (check: Rule) => (value: string, ctx: z.RefinementCtx) => {
+  const result = check(value);
+  if (result !== true) ctx.addIssue({ code: "custom", message: result });
+};
+
 export const phoneSchema = z
   .string()
-  .trim()
-  .refine((value) => toE164(value) !== null, { message: "phoneInvalid" })
-  .transform((value) => toE164(value)!);
+  .superRefine(rule(isPhone))
+  .transform((value) => toE164(value.trim())!);
 
-export const otpCodeSchema = z.string().regex(/^\d{6}$/, { message: "codeInvalid" });
+export const otpCodeSchema = z.string().superRefine(rule(isOtpCode));
+
+const optional = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .optional()
+    .transform((value) => value || undefined);
 
 export const otpRequestSchema = z.object({ phone: phoneSchema });
 
 export const otpVerifySchema = z.object({
   challengeId: z.uuid(),
   code: otpCodeSchema,
-  invitationCode: z
-    .string()
-    .trim()
-    .max(64)
-    .optional()
-    .transform((value) => value || undefined),
+  invitationCode: optional(64),
 });
 
 export const passwordLoginSchema = z.object({
-  email: z.email({ message: "emailInvalid" }).max(254),
-  password: z.string().min(1, { message: "passwordRequired" }).max(1024),
+  email: z
+    .string()
+    .superRefine(rule(isEmail))
+    .transform((value) => value.trim()),
+  password: z.string().superRefine(rule(isPassword)),
   totpCode: z
     .string()
-    .trim()
+    .superRefine(rule(isOptionalOtpCode))
     .optional()
-    .transform((value) => value || undefined)
-    .pipe(otpCodeSchema.optional()),
+    .transform((value) => value?.trim() || undefined),
 });
 
 export const totpEnrollSchema = z.object({ enrollmentToken: z.string().min(16).max(512) });
@@ -45,10 +55,4 @@ export const totpActivateSchema = totpEnrollSchema.extend({ code: otpCodeSchema 
 
 export const tenantChoiceSchema = z.object({ tenantId: z.uuid() });
 
-/** `?next=` targets are same-site paths only — never `//host` or a scheme (open-redirect guard). */
-export function safeNextPath(value: unknown): string | undefined {
-  if (typeof value !== "string") return undefined;
-  if (!value.startsWith("/") || value.startsWith("//") || value.startsWith("/\\")) return undefined;
-  if (/[\r\n]/.test(value)) return undefined;
-  return value;
-}
+export { safeNextPath } from "./safe-next";

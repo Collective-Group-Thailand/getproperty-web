@@ -2,6 +2,8 @@
   "today": "วันนี้",
   "readings": "จดมิเตอร์",
   "inspections": "ตรวจห้อง",
-  "devices": "อุปกรณ์",
-  "tickets": "งานซ่อม"
+  "installs": "อุปกรณ์",
+  "service_requests": "ใบงาน",
+  "parcels": "พัสดุ",
+  "more": "เพิ่มเติม"
 }

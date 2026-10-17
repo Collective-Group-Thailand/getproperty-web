@@ -1,7 +1,9 @@
 {
   "today": "Today",
   "readings": "Readings",
-  "inspections": "Inspections",
-  "devices": "Devices",
-  "tickets": "Tickets"
+  "inspections": "Inspect",
+  "installs": "Devices",
+  "service_requests": "Work orders",
+  "parcels": "Parcels",
+  "more": "More"
 }

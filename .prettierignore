@@ -18,3 +18,4 @@ contract/openapi.json
 src/ui/fonts/files
 .integration
 src/lib/api/generated
+src/lib/pwa/generated

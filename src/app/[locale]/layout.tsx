@@ -20,5 +20,6 @@ export default async function OwnerLayout({ children, params }: { children: Reac
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
+  // Console providers are added by the (console) and (auth) groups, not here: the public pages skip them.
   return <ZoneDocument zone="owner">{children}</ZoneDocument>;
 }

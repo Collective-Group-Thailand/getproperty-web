@@ -1,9 +1,38 @@
 {
   "dashboard": "เช้านี้",
-  "properties": "อาคารและห้อง",
+  "buildings": "อาคาร",
+  "units": "ห้อง",
+  "parties": "ผู้เช่าและคู่สัญญา",
   "leases": "สัญญาเช่า",
-  "billing": "บิล",
-  "payments": "การชำระเงิน",
-  "meters": "มิเตอร์",
-  "settings": "ตั้งค่า"
+  "deposits": "เงินประกัน",
+  "readings": "มิเตอร์",
+  "utility_loss": "ค่าน้ำไฟรั่วไหล",
+  "service_requests": "แจ้งซ่อม",
+  "parcels": "พัสดุ",
+  "announcements": "ประกาศ",
+  "rate_plans": "อัตราค่าบริการ",
+  "invoices": "บิล",
+  "payments": "รับชำระเงิน",
+  "reports": "รายงาน",
+  "members": "ทีมงาน",
+  "bank_accounts": "บัญชีรับเงิน",
+  "settings": "ตั้งค่า",
+  "notifications": "การแจ้งเตือน",
+  "privacy": "ข้อมูลส่วนบุคคล",
+  "access_grants": "สิทธิ์เข้าถึงอาคาร",
+  "support_access": "สิทธิ์ทีมซัพพอร์ต",
+  "audit_log": "บันทึกการใช้งาน",
+  "subscription": "การสมัครใช้งาน",
+  "group": {
+    "operations": "งานประจำวัน",
+    "money": "การเงิน",
+    "settings": "องค์กร"
+  },
+  "bottom": {
+    "today": "วันนี้",
+    "units": "ห้อง",
+    "invoices": "บิล",
+    "money": "รับเงิน",
+    "more": "เพิ่มเติม"
+  }
 }

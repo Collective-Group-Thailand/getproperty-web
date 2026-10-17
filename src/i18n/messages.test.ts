@@ -58,3 +58,21 @@ describe("messages", () => {
     },
   );
 });
+
+describe("glossary", () => {
+  const contract = JSON.parse(readFileSync(join(__dirname, "../../contract/openapi.json"), "utf8")) as {
+    components: { schemas: Record<string, { enum?: string[] }> };
+  };
+  it.each([
+    ["tenantType", "TenantType"],
+    ["tenantRole", "TenantRole"],
+    ["platformRole", "PlatformRole"],
+  ])("glossary.%s names every value of the contract enum %s in th and en", (key, component) => {
+    const values = contract.components.schemas[component]?.enum ?? [];
+    expect(values.length).toBeGreaterThan(0);
+    for (const locale of LOCALES) {
+      const glossary = read(locale, "common", "glossary") as Record<string, Record<string, string>>;
+      expect(Object.keys(glossary[key] ?? {}).sort()).toEqual([...values].sort());
+    }
+  });
+});

@@ -30,6 +30,11 @@ const config: StorybookConfig = {
       ...viteConfig.resolve,
       alias: {
         ...viteConfig.resolve?.alias,
+        // Next-only modules the shell stories touch, replaced by small Storybook stand-ins.
+        "next/navigation": join(root, ".storybook/mocks/next-navigation.ts"),
+        "next/link": join(root, ".storybook/mocks/next-link.tsx"),
+        "@/i18n/navigation": join(root, ".storybook/mocks/i18n-navigation.tsx"),
+        "@/lib/auth/actions": join(root, ".storybook/mocks/auth-actions.ts"),
         "@/ui": join(root, "src/ui"),
         "@/domain": join(root, "src/domain"),
         "@/i18n": join(root, "src/i18n"),

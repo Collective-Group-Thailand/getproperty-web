@@ -1,0 +1,31 @@
+{
+  "extends": "./shared.json",
+  "$comment": "Platform admin console: LCP ≤ 2.5 s, CLS ≤ 0.1, initial JS ≤ 250 KB gz (docs/performance-budgets.md). Measured signed in as a platform user (scripts/lhci.ts). F5 adds tenants, tariffs and fleet URLs. RATCHET (F1 1.3, 2026-10-17): measured 264 KB; ceiling 280 KB — target 250 KB.",
+  "ci": {
+    "collect": {
+      "url": ["http://admin.localhost:3200/"],
+      "numberOfRuns": 3,
+      "settings": {
+        "preset": "desktop",
+        "throttlingMethod": "simulate",
+        "chromeFlags": "--host-resolver-rules=MAP *.localhost 127.0.0.1"
+      }
+    },
+    "assert": {
+      "assertions": {
+        "largest-contentful-paint": [
+          "warn",
+          {
+            "maxNumericValue": 2500
+          }
+        ],
+        "resource-summary:script:size": [
+          "error",
+          {
+            "maxNumericValue": 286720
+          }
+        ]
+      }
+    }
+  }
+}

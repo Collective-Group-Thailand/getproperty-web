@@ -1,12 +1,9 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { useEffect, useState, useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { z } from "zod";
-
-import { otpCodeSchema, passwordLoginSchema, phoneSchema } from "@/domain/forms/auth";
+import { isEmail, isOptionalOtpCode, isOtpCode, isPassword, isPhone } from "@/domain/forms/auth-rules";
 import {
   operatorPasswordLogin,
   requestOperatorOtp,
@@ -92,16 +89,13 @@ function ProblemCallout({ problem }: { problem: ActionProblem | null }) {
         {authProblemMessage(t, problem)}
       </span>
       {problem.requestId ? (
-        <span className="text-subtle mt-1 block font-mono text-xs">
+        <span className="text-muted mt-1 block font-mono text-xs">
           {common("requestId")}: {problem.requestId}
         </span>
       ) : null}
     </Callout>
   );
 }
-
-const phoneForm = z.object({ phone: phoneSchema });
-const codeForm = z.object({ code: otpCodeSchema });
 
 interface Challenge {
   challengeId: string;
@@ -134,8 +128,8 @@ function OtpSignIn({
   const [pending, startTransition] = useTransition();
   const wait = useSecondsUntil(challenge?.resendAvailableAt);
 
-  const phone = useForm<z.input<typeof phoneForm>>({ resolver: zodResolver(phoneForm), defaultValues: { phone: "" } });
-  const code = useForm<z.input<typeof codeForm>>({ resolver: zodResolver(codeForm), defaultValues: { code: "" } });
+  const phone = useForm<{ phone: string }>({ defaultValues: { phone: "" } });
+  const code = useForm<{ code: string }>({ defaultValues: { code: "" } });
 
   const send = (national: string) =>
     startTransition(async () => {
@@ -169,6 +163,7 @@ function OtpSignIn({
         <Controller
           control={phone.control}
           name="phone"
+          rules={{ validate: isPhone }}
           render={({ field, fieldState }) => (
             <Field
               label={t("signIn.phone")}
@@ -193,6 +188,7 @@ function OtpSignIn({
       <Controller
         control={code.control}
         name="code"
+        rules={{ validate: isOtpCode }}
         render={({ field, fieldState }) => (
           <Field
             label={t("signIn.code")}
@@ -246,8 +242,7 @@ function PasswordSignIn({ zone, onDone }: { zone: "owner" | "staff"; onDone: (ne
   const [problem, setProblem] = useState<ActionProblem | null>(null);
   const [needsTotp, setNeedsTotp] = useState(false);
   const [pending, startTransition] = useTransition();
-  const form = useForm<z.input<typeof passwordLoginSchema>>({
-    resolver: zodResolver(passwordLoginSchema),
+  const form = useForm<{ email: string; password: string; totpCode: string }>({
     defaultValues: { email: "", password: "", totpCode: "" },
   });
   const message = (key: string | undefined) => (key ? t(`errors.${key}`) : undefined);
@@ -268,10 +263,15 @@ function PasswordSignIn({ zone, onDone }: { zone: "owner" | "staff"; onDone: (ne
   return (
     <form className="flex flex-col gap-4" onSubmit={submit} noValidate>
       <Field label={t("signIn.email")} error={message(form.formState.errors.email?.message)} required>
-        <Input type="email" autoComplete="username" inputSize="lg" {...form.register("email")} />
+        <Input type="email" autoComplete="username" inputSize="lg" {...form.register("email", { validate: isEmail })} />
       </Field>
       <Field label={t("signIn.password")} error={message(form.formState.errors.password?.message)} required>
-        <Input type="password" autoComplete="current-password" inputSize="lg" {...form.register("password")} />
+        <Input
+          type="password"
+          autoComplete="current-password"
+          inputSize="lg"
+          {...form.register("password", { validate: isPassword })}
+        />
       </Field>
       {needsTotp ? (
         <Field
@@ -286,7 +286,7 @@ function PasswordSignIn({ zone, onDone }: { zone: "owner" | "staff"; onDone: (ne
             inputSize="lg"
             maxLength={6}
             autoFocus
-            {...form.register("totpCode")}
+            {...form.register("totpCode", { validate: isOptionalOtpCode })}
           />
         </Field>
       ) : null}

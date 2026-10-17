@@ -1,9 +1,38 @@
 {
   "dashboard": "This morning",
-  "properties": "Properties & rooms",
+  "buildings": "Buildings",
+  "units": "Units",
+  "parties": "Residents & parties",
   "leases": "Leases",
-  "billing": "Bills",
+  "deposits": "Deposits",
+  "readings": "Meters",
+  "utility_loss": "Utility loss",
+  "service_requests": "Service requests",
+  "parcels": "Parcels",
+  "announcements": "Announcements",
+  "rate_plans": "Rate plans",
+  "invoices": "Invoices",
   "payments": "Payments",
-  "meters": "Meters",
-  "settings": "Settings"
+  "reports": "Reports",
+  "members": "Team",
+  "bank_accounts": "Bank accounts",
+  "settings": "Settings",
+  "notifications": "Notifications",
+  "privacy": "Personal data",
+  "access_grants": "Building access",
+  "support_access": "Support access",
+  "audit_log": "Audit log",
+  "subscription": "Subscription",
+  "group": {
+    "operations": "Daily work",
+    "money": "Money",
+    "settings": "Organisation"
+  },
+  "bottom": {
+    "today": "Today",
+    "units": "Units",
+    "invoices": "Invoices",
+    "money": "Money",
+    "more": "More"
+  }
 }

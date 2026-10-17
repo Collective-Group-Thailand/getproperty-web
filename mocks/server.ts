@@ -10,14 +10,21 @@
  *   POST /__mock/expire-access?user=…  access tokens (of one persona) stop working; refresh tokens stay valid
  *   GET  /__mock/requests?path=…    the request log (method, path, whether a bearer was sent,
  *                                   X-Tenant-Id, Idempotency-Key, X-Request-Id)
+ *   POST /__mock/notify?user=…      a new inbox item for a persona + a realtime `notification.created`
+ *   POST /__mock/realtime/emit      {type, ids, surface?} to every open stream (of a surface)
+ *   GET  /__mock/readings           readings received by POST /v1/staff/readings (by idempotency key)
+ *   GET  /__mock/web-vitals         Web Vitals received through the BFFs
  *   GET  /__mock/health             liveness for the e2e web server
  */
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { Readable } from "node:stream";
+import { pipeline } from "node:stream/promises";
 
 import { getResponse } from "msw";
 
+import { OPERATORS, PLATFORM_USERS } from "./fixtures";
 import { handlers } from "./handlers";
+import { emit } from "./handlers/realtime";
 import { expireAccessTokens, resetState, state } from "./state";
 
 const port = Number(process.env.MOCK_API_PORT ?? 4010);
@@ -45,6 +52,35 @@ async function control(url: URL, req: IncomingMessage, res: ServerResponse) {
     case "POST /__mock/expire-access":
       expireAccessTokens(url.searchParams.get("user") ?? undefined);
       return sendJson(res, 200, { ok: true });
+    case "POST /__mock/notify": {
+      const user = url.searchParams.get("user") ?? "owner";
+      const persona = [...OPERATORS, ...PLATFORM_USERS].find((candidate) => candidate.key === user);
+      if (!persona) return sendJson(res, 404, { error: "unknown persona" });
+      const item = {
+        id: crypto.randomUUID(),
+        userKey: user,
+        eventType: "support_grant.requested",
+        title: url.searchParams.get("title") ?? "ขอสิทธิ์เข้าถึงจากทีมซัพพอร์ต",
+        body: url.searchParams.get("body") ?? "ทีมซัพพอร์ตขอสิทธิ์เข้าถึงข้อมูลชั่วคราว",
+        createdAt: new Date().toISOString(),
+        readAt: null,
+      };
+      state.inbox.push(item);
+      const delivered = emit("notification.created", { notificationId: item.id }, undefined, persona.user.id);
+      return sendJson(res, 200, { id: item.id, delivered });
+    }
+    case "POST /__mock/realtime/emit": {
+      const body = JSON.parse((await readBody(req))?.toString() || "{}") as {
+        type: string;
+        ids?: Record<string, string>;
+        surface?: string;
+      };
+      return sendJson(res, 200, { delivered: emit(body.type, body.ids ?? {}, body.surface) });
+    }
+    case "GET /__mock/readings":
+      return sendJson(res, 200, [...state.readings.values()]);
+    case "GET /__mock/web-vitals":
+      return sendJson(res, 200, state.webVitals);
     case "GET /__mock/requests": {
       const path = url.searchParams.get("path");
       return sendJson(res, 200, path ? state.log.filter((entry) => entry.path === path) : state.log);
@@ -104,7 +140,10 @@ const server = createServer(async (req, res) => {
     response.headers.forEach((value, name) => (outHeaders[name] = value));
     res.writeHead(response.status, outHeaders);
     if (!response.body) return res.end();
-    Readable.fromWeb(response.body as import("node:stream/web").ReadableStream).pipe(res);
+    // A client that goes away mid-stream (an SSE tab closing) is normal: end quietly, never crash.
+    await pipeline(Readable.fromWeb(response.body as import("node:stream/web").ReadableStream), res).catch(
+      () => undefined,
+    );
   } catch (error) {
     if (controller_aborted(error)) return;
     console.error("[mock-api]", error);
@@ -116,6 +155,9 @@ const server = createServer(async (req, res) => {
 function controller_aborted(error: unknown): boolean {
   return error instanceof Error && error.name === "AbortError";
 }
+
+process.on("uncaughtException", (error) => console.error("[mock-api] uncaught", error));
+process.on("unhandledRejection", (error) => console.error("[mock-api] unhandled", error));
 
 server.listen(port, "127.0.0.1", () => {
   console.info(`[mock-api] getproperty-api mock on http://127.0.0.1:${port}`);

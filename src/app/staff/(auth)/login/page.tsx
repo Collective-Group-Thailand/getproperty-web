@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
-import { safeNextPath } from "@/domain/forms/auth";
+import { safeNextPath } from "@/domain/forms/safe-next";
 import { AuthFrame } from "@/features/shared/auth/AuthFrame";
 import { OperatorSignIn } from "@/features/shared/auth/OperatorSignIn";
 import { getOperatorActor } from "@/lib/auth/actor";

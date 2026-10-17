@@ -13,7 +13,7 @@
     "start": "next start",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p src/lib/pwa/sw/tsconfig.json",
     "tokens": "tsx scripts/build-tokens.ts",
     "tokens:check": "tsx scripts/build-tokens.ts --check",
     "contrast": "tsx scripts/check-contrast.ts",
@@ -32,10 +32,12 @@
     "postinstall": "tsx scripts/copy-fonts.ts",
     "mock:api": "tsx mocks/server.ts",
     "gen:api:check": "tsx scripts/gen-api.ts --check",
-    "e2e:integration": "playwright test --config playwright.integration.config.ts"
+    "e2e:integration": "playwright test --config playwright.integration.config.ts",
+    "sw": "tsx scripts/build-sw.ts",
+    "sw:check": "tsx scripts/build-sw.ts --check",
+    "e2e:visual": "playwright test --config playwright.visual.config.ts"
   },
   "dependencies": {
-    "@hookform/resolvers": "^5.9.1",
     "@opentelemetry/api": "^1.9.1",
     "@opentelemetry/api-logs": "^0.223.0",
     "@opentelemetry/instrumentation": "^0.223.0",
@@ -97,6 +99,7 @@
     "openapi-typescript": "^7.13.0",
     "prettier": "^3.9.8",
     "prettier-plugin-tailwindcss": "^0.8.1",
+    "sharp": "0.35.5",
     "storybook": "^10.6.0",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.23.15",

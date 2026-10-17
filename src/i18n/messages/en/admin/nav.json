@@ -1,8 +1,22 @@
 {
+  "home": "Overview",
   "tenants": "Tenants",
   "subscriptions": "Subscriptions",
-  "tariffs": "Tariffs",
+  "support_grants": "Support grants",
+  "data_subject_requests": "Data subject requests",
+  "utility_tariffs": "Utility tariffs",
   "devices": "Devices",
-  "support": "Support",
-  "audit": "Audit"
+  "notification_templates": "Message templates",
+  "feature_flags": "Feature flags",
+  "settings": "Platform settings",
+  "platform_users": "Platform users",
+  "outbox": "Event outbox",
+  "integration_events": "Integration events",
+  "audit_log": "Audit log",
+  "ai_usage": "AI usage",
+  "group": {
+    "customers": "Customers",
+    "platform": "Platform",
+    "operations": "Operations"
+  }
 }

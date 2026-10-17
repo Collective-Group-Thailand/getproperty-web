@@ -41,6 +41,11 @@ jobs:
         run: pnpm tokens:check
       - name: Font files match the installed packages
         run: pnpm fonts --check
+      # The staff service worker bundle and the PWA icons are committed too.
+      - name: Service worker bundle is up to date
+        run: pnpm sw:check
+      - name: PWA icons exist
+        run: pnpm exec tsx scripts/build-pwa-icons.ts --check
       # The generated API types, client flags and MSW base data must match the pinned contract.
       - name: Contract drift (generated files vs contract.lock.json)
         run: pnpm gen:api:check
@@ -92,10 +97,44 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Build Storybook
         run: pnpm build-storybook
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      # Visual baselines of the zone shells (e2e/visual/*-snapshots, updated deliberately).
+      - name: Shell visual snapshots
+        run: pnpm e2e:visual
       - uses: actions/upload-artifact@v4
         with:
           name: storybook-static
           path: storybook-static
+          retention-days: 14
+
+  lighthouse:
+    name: lighthouse (budgets per zone)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Build
+        run: pnpm build
+        env:
+          OWNER_HOST: "localhost:3200"
+          STAFF_HOST: "staff.localhost:3200"
+          ADMIN_HOST: "admin.localhost:3200"
+      - name: Lighthouse CI (owner-marketing, owner, staff, admin)
+        run: CHROME_PATH="$(node -e 'console.log(require("@playwright/test").chromium.executablePath())')" pnpm lhci
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lighthouse
+          path: .lighthouseci
           retention-days: 14
 
   # The sign-in flows once against the real getproperty-api at the pinned commit (e2e/integration/harness.ts):

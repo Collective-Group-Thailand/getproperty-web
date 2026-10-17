@@ -1,4 +1,5 @@
-# src/lib/observability — F1 1.3
+# src/lib/observability
 
-Sentry (tunnelled through this origin), OpenTelemetry `traceparent` to the API, Web Vitals RUM posted
-through the BFF. Nothing in F0.
+`scrub.ts` (what an error report may carry), `web-vitals.ts` (RUM through the zone BFF). Wired by
+`src/instrumentation.ts` (server: env validation, OpenTelemetry, Sentry, `onRequestError`) and
+`src/instrumentation-client.ts` (browser: Web Vitals, Sentry when a DSN is set). ADR-0004 §F1 1.3.

@@ -7,5 +7,12 @@
     "title": "Page not found",
     "body": "The link may be wrong, or the page has moved.",
     "home": "Back to the start"
+  },
+  "compliance": {
+    "refused": "Not allowed by law",
+    "legalRef": "Reference: {ref}",
+    "warning": "Please review before you continue",
+    "acknowledge": "Acknowledge and continue",
+    "shown": "Values concerned"
   }
 }

@@ -146,6 +146,7 @@ interface Response {
 }
 interface Operation {
   operationId?: string;
+  security?: Record<string, string[]>[];
   parameters?: (Parameter | Ref)[];
   responses?: Record<string, Response | Ref>;
 }
@@ -191,6 +192,8 @@ interface MockOperation {
   id: string;
   method: (typeof METHODS)[number];
   path: string;
+  /** The operation requires a bearer (an empty `security` means public, e.g. `/v1/admin/system/info`). */
+  secured: boolean;
   status: number;
   contentType: string | null;
   example: Json | undefined;
@@ -229,7 +232,15 @@ function walk(document: Document) {
           const first = Object.values(media.examples)[0];
           example = first ? deref<{ value?: Json }>(document, first).value : undefined;
         }
-        mocks.push({ id: operation.operationId, method, path, status: Number(status), contentType, example });
+        mocks.push({
+          id: operation.operationId,
+          method,
+          path,
+          secured: (operation.security ?? []).length > 0,
+          status: Number(status),
+          contentType,
+          example,
+        });
       }
 
       const problems: Record<string, number> = {};
@@ -292,6 +303,7 @@ export interface MockOperation {
   readonly id: string;
   readonly method: "get" | "post" | "put" | "patch" | "delete";
   readonly path: string;
+  readonly secured: boolean;
   readonly status: number;
   readonly contentType: string | null;
   readonly example?: unknown;

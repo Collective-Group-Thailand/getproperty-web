@@ -1,12 +1,9 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-
-import { otpCodeSchema, passwordLoginSchema } from "@/domain/forms/auth";
+import { isEmail, isOptionalOtpCode, isOtpCode, isPassword } from "@/domain/forms/auth-rules";
 import { authProblemMessage } from "@/features/shared/auth/problemMessage";
 import { platformActivateTotp, platformEnrollTotp, platformLogin, type ActionProblem } from "@/lib/auth/actions";
 import { Button } from "@/ui/components/Button";
@@ -32,14 +29,10 @@ export function PlatformSignIn({ consoleHref }: { consoleHref: string }) {
   } | null>(null);
   const [pending, startTransition] = useTransition();
 
-  const credentials = useForm<z.input<typeof passwordLoginSchema>>({
-    resolver: zodResolver(passwordLoginSchema),
+  const credentials = useForm<{ email: string; password: string; totpCode: string }>({
     defaultValues: { email: "", password: "", totpCode: "" },
   });
-  const activation = useForm<{ code: string }>({
-    resolver: zodResolver(z.object({ code: otpCodeSchema })),
-    defaultValues: { code: "" },
-  });
+  const activation = useForm<{ code: string }>({ defaultValues: { code: "" } });
   const message = (key: string | undefined) => (key ? t(`errors.${key}`) : undefined);
 
   const signIn = credentials.handleSubmit((values) =>
@@ -75,7 +68,7 @@ export function PlatformSignIn({ consoleHref }: { consoleHref: string }) {
         {authProblemMessage(t, problem)}
       </span>
       {problem.requestId ? (
-        <span className="text-subtle mt-1 block font-mono text-xs">
+        <span className="text-muted mt-1 block font-mono text-xs">
           {common("requestId")}: {problem.requestId}
         </span>
       ) : null}
@@ -112,7 +105,7 @@ export function PlatformSignIn({ consoleHref }: { consoleHref: string }) {
             autoComplete="one-time-code"
             maxLength={6}
             inputSize="lg"
-            {...activation.register("code")}
+            {...activation.register("code", { validate: isOtpCode })}
           />
         </Field>
         {errorBox}
@@ -126,10 +119,20 @@ export function PlatformSignIn({ consoleHref }: { consoleHref: string }) {
   return (
     <form className="flex flex-col gap-4" onSubmit={signIn} noValidate>
       <Field label={t("signIn.email")} error={message(credentials.formState.errors.email?.message)} required>
-        <Input type="email" autoComplete="username" inputSize="lg" {...credentials.register("email")} />
+        <Input
+          type="email"
+          autoComplete="username"
+          inputSize="lg"
+          {...credentials.register("email", { validate: isEmail })}
+        />
       </Field>
       <Field label={t("signIn.password")} error={message(credentials.formState.errors.password?.message)} required>
-        <Input type="password" autoComplete="current-password" inputSize="lg" {...credentials.register("password")} />
+        <Input
+          type="password"
+          autoComplete="current-password"
+          inputSize="lg"
+          {...credentials.register("password", { validate: isPassword })}
+        />
       </Field>
       {needsTotp ? (
         <Field
@@ -144,7 +147,7 @@ export function PlatformSignIn({ consoleHref }: { consoleHref: string }) {
             maxLength={6}
             inputSize="lg"
             autoFocus
-            {...credentials.register("totpCode")}
+            {...credentials.register("totpCode", { validate: isOptionalOtpCode })}
           />
         </Field>
       ) : null}

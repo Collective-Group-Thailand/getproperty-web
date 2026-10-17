@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
-import { safeNextPath } from "@/domain/forms/auth";
+import { safeNextPath } from "@/domain/forms/safe-next";
 import { PlatformSignIn } from "@/features/admin/auth/PlatformSignIn";
 import { AuthFrame } from "@/features/shared/auth/AuthFrame";
 import { getPlatformActor } from "@/lib/auth/actor";

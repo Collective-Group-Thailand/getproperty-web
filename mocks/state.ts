@@ -39,6 +39,22 @@ export interface StreamClient {
   send: (event: string, data: unknown) => void;
 }
 
+export interface InboxItem {
+  id: string;
+  userKey: string;
+  eventType: string | null;
+  title: string | null;
+  body: string;
+  createdAt: string;
+  readAt: string | null;
+}
+
+export interface QueuedReading {
+  idempotencyKey: string;
+  body: unknown;
+  at: string;
+}
+
 export interface MockState {
   access: Map<string, AccessGrant>;
   refresh: Map<string, RefreshGrant>;
@@ -48,6 +64,9 @@ export interface MockState {
   streamTokens: Map<string, { surface: string; channels: string[]; expiresAt: number }>;
   streams: Set<StreamClient>;
   readNotifications: Set<string>;
+  inbox: InboxItem[];
+  readings: Map<string, QueuedReading>;
+  webVitals: unknown[];
   log: LoggedRequest[];
   /** Access token lifetime; the suite shortens it to exercise refresh. */
   accessTtlMs: number;
@@ -63,6 +82,9 @@ function initial(): MockState {
     streamTokens: new Map(),
     streams: new Set(),
     readNotifications: new Set(),
+    inbox: [],
+    readings: new Map(),
+    webVitals: [],
     log: [],
     accessTtlMs: 15 * 60_000,
   };

@@ -1,14 +1,37 @@
 import { getTranslations } from "next-intl/server";
 
 import { ReadOnlyProvider } from "@/features/shared/providers/ReadOnlyProvider";
+import { RealtimeProvider } from "@/features/shared/realtime/RealtimeProvider";
+import { entitledMenu } from "@/features/shared/shell/menu";
 import { ReadOnlyBanner } from "@/features/shared/shell/ReadOnlyBanner";
-import { SessionSummary } from "@/features/shared/shell/SessionSummary";
-import { SignOutButton } from "@/features/shared/shell/SignOutButton";
+import { createApiClient, unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
-import { Wordmark } from "@/ui/brand";
-import { AppShell, TopBar } from "@/ui/components/AppShell";
+import { clientEnv } from "@/lib/env/client";
+import { serverEnv } from "@/lib/env/server";
 
-/** The staff PWA frame (F1 1.2: session header + read-only mode; bottom nav and offline in 1.3). */
+import { DeviceLock } from "../lock/DeviceLock";
+import { ServiceWorkerRegistrar } from "../pwa/ServiceWorkerRegistrar";
+import { STAFF_BOTTOM_NAV, STAFF_MENU } from "./menu";
+import { StaffShellFrame } from "./StaffShellFrame";
+
+let vapidCache: { key: string | undefined; at: number } | undefined;
+
+/** The VAPID key from the environment, else from the API's public endpoint (cached for an hour). */
+async function vapidPublicKey(): Promise<string | undefined> {
+  const configured = clientEnv().NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  if (configured) return configured;
+  if (vapidCache && Date.now() - vapidCache.at < 3_600_000) return vapidCache.key;
+  try {
+    const api = createApiClient({ baseUrl: serverEnv().API_INTERNAL_URL });
+    const { publicKey } = await unwrap(api.GET("/v1/auth/web-push/public-key"));
+    vapidCache = { key: publicKey, at: Date.now() };
+  } catch {
+    vapidCache = { key: undefined, at: Date.now() };
+  }
+  return vapidCache.key;
+}
+
+/** Server half of the staff shell: entitled work menus in bottom-nav order, labels, push key. */
 export async function StaffShell({
   me,
   children,
@@ -16,26 +39,34 @@ export async function StaffShell({
   me: Schemas["OperatorMeDto"] & { currentTenant: Schemas["CurrentTenantDto"] };
   children: React.ReactNode;
 }) {
-  const t = await getTranslations("shell");
+  const t = await getTranslations();
+  const entitled = entitledMenu(me.menu, STAFF_MENU);
+  const ordered = [
+    ...STAFF_BOTTOM_NAV.flatMap((key) => entitled.filter((item) => item.key === key)),
+    ...entitled.filter((item) => !(STAFF_BOTTOM_NAV as readonly string[]).includes(item.key)),
+  ].map((item) => ({ ...item, label: t(`staff.nav.${item.key}`) }));
   const readOnly = me.subscription?.readOnly ?? false;
+
   return (
     <ReadOnlyProvider initial={readOnly}>
-      <AppShell
-        variant="mobile"
-        skipLabel={t("skipToContent")}
-        header={
-          <TopBar>
-            <Wordmark size="sm" />
-            <SessionSummary zone="staff" me={me} />
-            <span className="ms-auto">
-              <SignOutButton loginHref="/login" />
-            </span>
-          </TopBar>
-        }
-      >
-        {readOnly ? <ReadOnlyBanner /> : null}
-        {children}
-      </AppShell>
+      <RealtimeProvider zone="staff" tenantId={me.currentTenant.id}>
+        <DeviceLock loginHref="/login">
+          <ServiceWorkerRegistrar enabled={process.env.NODE_ENV === "production"} />
+          <StaffShellFrame
+            tenants={me.tenants}
+            currentTenant={me.currentTenant}
+            userName={me.user.displayName}
+            roleLabel={t(`glossary.tenantRole.${me.currentTenant.role}`)}
+            items={ordered}
+            todayLabel={t("staff.nav.today")}
+            envBadge={clientEnv().NEXT_PUBLIC_ENV_BADGE}
+            vapidPublicKey={await vapidPublicKey()}
+            banner={readOnly ? <ReadOnlyBanner /> : undefined}
+          >
+            {children}
+          </StaffShellFrame>
+        </DeviceLock>
+      </RealtimeProvider>
     </ReadOnlyProvider>
   );
 }
