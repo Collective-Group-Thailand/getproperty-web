@@ -1,9 +1,16 @@
 {
   "extends": "./shared.json",
-  "$comment": "Staff PWA on a 6\" mid-range Android over 4G: LCP ≤ 2.5 s, CLS ≤ 0.1, initial JS ≤ 200 KB gz (D-179, docs/performance-budgets.md) — a hard limit. Measured as a phone with the Lighthouse mobile preset, signed in as the staff persona (scripts/lhci.ts); the staff host is reached through its Host header (`STAFF_HOST`). F4 adds readings and the capture flow.",
+  "$comment": "Staff PWA on a 6\" mid-range Android over 4G: LCP \u2264 2.5 s, CLS \u2264 0.1, initial JS \u2264 200 KB gz (D-179, docs/performance-budgets.md) \u2014 a hard limit. Measured as a phone with the Lighthouse mobile preset, signed in as the staff persona (scripts/lhci.ts); the staff host is reached through its Host header (`STAFF_HOST`). F4 adds Today, the reading round, inspections, devices and the install wizard (capture, camera and signature chunks load on first use).",
   "ci": {
     "collect": {
-      "url": ["http://staff.localhost:3200/", "http://staff.localhost:3200/readings"],
+      "url": [
+        "http://staff.localhost:3200/",
+        "http://staff.localhost:3200/readings",
+        "http://staff.localhost:3200/inspections",
+        "http://staff.localhost:3200/inspections/15e00000-0000-4000-8000-000000000002",
+        "http://staff.localhost:3200/devices",
+        "http://staff.localhost:3200/devices/install"
+      ],
       "numberOfRuns": 3,
       "settings": {
         "formFactor": "mobile",

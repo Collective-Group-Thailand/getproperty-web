@@ -43,6 +43,26 @@ them hard limits once the reductions below landed.
 Lighthouse reported the same figures (±0.2 KB; e.g. staff 187.3 KB in all three runs); accessibility 1.0 on every
 page of every set.
 
+## Staff PWA after F4 (2026-10-17, `pnpm lhci staff`, mobile preset, signed in as the staff persona)
+
+| URL | Initial JS | Budget | Headroom | What loads later (on first use) |
+|---|---|---|---|---|
+| `/` (Today) | 190.2 KB | 200 KB | 9.8 KB | — |
+| `/readings` (round) | 197.2 KB | 200 KB | 2.8 KB | capture flow (camera, compression, keypad, API client) |
+| `/inspections` | 189.0 KB | 200 KB | 11.0 KB | — |
+| `/inspections/[id]` (checklist) | 197.4 KB | 200 KB | 2.6 KB | camera, keypad, completion with signature pads |
+| `/devices` | 190.2 KB | 200 KB | 9.8 KB | — |
+| `/devices/install` (wizard) | 195.6 KB | 200 KB | 4.4 KB | scanner panel, camera, keypad, identify button |
+
+Accessibility 1.0 on every URL. What keeps the screens in budget: the capture flow, the camera, the
+keypad (where it is not the first thing on screen), the scanner and the signature pads are `lazyWarm`
+chunks (warmed on the first tap, cached by the service worker for offline use); staff status badges come
+from one status map each (`StatusBadgeOf`) instead of every domain's glyphs (`DomainStatusBadge`); the
+round list's evidence thumbnails use a plain typed `fetch` instead of the API client. The thin headroom on
+the round and the checklist is where the next staff feature must look first (`pnpm analyze`). LCP is a
+warning-level lab figure here (2.1–3.5 s simulated on a runner shared with other builds); Web Vitals RUM
+is the real signal.
+
 ## What made the difference
 
 Measured step by step on the same pages (savings are the measured deltas of each step):
