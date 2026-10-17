@@ -1,0 +1,44 @@
+{
+  "tenantType": {
+    "apartment": "อพาร์ตเมนต์",
+    "condo_juristic": "นิติบุคคลอาคารชุด",
+    "pm_company": "บริษัทบริหารอาคาร",
+    "landlord": "เจ้าของห้องให้เช่า"
+  },
+  "tenantRole": {
+    "owner": "เจ้าของ",
+    "manager": "ผู้จัดการ",
+    "staff": "เจ้าหน้าที่",
+    "accountant": "ฝ่ายบัญชี"
+  },
+  "platformRole": {
+    "platform_admin": "ผู้ดูแลแพลตฟอร์ม",
+    "support": "ซัพพอร์ต",
+    "field_engineer": "วิศวกรภาคสนาม",
+    "finance": "การเงิน"
+  },
+  "terms": {
+    "tenant": "องค์กรลูกค้า",
+    "property": "โครงการ",
+    "building": "อาคาร",
+    "floor": "ชั้น",
+    "unit": "ห้อง",
+    "party": "คู่สัญญา",
+    "resident": "ผู้เช่า/ผู้พักอาศัย",
+    "occupancy": "การเข้าพัก",
+    "lease": "สัญญาเช่า",
+    "invoice": "บิล",
+    "invoiceLine": "รายการในบิล",
+    "payment": "การชำระเงิน",
+    "receipt": "ใบเสร็จ",
+    "ratePlan": "แผนอัตราค่าบริการ",
+    "billingCycle": "รอบบิล",
+    "assetItem": "อุปกรณ์/ทรัพย์สิน",
+    "meterAssignment": "การผูกมิเตอร์",
+    "meterReading": "การจดมิเตอร์",
+    "serviceRequest": "แจ้งซ่อม",
+    "workOrder": "ใบงาน",
+    "deposit": "เงินประกัน",
+    "utilityLoss": "ค่าน้ำไฟรั่วไหล"
+  }
+}

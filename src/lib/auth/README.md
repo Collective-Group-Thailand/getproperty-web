@@ -1,6 +1,7 @@
-# src/lib/auth — F1
+# src/lib/auth
 
-`__Host-gp_at` / `__Host-gp_rt` / `__Host-gp_tenant` (current tenant — the SaaS customer organisation, D-151)
-cookies, login/logout server actions, refresh, current actor (`/v1/{owner|staff|admin}/me`)
-(ADR-0004, 00-master-plan.md §4). The LIFF id-token exchange lives in `getproperty-liff` (D-154).
-Nothing in F0.
+Sessions and sign-in (ADR-0004 §F1 1.2). `cookies.ts` (names, flags, lifetimes), `refresh.ts`
+(single-flight rotation), `proxy-session.ts` (refresh before rendering), `session.ts` (cookie writes in
+Server Actions), `actions.ts` (sign-in, tenant choice, sign-out — the only place tokens are handled),
+`actor.ts` (`/me` per request), `guards.ts` (console route guards), `zones.ts` (audience, `/me` path and
+BFF allow-list per zone).

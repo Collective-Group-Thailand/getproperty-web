@@ -58,8 +58,10 @@ const eslintConfig = [
       "playwright-report/**",
       "test-results/**",
       "storybook-static/**",
+      ".integration/**",
       // Generated from the OpenAPI contract (F1). `pnpm gen:api --check` keeps it honest, not the linter.
       "src/lib/api/schema.d.ts",
+      "src/lib/api/generated/**",
       "mocks/generated/**",
       "next-env.d.ts",
     ],

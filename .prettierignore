@@ -16,3 +16,5 @@ src/lib/api/schema.d.ts
 mocks/generated
 contract/openapi.json
 src/ui/fonts/files
+.integration
+src/lib/api/generated

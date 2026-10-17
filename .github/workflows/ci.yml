@@ -4,6 +4,9 @@ on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    - cron: "17 19 * * *"
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -38,6 +41,9 @@ jobs:
         run: pnpm tokens:check
       - name: Font files match the installed packages
         run: pnpm fonts --check
+      # The generated API types, client flags and MSW base data must match the pinned contract.
+      - name: Contract drift (generated files vs contract.lock.json)
+        run: pnpm gen:api:check
       - name: Typecheck
         run: pnpm typecheck
       # Includes the WCAG 2.2 AA contrast gate over every semantic token pair in all three themes
@@ -92,4 +98,39 @@ jobs:
           path: storybook-static
           retention-days: 14
 
-  # F1 adds: `contract` (pnpm gen:api --check against contract.lock.json) and `lighthouse` (pnpm lhci).
+  # The sign-in flows once against the real getproperty-api at the pinned commit (e2e/integration/harness.ts):
+  # needs sibling checkouts of getproperty-api and collective-asset-core, so it runs nightly and on demand.
+  integration:
+    name: e2e:integration (real getproperty-api)
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          path: getproperty-web
+      - uses: actions/checkout@v5
+        with:
+          repository: collective-group/getproperty-api
+          path: getproperty-api
+          fetch-depth: 0
+          token: ${{ secrets.SIBLING_REPOS_TOKEN }}
+      - uses: actions/checkout@v5
+        with:
+          repository: collective-group/collective-asset-core
+          path: collective-asset-core
+          token: ${{ secrets.SIBLING_REPOS_TOKEN }}
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: getproperty-web/package.json
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: getproperty-web/.nvmrc
+      - run: pnpm install --frozen-lockfile && pnpm build
+        working-directory: collective-asset-core
+      - run: pnpm install --frozen-lockfile
+        working-directory: getproperty-api
+      - run: pnpm install --frozen-lockfile && pnpm exec playwright install --with-deps chromium
+        working-directory: getproperty-web
+      - run: pnpm e2e:integration
+        working-directory: getproperty-web

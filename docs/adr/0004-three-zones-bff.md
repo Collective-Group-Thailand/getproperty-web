@@ -73,3 +73,36 @@ building staff) and the platform (Collective Group staff).
   `same-origin`, HSTS (production), and `X-Robots-Tag: noindex, nofollow` on every response except the
   owner marketing pages (`src/lib/zones/marketing.ts`). Files the proxy never sees (public assets) get
   the zone-independent baseline from `next.config.ts`. `/robots.txt` on staff/admin disallows all.
+
+### F1 1.2 — BFF, sessions, sign-in
+- **Cookies** exactly as decided; the access cookie's `Max-Age` is the token's lifetime minus 30 s so
+  the proxy refreshes *before* the API would answer 401. `__Host-gp_tenant` only ever carries a uuid
+  (validated on read) and is written only by the `selectTenant` Server Action after checking the
+  tenant against `/me`.
+- **Refresh, once per refresh token per process** (`src/lib/auth/refresh.ts`): concurrent callers
+  share the in-flight exchange and callers within 30 s get the same new pair, because a rotated
+  refresh token presented twice revokes the whole sign-in (D-163). A refused refresh clears the
+  session cookies (the tenant choice stays); an unavailable API leaves them for the next try.
+  *Residual risk*: two server instances can still race in the instant of expiry; sticky sessions or
+  a shared cache close it when the web tier scales out.
+- **Proxy** refreshes for page requests only (`refreshBeforeRender`): the new tokens go on the
+  request's `cookie` header (so this render's Server Components use them) and on the response.
+- **BFF** (`createBffHandler`): allow-list on whole path segments plus a deny-list (`/v1/resident`,
+  `/v1/technician`, `/v1/device`) that wins over it; `/v1/auth/refresh|logout` are not proxied (the
+  server calls them). Non-GET requires `Origin` equal to the request's own origin, `Sec-Fetch-Site:
+  same-origin` when present, and `x-getproperty-csrf: 1`. Bodies ≤ 1 MiB (presigned uploads for files).
+  Client `Authorization`, `Cookie` and `X-Tenant-Id` are never forwarded. Responses are streamed
+  (`text/event-stream` gets `X-Accel-Buffering: no`), `Cache-Control: no-store, private`, upstream
+  `Set-Cookie`/`Content-Encoding`/`Content-Length` dropped. A token pair answered through the BFF is
+  turned into cookies and the browser gets only `{ subject }`.
+- **Sign-in** is Server Actions (`src/lib/auth/actions.ts`): operator OTP (`requestOperatorOtp`,
+  `verifyOperatorOtp` with the D-145 invitation code), operator email + password + TOTP, platform
+  email + password + TOTP with enrolment at first sign-in (QR rendered server-side, D-164), tenant
+  choice, sign-out (revokes the refresh family upstream). After an operator sign-in a single active
+  tenant is remembered; several without a valid remembered choice → the tenant picker. Staff and admin
+  take `gp_locale` from `/me.user.language` at sign-in. `/join?code=` (the API's `inviteUrl`) forwards
+  to sign-in with the invitation.
+- **Guards** (`requireOperator`, `requirePlatform`) in the console layouts read `/me` once per
+  request (React `cache`); `401`/`auth.wrong_audience` → sign-in with `?next=` (same-site paths only),
+  a stale tenant choice is retried without `X-Tenant-Id`, no current tenant → picker. The API stays
+  the enforcement point.

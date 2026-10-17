@@ -20,5 +20,18 @@
       "staff": "Staff",
       "admin": "Admin"
     }
+  },
+  "tenantSwitcher": {
+    "label": "Switch tenant",
+    "current": "Tenant: {name}"
+  },
+  "userMenu": {
+    "label": "My account",
+    "role": "Role: {role}"
+  },
+  "readOnly": {
+    "title": "This account is read-only",
+    "body": "The subscription is suspended. You can view and export data, but cannot change it or issue invoices until the subscription is paid (D-082).",
+    "action": "View subscription"
   }
 }

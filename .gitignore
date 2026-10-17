@@ -16,6 +16,7 @@ test-results/
 storybook-static/
 .lighthouseci/
 lighthouse/.port-*.json
+.integration/
 
 # environment
 .env

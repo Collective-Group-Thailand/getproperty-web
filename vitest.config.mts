@@ -29,7 +29,7 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./src/ui/test/setup.ts"],
     include: ["src/**/*.test.{ts,tsx}", "scripts/**/*.test.ts", "eslint-rules/**/*.test.ts"],
-    exclude: ["node_modules", ".next", "e2e", "storybook-static"],
+    exclude: ["node_modules", ".next", "e2e", "storybook-static", ".integration"],
     css: false,
     // next-intl's ESM middleware imports `next/server` without an extension, which Node's resolver
     // refuses; inlining lets Vite resolve it the way Next does.

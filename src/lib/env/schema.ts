@@ -76,11 +76,6 @@ function serverSchema(production: boolean) {
     API_INTERNAL_URL: production ? urlValue : urlValue.default("http://localhost:4000"),
     /** Build-time only (`pnpm gen:api --adopt`); validated so a typo is caught where it is set. */
     API_CONTRACT_SOURCE: optionalString,
-    /** `1` serves the API from MSW inside this server (`pnpm dev:mock`, the e2e suite). */
-    API_MOCKS: z
-      .enum(["0", "1", ""])
-      .optional()
-      .transform((value) => value === "1"),
     SENTRY_DSN: optionalUrl,
     SENTRY_ENVIRONMENT: optionalString,
     SENTRY_TRACES_SAMPLE_RATE: sampleRate,

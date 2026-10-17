@@ -1,0 +1,44 @@
+{
+  "tenantType": {
+    "apartment": "Apartment",
+    "condo_juristic": "Condominium juristic person",
+    "pm_company": "Property management company",
+    "landlord": "Landlord"
+  },
+  "tenantRole": {
+    "owner": "Owner",
+    "manager": "Manager",
+    "staff": "Staff",
+    "accountant": "Accountant"
+  },
+  "platformRole": {
+    "platform_admin": "Platform admin",
+    "support": "Support",
+    "field_engineer": "Field engineer",
+    "finance": "Finance"
+  },
+  "terms": {
+    "tenant": "Tenant",
+    "property": "Property",
+    "building": "Building",
+    "floor": "Floor",
+    "unit": "Unit",
+    "party": "Party",
+    "resident": "Resident",
+    "occupancy": "Occupancy",
+    "lease": "Lease",
+    "invoice": "Invoice",
+    "invoiceLine": "Invoice line",
+    "payment": "Payment",
+    "receipt": "Receipt",
+    "ratePlan": "Rate plan",
+    "billingCycle": "Billing cycle",
+    "assetItem": "Asset item",
+    "meterAssignment": "Meter assignment",
+    "meterReading": "Meter reading",
+    "serviceRequest": "Service request",
+    "workOrder": "Work order",
+    "deposit": "Deposit",
+    "utilityLoss": "Utility loss"
+  }
+}

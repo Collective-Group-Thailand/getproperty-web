@@ -1,6 +1,8 @@
 import createIntlMiddleware from "next-intl/middleware";
 import { NextRequest, NextResponse } from "next/server";
 
+import { PATH_HEADER } from "@/lib/auth/guards-shared";
+import { applyCookies, refreshBeforeRender } from "@/lib/auth/proxy-session";
 import { serverEnv } from "@/lib/env/server";
 import { createNonce, securityHeaders, sentryOriginFromDsn } from "@/lib/security/headers";
 import {
@@ -23,7 +25,7 @@ import { routing } from "@/i18n/routing";
  *    (`/tenant`, `/resident`, D-154) are a 404 on every host.
  * 3. A per-request CSP nonce; the request carries the zone and the CSP (Next stamps the nonce on its
  *    own scripts from the request's CSP header).
- * 4. Access-token refresh before rendering (`refreshSession`, F1 1.2) so a Server Component never
+ * 4. Access-token refresh before rendering (`refreshBeforeRender`, F1 1.2) so a Server Component never
  *    renders a signed-out page for a user whose refresh token is still good.
  * 5. Routing: the owner host goes through next-intl (`th` at `/`, `en` at `/en`); the staff and admin
  *    hosts are rewritten onto their segment. `/bff/*` is each zone's own BFF — the owner's lives at
@@ -117,6 +119,12 @@ export async function proxy(request: NextRequest) {
   requestHeaders.set(ZONE_HEADER, zone);
   requestHeaders.set("x-nonce", nonce);
   requestHeaders.set("content-security-policy", headers["Content-Security-Policy"]!);
+  requestHeaders.set(PATH_HEADER, `${request.nextUrl.pathname}${request.nextUrl.search}`);
+
+  // Pages only: the BFF refreshes for itself, and assets need no session.
+  const session =
+    route.kind === "intl" || route.kind === "rewrite" ? await refreshBeforeRender(request, env.API_INTERNAL_URL) : null;
+  if (session?.cookieHeader !== undefined) requestHeaders.set("cookie", session.cookieHeader);
 
   let response: NextResponse;
   if (route.kind === "intl") {
@@ -129,6 +137,7 @@ export async function proxy(request: NextRequest) {
 
   for (const [name, value] of Object.entries(headers)) response.headers.set(name, value);
   response.headers.set(ZONE_HEADER, zone);
+  if (session) applyCookies(response, session.cookies);
   return response;
 }
 

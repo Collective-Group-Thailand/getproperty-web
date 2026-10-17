@@ -9,7 +9,6 @@ describe("parseServerEnv", () => {
     expect(env.STAFF_HOST).toBe("staff.localhost:3000");
     expect(env.API_INTERNAL_URL).toBe("http://localhost:4000");
     expect(env.ZONES).toEqual(["owner", "staff", "admin"]);
-    expect(env.API_MOCKS).toBe(false);
   });
 
   it("requires every host and the API URL in production, listing all of them", () => {

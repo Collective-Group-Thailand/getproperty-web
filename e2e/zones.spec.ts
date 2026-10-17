@@ -17,8 +17,8 @@ const ZONES = [
 
 for (const { zone, host, lang, theme } of ZONES) {
   test.describe(`${zone} zone`, () => {
-    test("renders its shell with the wordmark", async ({ page }) => {
-      const response = await page.goto(`${host}/`);
+    test("renders its sign-in page with the wordmark in its own root layout", async ({ page }) => {
+      const response = await page.goto(`${host}/login`);
       expect(response?.status()).toBe(200);
 
       const html = page.locator("html");
@@ -26,7 +26,7 @@ for (const { zone, host, lang, theme } of ZONES) {
       await expect(html).toHaveAttribute("lang", lang);
       await expect(html).toHaveAttribute("data-theme", theme);
 
-      await expect(page.getByTestId("zone-placeholder")).toHaveAttribute("data-zone", zone);
+      await expect(page.getByTestId("auth-card")).toBeVisible();
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
       await expect(page.locator("header").getByText("getproperty", { exact: true })).toBeVisible();
       await expect(page.locator("main#main")).toHaveCount(1);
@@ -35,13 +35,13 @@ for (const { zone, host, lang, theme } of ZONES) {
     });
 
     test("is axe-clean (WCAG 2.2 AA)", async ({ page }) => {
-      await page.goto(`${host}/`);
+      await page.goto(`${host}/login`);
       const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
       expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([]);
     });
 
     test("sends a nonce CSP and the zone's permissions", async ({ page }) => {
-      const response = await page.goto(`${host}/`);
+      const response = await page.goto(`${host}/login`);
       const headers = response!.headers();
       expect(headers["content-security-policy"]).toMatch(/script-src 'self' 'nonce-[^']+' 'strict-dynamic'/);
       expect(headers["permissions-policy"]).toContain(zone === "staff" ? "camera=(self)" : "camera=()");
@@ -99,12 +99,12 @@ test("the owner host serves English under /en", async ({ page }) => {
 });
 
 test("the theme toggle stamps data-theme and the gp_theme cookie", async ({ page, context }) => {
-  await page.goto(`${HOSTS.staff}/`);
+  await page.goto(`${HOSTS.owner}/`);
   await page.getByRole("button", { name: "ธีม" }).click();
-  await page.getByRole("menuitem", { name: "คอนทราสต์สูง" }).click();
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "hc");
-  const cookie = (await context.cookies(HOSTS.staff)).find((c) => c.name === "gp_theme");
-  expect(cookie?.value).toBe("hc");
+  await page.getByRole("menuitem", { name: "มืด" }).click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
+  const cookie = (await context.cookies(HOSTS.owner)).find((c) => c.name === "gp_theme");
+  expect(cookie?.value).toBe("dark");
   await page.reload();
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "hc");
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "dark");
 });
