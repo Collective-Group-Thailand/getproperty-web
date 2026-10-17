@@ -28,7 +28,13 @@ export function ImageViewer({ src, alt, labels, className, "data-testid": testId
   const zoom = STEPS[step]!;
   return (
     <div className={cn("flex flex-col gap-2", className)} data-testid={testId} data-zoom={zoom}>
-      <div className="border-border bg-bg-subtle max-h-[70vh] overflow-auto rounded-md border">
+      {/* Focusable so the zoomed picture can be scrolled with the keyboard (WCAG 2.1.1). */}
+      <div
+        className="border-border bg-bg-subtle max-h-[70vh] overflow-auto rounded-md border"
+        tabIndex={0}
+        role="region"
+        aria-label={alt}
+      >
         {/* eslint-disable-next-line @next/next/no-img-element -- a signed, short-lived URL (contract §3), not an optimisable asset */}
         <img
           src={src}

@@ -95,5 +95,11 @@
       "arrears": "Arrears",
       "documents": "Documents"
     }
+  },
+  "export": {
+    "working": "Preparing the file…",
+    "download": "Download",
+    "downloadRows": "Download ({count, plural, one {# row} other {# rows}})",
+    "failed": "The export failed: {error}"
   }
 }

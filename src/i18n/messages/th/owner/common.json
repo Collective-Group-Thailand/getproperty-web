@@ -95,5 +95,11 @@
       "arrears": "ค้างชำระ",
       "documents": "เอกสาร"
     }
+  },
+  "export": {
+    "working": "กำลังเตรียมไฟล์…",
+    "download": "ดาวน์โหลด",
+    "downloadRows": "ดาวน์โหลด ({count} รายการ)",
+    "failed": "ส่งออกไม่สำเร็จ: {error}"
   }
 }

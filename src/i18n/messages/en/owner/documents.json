@@ -1,0 +1,26 @@
+{
+  "title": "Documents",
+  "description": "Invoices, receipts, notes and statements of a month.",
+  "zip": "Download the month as zip",
+  "open": "Open",
+  "size": "{kb} KB",
+  "kind": {
+    "pdf_invoice": "Invoice",
+    "pdf_receipt": "Receipt",
+    "pdf_tax_invoice": "Tax invoice",
+    "pdf_note": "Credit / debit note",
+    "pdf_statement": "Statement",
+    "contract": "Lease"
+  },
+  "filter": {
+    "period": "Month",
+    "kind": "Kind",
+    "allKinds": "All kinds",
+    "search": "Search",
+    "searchPlaceholder": "Number or unit"
+  },
+  "empty": {
+    "title": "No documents this month",
+    "body": "Choose another month or kind."
+  }
+}

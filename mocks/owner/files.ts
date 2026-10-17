@@ -73,15 +73,17 @@ export const fileHandlers: HttpHandler[] = [
     const origin = new URL(request.url).origin;
     const stored = state.staff.files.get(fileId);
     if (stored && stored.file.uploadState === "presigned") return problem(op, "document.not_uploaded");
-    // Seeded evidence (meter photos, inspection photos, slips) has no upload: a placeholder picture.
+    // Seeded evidence (meter photos, inspection photos, slips) has no upload: a placeholder picture;
+    // the billing documents archive (invoice and receipt PDFs) answers a placeholder PDF.
+    const financial = fileId.endsWith("0a4d") || state.owner.receipts.some((receipt) => receipt.id === fileId);
     const file: Schemas["FileDto"] = stored?.file ?? {
       id: fileId,
-      kind: "meter_photo",
+      kind: financial ? "pdf_invoice" : "meter_photo",
       scopeType: "unit",
       scopeId: null,
       buildingId: BUILDING_A,
       title: null,
-      mimeType: "image/svg+xml",
+      mimeType: financial ? "application/pdf" : "image/svg+xml",
       sizeBytes: 1,
       width: 300,
       height: 200,

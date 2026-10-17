@@ -1,0 +1,80 @@
+{
+  "title": "Arrears",
+  "description": "What residents still owe, by how long it has been overdue.",
+  "export": "Export to Excel",
+  "totalBalance": "Total owed",
+  "parties": "{count, plural, one {# resident} other {# residents}}",
+  "invoices": "{count, plural, one {# open invoice} other {# open invoices}}",
+  "bucket": {
+    "current": "Not yet due",
+    "d1_30": "1–30 days",
+    "d31_60": "31–60 days",
+    "d61_90": "61–90 days",
+    "d90p": "Over 90 days"
+  },
+  "sort": {
+    "balance": "Largest balance",
+    "days_overdue": "Longest overdue",
+    "unit": "Unit"
+  },
+  "filter": {
+    "search": "Search",
+    "searchPlaceholder": "Resident or unit",
+    "bucket": "Overdue",
+    "allBuckets": "Any age",
+    "minDays": "At least days overdue",
+    "sort": "Sort"
+  },
+  "col": {
+    "party": "Resident",
+    "unit": "Unit",
+    "balance": "Balance",
+    "days": "Days overdue"
+  },
+  "empty": {
+    "title": "Nothing overdue",
+    "body": "No resident owes money with these filters."
+  },
+  "policy": "Reminders and late fees",
+  "policyHint": "The policy in force; it is changed in the settings.",
+  "changeSettings": "Change in settings",
+  "setting": {
+    "reminders.schedule": "Reminder schedule",
+    "late_fee.enabled": "Late fee",
+    "late_fee.amount": "Late fee amount",
+    "payments.allow_partial": "Partial payments"
+  },
+  "remind": {
+    "button": "Send reminder",
+    "title": "Send a reminder now?",
+    "body": "{invoice}: {balance} still due. Quiet hours apply.",
+    "sent": "Reminder sent"
+  },
+  "entry": {
+    "invoice": "Invoice",
+    "payment": "Payment",
+    "credit_note": "Credit note",
+    "debit_note": "Debit note",
+    "refund": "Refund",
+    "write_off": "Write-off",
+    "deposit_offset": "Deposit offset",
+    "opening": "Opening balance"
+  },
+  "party": {
+    "description": "Open invoices and the account history.",
+    "recordPayment": "Record a payment",
+    "openInvoices": "Open invoices",
+    "credit": "Credit held: {amount}",
+    "due": "Due {date}",
+    "noOpen": "No open invoices.",
+    "ledger": "Account history",
+    "ledgerHint": "Every invoice, payment and note with the balance after it.",
+    "col": {
+      "date": "Date",
+      "entry": "Entry",
+      "unit": "Unit",
+      "amount": "Amount",
+      "balance": "Balance"
+    }
+  }
+}
