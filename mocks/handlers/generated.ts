@@ -18,8 +18,8 @@ function mswPath(path: string): string {
   return `*${path.replace(/\{(\w+)\}/g, ":$1")}`;
 }
 
-function surfaceOf(path: string): "auth" | "owner" | "staff" | "admin" {
-  return path.split("/")[2] as "auth" | "owner" | "staff" | "admin";
+function surfaceOf(path: string): "auth" | "public" | "owner" | "staff" | "admin" {
+  return path.split("/")[2] as "auth" | "public" | "owner" | "staff" | "admin";
 }
 
 function documents(operationId: string, code: string): boolean {
@@ -41,7 +41,7 @@ export function generatedHandlers(): HttpHandler[] {
   return MOCK_OPERATIONS.map((operation) =>
     http[operation.method](mswPath(operation.path), ({ request }) => {
       const surface = surfaceOf(operation.path);
-      if (!operation.secured || surface === "auth") return respond(operation);
+      if (!operation.secured || surface === "auth" || surface === "public") return respond(operation);
 
       const auth = authenticate(request, surface === "admin" ? "platform" : "operator");
       if (!auth.ok) {

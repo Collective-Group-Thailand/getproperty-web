@@ -1,39 +1,42 @@
 import "server-only";
 
+import type { Schemas } from "@/lib/api/types";
 import { serverEnv } from "@/lib/env/server";
-import { publicPlansSchema, publicTariffSchema, type PublicPlan, type PublicTariff } from "@/lib/api/pending";
+
+export type PublicPlan = Schemas["PublicPlanDto"];
+export type PublicTariff = Schemas["PublicTariffDto"];
 
 /*
- * CONTRACT-REQUEST — the public marketing data (`GET /v1/public/plans`, `GET /v1/public/utility-tariffs/current`)
- * is requested in docs/contract-requests.md. Fetched on the server only (no BFF: anonymous), cached for
- * an hour, and every failure (endpoint missing, API down) degrades to "not available" — the marketing
- * pages never show a price or a rate that did not come from the API (configurable values, CLAUDE.md).
+ * The public marketing data (`/v1/public/*`, D-180): anonymous, read on the server only (no BFF), cached
+ * for five minutes like the API's own cache header. Every failure (API down, `tariff.not_found` while
+ * nothing is published) degrades to "not available" — the marketing pages never show a price or a
+ * rate that did not come from the API (configurable values, CLAUDE.md).
  */
-async function getJson(path: string): Promise<unknown | null> {
+async function getJson<T>(path: string): Promise<T | null> {
   try {
     const response = await fetch(`${serverEnv().API_INTERNAL_URL}${path}`, {
       headers: { accept: "application/json" },
-      next: { revalidate: 3600 },
+      next: { revalidate: 300 },
     });
-    return response.ok ? await response.json() : null;
+    return response.ok ? ((await response.json()) as T) : null;
   } catch {
     return null;
   }
 }
 
 export async function publicPlans(): Promise<PublicPlan[] | null> {
-  const parsed = publicPlansSchema.safeParse(await getJson("/v1/public/plans"));
-  return parsed.success ? parsed.data.data : null;
+  const body = await getJson<Schemas["PublicPlansDto"]>("/v1/public/plans");
+  return Array.isArray(body?.data) ? body.data : null;
 }
 
 export async function publicElectricityTariffs(): Promise<Partial<Record<"mea" | "pea", PublicTariff>>> {
   const result: Partial<Record<"mea" | "pea", PublicTariff>> = {};
   await Promise.all(
     (["mea", "pea"] as const).map(async (provider) => {
-      const parsed = publicTariffSchema.safeParse(
-        await getJson(`/v1/public/utility-tariffs/current?utility=electric&provider=${provider}`),
+      const tariff = await getJson<PublicTariff>(
+        `/v1/public/utility-tariffs/current?utility=electric&provider=${provider}`,
       );
-      if (parsed.success) result[provider] = parsed.data;
+      if (tariff && typeof tariff.ceilingPerUnit === "string") result[provider] = tariff;
     }),
   );
   return result;

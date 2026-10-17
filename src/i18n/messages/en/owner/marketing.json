@@ -65,7 +65,16 @@
     "contact": "Ask for a quote",
     "vat": "Prices exclude VAT",
     "unavailable": "Prices cannot be shown right now. Contact us on LINE for a quote.",
-    "choose": "Get started"
+    "choose": "Get started",
+    "perReport": "{price} / report",
+    "range": "{from}–{to}",
+    "from": "from {price}",
+    "addon": "Add-on",
+    "indicative": "Indicative price",
+    "module": {
+      "resident_liff": "Resident app in LINE",
+      "promptpay": "PromptPay payments"
+    }
   },
   "legal": {
     "title": "Terms and policies",

@@ -1,4 +1,5 @@
-import type { MenuDefinition } from "@/features/shared/shell/menu";
+import type { MenuRegistry } from "@/features/shared/shell/menu";
+import type { Schemas } from "@/lib/api/types";
 import { IconBank } from "@/ui/icons/glyphs/bank";
 import { IconBell } from "@/ui/icons/glyphs/bell";
 import { IconBill } from "@/ui/icons/glyphs/bill";
@@ -6,6 +7,7 @@ import { IconBuilding } from "@/ui/icons/glyphs/building";
 import { IconChart } from "@/ui/icons/glyphs/chart";
 import { IconChat } from "@/ui/icons/glyphs/chat";
 import { IconDashboard } from "@/ui/icons/glyphs/dashboard";
+import { IconGateway } from "@/ui/icons/glyphs/gateway";
 import { IconHistory } from "@/ui/icons/glyphs/history";
 import { IconKey } from "@/ui/icons/glyphs/key";
 import { IconLease } from "@/ui/icons/glyphs/lease";
@@ -23,7 +25,7 @@ import { IconTag } from "@/ui/icons/glyphs/tag";
 import { IconWallet } from "@/ui/icons/glyphs/wallet";
 
 /** Owner console routes per menu key (F2 builds the pages; groups follow the morning-dashboard flow). */
-export const OWNER_MENU: Readonly<Record<string, MenuDefinition>> = {
+export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
   dashboard: { href: "/dashboard", icon: IconDashboard, group: "operations" },
   buildings: { href: "/buildings", icon: IconBuilding, group: "operations" },
   units: { href: "/units", icon: IconRoom, group: "operations" },
@@ -31,6 +33,7 @@ export const OWNER_MENU: Readonly<Record<string, MenuDefinition>> = {
   leases: { href: "/leases", icon: IconLease, group: "operations" },
   deposits: { href: "/deposits", icon: IconWallet, group: "operations" },
   readings: { href: "/meters", icon: IconMeter, group: "operations" },
+  devices: { href: "/devices", icon: IconGateway, group: "operations" },
   utility_loss: { href: "/loss", icon: IconLoss, group: "operations" },
   service_requests: { href: "/service-requests", icon: IconStaff, group: "operations" },
   parcels: { href: "/parcels", icon: IconParcel, group: "operations" },

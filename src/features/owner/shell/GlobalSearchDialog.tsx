@@ -5,15 +5,14 @@ import { useTranslations } from "next-intl";
 import { useDeferredValue, useState } from "react";
 
 import { CSRF_HEADER } from "@/lib/api/headers";
-import type { SearchResult } from "@/lib/api/pending";
-import { parseSearchResults } from "@/lib/api/search";
+import { parseSearchResults, type SearchResult } from "@/lib/api/search";
 import { queryKeys } from "@/lib/api/query";
 import { QueryProvider } from "@/features/shared/providers/QueryProvider";
 import type { ShellNavItem } from "@/features/shared/shell/types";
 import { Input } from "@/ui/components/Input";
 import { Icon, type IconGlyph } from "@/ui/icons";
-import { IconBill } from "@/ui/icons/glyphs/bill";
 import { IconBuilding } from "@/ui/icons/glyphs/building";
+import { IconGateway } from "@/ui/icons/glyphs/gateway";
 import { IconLease } from "@/ui/icons/glyphs/lease";
 import { IconResident } from "@/ui/icons/glyphs/resident";
 import { IconRoom } from "@/ui/icons/glyphs/room";
@@ -25,7 +24,7 @@ const RESULT_ICON: Record<SearchResult["type"], IconGlyph> = {
   unit: IconRoom,
   party: IconResident,
   lease: IconLease,
-  invoice: IconBill,
+  device: IconGateway,
 };
 
 /** Where a search hit opens in the owner console (F2 routes). */
@@ -35,7 +34,7 @@ function resultHref(result: SearchResult, prefix: string): string {
     unit: `/units/${result.id}`,
     party: `/parties/${result.id}`,
     lease: `/leases/${result.id}`,
-    invoice: `/invoices/${result.id}`,
+    device: `/devices/${result.id}`,
   };
   return `${prefix}${paths[result.type]}`;
 }

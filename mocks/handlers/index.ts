@@ -5,7 +5,10 @@ import { contractRequestHandlers } from "./contract-requests";
 import { generatedHandlers } from "./generated";
 import { meHandlers } from "./me";
 import { notificationHandlers } from "./notifications";
+import { publicHandlers } from "./public";
 import { realtimeHandlers } from "./realtime";
+import { searchHandlers } from "./search";
+import { telemetryHandlers } from "./telemetry";
 
 /** Hand-written, stateful handlers first; the contract-generated base handlers answer the rest. */
 export function handlers(): HttpHandler[] {
@@ -14,6 +17,9 @@ export function handlers(): HttpHandler[] {
     ...meHandlers,
     ...notificationHandlers,
     ...realtimeHandlers,
+    ...publicHandlers,
+    ...searchHandlers,
+    ...telemetryHandlers,
     ...contractRequestHandlers,
     ...generatedHandlers(),
   ];

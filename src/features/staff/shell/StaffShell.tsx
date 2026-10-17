@@ -36,7 +36,7 @@ export async function StaffShell({
   me,
   children,
 }: {
-  me: Schemas["OperatorMeDto"] & { currentTenant: Schemas["CurrentTenantDto"] };
+  me: Schemas["StaffMeDto"] & { currentTenant: Schemas["CurrentTenantDto"] };
   children: React.ReactNode;
 }) {
   const t = await getTranslations();

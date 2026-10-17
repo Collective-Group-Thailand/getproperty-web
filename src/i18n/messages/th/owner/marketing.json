@@ -65,7 +65,16 @@
     "contact": "สอบถามราคา",
     "vat": "ราคายังไม่รวมภาษีมูลค่าเพิ่ม",
     "unavailable": "ขณะนี้ยังแสดงราคาไม่ได้ ติดต่อเราทาง LINE เพื่อรับใบเสนอราคา",
-    "choose": "เริ่มใช้งาน"
+    "choose": "เริ่มใช้งาน",
+    "perReport": "{price} / รายงาน",
+    "range": "{from}–{to}",
+    "from": "เริ่มต้น {price}",
+    "addon": "ส่วนเสริม",
+    "indicative": "ราคาเบื้องต้น",
+    "module": {
+      "resident_liff": "แอปผู้เช่าใน LINE",
+      "promptpay": "รับชำระผ่าน PromptPay"
+    }
   },
   "legal": {
     "title": "ข้อกำหนดและนโยบาย",

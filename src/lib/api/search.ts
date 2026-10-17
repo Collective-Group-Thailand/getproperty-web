@@ -1,14 +1,18 @@
-import type { SearchResult } from "./pending";
+import type { Schemas } from "./types";
 
-/*
- * CONTRACT-REQUEST — `GET /v1/owner/search` (docs/contract-requests.md). Type-only import of the
- * requested shape, so the browser bundle carries no schema library.
- */
-const SEARCH_TYPES = new Set(["building", "unit", "party", "lease", "invoice"]);
+export type SearchResult = Schemas["SearchHitDto"];
+
+const SEARCH_TYPES: ReadonlySet<string> = new Set<Schemas["SearchHitType"]>([
+  "building",
+  "unit",
+  "party",
+  "lease",
+  "device",
+]);
 
 /**
- * The search response checked without a schema library (the owner console's bundle stays lean):
- * anything not matching the requested shape is dropped.
+ * `GET /v1/owner/search` (D-180) checked without a schema library (the owner console's bundle stays
+ * lean): a hit of a type this build does not know yet is dropped rather than linked nowhere.
  */
 export function parseSearchResults(value: unknown): SearchResult[] {
   const data = (value as { data?: unknown } | null)?.data;

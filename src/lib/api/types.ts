@@ -10,7 +10,16 @@ export type Schemas = components["schemas"];
 export type Problem = Schemas["ProblemDetails"];
 export type ProblemFieldError = Schemas["ProblemFieldError"];
 export type TokenPair = Schemas["TokenPairDto"];
-export type OperatorMe = Schemas["OperatorMeDto"];
+export type OwnerMe = Schemas["OperatorMeDto"];
+/** `GET /v1/staff/me` — same shape as the owner's, with the staff PWA menu keys (D-180). */
+export type StaffMe = Schemas["StaffMeDto"];
+/** Either operator `me` (owner or staff surface). */
+export type OperatorMe = OwnerMe | StaffMe;
+/** The operator `me` answer per zone. */
+export interface OperatorMeByZone {
+  owner: OwnerMe;
+  staff: StaffMe;
+}
 export type AdminMe = Schemas["AdminMeDto"];
 
 /**

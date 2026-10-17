@@ -3,9 +3,8 @@ import type { IconGlyph } from "@/ui/icons";
 /**
  * Menu entitlements (`/v1/{owner,staff,admin}/me` → `menu`) are stable keys decided by the API from
  * permissions, tenant type and feature flags (getproperty-api `src/core/rbac/menu.ts`). Each zone maps
- * the keys it knows to a route, an icon and a label; a key it does not know yet is skipped (and asked
- * for as a named enum in docs/contract-requests.md). The UI hides what the user cannot do; the API
- * stays the enforcement point.
+ * every key of the contract enum to a route, an icon and a label (`MenuRegistry`). The UI hides what
+ * the user cannot do; the API stays the enforcement point.
  */
 export interface MenuDefinition {
   /** Path inside the zone (owner paths get the locale prefix when rendered). */
@@ -19,13 +18,22 @@ export interface MenuItem extends MenuDefinition {
   key: string;
 }
 
-export function entitledMenu(keys: readonly string[], registry: Readonly<Record<string, MenuDefinition>>): MenuItem[] {
-  const seen = new Set<string>();
+/**
+ * A zone's routes per menu key, typed against the contract's enum (`OwnerMenuKey`, `StaffMenuKey`,
+ * `AdminMenuKey`, D-180): a key the API adds fails the build until it has a route, an icon and a label.
+ * `null` = the key is served by another entry's route (e.g. staff `reading_rounds` by `readings`).
+ */
+export type MenuRegistry<Key extends string> = Readonly<Record<Key, MenuDefinition | null>>;
+
+export function entitledMenu<Key extends string>(keys: readonly Key[], registry: MenuRegistry<Key>): MenuItem[] {
+  const seenKeys = new Set<string>();
+  const seenHrefs = new Set<string>();
   const items: MenuItem[] = [];
   for (const key of keys) {
     const definition = registry[key];
-    if (!definition || seen.has(key)) continue;
-    seen.add(key);
+    if (!definition || seenKeys.has(key) || seenHrefs.has(definition.href)) continue;
+    seenKeys.add(key);
+    seenHrefs.add(definition.href);
     items.push({ key, ...definition });
   }
   return items;

@@ -62,8 +62,9 @@ describe("createApiClient", () => {
   });
 
   it("adds X-Request-Id and the static headers, skipping undefined ones", async () => {
-    await client.POST("/v1/owner/push-subscriptions", {
-      body: { endpoint: "https://push.test/x", keys: { p256dh: "a", auth: "b" } },
+    // Not an idempotent operation in the contract: no key is added.
+    await client.POST("/v1/owner/notifications/{notificationId}/actions/read", {
+      params: { path: { notificationId: "3b241101-e2bb-4255-8caf-4136c566a962" } },
     });
     const request = seen.at(-1)!;
     expect(request.headers.get("authorization")).toBe("Bearer t");

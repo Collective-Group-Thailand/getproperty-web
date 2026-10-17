@@ -6,6 +6,8 @@
   "data_subject_requests": "คำขอข้อมูลส่วนบุคคล",
   "utility_tariffs": "อัตราค่าไฟ-น้ำ",
   "devices": "อุปกรณ์",
+  "ota_releases": "อัปเดตเฟิร์มแวร์ (OTA)",
+  "ingest_dead_letters": "ข้อมูลที่รับไม่สำเร็จ",
   "notification_templates": "แม่แบบข้อความ",
   "feature_flags": "ฟีเจอร์แฟล็ก",
   "settings": "ตั้งค่าแพลตฟอร์ม",

@@ -6,6 +6,7 @@
   "leases": "Leases",
   "deposits": "Deposits",
   "readings": "Meters",
+  "devices": "Devices",
   "utility_loss": "Utility loss",
   "service_requests": "Service requests",
   "parcels": "Parcels",

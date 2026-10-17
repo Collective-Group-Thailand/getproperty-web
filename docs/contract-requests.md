@@ -2,16 +2,26 @@
 
 Endpoints or contract changes this frontend needs that the backend contract does not yet publish
 (contract §1). Mocks of missing endpoints are marked `// CONTRACT-REQUEST` in `mocks/handlers/`.
-Pinned contract: see `contract.lock.json`.
+Pinned contract: see `contract.lock.json`. What the API did with each request is recorded in
+getproperty-api `docs/contract-requests-triage.md` (D-180).
+
+## Open
 
 | Date | Method | Path | Purpose | Fields | Status |
 |---|---|---|---|---|---|
-| 2026-10-17 | — | `OperatorMeDto.menu`, `AdminMeDto.menu` | Menu entitlements are `string[]`; publish the keys as named enums (`OwnerMenuKey`, `StaffMenuKey`, `AdminMenuKey`) so a new key fails the web build until it has a route, label and icon (the web maps the keys of the API's `src/core/rbac/menu.ts` by hand and ignores unknown ones, F1 1.3). | enum components referenced by `menu.items` | open |
-| 2026-10-17 | — | `InvitationCreatedDto.inviteUrl` | Invitations of the Staff role should link to the staff host (`STAFF_HOST/join?code=`), the others to the owner host; today every link uses `PUBLIC_WEB_APP_URL`. The web app serves `/join?code=` on the owner host meanwhile. | per-role base URL (`PUBLIC_STAFF_APP_URL`) | open |
-| 2026-10-17 | GET | `/v1/owner/search?q=` | Global search of the owner console top bar (F1 1.3). Tenant-scoped (`X-Tenant-Id`), min 2 chars, ≤ 20 hits. Mocked in `mocks/handlers/contract-requests.ts`. | `{ data: [{ type: building\|unit\|party\|lease\|invoice, id, label, sublabel\|null }] }` | open |
-| 2026-10-17 | GET | `/v1/public/plans` | Pricing page (D-156) — prices are platform settings, so the public page must read them; no authentication, cacheable. | `{ data: [{ key, tenantType, name, summary, pricePerUnit (decimal string, VAT excl.)\|null, priceUnit: unit_month\|building_month\|building_year\|month, minimumUnits\|null, currency: "THB", features: string[] }] }` | open |
-| 2026-10-17 | GET | `/v1/public/utility-tariffs/current?utility=&provider=` | Loss-calculator teaser on the landing page: the published lawful ceiling per unit, no authentication (the operator version is `/v1/owner/utility-tariffs/current`). | `{ utility, provider, nameTh, tariffCode, ceilingPerUnit (decimal string), effectiveFrom, sourceUrl }` | open |
-| 2026-10-17 | POST | `/v1/{owner,staff,admin}/telemetry/web-vitals` | Web Vitals RUM through each zone BFF (F1 1.3 §4); anonymous on public pages; 202, no body. | `{ metrics: [{ name: LCP\|INP\|CLS\|FCP\|TTFB, value, rating, id, route, navigationType? }] }` | open |
-| 2026-10-17 | POST | `/v1/staff/readings` | One meter reading from the staff PWA — the offline queue's target (ADR-0007); `Idempotency-Key` required (contract §3). Refusals as problems (e.g. a reading below the previous one). B3.x. | `{ meterId, register (decimal string ≤ 3 dp), readAt, source: ocr\|manual, photoFileId\|null }` → 201 reading | open |
-| 2026-10-17 | — | `nextActions` on editable aggregates | Every resource with `/actions/{name}` routes lists the actions the actor may perform now (`nextActions: string[]`), so the UI never infers a transition from a status (`src/domain/nextActions.ts`). | `nextActions: string[]` | open |
-| 2026-10-17 | — | Status enums as named components | `InvoiceStatus`, `LeaseStatus`, `PaymentStatus`, `DepositStatus`, `ReadingReviewState`, `ReadingSource`, `MeterHealth`, `ServiceRequestStatus`, `WorkOrderStatus` (schema-design v2) — `src/domain/status` is typed against them through `ContractEnum` and switches to the generated type on adoption. | named enum components | open (published with B2–B5) |
+| 2026-10-17 | — | `InvoiceStatus`, `PaymentStatus`, `ServiceRequestStatus`, `WorkOrderStatus` | The remaining status enums as named components; `src/domain/status` keeps the planned values through `ContractEnum` until then. | named enum components | open — B4 (invoice, payment), B5 (service request, work order) per the triage |
+| 2026-10-17 | — | `PublicPlanDto.features` | The features are module keys (`A1`, `A2`, `C2`, `resident_liff`, …); the pricing page shows only the keys it has a label for. Publish `features` as a named enum (`PlanModuleKey`) or with display labels so a new module is never silently hidden. | `PlanModuleKey` enum, or `features: [{ key, labelTh, labelEn }]` | open |
+
+## Closed
+
+| Date | Method | Path | Purpose | Resolution |
+|---|---|---|---|---|
+| 2026-10-17 | — | `OperatorMeDto.menu`, `AdminMeDto.menu` | Menu keys as named enums. | **done** in api `13be5a7` (D-180): `OwnerMenuKey`, `StaffMenuKey` (staff `me` = `StaffMeDto`), `AdminMenuKey`. Adopted at api `c13978b`: `src/features/*/shell/menu.ts` are `MenuRegistry<Schemas["…MenuKey"]>` (a new key fails the build); new keys owner `devices`, staff `reading_rounds` (served by `/readings`), admin `ota_releases`, `ingest_dead_letters`. |
+| 2026-10-17 | — | `InvitationCreatedDto.inviteUrl` | Staff invitations on the staff host. | **done** in api `13be5a7`: Staff → `PUBLIC_STAFF_APP_URL/join?code=`. The staff host now serves `/join?code=` (→ `/login?invitation=`). |
+| 2026-10-17 | GET | `/v1/owner/search?q=` | Global search of the owner top bar. | **done** in api `13be5a7` (`SearchResultDto`, hit types building, unit, party, lease, device; invoices with B4). Mock moved to `mocks/handlers/search.ts`. |
+| 2026-10-17 | GET | `/v1/public/plans` | Pricing page (D-156). | **done** in api `13be5a7` (`PublicPlansDto`: single price or `priceFrom`/`priceTo`, `kind` plan/addon, `status: proposed`, `report` unit). The pricing page shows ranges, add-ons and the "indicative" badge. |
+| 2026-10-17 | GET | `/v1/public/utility-tariffs/current` | Loss-calculator teaser. | **done** in api `13be5a7` (`PublicTariffDto`; 404 `tariff.not_found` while nothing is published → the teaser hides). |
+| 2026-10-17 | POST | `/v1/{owner,staff,admin}/telemetry/web-vitals` | Web Vitals RUM. | **done** in api `13be5a7` (`WebVitalsReportDto`, 202). The client now sends route patterns (`routePattern`, ids → `[id]`). |
+| 2026-10-17 | POST | `/v1/staff/readings` | One meter reading from the staff PWA (offline queue target). | **done** in api `e00cfae` as **`POST /v1/staff/meter-readings`** (`MeterReadingCreateDto { assetItemId, photoDocumentId, typedValue?, readAt, note? }`, `Idempotency-Key`); the queue targets it (F4 4.1). |
+| 2026-10-17 | — | `nextActions` on editable aggregates | Actions the actor may take now. | **done** in api `13be5a7` / `e00cfae` (units, inspections, invitations, bank accounts, support grants, DSRs, tariff versions, devices, OTA rollouts, reading reviews). |
+| 2026-10-17 | — | Status enums as named components | `LeaseStatus`, `DepositStatus`, `ReadingSource`, `ReadingReviewState`, `MeterHealth`, `DeviceStatus` … | **done** for B2/B3 enums (`src/domain/status` now resolves them from the contract); the rest is the open row above. |

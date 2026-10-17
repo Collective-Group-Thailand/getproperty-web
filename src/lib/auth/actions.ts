@@ -102,7 +102,7 @@ async function operatorMe(zone: OperatorZone, accessToken: string, tenantId?: st
     headers: () => ({ authorization: `Bearer ${accessToken}`, "x-tenant-id": tenantId }),
     fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }),
   });
-  return unwrap(api.GET(zone === "owner" ? "/v1/owner/me" : "/v1/staff/me"));
+  return zone === "owner" ? unwrap(api.GET("/v1/owner/me")) : unwrap(api.GET("/v1/staff/me"));
 }
 
 /**

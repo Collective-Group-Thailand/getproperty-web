@@ -38,8 +38,8 @@ const OUT_MOCK_OPERATIONS = resolve(ROOT, "mocks/generated/operations.ts");
 const OUT_IDEMPOTENT = resolve(ROOT, "src/lib/api/generated/idempotent.ts");
 const OUT_MOCK_PROBLEMS = resolve(ROOT, "mocks/generated/problems.ts");
 
-/** Surfaces this app talks to. `/v1/resident`, `/v1/technician` belong to getproperty-liff (D-154). */
-const APP_SURFACES = ["/v1/auth/", "/v1/owner/", "/v1/staff/", "/v1/admin/"];
+/** Surfaces this app talks to (`/v1/public` from the server only, D-180). `/v1/resident`, `/v1/technician` belong to getproperty-liff (D-154). */
+const APP_SURFACES = ["/v1/auth/", "/v1/public/", "/v1/owner/", "/v1/staff/", "/v1/admin/"];
 
 interface ContractLock {
   $comment?: string;

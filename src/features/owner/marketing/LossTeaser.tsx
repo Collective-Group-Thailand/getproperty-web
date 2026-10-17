@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 
-import type { PublicTariff } from "@/lib/api/pending";
+import type { Schemas } from "@/lib/api/types";
+
+type PublicTariff = Schemas["PublicTariffDto"];
 import { Card } from "@/ui/components/Card";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 

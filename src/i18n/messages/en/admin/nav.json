@@ -6,6 +6,8 @@
   "data_subject_requests": "Data subject requests",
   "utility_tariffs": "Utility tariffs",
   "devices": "Devices",
+  "ota_releases": "OTA releases",
+  "ingest_dead_letters": "Ingest dead letters",
   "notification_templates": "Message templates",
   "feature_flags": "Feature flags",
   "settings": "Platform settings",
