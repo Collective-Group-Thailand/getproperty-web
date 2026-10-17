@@ -135,7 +135,6 @@ export function DatePicker({
         id={field.id}
         aria-describedby={field["aria-describedby"]}
         aria-invalid={field["aria-invalid"]}
-        aria-required={field.required}
         disabled={field.disabled}
         data-size={inputSize}
         className={cn(

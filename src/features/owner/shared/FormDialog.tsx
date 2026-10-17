@@ -37,6 +37,8 @@ export interface FormDialogProps {
   /** The fields; given the API's field errors of the last attempt. */
   children: (errors: Record<string, string>) => React.ReactNode;
   disabled?: boolean;
+  /** Opens on first render (a "new" link from another page, `?new=1`). */
+  defaultOpen?: boolean;
 }
 
 /**
@@ -59,10 +61,11 @@ export function FormDialog({
   onDone,
   children,
   disabled,
+  defaultOpen = false,
 }: FormDialogProps) {
   const common = useTranslations("common");
   const formId = useId();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const action = useApiAction();
   const errors = fieldErrors(action.error);
 

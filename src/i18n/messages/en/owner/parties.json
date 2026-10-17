@@ -1,0 +1,109 @@
+{
+  "title": "Residents & parties",
+  "description": "People and companies on your leases — residents, co-residents, occupants and guarantors.",
+  "new": "New resident",
+  "newTitle": "New resident or party",
+  "newBody": "The ID number is stored sealed; only Owners and Managers can see it, with a recorded purpose.",
+  "create": "Create",
+  "created": "Resident created",
+  "noContact": "No phone or email",
+  "lineLinked": "LINE linked",
+  "notLinked": "Not linked",
+  "filter": {
+    "search": "Search",
+    "searchPlaceholder": "Name, phone or email",
+    "type": "Type",
+    "allTypes": "All types"
+  },
+  "empty": {
+    "title": "No residents yet",
+    "body": "Add a resident here or while creating a lease."
+  },
+  "form": {
+    "type": "Type",
+    "person": "Person",
+    "company": "Company",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "companyName": "Company name",
+    "taxId": "Tax ID",
+    "taxIdHint": "13 digits",
+    "phone": "Mobile phone",
+    "phoneHint": "Used for the lease signing code and SMS invitations",
+    "email": "Email",
+    "idType": "ID document",
+    "thaiId": "Thai national ID card",
+    "passport": "Passport",
+    "otherId": "Other",
+    "idNumber": "ID number",
+    "idNumberHint": "Stored sealed",
+    "language": "Language",
+    "languageHint": "For messages, bills and the lease",
+    "th": "Thai",
+    "en": "English"
+  },
+  "detail": {
+    "type": {
+      "person": "Person",
+      "company": "Company"
+    },
+    "lineLinked": "LINE linked",
+    "lineNotLinked": "LINE not linked",
+    "newLease": "New lease",
+    "contact": "Contact",
+    "phone": "Phone",
+    "email": "Email",
+    "language": "Language",
+    "languages": {
+      "th": "Thai",
+      "en": "English"
+    },
+    "nationality": "Nationality",
+    "taxId": "Tax ID",
+    "idNumber": "ID number",
+    "sealed": "On file (sealed)",
+    "idMissing": "Not on file",
+    "emergency": "Emergency contact",
+    "occupancy": "Occupancy",
+    "unitLease": "Unit {unit} · {building}",
+    "noLeases": "No leases yet.",
+    "links": "Resident app logins",
+    "linksHint": "Logins linked to this party through an invitation or a match.",
+    "documents": "ID documents",
+    "documentsHint": "Each opening is recorded with its purpose."
+  },
+  "privacy": {
+    "reveal": "Show sealed data",
+    "hide": "Hide",
+    "title": "Show sealed personal data",
+    "body": "The purpose is recorded in the audit log with your name.",
+    "purpose": "Purpose",
+    "purposeHint": "For example: checking the lease before signing",
+    "confirm": "Show",
+    "idNumber": "ID number",
+    "emergencyPhone": "Emergency phone",
+    "noDocuments": "No ID documents.",
+    "document": "ID document",
+    "documentBody": "Opening the document is recorded with its purpose.",
+    "open": "Open",
+    "confirmOpen": "Open document"
+  },
+  "links": {
+    "none": "No logins linked yet. Invite the resident from their lease.",
+    "resident": "Resident",
+    "linked": "Linked by {via} · {at}",
+    "via": {
+      "invitation": "invitation",
+      "line_match": "LINE match",
+      "phone_match": "phone match",
+      "integration": "integration",
+      "admin": "platform support"
+    },
+    "line": "LINE",
+    "unlinked": "Unlinked",
+    "unlink": "Unlink",
+    "unlinkTitle": "Unlink this login?",
+    "unlinkBody": "The person can no longer see this party's bills and lease in the resident app.",
+    "reason": "Reason"
+  }
+}

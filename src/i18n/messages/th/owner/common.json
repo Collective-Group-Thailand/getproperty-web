@@ -66,5 +66,18 @@
     "common_fee": "ค่าส่วนกลาง",
     "water_minimum": "ค่าน้ำขั้นต่ำ",
     "other_fixed": "ค่าบริการอื่นแบบคงที่"
+  },
+  "date": {
+    "calendar": "เลือกวันที่",
+    "previousMonth": "เดือนก่อน",
+    "nextMonth": "เดือนถัดไป",
+    "today": "วันนี้",
+    "clear": "ล้าง"
+  },
+  "signature": {
+    "placeholder": "เซ็นชื่อที่นี่",
+    "clear": "ล้าง",
+    "undo": "ย้อนกลับ",
+    "upload": "ใช้รูปลายเซ็น"
   }
 }

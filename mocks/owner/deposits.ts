@@ -197,6 +197,8 @@ export const depositHandlers: HttpHandler[] = [
       satang(add(settlement.deductionsTotal, settlement.utilitiesFinal));
     settlement.proposedRefund = baht(Math.max(0, refund));
     settlement.status = "proposed";
+    // The statement the resident answers is issued with the proposal (B2.5).
+    settlement.statementNumber ??= `DST-2569-${String(w().deposits.indexOf(deposit) + 60).padStart(5, "0")}`;
     recompute(deposit);
     deposit.version += 1;
     return json(deposit);

@@ -715,7 +715,7 @@ function initialDeposits(): Schemas["DepositDto"][] {
       status: "settling",
       receiptNumber: "DRC-2568-00019",
       receivedAt: iso(-369),
-      nextActions: [],
+      nextActions: ["propose"],
       settlement: {
         id: id("5e770000", 303),
         status: "inspected",
@@ -748,6 +748,7 @@ function initialDeposits(): Schemas["DepositDto"][] {
       status: "settling",
       receiptNumber: "DRC-2568-00011",
       receivedAt: iso(-374),
+      nextActions: ["record-refund"],
       settlement: {
         id: id("5e770000", 1102),
         status: "agreed",
