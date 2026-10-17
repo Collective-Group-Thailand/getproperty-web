@@ -38,6 +38,15 @@ describe("buildCsp", () => {
     expect(buildCsp({ ...base, zone: "admin" })).not.toContain("blob:");
   });
 
+  it("frames only blob: PDFs, and only in the owner console's document viewer (F2)", () => {
+    const frame = (zone: "owner" | "staff" | "admin") =>
+      buildCsp({ zone, nonce: "n", dev: false }).match(/frame-src ([^;]+)/)?.[1];
+    expect(frame("owner")).toBe("blob:");
+    expect(frame("staff")).toBe("'none'");
+    expect(frame("admin")).toBe("'none'");
+    expect(buildCsp({ zone: "owner", nonce: "n", dev: false })).toContain("frame-ancestors 'none'");
+  });
+
   it("never allows a LINE or LIFF origin (D-154)", () => {
     for (const zone of ["owner", "staff", "admin"] as const) {
       expect(buildCsp({ ...base, zone })).not.toMatch(/line\.me|lin\.ee|liff/i);

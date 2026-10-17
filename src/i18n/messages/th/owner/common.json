@@ -1,0 +1,70 @@
+{
+  "pagination": {
+    "nav": "หน้า",
+    "previous": "หน้าก่อน",
+    "next": "หน้าถัดไป",
+    "range": "{from}–{to} จาก {total}",
+    "page": "หน้า {page}"
+  },
+  "confirm": {
+    "typeToConfirm": "พิมพ์ {phrase} เพื่อยืนยัน"
+  },
+  "document": {
+    "close": "ปิด",
+    "loading": "กำลังเปิดเอกสาร…",
+    "inlineFailed": "แสดงเอกสารในหน้านี้ไม่ได้ เปิดในแท็บใหม่หรือดาวน์โหลดแทน",
+    "openTab": "เปิดในแท็บใหม่",
+    "download": "ดาวน์โหลด"
+  },
+  "photo": {
+    "open": "ดูรูป: {alt}",
+    "close": "ปิด",
+    "zoomIn": "ขยาย",
+    "zoomOut": "ย่อ",
+    "zoom": "{percent}%"
+  },
+  "views": {
+    "label": "มุมมองที่บันทึกไว้:",
+    "none": "ยังไม่มี",
+    "remove": "ลบมุมมอง {name}",
+    "name": "ชื่อมุมมองนี้",
+    "namePlaceholder": "เช่น ห้องว่างชั้น 3",
+    "save": "บันทึก",
+    "cancel": "ยกเลิก",
+    "new": "บันทึกมุมมองนี้"
+  },
+  "provider": {
+    "mea": "การไฟฟ้านครหลวง (กฟน.)",
+    "pea": "การไฟฟ้าส่วนภูมิภาค (กฟภ.)",
+    "mwa": "การประปานครหลวง (กปน.)",
+    "pwa": "การประปาส่วนภูมิภาค (กปภ.)"
+  },
+  "setting": {
+    "cutoffEndOfMonth": "สิ้นเดือน เวลา {time} น.",
+    "cutoffDay": "วันที่ {day} เวลา {time} น.",
+    "autoIssueOn": "เปิด — ออกบิลเองหลังรอบพร้อม {hours} ชั่วโมง",
+    "off": "ปิด",
+    "on": "เปิด",
+    "estimateAllow": "ประมาณการเมื่อไม่มีเลขมิเตอร์",
+    "estimateBlock": "รอเลขมิเตอร์ (ไม่ประมาณการ)",
+    "hours": "{count} ชั่วโมง",
+    "dueDay": "วันที่ {day} ของเดือน",
+    "days": "{count} วัน",
+    "reminderDays": "หลังครบกำหนด {days} วัน",
+    "scope": {
+      "platform": "ค่าเริ่มต้นของระบบ",
+      "tenant": "ค่าที่คุณตั้ง",
+      "property": "เฉพาะโครงการนี้"
+    },
+    "since": "ตั้งแต่ {date}"
+  },
+  "lineKind": {
+    "internet": "อินเทอร์เน็ต",
+    "parking": "ที่จอดรถ",
+    "cleaning": "ทำความสะอาด",
+    "furniture": "ค่าเฟอร์นิเจอร์",
+    "common_fee": "ค่าส่วนกลาง",
+    "water_minimum": "ค่าน้ำขั้นต่ำ",
+    "other_fixed": "ค่าบริการอื่นแบบคงที่"
+  }
+}

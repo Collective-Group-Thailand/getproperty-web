@@ -21,6 +21,12 @@
  *                                   devices (building B + the devices), or all of it
  *   POST /__mock/staff/ocr?mode=    the fake OCR reads (`ok`) or reads nothing (`unreadable`)
  *   POST /__mock/staff/devices/online?serial=  a gateway bootstraps and comes online (realtime events)
+ *   POST /__mock/owner/reset?part=  reset the owner world (assets | leases | money | metering), or all of it
+ *   POST /__mock/owner/leases/<id>/resident-sign      the resident signs in getproperty-liff
+ *   POST /__mock/owner/deposits/<id>/resident-response?answer=accepted|disputed
+ *   POST /__mock/owner/payments/webhook?invoice=<number>  the payment provider pays an invoice's QR
+ *   GET  /__mock/owner/received?op=  requests the owner world received (body, Idempotency-Key)
+ *   GET  /__mock/owner/state         leases, deposits, invoices, slips, cycles, units (A/B) as held
  *
  * Object storage stand-in (what presigned URLs point at; CORS like a bucket):
  *   PUT  /__upload/<fileId>         the presigned upload
@@ -36,6 +42,7 @@ import { getResponse } from "msw";
 
 import { OPERATORS, PLATFORM_USERS } from "./fixtures";
 import { handlers } from "./handlers";
+import { providerPays, resetOwnerWorld, residentAnswers, residentSigns } from "./owner";
 import { emit } from "./handlers/realtime";
 import { gatewayComesOnline, readUpload, storeUpload, UPLOAD_CORS } from "./handlers/staff";
 import { BUILDING_A, BUILDING_B, buildingOf } from "./staff-world";
@@ -57,6 +64,8 @@ function sendJson(res: ServerResponse, status: number, body: unknown) {
 }
 
 async function control(url: URL, req: IncomingMessage, res: ServerResponse) {
+  const owner = ownerControl(url, req);
+  if (owner) return sendJson(res, owner.status, owner.body);
   switch (`${req.method} ${url.pathname}`) {
     case "GET /__mock/health":
       return sendJson(res, 200, { ok: true });
@@ -165,6 +174,52 @@ async function control(url: URL, req: IncomingMessage, res: ServerResponse) {
     default:
       return sendJson(res, 404, { error: "unknown control endpoint" });
   }
+}
+
+/** The owner world's controls (F2): resets per part, and what a resident or a payment provider would do. */
+function ownerControl(url: URL, req: IncomingMessage): { status: number; body: unknown } | null {
+  if (!url.pathname.startsWith("/__mock/owner/")) return null;
+  const parts = url.pathname.split("/").slice(3);
+  if (req.method === "POST" && parts[0] === "reset") {
+    return resetOwnerWorld(url.searchParams.get("part"))
+      ? { status: 200, body: { ok: true } }
+      : { status: 400, body: { error: "unknown part" } };
+  }
+  if (req.method === "POST" && parts[0] === "leases" && parts[2] === "resident-sign") {
+    return residentSigns(parts[1] ?? "")
+      ? { status: 200, body: { ok: true } }
+      : { status: 409, body: { error: "not awaiting a signature" } };
+  }
+  if (req.method === "POST" && parts[0] === "deposits" && parts[2] === "resident-response") {
+    const answer = url.searchParams.get("answer") === "disputed" ? "disputed" : "accepted";
+    return residentAnswers(parts[1] ?? "", answer)
+      ? { status: 200, body: { ok: true } }
+      : { status: 409, body: { error: "no proposal to answer" } };
+  }
+  if (req.method === "POST" && parts[0] === "payments" && parts[1] === "webhook") {
+    const payment = providerPays(url.searchParams.get("invoice") ?? "");
+    return payment
+      ? { status: 200, body: payment }
+      : { status: 404, body: { error: "no open invoice with that number" } };
+  }
+  if (req.method === "GET" && parts[0] === "received") {
+    const op = url.searchParams.get("op");
+    return { status: 200, body: state.owner.received.filter((entry) => !op || entry.op === op) };
+  }
+  if (req.method === "GET" && parts[0] === "state") {
+    return {
+      status: 200,
+      body: {
+        leases: state.owner.leases,
+        deposits: state.owner.deposits,
+        invoices: state.owner.invoices,
+        slips: state.owner.slips,
+        cycles: state.owner.cycles,
+        units: state.owner.units.filter((unit) => !unit.unitNo.startsWith("C-")),
+      },
+    };
+  }
+  return { status: 404, body: { error: "unknown owner control" } };
 }
 
 /** The object-storage stand-in: presigned PUTs and signed GETs from the browser (cross-origin). */

@@ -14,5 +14,9 @@
     "warning": "Please review before you continue",
     "acknowledge": "Acknowledge and continue",
     "shown": "Values concerned"
+  },
+  "offline": {
+    "title": "No connection",
+    "body": "Nothing was sent. Check the connection and try again."
   }
 }

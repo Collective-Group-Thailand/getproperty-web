@@ -1,0 +1,103 @@
+{
+  "title": "Units",
+  "titleOf": "Units of {building}",
+  "chooseBuilding": "Choose a building to see its units",
+  "noBuildings": {
+    "title": "No building yet",
+    "body": "Add a building first."
+  },
+  "unitCount": "{count, plural, one {# unit} other {# units}}",
+  "views": "View",
+  "boardTab": "Board",
+  "listTab": "List",
+  "export": "Export to Excel",
+  "import": "Import",
+  "bulk": "Add units",
+  "unitTitle": "Unit {unit}",
+  "filter": {
+    "search": "Search",
+    "searchPlaceholder": "Unit number",
+    "status": "Status",
+    "allStatuses": "All statuses",
+    "floor": "Floor",
+    "allFloors": "All floors"
+  },
+  "type": {
+    "room": "Room",
+    "condo_unit": "Condo unit",
+    "house": "House",
+    "shop": "Shop",
+    "parking": "Parking"
+  },
+  "board": {
+    "filter": {
+      "search": "Search",
+      "searchPlaceholder": "Unit or resident",
+      "status": "Status",
+      "allStatuses": "All statuses",
+      "issue": "Needs attention",
+      "anyIssue": "Everything",
+      "balance": "Has a balance",
+      "meter": "Meter not reporting"
+    },
+    "shown": "{shown} of {total} units",
+    "keys": "Arrow keys move between units and floors, Home and End go to the first and last unit of a floor, Enter opens the unit.",
+    "noMatch": "No unit matches these filters.",
+    "label": "Unit board of {building}",
+    "noFloor": "Without floor",
+    "floorCount": "{count, plural, one {# unit} other {# units}}",
+    "drawerTitle": "Unit {unit}",
+    "close": "Close",
+    "health": {
+      "ok": "Meter reporting",
+      "bad": "Meter not reporting"
+    },
+    "rent": "Rent {rent}",
+    "balance": "Owes {amount}"
+  },
+  "list": {
+    "unitNo": "Unit",
+    "floor": "Floor",
+    "status": "Status",
+    "type": "Kind",
+    "profile": "Unit type",
+    "baseRent": "Base rent",
+    "since": "Status since",
+    "caption": "Units",
+    "empty": "No unit matches these filters"
+  },
+  "panel": {
+    "profile": "Unit type",
+    "baseRent": "Base rent",
+    "area": "Area",
+    "sqm": "{area} m²",
+    "floor": "Floor",
+    "lease": "Occupancy and lease",
+    "hiddenParty": "Another tenant's resident",
+    "leaseTerm": "{start} – {end} · rent {rent}",
+    "coResidents": "Also living here: {names}",
+    "openLease": "Open the lease",
+    "noLease": "No lease",
+    "newLease": "New lease",
+    "readings": "Last readings",
+    "noMeters": "No meter on this unit",
+    "photoAlt": "Meter {code} on {date}",
+    "noReading": "No reading yet",
+    "invoices": "Open invoices",
+    "noInvoices": "Nothing open",
+    "draft": "Draft",
+    "serviceRequests": "Service requests",
+    "serviceRequestsLater": "Arrive with the service module.",
+    "openPage": "Open the unit page"
+  },
+  "status": {
+    "change": "Change status",
+    "title": "Status of unit {unit}",
+    "body": "Only vacant ↔ under maintenance or not in use can be set by hand; leases set the rest.",
+    "save": "Save",
+    "saved": "Status changed",
+    "status": "New status",
+    "reason": "Reason",
+    "reasonHint": "Kept in the audit log"
+  }
+}

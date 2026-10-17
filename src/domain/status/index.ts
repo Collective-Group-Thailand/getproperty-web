@@ -18,6 +18,14 @@ export { SERVICE_REQUEST_STATUS, SERVICE_REQUEST_VALUES, type ServiceRequestStat
 export { SUBSCRIPTION_STATUS, SUBSCRIPTION_VALUES, type SubscriptionState } from "./subscription";
 export { UNIT_STATUS, UNIT_VALUES, type UnitStatus } from "./unit";
 export { WORK_ORDER_STATUS, WORK_ORDER_VALUES, type WorkOrderStatus } from "./workOrder";
+export { BILLING_CYCLE_STATUS, BILLING_CYCLE_VALUES, type BillingCycleStatus } from "./billingCycle";
+export { SLIP_STATUS, SLIP_VALUES, type SlipStatus } from "./slip";
+export { SETTLEMENT_STATUS, SETTLEMENT_VALUES, type SettlementStatus } from "./settlement";
+export { READING_REVIEW_STATUS, READING_REVIEW_VALUES, type ReadingReviewStatus } from "./readingReview";
+export { INVITATION_STATUS, INVITATION_VALUES, type InvitationState } from "./invitation";
+export { EXPORT_JOB_STATUS, EXPORT_JOB_VALUES, type ExportStatus } from "./exportJob";
+export { REMINDER_STATUS, REMINDER_VALUES, type ReminderStatus } from "./reminder";
+export { INVOICE_CHARGE_STATUS, INVOICE_CHARGE_VALUES, type InvoiceChargeStatus } from "./invoiceCharge";
 
 import { COMMAND_STATUS } from "./command";
 import { DEPOSIT_STATUS } from "./deposit";
@@ -33,6 +41,14 @@ import { SERVICE_REQUEST_STATUS } from "./serviceRequest";
 import { SUBSCRIPTION_STATUS } from "./subscription";
 import { UNIT_STATUS } from "./unit";
 import { WORK_ORDER_STATUS } from "./workOrder";
+import { BILLING_CYCLE_STATUS } from "./billingCycle";
+import { SLIP_STATUS } from "./slip";
+import { SETTLEMENT_STATUS } from "./settlement";
+import { READING_REVIEW_STATUS } from "./readingReview";
+import { INVITATION_STATUS } from "./invitation";
+import { EXPORT_JOB_STATUS } from "./exportJob";
+import { REMINDER_STATUS } from "./reminder";
+import { INVOICE_CHARGE_STATUS } from "./invoiceCharge";
 
 /** Every status map by its domain key (the `status.<domain>` namespace of its labels). */
 export const STATUS_MAPS = {
@@ -50,6 +66,14 @@ export const STATUS_MAPS = {
   workOrder: WORK_ORDER_STATUS,
   unit: UNIT_STATUS,
   subscription: SUBSCRIPTION_STATUS,
+  billingCycle: BILLING_CYCLE_STATUS,
+  slip: SLIP_STATUS,
+  settlement: SETTLEMENT_STATUS,
+  readingReview: READING_REVIEW_STATUS,
+  invitation: INVITATION_STATUS,
+  exportJob: EXPORT_JOB_STATUS,
+  reminder: REMINDER_STATUS,
+  invoiceCharge: INVOICE_CHARGE_STATUS,
 } as const;
 
 export type StatusDomain = keyof typeof STATUS_MAPS;

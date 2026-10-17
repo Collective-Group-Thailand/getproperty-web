@@ -107,5 +107,61 @@
     "done": "Done",
     "failed": "Failed",
     "expired": "Expired"
+  },
+  "billingCycle": {
+    "open": "Open",
+    "readings_pending": "Readings pending",
+    "computed": "Ready to review",
+    "issued": "Issued",
+    "closed": "Closed",
+    "cancelled": "Cancelled"
+  },
+  "slip": {
+    "pending_verification": "Being verified",
+    "auto_confirmed": "Confirmed automatically",
+    "pending_review": "Needs your review",
+    "approved": "Approved",
+    "rejected": "Rejected",
+    "duplicate": "Duplicate slip"
+  },
+  "settlement": {
+    "opened": "Opened",
+    "inspected": "Inspected",
+    "proposed": "Proposal sent",
+    "agreed": "Accepted by resident",
+    "disputed": "Disputed",
+    "refunded": "Refunded",
+    "closed": "Closed"
+  },
+  "readingReview": {
+    "open": "To review",
+    "accepted": "Accepted",
+    "corrected": "Corrected",
+    "rejected": "Rejected"
+  },
+  "invitation": {
+    "pending": "Waiting",
+    "accepted": "Accepted",
+    "expired": "Expired",
+    "revoked": "Revoked"
+  },
+  "exportJob": {
+    "queued": "Queued",
+    "running": "Preparing",
+    "done": "Ready",
+    "failed": "Failed"
+  },
+  "reminder": {
+    "scheduled": "Scheduled",
+    "sent": "Sent",
+    "skipped_paid": "Not needed — paid",
+    "deferred_quiet_hours": "Held for quiet hours",
+    "cancelled": "Cancelled",
+    "failed": "Failed"
+  },
+  "invoiceCharge": {
+    "pending": "Waiting for the next invoice",
+    "applied": "On an invoice",
+    "cancelled": "Cancelled"
   }
 }

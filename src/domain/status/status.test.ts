@@ -35,6 +35,14 @@ const CONTRACT_ENUM: Partial<Record<keyof typeof STATUS_MAPS, string>> = {
   workOrder: "WorkOrderStatus",
   unit: "UnitStatus",
   subscription: "SubscriptionState",
+  billingCycle: "BillingCycleStatus",
+  slip: "SlipStatus",
+  settlement: "SettlementStatus",
+  readingReview: "ReviewStatus",
+  invitation: "InvitationState",
+  exportJob: "ExportStatus",
+  reminder: "ReminderStatus",
+  invoiceCharge: "InvoiceChargeStatus",
 };
 
 describe("status maps", () => {

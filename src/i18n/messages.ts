@@ -13,7 +13,7 @@ import type { Locale } from "./routing";
  */
 export const MESSAGE_FILES = {
   common: ["auth", "brand", "common", "errors", "glossary", "notifications", "shell", "status"],
-  owner: ["marketing", "nav"],
+  owner: ["buildings", "common", "dashboard", "marketing", "nav", "units"],
   staff: ["capture", "devices", "inspections", "lock", "nav", "offline", "readings", "shell", "today"],
   admin: ["nav", "shell"],
 } as const satisfies Record<"common" | Zone, readonly string[]>;

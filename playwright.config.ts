@@ -68,7 +68,17 @@ export default defineConfig({
     },
     permissions: ["camera"],
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [
+    { name: "chromium", use: { ...devices["Desktop Chrome"] }, testIgnore: ["integration/**", "owner-*.spec.ts"] },
+    {
+      // The owner console's specs share one stateful owner world in the mock API (mocks/owner): one worker,
+      // so a spec that issues the billing cycle never changes the dashboard another spec is reading.
+      name: "owner",
+      use: { ...devices["Desktop Chrome"] },
+      testMatch: "owner-*.spec.ts",
+      workers: 1,
+    },
+  ],
   webServer: [
     {
       command: "pnpm mock:api",

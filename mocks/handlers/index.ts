@@ -5,6 +5,7 @@ import { contractRequestHandlers } from "./contract-requests";
 import { generatedHandlers } from "./generated";
 import { meHandlers } from "./me";
 import { notificationHandlers } from "./notifications";
+import { ownerHandlers } from "../owner";
 import { publicHandlers } from "./public";
 import { realtimeHandlers } from "./realtime";
 import { searchHandlers } from "./search";
@@ -22,6 +23,7 @@ export function handlers(): HttpHandler[] {
     ...searchHandlers,
     ...telemetryHandlers,
     ...staffHandlers,
+    ...ownerHandlers,
     ...contractRequestHandlers,
     ...generatedHandlers(),
   ];

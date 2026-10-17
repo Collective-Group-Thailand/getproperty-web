@@ -342,6 +342,14 @@ export function storeUpload(fileId: string, bytes: Uint8Array, contentType: stri
 
 /** `GET /__files/<fileId>` — the signed download: the uploaded bytes, or a placeholder picture. */
 export function readUpload(fileId: string): { body: Uint8Array | string; contentType: string } {
+  // Owner documents (invoices, receipts, contracts, statements…) are served as a one-page PDF.
+  if (fileId.startsWith("pdf-")) return { body: placeholderPdf(fileId.slice(4)), contentType: "application/pdf" };
+  if (fileId.startsWith("slip-")) {
+    return {
+      contentType: "image/svg+xml",
+      body: `<svg xmlns="http://www.w3.org/2000/svg" width="360" height="640" viewBox="0 0 360 640"><rect width="360" height="640" fill="#f3f7f5"/><rect x="24" y="24" width="312" height="80" rx="10" fill="#1d7a64"/><text x="180" y="74" font-family="sans-serif" font-size="26" text-anchor="middle" fill="#fff">Transfer OK</text><text x="40" y="170" font-family="monospace" font-size="20" fill="#111">Ref 014293184522ABC1</text><text x="40" y="230" font-family="monospace" font-size="34" fill="#111">THB 3,000.00</text><text x="40" y="290" font-family="monospace" font-size="18" fill="#444">To xxx-x-x6789-0</text></svg>`,
+    };
+  }
   const stored = state.staff.files.get(fileId);
   if (stored?.bytes) return { body: stored.bytes, contentType: stored.file.mimeType };
   return {
@@ -487,7 +495,7 @@ function deviceIndex(ok: Ok, deviceId: string): number {
   return inWorld(ok) ? state.staff.devices.findIndex((device) => device.id === deviceId) : -1;
 }
 
-function channelDto(channel: (typeof state.staff.channels)[number]): Schemas["MeterChannelDto"] {
+export function channelDto(channel: (typeof state.staff.channels)[number]): Schemas["MeterChannelDto"] {
   const meter = state.staff.meters.find((m) => m.assetItemId === channel.meterAssetItemId);
   return {
     id: channel.id,
@@ -862,3 +870,27 @@ export const UPLOAD_CORS = {
   "access-control-allow-headers": "content-type",
   "access-control-max-age": "600",
 };
+
+/** A minimal one-page PDF naming the document — what the mock's "signed URL" of a billing document answers. */
+export function placeholderPdf(documentId: string): string {
+  const text = `getproperty mock document ${documentId.slice(0, 8)}`;
+  const content = `BT /F1 18 Tf 72 720 Td (${text}) Tj ET`;
+  const objects = [
+    "<< /Type /Catalog /Pages 2 0 R >>",
+    "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>",
+    `<< /Length ${content.length} >>\nstream\n${content}\nendstream`,
+    "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
+  ];
+  let pdf = "%PDF-1.4\n";
+  const offsets: number[] = [];
+  objects.forEach((object, index) => {
+    offsets.push(pdf.length);
+    pdf += `${index + 1} 0 obj\n${object}\nendobj\n`;
+  });
+  const xref = pdf.length;
+  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+  for (const offset of offsets) pdf += `${String(offset).padStart(10, "0")} 00000 n \n`;
+  pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+  return pdf;
+}

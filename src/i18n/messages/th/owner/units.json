@@ -1,0 +1,103 @@
+{
+  "title": "ห้อง",
+  "titleOf": "ห้องของ {building}",
+  "chooseBuilding": "เลือกอาคารเพื่อดูห้อง",
+  "noBuildings": {
+    "title": "ยังไม่มีอาคาร",
+    "body": "เพิ่มอาคารก่อน"
+  },
+  "unitCount": "{count} ห้อง",
+  "views": "มุมมอง",
+  "boardTab": "ผังห้อง",
+  "listTab": "รายการ",
+  "export": "ส่งออก Excel",
+  "import": "นำเข้า",
+  "bulk": "เพิ่มห้อง",
+  "unitTitle": "ห้อง {unit}",
+  "filter": {
+    "search": "ค้นหา",
+    "searchPlaceholder": "เลขห้อง",
+    "status": "สถานะ",
+    "allStatuses": "ทุกสถานะ",
+    "floor": "ชั้น",
+    "allFloors": "ทุกชั้น"
+  },
+  "type": {
+    "room": "ห้องพัก",
+    "condo_unit": "ห้องชุด",
+    "house": "บ้าน",
+    "shop": "ร้านค้า",
+    "parking": "ที่จอดรถ"
+  },
+  "board": {
+    "filter": {
+      "search": "ค้นหา",
+      "searchPlaceholder": "ห้องหรือผู้เช่า",
+      "status": "สถานะ",
+      "allStatuses": "ทุกสถานะ",
+      "issue": "ต้องดูแล",
+      "anyIssue": "ทั้งหมด",
+      "balance": "มียอดค้าง",
+      "meter": "มิเตอร์ไม่ส่งค่า"
+    },
+    "shown": "{shown} จาก {total} ห้อง",
+    "keys": "ใช้ปุ่มลูกศรเลื่อนระหว่างห้องและชั้น Home และ End ไปห้องแรกและห้องสุดท้ายของชั้น Enter เปิดห้อง",
+    "noMatch": "ไม่มีห้องตรงกับตัวกรอง",
+    "label": "ผังห้องของ {building}",
+    "noFloor": "ไม่ระบุชั้น",
+    "floorCount": "{count} ห้อง",
+    "drawerTitle": "ห้อง {unit}",
+    "close": "ปิด",
+    "health": {
+      "ok": "มิเตอร์ส่งค่าปกติ",
+      "bad": "มิเตอร์ไม่ส่งค่า"
+    },
+    "rent": "ค่าเช่า {rent}",
+    "balance": "ค้าง {amount}"
+  },
+  "list": {
+    "unitNo": "ห้อง",
+    "floor": "ชั้น",
+    "status": "สถานะ",
+    "type": "ชนิด",
+    "profile": "ประเภทห้อง",
+    "baseRent": "ค่าเช่าพื้นฐาน",
+    "since": "สถานะตั้งแต่",
+    "caption": "ห้อง",
+    "empty": "ไม่มีห้องตรงกับตัวกรอง"
+  },
+  "panel": {
+    "profile": "ประเภทห้อง",
+    "baseRent": "ค่าเช่าพื้นฐาน",
+    "area": "พื้นที่",
+    "sqm": "{area} ตร.ม.",
+    "floor": "ชั้น",
+    "lease": "ผู้อยู่และสัญญา",
+    "hiddenParty": "ผู้เช่าขององค์กรอื่น",
+    "leaseTerm": "{start} – {end} · ค่าเช่า {rent}",
+    "coResidents": "ผู้อยู่ร่วม: {names}",
+    "openLease": "เปิดสัญญา",
+    "noLease": "ยังไม่มีสัญญา",
+    "newLease": "ทำสัญญาใหม่",
+    "readings": "เลขมิเตอร์ล่าสุด",
+    "noMeters": "ห้องนี้ไม่มีมิเตอร์",
+    "photoAlt": "มิเตอร์ {code} วันที่ {date}",
+    "noReading": "ยังไม่มีเลขมิเตอร์",
+    "invoices": "บิลค้าง",
+    "noInvoices": "ไม่มีบิลค้าง",
+    "draft": "ร่าง",
+    "serviceRequests": "แจ้งซ่อม",
+    "serviceRequestsLater": "มาพร้อมโมดูลแจ้งซ่อม",
+    "openPage": "เปิดหน้าห้อง"
+  },
+  "status": {
+    "change": "เปลี่ยนสถานะ",
+    "title": "สถานะห้อง {unit}",
+    "body": "ตั้งเองได้เฉพาะ ว่าง ↔ ปิดซ่อม หรือไม่ใช้งาน สถานะอื่นเปลี่ยนตามสัญญา",
+    "save": "บันทึก",
+    "saved": "เปลี่ยนสถานะแล้ว",
+    "status": "สถานะใหม่",
+    "reason": "เหตุผล",
+    "reasonHint": "บันทึกในประวัติการแก้ไข"
+  }
+}

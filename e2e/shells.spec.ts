@@ -49,8 +49,16 @@ test.describe("owner shell", () => {
 
   test("building switcher lists the tenant's buildings from the API", async ({ page }) => {
     await signInWithOtp(page, HOSTS.owner, "0810000001");
-    // The contract's example answers one building: shown by name, no switcher needed.
-    await expect(page.getByTestId("building-name")).toHaveText("อาคาร A");
+    // The owner world has three buildings: the switcher offers them and "all buildings".
+    await page.getByTestId("building-switcher").click();
+    for (const name of ["ทุกอาคาร", "อาคาร A", "อาคาร B", "อาคาร C"])
+      await expect(page.getByRole("menuitemradio", { name }).or(page.getByRole("menuitem", { name }))).toBeVisible();
+    await page
+      .getByRole("menuitemradio", { name: "อาคาร B" })
+      .or(page.getByRole("menuitem", { name: "อาคาร B" }))
+      .click();
+    await expect(page.getByTestId("building-switcher")).toContainText("อาคาร B");
+    await expect(page.getByTestId("dashboard-scope")).toContainText("อาคาร B");
   });
 
   test("global search finds menus at once and entities from the API", async ({ page }) => {

@@ -1,0 +1,100 @@
+{
+  "title": "This morning",
+  "allBuildings": "All buildings",
+  "unavailable": "The dashboard figures could not be loaded. The queue below may be incomplete.",
+  "queue": {
+    "title": "Today",
+    "today": "Today",
+    "clear": {
+      "title": "Nothing waits for you",
+      "body": "Readings, invoices, slips and deposits are all up to date."
+    },
+    "readings": {
+      "title": "{count, plural, one {# meter} other {# meters}} to read before the cut-off",
+      "detail": "Cut-off {cutoff}"
+    },
+    "drafts": {
+      "title": "{count, plural, one {# invoice} other {# invoices}} to review and issue",
+      "detail": "Check the computed invoices of the billing cycle"
+    },
+    "slips": {
+      "title": "{count, plural, one {# slip} other {# slips}} to review",
+      "detail": "Transfers the bank could not confirm automatically"
+    },
+    "deposits": {
+      "title": "{count, plural, one {# deposit} other {# deposits}} to refund within 3 days",
+      "detail": "Settle and refund within the legal deadline",
+      "overdue": "{count, plural, one {# refund is} other {# refunds are}} past the deadline"
+    },
+    "meters": {
+      "title": "{count, plural, one {# smart meter} other {# smart meters}} not reporting",
+      "detail": "Check the gateway or read them by hand"
+    },
+    "overdue": {
+      "title": "{count, plural, one {# resident} other {# residents}} with overdue invoices",
+      "detail": "{amount} on {invoices, plural, one {# invoice} other {# invoices}}"
+    },
+    "dueToday": {
+      "title": "{count, plural, one {# invoice} other {# invoices}} due today",
+      "detail": "{amount} still open"
+    },
+    "serviceRequests": {
+      "title": "New service requests",
+      "detail": "Arrives with the service module"
+    }
+  },
+  "kpi": {
+    "title": "This month",
+    "collected": "Collected this month",
+    "collectedHint": "{collected} of {billed} billed",
+    "arrears": "Overdue",
+    "arrearsHint": "{invoices, plural, one {# invoice} other {# invoices}} · {parties, plural, one {# resident} other {# residents}}",
+    "occupancy": "Occupancy",
+    "occupancyHint": "{occupied} of {total} units occupied",
+    "occupancyAllHint": "{vacant} vacant units in all buildings",
+    "loss": "Utility loss",
+    "lossRow": "{utility} · {building}: {pct} ({thb})",
+    "lossNone": "Enter the utility invoice to see the loss"
+  },
+  "cycle": {
+    "title": "Billing cycle",
+    "open": "Open the cycle",
+    "cutoff": "Next cut-off {date}",
+    "autoIssue": "Invoices issue themselves at {at} unless you issue them first",
+    "issuedAt": "Issued {at}",
+    "none": "No billing cycle yet"
+  },
+  "compliance": {
+    "title": "Compliance score",
+    "description": "How this month measures against the rental announcement B.E. 2568",
+    "outOf": "out of 100",
+    "notJudged": "nothing to judge",
+    "ratio": "{numerator} / {denominator}",
+    "aboveCap": "{lines} lines above the utility rate · {acknowledged} acknowledged",
+    "component": {
+      "invoices_within_rate": "Invoices within the utility rate",
+      "above_cap_acknowledged": "Above-rate lines acknowledged",
+      "deposits_on_time": "Deposits refunded on time",
+      "standard_contracts": "Leases on the standard contract"
+    }
+  },
+  "quick": {
+    "title": "Quick actions",
+    "recordPayment": "Record a payment",
+    "newLease": "New lease",
+    "billing": "Billing cycle",
+    "newParty": "Add a resident",
+    "importUnits": "Import units"
+  },
+  "summary": {
+    "title": "All buildings",
+    "building": "Building",
+    "units": "Units",
+    "readings": "Meters to read",
+    "loss": "Loss"
+  },
+  "utility": {
+    "electric": "Electricity",
+    "water": "Water"
+  }
+}

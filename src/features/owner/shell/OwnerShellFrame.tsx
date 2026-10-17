@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { NotificationCentre } from "@/features/shared/notifications/NotificationCentre";
 import { LanguageSwitch } from "@/features/shared/shell/LanguageSwitch";
@@ -51,6 +51,11 @@ export interface OwnerShellFrameProps {
  * More (the whole menu in a sheet).
  */
 export function OwnerShellFrame(props: OwnerShellFrameProps) {
+  // Marks the document interactive (hydrated): the e2e suite waits for it instead of clicking
+  // server-rendered buttons that do nothing yet (the SSE stream keeps the network busy).
+  useEffect(() => {
+    document.documentElement.dataset.hydrated = "owner";
+  }, []);
   const t = useTranslations();
   const pathname = usePathname();
   const [collapsed, toggleCollapsed] = useSidebarCollapsed("owner");

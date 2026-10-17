@@ -1,0 +1,70 @@
+{
+  "pagination": {
+    "nav": "Pages",
+    "previous": "Previous page",
+    "next": "Next page",
+    "range": "{from}–{to} of {total}",
+    "page": "Page {page}"
+  },
+  "confirm": {
+    "typeToConfirm": "Type {phrase} to confirm"
+  },
+  "document": {
+    "close": "Close",
+    "loading": "Opening the document…",
+    "inlineFailed": "The document cannot be shown here. Open it in a new tab or download it.",
+    "openTab": "Open in a new tab",
+    "download": "Download"
+  },
+  "photo": {
+    "open": "Open photo: {alt}",
+    "close": "Close",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "zoom": "{percent}%"
+  },
+  "views": {
+    "label": "Saved views:",
+    "none": "none yet",
+    "remove": "Remove view {name}",
+    "name": "Name of this view",
+    "namePlaceholder": "e.g. Vacant on floor 3",
+    "save": "Save",
+    "cancel": "Cancel",
+    "new": "Save this view"
+  },
+  "provider": {
+    "mea": "MEA (Metropolitan Electricity Authority)",
+    "pea": "PEA (Provincial Electricity Authority)",
+    "mwa": "MWA (Metropolitan Waterworks Authority)",
+    "pwa": "PWA (Provincial Waterworks Authority)"
+  },
+  "setting": {
+    "cutoffEndOfMonth": "End of month at {time}",
+    "cutoffDay": "Day {day} at {time}",
+    "autoIssueOn": "On — {hours} hours after the cycle is ready",
+    "off": "Off",
+    "on": "On",
+    "estimateAllow": "Bill an estimate when a reading is missing",
+    "estimateBlock": "Wait for a reading (no estimates)",
+    "hours": "{count, plural, one {# hour} other {# hours}}",
+    "dueDay": "Day {day} of the month",
+    "days": "{count, plural, one {# day} other {# days}}",
+    "reminderDays": "Days {days} after the due date",
+    "scope": {
+      "platform": "Platform default",
+      "tenant": "Your setting",
+      "property": "This property"
+    },
+    "since": "since {date}"
+  },
+  "lineKind": {
+    "internet": "Internet",
+    "parking": "Parking",
+    "cleaning": "Cleaning",
+    "furniture": "Furniture",
+    "common_fee": "Common fee",
+    "water_minimum": "Water minimum",
+    "other_fixed": "Other fixed charge"
+  }
+}

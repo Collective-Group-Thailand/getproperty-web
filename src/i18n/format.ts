@@ -88,10 +88,16 @@ export function formatNumber(value: number, locale: Locale = "th", options?: Int
 
 /** A percentage the API sent as a decimal string (`"12.5000"` → `12.5%`), trimmed as text. */
 export function formatPercent(value: string | number, locale: Locale = "th", maxDecimals = 2): string {
+  const text = formatDecimal(value, locale, maxDecimals);
+  return text === "—" ? text : `${text}%`;
+}
+
+/** A plain decimal the API sent (a score, a ratio, months) — grouped, trailing zeros trimmed, as text. */
+export function formatDecimal(value: string | number, locale: Locale = "th", maxDecimals = 2): string {
   const parts = splitDecimal(value, locale);
   if (!parts) return "—";
   const shown = parts.fraction.slice(0, maxDecimals).replace(/0+$/, "");
-  return `${parts.negative ? "-" : ""}${parts.whole}${shown ? `.${shown}` : ""}%`;
+  return `${parts.negative ? "-" : ""}${parts.whole}${shown ? `.${shown}` : ""}`;
 }
 
 type DateInput = string | number | Date;
@@ -136,6 +142,19 @@ export function formatDate(input: DateInput, locale: Locale = "th", options: Dat
       return String(era === "be" ? year + BE_OFFSET : year);
     })
     .join("");
+}
+
+/**
+ * A billing period key of the API (`YYYY-MM`, the cut-off month) as people read it — `ต.ค. 2569`,
+ * `Oct 2026`. A malformed key is shown as it came.
+ */
+export function formatPeriodKey(
+  key: string,
+  locale: Locale = "th",
+  options: Pick<DateFormatOptions, "era"> = {},
+): string {
+  if (!/^\d{4}-\d{2}$/.test(key)) return key;
+  return formatDate(`${key}-15T12:00:00+07:00`, locale, { ...options, style: "month" });
 }
 
 /** A date with the time, for audit trails and timelines. */

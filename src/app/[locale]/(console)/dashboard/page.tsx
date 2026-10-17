@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
-import { getOperatorActor } from "@/lib/auth/actor";
+import { DashboardView } from "@/features/owner/dashboard/DashboardView";
+import { ownerContext } from "@/features/owner/shared/server";
 import type { Locale } from "@/i18n/routing";
 
 export async function generateMetadata() {
@@ -8,18 +9,9 @@ export async function generateMetadata() {
   return { title: t("dashboard") };
 }
 
-/** The morning dashboard's place (its queues are F2 2.1). */
+/** The morning dashboard (F2 2.1): the Today queue, the month's figures, the cycle and the compliance score. */
 export default async function Dashboard({ params }: { params: Promise<{ locale: Locale }> }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const actor = await getOperatorActor("owner");
-  const t = await getTranslations("owner.nav");
-  return (
-    <div className="px-4 py-6 md:px-8" data-testid="owner-dashboard">
-      <h1 className="text-2xl font-semibold">{t("dashboard")}</h1>
-      <p className="text-muted mt-1" data-testid="dashboard-tenant">
-        {actor?.me.currentTenant?.displayName}
-      </p>
-    </div>
-  );
+  return <DashboardView context={await ownerContext()} />;
 }

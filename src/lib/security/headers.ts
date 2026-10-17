@@ -7,6 +7,7 @@ import type { Zone } from "@/lib/zones";
  * - **staff** — the PWA: camera (`Permissions-Policy: camera=(self)`), `blob:` photos, its service
  *   worker, and the signed object-storage URL it uploads meter photos to.
  * - **admin** — the strictest: no camera, no service worker, no `blob:` media.
+ * - the owner console frames only `blob:` PDFs of its document viewer (F2); no zone frames an origin.
  *
  * No zone allows a LINE or LIFF domain: the resident LINE Mini App is `getproperty-liff` (D-154).
  * Scripts are nonce-based with `'strict-dynamic'` (Next stamps the nonce on its own scripts when it
@@ -54,7 +55,9 @@ export function buildCsp({ zone, nonce, dev, assetOrigin, sentryOrigin }: CspOpt
     "media-src": list("'self'", zone === "staff" && "blob:", zone === "staff" && "mediastream:"),
     "worker-src": zone === "staff" ? "'self'" : "'none'",
     "manifest-src": "'self'",
-    "frame-src": "'none'",
+    // The owner console shows PDFs (invoices, contracts, statements) in its document viewer from a
+    // `blob:` URL of bytes it fetched (F2): no other origin may be framed.
+    "frame-src": zone === "owner" ? "blob:" : "'none'",
     "frame-ancestors": "'none'",
     "object-src": "'none'",
     "base-uri": "'none'",

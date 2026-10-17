@@ -1,0 +1,100 @@
+{
+  "title": "เช้านี้",
+  "allBuildings": "ทุกอาคาร",
+  "unavailable": "โหลดตัวเลขของแดชบอร์ดไม่สำเร็จ รายการด้านล่างอาจไม่ครบ",
+  "queue": {
+    "title": "ต้องทำวันนี้",
+    "today": "วันนี้",
+    "clear": {
+      "title": "ไม่มีงานค้าง",
+      "body": "เลขมิเตอร์ บิล สลิป และเงินประกันเรียบร้อยทั้งหมด"
+    },
+    "readings": {
+      "title": "ต้องจดมิเตอร์อีก {count} ตัวก่อนตัดรอบ",
+      "detail": "ตัดรอบ {cutoff}"
+    },
+    "drafts": {
+      "title": "บิลรอตรวจและออก {count} ใบ",
+      "detail": "ตรวจบิลที่คำนวณแล้วของรอบบิล"
+    },
+    "slips": {
+      "title": "สลิปรอตรวจ {count} ใบ",
+      "detail": "ยอดโอนที่ธนาคารยืนยันอัตโนมัติไม่ได้"
+    },
+    "deposits": {
+      "title": "เงินประกันต้องคืนภายใน 3 วัน {count} ราย",
+      "detail": "สรุปและคืนเงินให้ทันกำหนดตามกฎหมาย",
+      "overdue": "เลยกำหนดคืนแล้ว {count} ราย"
+    },
+    "meters": {
+      "title": "มิเตอร์อัจฉริยะไม่ส่งค่า {count} ตัว",
+      "detail": "ตรวจเกตเวย์หรือจดด้วยมือ"
+    },
+    "overdue": {
+      "title": "ผู้เช่าค้างชำระ {count} ราย",
+      "detail": "{amount} จากบิล {invoices} ใบ"
+    },
+    "dueToday": {
+      "title": "บิลครบกำหนดวันนี้ {count} ใบ",
+      "detail": "ยังค้าง {amount}"
+    },
+    "serviceRequests": {
+      "title": "แจ้งซ่อมใหม่",
+      "detail": "มาพร้อมโมดูลแจ้งซ่อม"
+    }
+  },
+  "kpi": {
+    "title": "เดือนนี้",
+    "collected": "เก็บเงินได้เดือนนี้",
+    "collectedHint": "{collected} จากที่เรียกเก็บ {billed}",
+    "arrears": "ค้างชำระ",
+    "arrearsHint": "บิล {invoices} ใบ · ผู้เช่า {parties} ราย",
+    "occupancy": "อัตราเข้าพัก",
+    "occupancyHint": "มีผู้เช่า {occupied} จาก {total} ห้อง",
+    "occupancyAllHint": "ห้องว่าง {vacant} ห้องในทุกอาคาร",
+    "loss": "ค่าน้ำไฟสูญหาย",
+    "lossRow": "{utility} · {building}: {pct} ({thb})",
+    "lossNone": "กรอกบิลการไฟฟ้า/ประปาเพื่อดูส่วนสูญหาย"
+  },
+  "cycle": {
+    "title": "รอบบิล",
+    "open": "เปิดรอบบิล",
+    "cutoff": "ตัดรอบครั้งถัดไป {date}",
+    "autoIssue": "ระบบจะออกบิลเองเวลา {at} หากคุณยังไม่ออก",
+    "issuedAt": "ออกบิลแล้ว {at}",
+    "none": "ยังไม่มีรอบบิล"
+  },
+  "compliance": {
+    "title": "คะแนนการปฏิบัติตามกฎหมาย",
+    "description": "เดือนนี้เทียบกับประกาศธุรกิจให้เช่าที่อยู่อาศัย พ.ศ. 2568",
+    "outOf": "จาก 100",
+    "notJudged": "ไม่มีรายการให้ประเมิน",
+    "ratio": "{numerator} / {denominator}",
+    "aboveCap": "{lines} บรรทัดเกินอัตราการไฟฟ้า/ประปา · รับทราบแล้ว {acknowledged}",
+    "component": {
+      "invoices_within_rate": "บิลที่ไม่เกินอัตราการไฟฟ้า/ประปา",
+      "above_cap_acknowledged": "บรรทัดที่เกินอัตราและรับทราบแล้ว",
+      "deposits_on_time": "คืนเงินประกันทันกำหนด",
+      "standard_contracts": "สัญญาตามแบบมาตรฐาน"
+    }
+  },
+  "quick": {
+    "title": "ทางลัด",
+    "recordPayment": "บันทึกรับเงิน",
+    "newLease": "ทำสัญญาใหม่",
+    "billing": "รอบบิล",
+    "newParty": "เพิ่มผู้เช่า",
+    "importUnits": "นำเข้าห้อง"
+  },
+  "summary": {
+    "title": "ทุกอาคาร",
+    "building": "อาคาร",
+    "units": "ห้อง",
+    "readings": "มิเตอร์ที่ต้องจด",
+    "loss": "ส่วนสูญหาย"
+  },
+  "utility": {
+    "electric": "ไฟฟ้า",
+    "water": "น้ำประปา"
+  }
+}

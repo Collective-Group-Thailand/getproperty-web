@@ -107,5 +107,61 @@
     "done": "สำเร็จ",
     "failed": "ไม่สำเร็จ",
     "expired": "หมดเวลา"
+  },
+  "billingCycle": {
+    "open": "เปิดรอบ",
+    "readings_pending": "รอเลขมิเตอร์",
+    "computed": "พร้อมตรวจ",
+    "issued": "ออกบิลแล้ว",
+    "closed": "ปิดรอบแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "slip": {
+    "pending_verification": "กำลังตรวจสอบ",
+    "auto_confirmed": "ยืนยันอัตโนมัติ",
+    "pending_review": "รอคุณตรวจ",
+    "approved": "อนุมัติแล้ว",
+    "rejected": "ปฏิเสธแล้ว",
+    "duplicate": "สลิปซ้ำ"
+  },
+  "settlement": {
+    "opened": "เปิดเรื่องแล้ว",
+    "inspected": "ตรวจห้องแล้ว",
+    "proposed": "ส่งข้อเสนอแล้ว",
+    "agreed": "ผู้เช่ายอมรับ",
+    "disputed": "ผู้เช่าโต้แย้ง",
+    "refunded": "คืนเงินแล้ว",
+    "closed": "ปิดเรื่องแล้ว"
+  },
+  "readingReview": {
+    "open": "รอตรวจ",
+    "accepted": "รับค่าแล้ว",
+    "corrected": "แก้ไขแล้ว",
+    "rejected": "ไม่รับค่า"
+  },
+  "invitation": {
+    "pending": "รอตอบรับ",
+    "accepted": "ตอบรับแล้ว",
+    "expired": "หมดอายุ",
+    "revoked": "ยกเลิกแล้ว"
+  },
+  "exportJob": {
+    "queued": "รอคิว",
+    "running": "กำลังเตรียมไฟล์",
+    "done": "พร้อมดาวน์โหลด",
+    "failed": "ไม่สำเร็จ"
+  },
+  "reminder": {
+    "scheduled": "ตั้งเวลาไว้",
+    "sent": "ส่งแล้ว",
+    "skipped_paid": "ไม่ต้องส่ง — ชำระแล้ว",
+    "deferred_quiet_hours": "รอพ้นช่วงเวลาเงียบ",
+    "cancelled": "ยกเลิก",
+    "failed": "ส่งไม่สำเร็จ"
+  },
+  "invoiceCharge": {
+    "pending": "รอรวมในบิลถัดไป",
+    "applied": "อยู่ในบิลแล้ว",
+    "cancelled": "ยกเลิก"
   }
 }

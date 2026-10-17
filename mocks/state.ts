@@ -1,5 +1,6 @@
 import type { components } from "../src/lib/api/schema";
 import { PLATFORM_USERS } from "./fixtures";
+import { initialOwnerWorld, type OwnerWorld } from "./owner/world";
 import {
   initialChannels,
   initialDevices,
@@ -119,6 +120,8 @@ export interface MockState {
   inbox: InboxItem[];
   readings: Map<string, QueuedReading>;
   staff: StaffWorld;
+  /** The owner console's world (F2): see owner/world.ts. */
+  owner: OwnerWorld;
   webVitals: unknown[];
   log: LoggedRequest[];
   /** Access token lifetime; the suite shortens it to exercise refresh. */
@@ -138,6 +141,7 @@ function initial(): MockState {
     inbox: [],
     readings: new Map(),
     staff: initialStaffWorld(),
+    owner: initialOwnerWorld(),
     webVitals: [],
     log: [],
     // 15 minutes like the API; a long Lighthouse run sets MOCK_ACCESS_TTL_MS so its fixed session cookie lasts.
