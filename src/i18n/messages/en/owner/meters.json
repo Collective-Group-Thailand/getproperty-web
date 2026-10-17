@@ -1,0 +1,116 @@
+{
+  "title": "Meters",
+  "description": "Meter points of your buildings with their last reading.",
+  "descriptionBuilding": "Meter points of {building} with their last reading.",
+  "nav": "Meters",
+  "tab": {
+    "meters": "Meter points",
+    "reviews": "Readings to review"
+  },
+  "export": "Export readings (CSV)",
+  "noBuilding": "No building yet",
+  "unit": "Unit {unit}",
+  "never": "No reading yet",
+  "healthUnknown": "Not reported",
+  "utility": {
+    "electric": "Electricity",
+    "water": "Water"
+  },
+  "purpose": {
+    "unit": "Unit",
+    "common_area": "Common area",
+    "main": "Main meter"
+  },
+  "filter": {
+    "search": "Search",
+    "searchPlaceholder": "Meter code or unit",
+    "utility": "Utility",
+    "allUtilities": "All utilities",
+    "purpose": "Measures",
+    "allPurposes": "Everything"
+  },
+  "col": {
+    "meter": "Meter",
+    "assignment": "Measures",
+    "health": "Health",
+    "last": "Last reading"
+  },
+  "empty": {
+    "title": "No meters here",
+    "body": "Meters are added with the units or by the installer."
+  },
+  "detail": {
+    "facts": "Meter",
+    "assignment": "Measures",
+    "serial": "Serial number",
+    "multiplier": "Multiplier",
+    "initial": "Reading at installation",
+    "since": "Installed",
+    "until": "Removed",
+    "seriesTitle": "Usage",
+    "seriesHint": "From the smart meter, per period.",
+    "consumptionTitle": "Consumption between readings",
+    "consumptionHint": "Read by staff or by the resident's photo.",
+    "buckets": "Period",
+    "bucket": {
+      "15m": "15 minutes (24 h)",
+      "1h": "Hourly (7 days)",
+      "1d": "Daily (30 days)"
+    },
+    "chartTitle": "Usage of {meter}, {bucket}",
+    "table": "Show as a table",
+    "when": "When",
+    "usage": "Usage",
+    "noData": "No data for this period.",
+    "readings": "Readings",
+    "register": "Register",
+    "source": "Source",
+    "photo": "Photo",
+    "photoAlt": "Meter {meter} showing {register} on {date}"
+  },
+  "reviews": {
+    "title": "Readings to review",
+    "description": "Readings the platform held back: unsure photo reading, outside the usual range, lower than before or without a photo.",
+    "status": "Status",
+    "empty": {
+      "title": "Nothing to review",
+      "body": "Held readings appear here."
+    },
+    "photoAlt": "Photo of meter {meter} on {date}",
+    "noPhoto": "No photo",
+    "unit": "Unit {unit}",
+    "register": "Register",
+    "readAt": "Read",
+    "ocr": "Photo reading",
+    "band": "Usual range",
+    "bandValue": "{low} – {high}",
+    "trailingAvg": "Recent average",
+    "decisionNote": "Note",
+    "reason": {
+      "non_monotonic": "Lower than the previous reading",
+      "out_of_band": "Outside the usual range",
+      "ocr_low_confidence": "Photo reading unsure",
+      "clock_suspect": "Suspicious time",
+      "missing_photo": "No photo",
+      "manual_flag": "Flagged by staff",
+      "decreasing_without_swap": "Decreasing without a meter swap"
+    },
+    "decide": {
+      "accept": "Accept",
+      "acceptTitle": "Accept this reading?",
+      "acceptBody": "{meter} (unit {unit}): {register} is used for billing.",
+      "accepted": "Reading accepted",
+      "correct": "Correct",
+      "correctTitle": "Correct the reading",
+      "correctBody": "{meter} (unit {unit}) was read as {register}. Enter the value on the meter.",
+      "register": "Correct register",
+      "registerHint": "For example 8891.500",
+      "corrected": "Reading corrected",
+      "note": "Note",
+      "reject": "Reject",
+      "rejectTitle": "Reject this reading?",
+      "rejectBody": "{meter} (unit {unit}): {register} is not used; the meter is read again.",
+      "rejected": "Reading rejected"
+    }
+  }
+}

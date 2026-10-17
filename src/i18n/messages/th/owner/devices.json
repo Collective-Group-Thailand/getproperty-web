@@ -1,0 +1,67 @@
+{
+  "title": "อุปกรณ์",
+  "description": "เกตเวย์และมิเตอร์อัจฉริยะในอาคาร การติดตั้งและตั้งค่าทำโดยช่าง",
+  "lastSeen": "ติดต่อล่าสุด {at}",
+  "neverSeen": "ยังไม่เคยติดต่อ",
+  "meters": "{count, plural, other {# มิเตอร์}}",
+  "kind": {
+    "gateway": "เกตเวย์",
+    "electric_meter": "มิเตอร์ไฟฟ้า",
+    "water_meter": "มิเตอร์น้ำ",
+    "lock": "กุญแจ",
+    "breaker": "เบรกเกอร์",
+    "sensor": "เซนเซอร์",
+    "door_controller": "ชุดควบคุมประตู",
+    "camera": "กล้อง"
+  },
+  "ownership": {
+    "platform_haas": "เช่า",
+    "tenant_owned": "เป็นเจ้าของ"
+  },
+  "filter": {
+    "search": "ค้นหา",
+    "searchPlaceholder": "หมายเลขเครื่อง",
+    "kind": "ประเภท",
+    "allKinds": "ทุกประเภท",
+    "status": "สถานะ",
+    "allStatuses": "ทุกสถานะ"
+  },
+  "empty": {
+    "title": "ไม่มีอุปกรณ์",
+    "body": "มิเตอร์อัจฉริยะและเกตเวย์จะแสดงเมื่อติดตั้งแล้ว"
+  },
+  "command": {
+    "identify": "ระบุตัวเครื่อง",
+    "read_now": "อ่านค่าตอนนี้",
+    "restart": "เริ่มระบบใหม่",
+    "upload_logs": "ส่งบันทึกระบบ",
+    "ota_apply": "อัปเดต",
+    "set_log_level": "ระดับบันทึก"
+  },
+  "detail": {
+    "facts": "อุปกรณ์",
+    "lastSeen": "ติดต่อล่าสุด",
+    "firmware": "เฟิร์มแวร์",
+    "config": "เวอร์ชันการตั้งค่า",
+    "driver": "ไดรเวอร์",
+    "meters": "มิเตอร์",
+    "heartbeat": "สัญญาณล่าสุด",
+    "missed": "สัญญาณที่ขาดหาย",
+    "link": "การเชื่อมต่อ",
+    "rssi": "ความแรงสัญญาณ",
+    "rssiValue": "{rssi} dBm",
+    "buffered": "ข้อมูลที่รอส่ง",
+    "channels": "มิเตอร์ที่เชื่อมอยู่",
+    "channelsHint": "ปัจจุบันและก่อนหน้า (การเปลี่ยนมิเตอร์)",
+    "boundSince": "ตั้งแต่ {from}",
+    "boundUntil": "{from} – {to}",
+    "noChannels": "ไม่มีมิเตอร์ที่เชื่อม",
+    "commands": "คำสั่ง",
+    "noCommands": "ยังไม่มีคำสั่ง",
+    "events": "การตั้งค่าและเหตุการณ์",
+    "configVersion": "การตั้งค่า {version} ({meters} มิเตอร์)",
+    "appliedAt": "ใช้เมื่อ {at}",
+    "notApplied": "ยังไม่ใช้",
+    "noEvents": "ไม่มีบันทึก"
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "title": "Utility loss",
+  "description": "The utility's own bill against what your units and common areas were billed.",
+  "utilities": "Utility",
+  "utility": {
+    "electric": "Electricity",
+    "water": "Water"
+  },
+  "building": "Building",
+  "cycle": "Cycle",
+  "noBuilding": "No building yet",
+  "lossPct": "Loss",
+  "lossThb": "Loss in baht",
+  "lossUnits": "Lost units",
+  "invoiceUnits": "On the utility's bill",
+  "unitBilledUnits": "Billed to units",
+  "commonAreaUnits": "Common areas",
+  "billedSource": "Billed units from",
+  "billedUnitsSource": {
+    "invoices": "Issued invoices",
+    "meter_readings_stub": "Meter readings (no invoices yet)"
+  },
+  "priceBasis": {
+    "utility_tariff": "At the utility's tariff",
+    "invoice_average": "At the bill's average price"
+  },
+  "computedAt": "Computed",
+  "period": "{start} – {end}",
+  "breakdown": "{building} · {period}",
+  "recompute": "Recompute",
+  "csv": "Download CSV",
+  "trend": "Trend",
+  "trendTitle": "{utility} loss of {building} per cycle",
+  "trendTable": "Show as a table",
+  "noTrend": "No earlier cycles yet.",
+  "suspects": "Where to look",
+  "suspectsHint": "Units and meters that may explain the loss.",
+  "suspect": {
+    "zero_consumption_occupied": "Occupied but no usage",
+    "usage_while_vacant": "Usage while vacant",
+    "estimated_reading": "Estimated reading",
+    "night_water_flow": "Water flowing at night",
+    "stale_meter": "Meter not reporting",
+    "consumption_anomaly": "Unusual usage"
+  },
+  "score": "score {score}",
+  "openUnit": "Open the unit",
+  "openMeter": "Open the meter",
+  "noSuspects": "Nothing stands out.",
+  "noInvoiceTitle": "Enter the utility's bill first",
+  "noInvoiceBody": "The loss is computed once the utility's own bill for the cycle is entered below.",
+  "unavailable": "The loss report could not be loaded.",
+  "invoices": "Utility bills",
+  "invoicesHint": "The bills from the electricity or water authority, entered by hand or from a photo.",
+  "noInvoices": "No bills entered yet.",
+  "invoicePhoto": "Utility bill {number}",
+  "source": {
+    "manual": "Typed",
+    "ocr": "From photo",
+    "ebill_import": "e-Bill"
+  },
+  "summary": "All buildings",
+  "summaryRow": "{building} · {utility}",
+  "suspectCount": "{count, plural, one {# to check} other {# to check}}",
+  "invoice": {
+    "add": "Enter a bill",
+    "title": {
+      "electric": "Electricity bill",
+      "water": "Water bill"
+    },
+    "body": "Upload the bill's photo to fill the fields, then check them.",
+    "save": "Save",
+    "saved": "Bill saved",
+    "photo": "Photo of the bill",
+    "photoHint": "The fields are read from it; check them before saving",
+    "choose": "Choose a file",
+    "tooLarge": "The file is larger than 10 MB",
+    "reading": "Reading the bill…",
+    "readFailed": "The bill could not be read. Fill the fields by hand.",
+    "prefilled": "Filled from the photo ({confidence}% sure). Check every field.",
+    "provider": "Authority",
+    "account": "Account",
+    "noAccount": "Not specified",
+    "invoiceNo": "Bill number",
+    "periodStart": "From",
+    "periodEnd": "To",
+    "units": {
+      "electric": "Units (kWh)",
+      "water": "Units (m³)"
+    },
+    "amount": "Amount (THB)",
+    "ft": "Ft (THB/unit)",
+    "serviceCharge": "Service charge (THB)",
+    "vat": "VAT (THB)",
+    "previousRegister": "Previous reading",
+    "currentRegister": "Current reading"
+  },
+  "chooseBuilding": "Building in focus"
+}

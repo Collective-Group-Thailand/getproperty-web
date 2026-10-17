@@ -1,0 +1,99 @@
+{
+  "title": "ค่าน้ำไฟรั่วไหล",
+  "description": "บิลของการไฟฟ้า/การประปา เทียบกับที่เรียกเก็บจากห้องและส่วนกลาง",
+  "utilities": "ประเภท",
+  "utility": {
+    "electric": "ไฟฟ้า",
+    "water": "น้ำประปา"
+  },
+  "building": "อาคาร",
+  "cycle": "รอบ",
+  "noBuilding": "ยังไม่มีอาคาร",
+  "lossPct": "รั่วไหล",
+  "lossThb": "มูลค่าที่รั่วไหล",
+  "lossUnits": "หน่วยที่หายไป",
+  "invoiceUnits": "ตามบิลการไฟฟ้า/ประปา",
+  "unitBilledUnits": "เรียกเก็บจากห้อง",
+  "commonAreaUnits": "ส่วนกลาง",
+  "billedSource": "หน่วยที่เรียกเก็บมาจาก",
+  "billedUnitsSource": {
+    "invoices": "บิลที่ออกแล้ว",
+    "meter_readings_stub": "เลขมิเตอร์ (ยังไม่ออกบิล)"
+  },
+  "priceBasis": {
+    "utility_tariff": "คิดตามอัตราของการไฟฟ้า/ประปา",
+    "invoice_average": "คิดตามราคาเฉลี่ยในบิล"
+  },
+  "computedAt": "คำนวณเมื่อ",
+  "period": "{start} – {end}",
+  "breakdown": "{building} · {period}",
+  "recompute": "คำนวณใหม่",
+  "csv": "ดาวน์โหลด CSV",
+  "trend": "แนวโน้ม",
+  "trendTitle": "การรั่วไหลของ{utility} {building} แต่ละรอบ",
+  "trendTable": "ดูเป็นตาราง",
+  "noTrend": "ยังไม่มีรอบก่อนหน้า",
+  "suspects": "จุดที่ควรตรวจ",
+  "suspectsHint": "ห้องและมิเตอร์ที่อาจเป็นสาเหตุ",
+  "suspect": {
+    "zero_consumption_occupied": "มีผู้เช่าแต่ไม่มีการใช้",
+    "usage_while_vacant": "ห้องว่างแต่มีการใช้",
+    "estimated_reading": "เลขประมาณการ",
+    "night_water_flow": "น้ำไหลกลางคืน",
+    "stale_meter": "มิเตอร์ไม่ส่งข้อมูล",
+    "consumption_anomaly": "การใช้ผิดปกติ"
+  },
+  "score": "คะแนน {score}",
+  "openUnit": "ดูห้อง",
+  "openMeter": "ดูมิเตอร์",
+  "noSuspects": "ไม่พบจุดผิดปกติ",
+  "noInvoiceTitle": "กรอกบิลของการไฟฟ้า/ประปาก่อน",
+  "noInvoiceBody": "ระบบจะคำนวณการรั่วไหลเมื่อกรอกบิลของรอบนี้ด้านล่าง",
+  "unavailable": "โหลดรายงานการรั่วไหลไม่ได้",
+  "invoices": "บิลการไฟฟ้า/ประปา",
+  "invoicesHint": "บิลจากการไฟฟ้าหรือการประปา กรอกเองหรือจากรูปถ่าย",
+  "noInvoices": "ยังไม่ได้กรอกบิล",
+  "invoicePhoto": "บิลการไฟฟ้า/ประปา {number}",
+  "source": {
+    "manual": "กรอกเอง",
+    "ocr": "จากรูปถ่าย",
+    "ebill_import": "e-Bill"
+  },
+  "summary": "ทุกอาคาร",
+  "summaryRow": "{building} · {utility}",
+  "suspectCount": "{count, plural, other {ต้องตรวจ # จุด}}",
+  "invoice": {
+    "add": "กรอกบิล",
+    "title": {
+      "electric": "บิลค่าไฟฟ้า",
+      "water": "บิลค่าน้ำประปา"
+    },
+    "body": "อัปโหลดรูปบิลเพื่อกรอกข้อมูลให้ แล้วตรวจสอบอีกครั้ง",
+    "save": "บันทึก",
+    "saved": "บันทึกบิลแล้ว",
+    "photo": "รูปบิล",
+    "photoHint": "ระบบอ่านข้อมูลจากรูป ตรวจสอบก่อนบันทึก",
+    "choose": "เลือกไฟล์",
+    "tooLarge": "ไฟล์ใหญ่เกิน 10 MB",
+    "reading": "กำลังอ่านบิล…",
+    "readFailed": "อ่านบิลไม่ได้ กรอกข้อมูลเอง",
+    "prefilled": "กรอกจากรูปแล้ว (มั่นใจ {confidence}%) ตรวจทุกช่อง",
+    "provider": "หน่วยงาน",
+    "account": "บัญชีผู้ใช้",
+    "noAccount": "ไม่ระบุ",
+    "invoiceNo": "เลขที่บิล",
+    "periodStart": "ตั้งแต่",
+    "periodEnd": "ถึง",
+    "units": {
+      "electric": "หน่วย (kWh)",
+      "water": "หน่วย (ลบ.ม.)"
+    },
+    "amount": "จำนวนเงิน (บาท)",
+    "ft": "ค่า Ft (บาท/หน่วย)",
+    "serviceCharge": "ค่าบริการ (บาท)",
+    "vat": "ภาษีมูลค่าเพิ่ม (บาท)",
+    "previousRegister": "เลขครั้งก่อน",
+    "currentRegister": "เลขครั้งนี้"
+  },
+  "chooseBuilding": "อาคารที่เลือกอยู่"
+}

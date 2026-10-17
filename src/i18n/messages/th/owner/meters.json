@@ -1,0 +1,116 @@
+{
+  "title": "มิเตอร์",
+  "description": "จุดมิเตอร์ในอาคารของคุณพร้อมเลขล่าสุด",
+  "descriptionBuilding": "จุดมิเตอร์ของ{building}พร้อมเลขล่าสุด",
+  "nav": "มิเตอร์",
+  "tab": {
+    "meters": "จุดมิเตอร์",
+    "reviews": "เลขมิเตอร์รอตรวจ"
+  },
+  "export": "ส่งออกเลขมิเตอร์ (CSV)",
+  "noBuilding": "ยังไม่มีอาคาร",
+  "unit": "ห้อง {unit}",
+  "never": "ยังไม่มีเลข",
+  "healthUnknown": "ไม่มีรายงาน",
+  "utility": {
+    "electric": "ไฟฟ้า",
+    "water": "น้ำประปา"
+  },
+  "purpose": {
+    "unit": "ห้อง",
+    "common_area": "ส่วนกลาง",
+    "main": "มิเตอร์หลัก"
+  },
+  "filter": {
+    "search": "ค้นหา",
+    "searchPlaceholder": "รหัสมิเตอร์หรือห้อง",
+    "utility": "ประเภท",
+    "allUtilities": "ทุกประเภท",
+    "purpose": "วัดที่",
+    "allPurposes": "ทั้งหมด"
+  },
+  "col": {
+    "meter": "มิเตอร์",
+    "assignment": "วัดที่",
+    "health": "สถานะ",
+    "last": "เลขล่าสุด"
+  },
+  "empty": {
+    "title": "ไม่มีมิเตอร์",
+    "body": "มิเตอร์จะถูกเพิ่มพร้อมห้องหรือโดยช่างติดตั้ง"
+  },
+  "detail": {
+    "facts": "มิเตอร์",
+    "assignment": "วัดที่",
+    "serial": "หมายเลขเครื่อง",
+    "multiplier": "ตัวคูณ",
+    "initial": "เลขตอนติดตั้ง",
+    "since": "ติดตั้งเมื่อ",
+    "until": "ถอดเมื่อ",
+    "seriesTitle": "การใช้งาน",
+    "seriesHint": "จากมิเตอร์อัจฉริยะ แยกตามช่วงเวลา",
+    "consumptionTitle": "การใช้ระหว่างการจด",
+    "consumptionHint": "จดโดยพนักงานหรือจากรูปที่ผู้เช่าส่ง",
+    "buckets": "ช่วงเวลา",
+    "bucket": {
+      "15m": "ทุก 15 นาที (24 ชม.)",
+      "1h": "รายชั่วโมง (7 วัน)",
+      "1d": "รายวัน (30 วัน)"
+    },
+    "chartTitle": "การใช้งานของ {meter} {bucket}",
+    "table": "ดูเป็นตาราง",
+    "when": "เวลา",
+    "usage": "ใช้ไป",
+    "noData": "ไม่มีข้อมูลในช่วงนี้",
+    "readings": "เลขมิเตอร์",
+    "register": "เลขมิเตอร์",
+    "source": "ที่มา",
+    "photo": "รูป",
+    "photoAlt": "มิเตอร์ {meter} เลข {register} วันที่ {date}"
+  },
+  "reviews": {
+    "title": "เลขมิเตอร์รอตรวจ",
+    "description": "เลขที่ระบบพักไว้: อ่านรูปไม่มั่นใจ ผิดปกติจากค่าเดิม น้อยกว่าครั้งก่อน หรือไม่มีรูป",
+    "status": "สถานะ",
+    "empty": {
+      "title": "ไม่มีเลขรอตรวจ",
+      "body": "เลขที่ถูกพักไว้จะแสดงที่นี่"
+    },
+    "photoAlt": "รูปมิเตอร์ {meter} วันที่ {date}",
+    "noPhoto": "ไม่มีรูป",
+    "unit": "ห้อง {unit}",
+    "register": "เลขมิเตอร์",
+    "readAt": "จดเมื่อ",
+    "ocr": "เลขที่อ่านจากรูป",
+    "band": "ช่วงปกติ",
+    "bandValue": "{low} – {high}",
+    "trailingAvg": "ค่าเฉลี่ยช่วงหลัง",
+    "decisionNote": "หมายเหตุ",
+    "reason": {
+      "non_monotonic": "น้อยกว่าเลขครั้งก่อน",
+      "out_of_band": "ผิดจากช่วงปกติ",
+      "ocr_low_confidence": "อ่านรูปไม่มั่นใจ",
+      "clock_suspect": "เวลาผิดปกติ",
+      "missing_photo": "ไม่มีรูป",
+      "manual_flag": "พนักงานแจ้งให้ตรวจ",
+      "decreasing_without_swap": "เลขลดลงโดยไม่ได้เปลี่ยนมิเตอร์"
+    },
+    "decide": {
+      "accept": "รับค่า",
+      "acceptTitle": "รับค่านี้?",
+      "acceptBody": "{meter} (ห้อง {unit}): ใช้เลข {register} ในการออกบิล",
+      "accepted": "รับค่าแล้ว",
+      "correct": "แก้ไข",
+      "correctTitle": "แก้ไขเลขมิเตอร์",
+      "correctBody": "{meter} (ห้อง {unit}) อ่านได้ {register} กรอกเลขที่อยู่บนมิเตอร์",
+      "register": "เลขที่ถูกต้อง",
+      "registerHint": "เช่น 8891.500",
+      "corrected": "แก้ไขเลขแล้ว",
+      "note": "หมายเหตุ",
+      "reject": "ไม่รับค่า",
+      "rejectTitle": "ไม่รับค่านี้?",
+      "rejectBody": "{meter} (ห้อง {unit}): ไม่ใช้เลข {register} และจะจดใหม่",
+      "rejected": "ไม่รับค่าแล้ว"
+    }
+  }
+}

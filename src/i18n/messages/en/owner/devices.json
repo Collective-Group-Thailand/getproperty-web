@@ -1,0 +1,67 @@
+{
+  "title": "Devices",
+  "description": "Gateways and smart meters in your buildings. Installation and settings are done by the installer.",
+  "lastSeen": "Seen {at}",
+  "neverSeen": "Never seen",
+  "meters": "{count, plural, one {# meter} other {# meters}}",
+  "kind": {
+    "gateway": "Gateway",
+    "electric_meter": "Electricity meter",
+    "water_meter": "Water meter",
+    "lock": "Lock",
+    "breaker": "Breaker",
+    "sensor": "Sensor",
+    "door_controller": "Door controller",
+    "camera": "Camera"
+  },
+  "ownership": {
+    "platform_haas": "Rented",
+    "tenant_owned": "Owned"
+  },
+  "filter": {
+    "search": "Search",
+    "searchPlaceholder": "Serial number",
+    "kind": "Kind",
+    "allKinds": "All kinds",
+    "status": "Status",
+    "allStatuses": "All statuses"
+  },
+  "empty": {
+    "title": "No devices",
+    "body": "Smart meters and gateways appear when they are installed."
+  },
+  "command": {
+    "identify": "Identify",
+    "read_now": "Read now",
+    "restart": "Restart",
+    "upload_logs": "Upload logs",
+    "ota_apply": "Update",
+    "set_log_level": "Log level"
+  },
+  "detail": {
+    "facts": "Device",
+    "lastSeen": "Last seen",
+    "firmware": "Firmware",
+    "config": "Configuration version",
+    "driver": "Driver",
+    "meters": "Meters",
+    "heartbeat": "Last heartbeat",
+    "missed": "Missed heartbeats",
+    "link": "Connection",
+    "rssi": "Signal",
+    "rssiValue": "{rssi} dBm",
+    "buffered": "Readings waiting to send",
+    "channels": "Meters connected",
+    "channelsHint": "Now and before (meter swaps).",
+    "boundSince": "since {from}",
+    "boundUntil": "{from} – {to}",
+    "noChannels": "No meters connected.",
+    "commands": "Commands",
+    "noCommands": "No commands sent.",
+    "events": "Configuration and events",
+    "configVersion": "Configuration {version} ({meters} meters)",
+    "appliedAt": "applied {at}",
+    "notApplied": "not applied yet",
+    "noEvents": "Nothing recorded."
+  }
+}
