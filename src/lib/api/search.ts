@@ -2,13 +2,16 @@ import type { Schemas } from "./types";
 
 export type SearchResult = Schemas["SearchHitDto"];
 
-const SEARCH_TYPES: ReadonlySet<string> = new Set<Schemas["SearchHitType"]>([
-  "building",
-  "unit",
-  "party",
-  "lease",
-  "device",
-]);
+/** Every hit type of the contract — a new `SearchHitType` fails the build here until it is linked. */
+const KNOWN_TYPES: Record<Schemas["SearchHitType"], true> = {
+  building: true,
+  unit: true,
+  party: true,
+  lease: true,
+  device: true,
+  invoice: true,
+};
+const SEARCH_TYPES: ReadonlySet<string> = new Set(Object.keys(KNOWN_TYPES));
 
 /**
  * `GET /v1/owner/search` (D-180) checked without a schema library (the owner console's bundle stays

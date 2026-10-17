@@ -11,6 +11,7 @@ import { QueryProvider } from "@/features/shared/providers/QueryProvider";
 import type { ShellNavItem } from "@/features/shared/shell/types";
 import { Input } from "@/ui/components/Input";
 import { Icon, type IconGlyph } from "@/ui/icons";
+import { IconBill } from "@/ui/icons/glyphs/bill";
 import { IconBuilding } from "@/ui/icons/glyphs/building";
 import { IconGateway } from "@/ui/icons/glyphs/gateway";
 import { IconLease } from "@/ui/icons/glyphs/lease";
@@ -25,6 +26,7 @@ const RESULT_ICON: Record<SearchResult["type"], IconGlyph> = {
   party: IconResident,
   lease: IconLease,
   device: IconGateway,
+  invoice: IconBill,
 };
 
 /** Where a search hit opens in the owner console (F2 routes). */
@@ -35,6 +37,7 @@ function resultHref(result: SearchResult, prefix: string): string {
     party: `/parties/${result.id}`,
     lease: `/leases/${result.id}`,
     device: `/devices/${result.id}`,
+    invoice: `/invoices/${result.id}`,
   };
   return `${prefix}${paths[result.type]}`;
 }
