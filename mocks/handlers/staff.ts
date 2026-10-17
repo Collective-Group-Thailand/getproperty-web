@@ -3,7 +3,7 @@ import { http, type HttpHandler } from "msw";
 import type { components } from "../../src/lib/api/schema";
 import { OPERATION_PROBLEMS } from "../generated/problems";
 import { TENANTS, type OperatorPersona } from "../fixtures";
-import { BUILDING_A, BUILDINGS, buildingOf, FLOORS, period, unitOf, type MockMeter } from "../staff-world";
+import { BUILDING_A, BUILDINGS, buildingOf, FLOORS, meterPoints, period, unitOf, type MockMeter } from "../staff-world";
 import { state } from "../state";
 import { tenantContext } from "./context";
 import { emit } from "./realtime";
@@ -110,6 +110,12 @@ function roundOf(buildingId: string): Schemas["RoundBuildingDto"] {
     const meter = state.staff.meters.find((candidate) => candidate.assetItemId === r.assetItemId);
     return meter !== undefined && buildingOf(meter) === buildingId && r.readingBatchId !== null;
   })?.readingBatchId;
+  const inRound = state.staff.meters.filter(
+    (meter) =>
+      !meter.retired &&
+      floors.some((floor) => unitOf(meter)?.floor.floorId === floor.floorId) &&
+      (meter.iot === null || meter.iot.health !== "ok"),
+  );
   const roundFloors = floors
     .map((floor) => ({
       floorId: floor.floorId,
@@ -148,6 +154,8 @@ function roundOf(buildingId: string): Schemas["RoundBuildingDto"] {
     windowStart: p.windowStart,
     batchId: batch ?? null,
     remaining: roundFloors.reduce((sum, floor) => sum + floor.items.length, 0),
+    total: inRound.length,
+    read: inRound.filter(readThisRound).length,
     floors: roundFloors,
   };
 }
@@ -856,7 +864,88 @@ export function gatewayComesOnline(serial: string): boolean {
   return true;
 }
 
+/** The edge driver catalogue (D-013), as getproperty-edge E1.2/E1.3 ship it. */
+const DRIVERS: Schemas["MeterDriverDto"][] = [
+  { key: "eastron_sdm120", busType: "modbus_rtu", vendor: "Eastron", models: ["SDM120-Modbus"], utility: "electric" },
+  { key: "eastron_sdm230", busType: "modbus_rtu", vendor: "Eastron", models: ["SDM230-Modbus"], utility: "electric" },
+  { key: "pulse_counter", busType: "gpio", vendor: "Generic", models: ["Pulse water meter"], utility: "water" },
+];
+
+/** Buildings of my scope, their meter points, the driver catalogue and install orders (B6.1, D-203, D-205). */
+const fieldHandlers: HttpHandler[] = [
+  http.get("*/v1/staff/buildings", ({ request }) => {
+    const ok = operator(request, "staff.field.buildings");
+    if (ok instanceof Response) return ok;
+    return json({ data: inWorld(ok) ? BUILDINGS : [] });
+  }),
+  http.get("*/v1/staff/buildings/:buildingId/meters", ({ request, params }) => {
+    const ok = operator(request, "staff.field.meterPoints");
+    if (ok instanceof Response) return ok;
+    if (!inWorld(ok) || !BUILDINGS.some((building) => building.id === params.buildingId)) {
+      return problem("staff.field.meterPoints", "http.not_found");
+    }
+    return json({
+      data: meterPoints(state.staff.meters, state.staff.channels, state.staff.devices, String(params.buildingId)),
+    });
+  }),
+  http.get("*/v1/staff/meter-drivers", ({ request }) => {
+    const ok = operator(request, "staff.field.meterDrivers");
+    if (ok instanceof Response) return ok;
+    return json({ data: DRIVERS });
+  }),
+  http.get("*/v1/staff/install-orders", ({ request }) => {
+    const ok = operator(request, "staff.field.installOrders");
+    if (ok instanceof Response) return ok;
+    if (!inWorld(ok)) return json({ data: [] });
+    const meterDevices = state.staff.devices.filter(
+      (device) => device.kind !== "gateway" && device.buildingId === BUILDING_A,
+    );
+    const order: Schemas["StaffInstallOrderDto"] = {
+      id: "0d000000-0000-4000-8000-000000000001",
+      kind: "install",
+      state: "open",
+      buildingId: BUILDING_A,
+      dueAt: new Date(Date.now() + 2 * 86_400_000).toISOString(),
+      units: [
+        {
+          unitId: null,
+          unitNo: null,
+          items: state.staff.devices
+            .filter((device) => device.kind === "gateway" && device.buildingId === BUILDING_A)
+            .map((device) => ({
+              kind: "gateway",
+              deviceKind: "gateway",
+              deviceId: device.id,
+              assetItemId: null,
+              state: device.status === "online" ? "done" : "open",
+            })),
+        },
+        ...(meterDevices.length > 0
+          ? [
+              {
+                unitId: null,
+                unitNo: null,
+                items: meterDevices.map((device) => ({
+                  kind: "meter_device" as const,
+                  deviceKind: device.kind,
+                  deviceId: device.id,
+                  assetItemId: null,
+                  state:
+                    device.status === "online" || device.status === "provisioned"
+                      ? ("done" as const)
+                      : ("open" as const),
+                })),
+              },
+            ]
+          : []),
+      ],
+    };
+    return json({ data: [order] });
+  }),
+];
+
 export const staffHandlers: HttpHandler[] = [
+  ...fieldHandlers,
   ...readingHandlers,
   ...fileHandlers,
   ...inspectionHandlers,

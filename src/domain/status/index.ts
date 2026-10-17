@@ -27,6 +27,23 @@ export { EXPORT_JOB_STATUS, EXPORT_JOB_VALUES, type ExportStatus } from "./expor
 export { REMINDER_STATUS, REMINDER_VALUES, type ReminderStatus } from "./reminder";
 export { INVOICE_CHARGE_STATUS, INVOICE_CHARGE_VALUES, type InvoiceChargeStatus } from "./invoiceCharge";
 
+export { PLATFORM_INVOICE_STATUS, PLATFORM_INVOICE_VALUES, type PlatformInvoiceStatus } from "./platformInvoice";
+export { CREDIT_NOTE_STATUS, CREDIT_NOTE_VALUES, type PlatformCreditNoteState } from "./creditNote";
+export { HAAS_STATUS, HAAS_VALUES, type HaasState } from "./haas";
+export { INSTALL_ORDER_STATUS, INSTALL_ORDER_VALUES, type InstallOrderState } from "./installOrder";
+export { SITE_SURVEY_STATUS, SITE_SURVEY_VALUES, type SiteSurveyState } from "./siteSurvey";
+export { SUPPORT_GRANT_STATUS, SUPPORT_GRANT_VALUES, type SupportGrantState } from "./supportGrant";
+export { TARIFF_VERSION_STATUS, TARIFF_VERSION_VALUES, type TariffVersionState } from "./tariffVersion";
+export { TEMPLATE_VERSION_STATUS, TEMPLATE_VERSION_VALUES, type TemplateVersionState } from "./templateVersion";
+export { DSR_STATUS, DSR_VALUES, type DsrState } from "./dsr";
+export { OUTBOX_STATUS, OUTBOX_VALUES, type OutboxState } from "./outbox";
+export { CONSUMPTION_STATUS, CONSUMPTION_VALUES, type ConsumptionState } from "./consumption";
+export { ROLLOUT_STATUS, ROLLOUT_VALUES, type RolloutStatus } from "./rollout";
+export { OTA_DEVICE_STATUS, OTA_DEVICE_VALUES, type OtaDeviceStatus } from "./otaDevice";
+export { TENANT_STATUS, TENANT_VALUES, type TenantStatus } from "./tenant";
+export { BANK_ACCOUNT_STATUS, BANK_ACCOUNT_VALUES, type BankAccountState } from "./bankAccount";
+export { MEMBERSHIP_STATUS, MEMBERSHIP_VALUES, type MembershipStatus } from "./membership";
+
 import { COMMAND_STATUS } from "./command";
 import { DEPOSIT_STATUS } from "./deposit";
 import { DEVICE_STATUS } from "./device";
@@ -49,6 +66,22 @@ import { INVITATION_STATUS } from "./invitation";
 import { EXPORT_JOB_STATUS } from "./exportJob";
 import { REMINDER_STATUS } from "./reminder";
 import { INVOICE_CHARGE_STATUS } from "./invoiceCharge";
+import { PLATFORM_INVOICE_STATUS } from "./platformInvoice";
+import { CREDIT_NOTE_STATUS } from "./creditNote";
+import { HAAS_STATUS } from "./haas";
+import { INSTALL_ORDER_STATUS } from "./installOrder";
+import { SITE_SURVEY_STATUS } from "./siteSurvey";
+import { SUPPORT_GRANT_STATUS } from "./supportGrant";
+import { TARIFF_VERSION_STATUS } from "./tariffVersion";
+import { TEMPLATE_VERSION_STATUS } from "./templateVersion";
+import { DSR_STATUS } from "./dsr";
+import { OUTBOX_STATUS } from "./outbox";
+import { CONSUMPTION_STATUS } from "./consumption";
+import { ROLLOUT_STATUS } from "./rollout";
+import { OTA_DEVICE_STATUS } from "./otaDevice";
+import { TENANT_STATUS } from "./tenant";
+import { BANK_ACCOUNT_STATUS } from "./bankAccount";
+import { MEMBERSHIP_STATUS } from "./membership";
 
 /** Every status map by its domain key (the `status.<domain>` namespace of its labels). */
 export const STATUS_MAPS = {
@@ -74,6 +107,22 @@ export const STATUS_MAPS = {
   exportJob: EXPORT_JOB_STATUS,
   reminder: REMINDER_STATUS,
   invoiceCharge: INVOICE_CHARGE_STATUS,
+  platformInvoice: PLATFORM_INVOICE_STATUS,
+  creditNote: CREDIT_NOTE_STATUS,
+  haas: HAAS_STATUS,
+  installOrder: INSTALL_ORDER_STATUS,
+  siteSurvey: SITE_SURVEY_STATUS,
+  supportGrant: SUPPORT_GRANT_STATUS,
+  tariffVersion: TARIFF_VERSION_STATUS,
+  templateVersion: TEMPLATE_VERSION_STATUS,
+  dsr: DSR_STATUS,
+  outbox: OUTBOX_STATUS,
+  consumption: CONSUMPTION_STATUS,
+  rollout: ROLLOUT_STATUS,
+  otaDevice: OTA_DEVICE_STATUS,
+  tenant: TENANT_STATUS,
+  bankAccount: BANK_ACCOUNT_STATUS,
+  membership: MEMBERSHIP_STATUS,
 } as const;
 
 export type StatusDomain = keyof typeof STATUS_MAPS;

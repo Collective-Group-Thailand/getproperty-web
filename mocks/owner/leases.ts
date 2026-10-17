@@ -758,6 +758,7 @@ function endOccupancy(lease: Schemas["LeaseDto"]) {
       refundedAt: null,
       residentResponse: null,
       disputeReason: null,
+      disputeDocumentIds: [],
       statementNumber: null,
       isLate: false,
       moveOutAt: lease.moveOutAt ?? iso(),

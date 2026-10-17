@@ -14,8 +14,8 @@ import { DescriptionList } from "@/ui/components/DescriptionList";
 import { LinkTabs } from "@/ui/components/LinkTabs";
 
 import { ownerPath, withQuery } from "../shared/links";
-import { ListPagination } from "../shared/ListPagination";
-import { OwnerPage, PageHeader } from "../shared/PageHeader";
+import { ListPagination } from "@/features/shared/console/ListPagination";
+import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { PhotoThumb } from "../shared/PhotoThumb";
 import { pageParam, param, section, type OwnerContext } from "../shared/server";
 

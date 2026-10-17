@@ -10,8 +10,8 @@ import type { Schemas } from "@/lib/api/types";
 import { Card, CardHeader } from "@/ui/components/Card";
 
 import { ownerPath, withQuery } from "../shared/links";
-import { ListPagination } from "../shared/ListPagination";
-import { OwnerPage, PageHeader } from "../shared/PageHeader";
+import { ListPagination } from "@/features/shared/console/ListPagination";
+import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { pageParam, param, section, type OwnerContext } from "../shared/server";
 import { RemindButton } from "./RemindButton";
 

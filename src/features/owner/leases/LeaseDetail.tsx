@@ -22,7 +22,7 @@ import { IconXCircle } from "@/ui/icons/glyphs/x-circle";
 
 import { DocumentButton } from "../shared/DocumentButton";
 import { ownerPath } from "../shared/links";
-import { OwnerPage, PageHeader } from "../shared/PageHeader";
+import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { section, type OwnerContext } from "../shared/server";
 import { ComplianceChecks } from "./ComplianceChecks";
 import { LeaseActions } from "./LeaseActions";

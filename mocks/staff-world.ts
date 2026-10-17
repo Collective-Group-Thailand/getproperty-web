@@ -1,5 +1,4 @@
 import type { components } from "../src/lib/api/schema";
-import type { StaffBuilding, StaffMeterPoint } from "../src/lib/api/pending";
 
 type Schemas = components["schemas"];
 
@@ -145,7 +144,7 @@ export function initialMeters(): MockMeter[] {
   ];
 }
 
-export const BUILDINGS: StaffBuilding[] = [
+export const BUILDINGS: Schemas["StaffBuildingDto"][] = [
   { id: BUILDING_A, code: "A", name: "อาคาร A", floorsCount: 2, unitCount: 3 },
   { id: BUILDING_B, code: "B", name: "อาคาร B", floorsCount: 1, unitCount: 1 },
 ];
@@ -398,13 +397,13 @@ export function initialChannels(): MockChannel[] {
   ];
 }
 
-/** The meter points of a building with their open channel (contract request shape). */
+/** The meter points of a building with their open channel (`GET /v1/staff/buildings/{id}/meters`). */
 export function meterPoints(
   meters: MockMeter[],
   channels: MockChannel[],
   devices: Schemas["FleetDeviceDto"][],
   buildingId: string,
-): StaffMeterPoint[] {
+): Schemas["StaffMeterPointDto"][] {
   return meters
     .filter((meter) => !meter.retired && buildingOf(meter) === buildingId)
     .map((meter) => {
@@ -438,8 +437,9 @@ export function meterPoints(
               busType: channel.busType,
               address: channel.address,
               pin: channel.pin,
+              driver: channel.driver,
             }
           : null,
-      } satisfies StaffMeterPoint;
+      } satisfies Schemas["StaffMeterPointDto"];
     });
 }

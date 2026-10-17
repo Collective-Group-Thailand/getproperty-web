@@ -163,5 +163,112 @@
     "pending": "Waiting for the next invoice",
     "applied": "On an invoice",
     "cancelled": "Cancelled"
+  },
+  "platformInvoice": {
+    "draft": "Draft",
+    "issued": "Issued",
+    "paid": "Paid",
+    "partially_paid": "Partly paid",
+    "overdue": "Overdue",
+    "void": "Void",
+    "credited": "Credited"
+  },
+  "creditNote": {
+    "requested": "Waiting for approval",
+    "issued": "Issued",
+    "rejected": "Rejected"
+  },
+  "haas": {
+    "allocated": "Allocated",
+    "installed": "Installed",
+    "in_service": "In service",
+    "replaced": "Replaced",
+    "deinstalled": "De-installed",
+    "written_off": "Written off"
+  },
+  "installOrder": {
+    "open": "Open",
+    "in_progress": "In progress",
+    "done": "Done",
+    "cancelled": "Cancelled"
+  },
+  "siteSurvey": {
+    "requested": "Requested",
+    "scheduled": "Scheduled",
+    "done": "Done",
+    "cancelled": "Cancelled"
+  },
+  "supportGrant": {
+    "requested": "Requested",
+    "approved": "Approved",
+    "active": "Active",
+    "expired": "Expired",
+    "revoked": "Revoked",
+    "denied": "Denied"
+  },
+  "tariffVersion": {
+    "draft": "Draft",
+    "entered": "Entered — waiting for a second check",
+    "verified": "Verified",
+    "published": "Published",
+    "superseded": "Superseded"
+  },
+  "templateVersion": {
+    "draft": "Draft",
+    "published": "Published",
+    "retired": "Retired"
+  },
+  "dsr": {
+    "received": "Received",
+    "verifying": "Verifying identity",
+    "in_progress": "In progress",
+    "fulfilled": "Fulfilled",
+    "rejected": "Rejected",
+    "withdrawn": "Withdrawn"
+  },
+  "outbox": {
+    "pending": "Pending",
+    "publishing": "Publishing",
+    "published": "Published",
+    "failed": "Failed",
+    "dead": "Dead letter"
+  },
+  "consumption": {
+    "processed": "Processed",
+    "failed": "Failed",
+    "dead": "Dead letter"
+  },
+  "rollout": {
+    "planned": "Planned",
+    "running": "Running",
+    "paused": "Paused",
+    "completed": "Completed",
+    "rolled_back": "Rolled back",
+    "aborted": "Aborted"
+  },
+  "otaDevice": {
+    "queued": "Queued",
+    "commanded": "Commanded",
+    "started": "Updating",
+    "applied": "Updated",
+    "rolled_back": "Rolled back",
+    "failed": "Failed"
+  },
+  "tenant": {
+    "active": "Active",
+    "read_only": "Read-only",
+    "deactivated": "Deactivated"
+  },
+  "bankAccount": {
+    "pending_otp": "Waiting for the SMS code",
+    "active": "Active",
+    "replaced": "Replaced",
+    "removed": "Removed"
+  },
+  "membership": {
+    "invited": "Invited",
+    "active": "Active",
+    "suspended": "Suspended",
+    "removed": "Removed"
   }
 }

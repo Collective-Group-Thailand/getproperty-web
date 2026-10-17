@@ -18,7 +18,7 @@ import { IconTag } from "@/ui/icons/glyphs/tag";
 import { IconUpload } from "@/ui/icons/glyphs/upload";
 
 import { ownerPath } from "../shared/links";
-import { OwnerPage, PageHeader } from "../shared/PageHeader";
+import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { section, type OwnerContext } from "../shared/server";
 import { SettingValue } from "../shared/SettingValue";
 import { NewFloorButton, NewUtilityAccountButton, RemoveUtilityAccountButton } from "./forms";

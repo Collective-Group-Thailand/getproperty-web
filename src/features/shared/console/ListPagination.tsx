@@ -19,7 +19,7 @@ export async function ListPagination({
   searchParams: Record<string, string | string[] | undefined>;
   locale: Locale;
 }) {
-  const t = await getTranslations("owner.common.pagination");
+  const t = await getTranslations("console.pagination");
   const from = meta.total === 0 ? 0 : (meta.page - 1) * meta.perPage + 1;
   const to = Math.min(meta.total, meta.page * meta.perPage);
   const href = (page: number) => {

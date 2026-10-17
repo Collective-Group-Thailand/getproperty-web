@@ -6,7 +6,7 @@ import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
 import { IconBell } from "@/ui/icons/glyphs/bell";
 
-import { ConfirmAction } from "../shared/ConfirmAction";
+import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 
 /** "Send reminder now" for one overdue invoice (D-045): the resident gets it on LINE; quiet hours apply. */
 export function RemindButton({ invoiceId, label, balance }: { invoiceId: string; label: string; balance: string }) {

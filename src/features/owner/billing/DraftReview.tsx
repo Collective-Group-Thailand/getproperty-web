@@ -20,9 +20,9 @@ import { IconChevronUp } from "@/ui/icons/glyphs/chevron-up";
 import { InvoiceFlags } from "../invoices/InvoiceFlags";
 import { InvoiceLines } from "../invoices/InvoiceLines";
 import { segmentPhotos } from "../invoices/photos";
-import { FormDialog, text } from "../shared/FormDialog";
+import { FormDialog, text } from "@/features/shared/console/FormDialog";
 import { ownerPath } from "../shared/links";
-import { useIdempotencyKey } from "../shared/useApiAction";
+import { useIdempotencyKey } from "@/features/shared/console/useApiAction";
 
 type Draft = Schemas["InvoiceSummaryDto"];
 

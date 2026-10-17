@@ -9,7 +9,7 @@ import type { Locale } from "@/i18n/routing";
 import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/errors";
-import type { StaffMeterPoint } from "@/lib/api/pending";
+import type { StaffMeterPoint } from "./server";
 import type { Schemas } from "@/lib/api/types";
 import { uploadFile, UploadError } from "@/lib/pwa/queue";
 import { Button } from "@/ui/components/Button";

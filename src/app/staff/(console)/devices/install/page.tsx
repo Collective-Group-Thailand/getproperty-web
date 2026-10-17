@@ -16,7 +16,7 @@ export default async function StaffInstall({
   searchParams: Promise<{ meter?: string; gateway?: string }>;
 }) {
   const [{ meter, gateway }, scope] = await Promise.all([searchParams, staffScope()]);
-  const { devices, points } = await buildingDevices(scope);
+  const { devices, points, drivers } = await buildingDevices(scope);
   return (
     <InstallWizard
       points={points}
@@ -24,6 +24,7 @@ export default async function StaffInstall({
       inventory={devices.filter(
         (device) => device.kind !== "gateway" && (device.status === "assigned" || device.status === "inventory"),
       )}
+      drivers={drivers}
       initial={{ meter, gateway }}
     />
   );

@@ -9,7 +9,7 @@ import { Button } from "@/ui/components/Button";
 import { SkeletonText } from "@/ui/components/Skeleton";
 import { IconExternal } from "@/ui/icons/glyphs/external";
 
-import { ProblemNotice } from "../shared/useApiAction";
+import { ProblemNotice } from "@/features/shared/console/useApiAction";
 import { loadUnitPanel } from "./loadUnit";
 import { UnitPanel, type UnitPanelData } from "./UnitPanel";
 

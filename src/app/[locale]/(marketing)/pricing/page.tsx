@@ -5,6 +5,7 @@ import { marketingMetadata } from "@/features/owner/marketing/seo";
 import { formatTHB } from "@/i18n/format";
 import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
+import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
@@ -23,6 +24,24 @@ export async function generateMetadata({ params }: Params) {
     description: t("pricingDescription"),
   });
 }
+
+/** Every module key of the contract has a label: a key the API adds fails the build until it is named here. */
+const MODULE_KEY: Record<Schemas["PlanModuleKey"], string> = {
+  A1: "module.A1",
+  A2: "module.A2",
+  A3: "module.A3",
+  A4: "module.A4",
+  B1: "module.B1",
+  B2: "module.B2",
+  B3: "module.B3",
+  C1: "module.C1",
+  C2: "module.C2",
+  C3: "module.C3",
+  D1: "module.D1",
+  D2: "module.D2",
+  resident_liff: "module.resident_liff",
+  promptpay: "module.promptpay",
+};
 
 const UNIT_KEY: Record<PublicPlan["priceUnit"], string> = {
   unit_month: "perUnitMonth",
@@ -47,7 +66,7 @@ function priceLabel(plan: PublicPlan, locale: Locale, t: (key: string, values?: 
 /**
  * Pricing (D-156): the plans and their prices are platform settings, so they come from the API
  * (`GET /v1/public/plans`, D-180) — never typed into this page. While D-156 is Proposed every plan says
- * `status: proposed` and is shown as indicative; module keys without a label here are not listed.
+ * `status: proposed` and is shown as indicative; every module key (`PlanModuleKey`) is listed with its label.
  */
 export default async function Pricing({ params }: Params) {
   const { locale } = await params;
@@ -81,14 +100,12 @@ export default async function Pricing({ params }: Params) {
                     <p className="text-muted text-sm">{t("minimum", { count: plan.minimumUnits })}</p>
                   ) : null}
                   <ul className="flex flex-1 flex-col gap-1 text-sm">
-                    {plan.features
-                      .filter((feature) => t.has(`module.${feature}`))
-                      .map((feature) => (
-                        <li key={feature} className="flex items-start gap-2">
-                          <Icon icon={IconCheck} className="text-primary mt-0.5" />
-                          {t(`module.${feature}`)}
-                        </li>
-                      ))}
+                    {plan.features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-2">
+                        <Icon icon={IconCheck} className="text-primary mt-0.5" />
+                        {t(MODULE_KEY[feature])}
+                      </li>
+                    ))}
                   </ul>
                   <Button asChild variant="secondary">
                     <a href={signIn}>{t("choose")}</a>

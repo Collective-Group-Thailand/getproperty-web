@@ -13,10 +13,10 @@ import { IconAdd } from "@/ui/icons/glyphs/add";
 import { IconChevronRight } from "@/ui/icons/glyphs/chevron-right";
 import { IconLease } from "@/ui/icons/glyphs/lease";
 
-import { FilterBar } from "../shared/FilterBar";
+import { FilterBar } from "@/features/shared/console/FilterBar";
 import { ownerPath } from "../shared/links";
-import { ListPagination } from "../shared/ListPagination";
-import { OwnerPage, PageHeader } from "../shared/PageHeader";
+import { ListPagination } from "@/features/shared/console/ListPagination";
+import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { focusedBuilding, pageParam, param, type OwnerContext } from "../shared/server";
 
 type SearchParams = Record<string, string | string[] | undefined>;

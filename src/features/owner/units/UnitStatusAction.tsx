@@ -10,7 +10,7 @@ import { Textarea } from "@/ui/components/Input";
 import { NativeSelect } from "@/ui/components/NativeSelect";
 import { IconEdit } from "@/ui/icons/glyphs/edit";
 
-import { FormDialog, text } from "../shared/FormDialog";
+import { FormDialog, text } from "@/features/shared/console/FormDialog";
 
 /**
  * Manual unit status (D-171): only vacant ↔ inactive | maintenance, with a reason that is audited.

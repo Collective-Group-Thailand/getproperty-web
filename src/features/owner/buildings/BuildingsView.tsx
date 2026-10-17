@@ -9,7 +9,7 @@ import { IconBuilding } from "@/ui/icons/glyphs/building";
 import { IconChevronRight } from "@/ui/icons/glyphs/chevron-right";
 
 import { ownerPath } from "../shared/links";
-import { OwnerPage, PageHeader } from "../shared/PageHeader";
+import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import type { OwnerContext } from "../shared/server";
 import { NewBuildingButton, NewPropertyButton } from "./forms";
 

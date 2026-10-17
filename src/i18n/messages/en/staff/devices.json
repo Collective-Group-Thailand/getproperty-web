@@ -12,7 +12,7 @@
   "neverSeen": "Never online",
   "meters": "{count, plural, one {# meter} other {# meters}}",
   "units": "Meters by unit",
-  "pointsUnavailable": "The per-unit meter list is not available yet: the API does not publish it to the staff app.",
+  "pointsUnavailable": "The meter list could not be loaded. Pull to refresh or try again in a moment.",
   "noPoints": "This building has no meter points yet",
   "bound": "Read by {device} through {gateway} ({where})",
   "address": "{bus} address {address}",
@@ -207,5 +207,20 @@
     "since": "since {from}",
     "events": "Recent events",
     "ipPlaceholder": "e.g. 192.168.1.50"
+  },
+  "orders": {
+    "title": "Install orders",
+    "due": "Due {date}",
+    "progress": "{open, plural, =0 {Every item done} one {# of {total} items still to install} other {# of {total} items still to install}}",
+    "kind": {
+      "install": "Install",
+      "deinstall": "De-install",
+      "replace": "Replace",
+      "site_survey": "Site survey"
+    },
+    "item": {
+      "gateway": "Gateway",
+      "meter_device": "Meter device"
+    }
   }
 }

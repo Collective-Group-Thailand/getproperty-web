@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { LeaseWizard } from "@/features/owner/leases/LeaseWizard";
-import { OwnerPage, PageHeader } from "@/features/owner/shared/PageHeader";
+import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { focusedBuilding, ownerContext, param } from "@/features/owner/shared/server";
 import type { Locale } from "@/i18n/routing";
 import { unwrap } from "@/lib/api/client";

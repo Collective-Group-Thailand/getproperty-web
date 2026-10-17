@@ -11,11 +11,11 @@ import { Icon } from "@/ui/icons";
 import { IconChevronRight } from "@/ui/icons/glyphs/chevron-right";
 import { IconPayment } from "@/ui/icons/glyphs/payment";
 
-import { FilterBar } from "../shared/FilterBar";
+import { FilterBar } from "@/features/shared/console/FilterBar";
 import { ownerPath } from "../shared/links";
-import { ListPagination } from "../shared/ListPagination";
+import { ListPagination } from "@/features/shared/console/ListPagination";
 import { MoneyNav } from "../shared/MoneyNav";
-import { OwnerPage, PageHeader } from "../shared/PageHeader";
+import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { focusedBuilding, pageParam, param, type OwnerContext } from "../shared/server";
 
 type SearchParams = Record<string, string | string[] | undefined>;

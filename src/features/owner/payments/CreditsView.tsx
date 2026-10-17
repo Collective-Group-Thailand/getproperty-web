@@ -9,7 +9,7 @@ import { IconWallet } from "@/ui/icons/glyphs/wallet";
 import { DocumentButton } from "../shared/DocumentButton";
 import { ownerPath } from "../shared/links";
 import { MoneyNav } from "../shared/MoneyNav";
-import { OwnerPage, PageHeader } from "../shared/PageHeader";
+import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { section, type OwnerContext } from "../shared/server";
 import { slipsToReview } from "./PaymentsView";
 import { RefundButton } from "./RefundButton";

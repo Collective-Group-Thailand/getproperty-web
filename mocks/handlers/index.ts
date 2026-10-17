@@ -1,7 +1,6 @@
 import type { HttpHandler } from "msw";
 
 import { authHandlers } from "./auth";
-import { contractRequestHandlers } from "./contract-requests";
 import { generatedHandlers } from "./generated";
 import { meHandlers } from "./me";
 import { notificationHandlers } from "./notifications";
@@ -24,7 +23,6 @@ export function handlers(): HttpHandler[] {
     ...telemetryHandlers,
     ...staffHandlers,
     ...ownerHandlers,
-    ...contractRequestHandlers,
     ...generatedHandlers(),
   ];
 }

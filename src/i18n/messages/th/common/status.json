@@ -163,5 +163,112 @@
     "pending": "รอรวมในบิลถัดไป",
     "applied": "อยู่ในบิลแล้ว",
     "cancelled": "ยกเลิก"
+  },
+  "platformInvoice": {
+    "draft": "ร่าง",
+    "issued": "ออกแล้ว",
+    "paid": "ชำระแล้ว",
+    "partially_paid": "ชำระบางส่วน",
+    "overdue": "เกินกำหนด",
+    "void": "ยกเลิก",
+    "credited": "ลดหนี้แล้ว"
+  },
+  "creditNote": {
+    "requested": "รออนุมัติ",
+    "issued": "ออกแล้ว",
+    "rejected": "ไม่อนุมัติ"
+  },
+  "haas": {
+    "allocated": "จัดสรรแล้ว",
+    "installed": "ติดตั้งแล้ว",
+    "in_service": "ใช้งานอยู่",
+    "replaced": "ถูกเปลี่ยน",
+    "deinstalled": "ถอดออกแล้ว",
+    "written_off": "ตัดจำหน่าย"
+  },
+  "installOrder": {
+    "open": "รอดำเนินการ",
+    "in_progress": "กำลังดำเนินการ",
+    "done": "เสร็จแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "siteSurvey": {
+    "requested": "ขอแล้ว",
+    "scheduled": "นัดแล้ว",
+    "done": "สำรวจแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "supportGrant": {
+    "requested": "รออนุมัติ",
+    "approved": "อนุมัติแล้ว",
+    "active": "เปิดใช้อยู่",
+    "expired": "หมดเวลา",
+    "revoked": "ถูกเพิกถอน",
+    "denied": "ปฏิเสธ"
+  },
+  "tariffVersion": {
+    "draft": "ร่าง",
+    "entered": "บันทึกแล้ว — รอผู้ตรวจคนที่สอง",
+    "verified": "ตรวจแล้ว",
+    "published": "เผยแพร่แล้ว",
+    "superseded": "ถูกแทนที่"
+  },
+  "templateVersion": {
+    "draft": "ร่าง",
+    "published": "เผยแพร่แล้ว",
+    "retired": "เลิกใช้"
+  },
+  "dsr": {
+    "received": "ได้รับคำขอ",
+    "verifying": "กำลังยืนยันตัวตน",
+    "in_progress": "กำลังดำเนินการ",
+    "fulfilled": "ดำเนินการแล้ว",
+    "rejected": "ปฏิเสธ",
+    "withdrawn": "ถอนคำขอ"
+  },
+  "outbox": {
+    "pending": "รอส่ง",
+    "publishing": "กำลังส่ง",
+    "published": "ส่งแล้ว",
+    "failed": "ส่งไม่สำเร็จ",
+    "dead": "ส่งไม่ได้ (dead letter)"
+  },
+  "consumption": {
+    "processed": "ประมวลผลแล้ว",
+    "failed": "ล้มเหลว",
+    "dead": "ส่งไม่ได้ (dead letter)"
+  },
+  "rollout": {
+    "planned": "วางแผนแล้ว",
+    "running": "กำลังอัปเดต",
+    "paused": "หยุดชั่วคราว",
+    "completed": "เสร็จแล้ว",
+    "rolled_back": "ย้อนกลับแล้ว",
+    "aborted": "ยกเลิก"
+  },
+  "otaDevice": {
+    "queued": "รอคิว",
+    "commanded": "สั่งแล้ว",
+    "started": "กำลังอัปเดต",
+    "applied": "อัปเดตแล้ว",
+    "rolled_back": "ย้อนกลับแล้ว",
+    "failed": "ล้มเหลว"
+  },
+  "tenant": {
+    "active": "ใช้งานอยู่",
+    "read_only": "อ่านอย่างเดียว",
+    "deactivated": "ปิดใช้งาน"
+  },
+  "bankAccount": {
+    "pending_otp": "รอรหัส SMS",
+    "active": "ใช้งานอยู่",
+    "replaced": "ถูกแทนที่",
+    "removed": "นำออกแล้ว"
+  },
+  "membership": {
+    "invited": "เชิญแล้ว",
+    "active": "ใช้งานอยู่",
+    "suspended": "ระงับ",
+    "removed": "นำออกแล้ว"
   }
 }

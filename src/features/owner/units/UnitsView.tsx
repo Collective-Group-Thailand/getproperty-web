@@ -11,10 +11,10 @@ import { IconBuilding } from "@/ui/icons/glyphs/building";
 import { IconDownload } from "@/ui/icons/glyphs/download";
 import { IconUpload } from "@/ui/icons/glyphs/upload";
 
-import { FilterBar } from "../shared/FilterBar";
+import { FilterBar } from "@/features/shared/console/FilterBar";
 import { ownerPath, withQuery } from "../shared/links";
-import { ListPagination } from "../shared/ListPagination";
-import { OwnerPage, PageHeader } from "../shared/PageHeader";
+import { ListPagination } from "@/features/shared/console/ListPagination";
+import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { SavedViews } from "../shared/SavedViews";
 import { focusedBuilding, pageParam, param, type OwnerContext } from "../shared/server";
 import { UnitBoard } from "./UnitBoard";

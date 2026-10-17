@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { BulkUnits } from "@/features/owner/buildings/BulkUnits";
 import { ownerPath } from "@/features/owner/shared/links";
-import { OwnerPage, PageHeader } from "@/features/owner/shared/PageHeader";
+import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { ownerContext } from "@/features/owner/shared/server";
 import type { Locale } from "@/i18n/routing";
 import { unwrap } from "@/lib/api/client";

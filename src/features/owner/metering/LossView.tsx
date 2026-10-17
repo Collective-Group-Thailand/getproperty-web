@@ -14,9 +14,9 @@ import { LinkTabs } from "@/ui/components/LinkTabs";
 import { Stat } from "@/ui/components/Stat";
 import { IconLoss } from "@/ui/icons/glyphs/loss";
 
-import { FilterBar } from "../shared/FilterBar";
+import { FilterBar } from "@/features/shared/console/FilterBar";
 import { ownerPath, withQuery } from "../shared/links";
-import { OwnerPage, PageHeader } from "../shared/PageHeader";
+import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { PhotoThumb } from "../shared/PhotoThumb";
 import { focusedBuilding, param, section, type OwnerContext } from "../shared/server";
 import { LossCsv, RecomputeLoss, UtilityInvoiceButton } from "./LossActions";

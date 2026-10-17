@@ -16,7 +16,7 @@ import { IconLease } from "@/ui/icons/glyphs/lease";
 
 import { LeaseInviteButton } from "../leases/LeaseInvite";
 import { ownerPath } from "../shared/links";
-import { OwnerPage, PageHeader } from "../shared/PageHeader";
+import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { section, type OwnerContext } from "../shared/server";
 import { IdDocuments, PartyLinks, RevealPii } from "./PartyPrivacy";
 

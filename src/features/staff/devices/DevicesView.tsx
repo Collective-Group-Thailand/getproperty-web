@@ -1,10 +1,10 @@
 import { getLocale, getTranslations } from "next-intl/server";
 
 import { DEVICE_STATUS } from "@/domain/status/device";
+import { INSTALL_ORDER_STATUS } from "@/domain/status/installOrder";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
-import { formatRelativeTime } from "@/i18n/format";
+import { formatDate, formatRelativeTime } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
-import type { StaffMeterPoint } from "@/lib/api/pending";
 import { BigActionButton } from "@/ui/components/BigActionButton";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
@@ -18,7 +18,7 @@ import { IconWater } from "@/ui/icons/glyphs/water";
 
 import { BuildingSelect } from "../shared/BuildingSelect";
 import type { StaffScope } from "../shared/server";
-import { isGateway, type BuildingDevices } from "./server";
+import { isGateway, type BuildingDevices, type StaffMeterPoint } from "./server";
 
 /**
  * Devices of the focused building (F4 4.3): what to install now (gateways to provision, meter devices
@@ -70,6 +70,58 @@ export async function DevicesView({ scope, data }: { scope: StaffScope; data: Bu
         />
       </section>
 
+      {data.installOrders.length > 0 ? (
+        <section aria-labelledby="devices-orders" className="flex flex-col gap-3" data-testid="install-orders">
+          <h2 id="devices-orders" className="text-lg font-semibold">
+            {t("orders.title")}
+          </h2>
+          <ul className="flex flex-col gap-3">
+            {data.installOrders.map((order) => {
+              const items = order.units.flatMap((unit) => unit.items.map((item) => ({ ...item, unitNo: unit.unitNo })));
+              const open = items.filter((item) => item.state === "open");
+              return (
+                <li
+                  key={order.id}
+                  className="rounded-card border-border bg-surface flex flex-col gap-2 border p-3"
+                  data-testid="install-order"
+                  data-state={order.state}
+                >
+                  <p className="flex flex-wrap items-center gap-2">
+                    <span className="font-semibold">{t(`orders.kind.${order.kind}`)}</span>
+                    <StatusBadgeOf map={INSTALL_ORDER_STATUS} value={order.state} size="sm" />
+                    {order.dueAt ? (
+                      <span className="text-muted text-sm">
+                        {t("orders.due", { date: formatDate(order.dueAt, locale) })}
+                      </span>
+                    ) : null}
+                  </p>
+                  <p className="text-muted text-sm">
+                    {t("orders.progress", { open: open.length, total: items.length })}
+                  </p>
+                  {open.length > 0 ? (
+                    <ul className="flex flex-col gap-1 text-sm">
+                      {open.map((item, index) => (
+                        <li
+                          key={`${item.deviceId ?? item.assetItemId ?? "item"}-${index}`}
+                          className="flex items-center gap-2"
+                        >
+                          <Icon icon={item.kind === "gateway" ? IconGateway : IconMeter} className="text-muted" />
+                          <span>
+                            {item.unitNo ? `${item.unitNo} · ` : ""}
+                            {t(`orders.item.${item.kind}`)}
+                            {item.deviceId ? ` · ${serialOf(item.deviceId)}` : ""}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null}
+
       <section aria-labelledby="devices-gateways" className="flex flex-col gap-3">
         <h2 id="devices-gateways" className="text-lg font-semibold">
           {t("gateways")}
@@ -111,7 +163,7 @@ export async function DevicesView({ scope, data }: { scope: StaffScope; data: Bu
           {t("units")}
         </h2>
         {data.points === null ? (
-          <Callout tone="info">{t("pointsUnavailable")}</Callout>
+          <Callout tone="warning">{t("pointsUnavailable")}</Callout>
         ) : byUnit.size === 0 ? (
           <p className="text-muted">{t("noPoints")}</p>
         ) : (

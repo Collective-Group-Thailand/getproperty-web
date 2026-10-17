@@ -19,8 +19,8 @@ import { IconShow } from "@/ui/icons/glyphs/show";
 import { IconLink } from "@/ui/icons/glyphs/link";
 import { lazyWarm } from "@/ui/lib/lazy";
 
-import { ConfirmAction } from "../shared/ConfirmAction";
-import { ProblemNotice, useApiAction } from "../shared/useApiAction";
+import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
+import { ProblemNotice, useApiAction } from "@/features/shared/console/useApiAction";
 
 const ImageViewer = lazyWarm(() => import("@/ui/components/ImageViewer").then((module) => module.ImageViewer));
 

@@ -17,8 +17,8 @@ import { IconDelete } from "@/ui/icons/glyphs/delete";
 import { IconEdit } from "@/ui/icons/glyphs/edit";
 import { IconWallet } from "@/ui/icons/glyphs/wallet";
 
-import { ConfirmAction } from "../shared/ConfirmAction";
-import { FormDialog, text } from "../shared/FormDialog";
+import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
+import { FormDialog, text } from "@/features/shared/console/FormDialog";
 import { uploadOwnerFile } from "../shared/upload";
 
 const MONEY = /^\d{1,9}(\.\d{1,2})?$/;

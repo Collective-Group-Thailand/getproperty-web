@@ -139,6 +139,8 @@
     },
     "photoAlt": "{item}, photo {index}",
     "notInspected": "Not inspected",
-    "noComparison": "No inspections to compare yet."
+    "noComparison": "No inspections to compare yet.",
+    "disputePhotos": "Photos from the resident",
+    "disputePhoto": "Resident's photo {number}"
   }
 }

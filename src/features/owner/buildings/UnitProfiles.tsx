@@ -19,8 +19,8 @@ import { IconDelete } from "@/ui/icons/glyphs/delete";
 import { IconEdit } from "@/ui/icons/glyphs/edit";
 import { IconTag } from "@/ui/icons/glyphs/tag";
 
-import { ConfirmAction } from "../shared/ConfirmAction";
-import { FormDialog, text } from "../shared/FormDialog";
+import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
+import { FormDialog, text } from "@/features/shared/console/FormDialog";
 
 const LINE_KINDS: Schemas["LeaseLineKind"][] = [
   "internet",

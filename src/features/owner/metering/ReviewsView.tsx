@@ -13,10 +13,10 @@ import { DescriptionList } from "@/ui/components/DescriptionList";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 
-import { FilterBar } from "../shared/FilterBar";
+import { FilterBar } from "@/features/shared/console/FilterBar";
 import { ownerPath } from "../shared/links";
-import { ListPagination } from "../shared/ListPagination";
-import { OwnerPage, PageHeader } from "../shared/PageHeader";
+import { ListPagination } from "@/features/shared/console/ListPagination";
+import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { PhotoThumb } from "../shared/PhotoThumb";
 import { focusedBuilding, pageParam, param, type OwnerContext } from "../shared/server";
 import { MeteringNav } from "./MetersView";

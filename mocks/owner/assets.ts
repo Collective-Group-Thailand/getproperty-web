@@ -813,6 +813,8 @@ export const assetHandlers: HttpHandler[] = [
               cutoffAt: p.cutoffAt,
               windowStart: p.windowStart,
               remaining: remaining.length,
+              total: meters.length,
+              read: meters.length - remaining.length,
               floors: [
                 {
                   floorId: null,

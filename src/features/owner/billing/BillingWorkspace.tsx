@@ -17,10 +17,10 @@ import { Stat } from "@/ui/components/Stat";
 import { Stepper } from "@/ui/components/Stepper";
 import { IconBill } from "@/ui/icons/glyphs/bill";
 
-import { FilterBar } from "../shared/FilterBar";
+import { FilterBar } from "@/features/shared/console/FilterBar";
 import { ownerPath, withQuery } from "../shared/links";
 import { MoneyNav } from "../shared/MoneyNav";
-import { OwnerPage, PageHeader } from "../shared/PageHeader";
+import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { focusedBuilding, param, section, type OwnerContext } from "../shared/server";
 import { SettingValue } from "../shared/SettingValue";
 import { CycleActions, OpenCycleButton } from "./CycleActions";

@@ -139,6 +139,8 @@
     },
     "photoAlt": "{item} รูปที่ {index}",
     "notInspected": "ไม่ได้ตรวจ",
-    "noComparison": "ยังไม่มีผลตรวจห้องให้เทียบ"
+    "noComparison": "ยังไม่มีผลตรวจห้องให้เทียบ",
+    "disputePhotos": "รูปจากผู้เช่า",
+    "disputePhoto": "รูปจากผู้เช่า {number}"
   }
 }

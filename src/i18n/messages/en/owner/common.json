@@ -1,14 +1,4 @@
 {
-  "pagination": {
-    "nav": "Pages",
-    "previous": "Previous page",
-    "next": "Next page",
-    "range": "{from}–{to} of {total}",
-    "page": "Page {page}"
-  },
-  "confirm": {
-    "typeToConfirm": "Type {phrase} to confirm"
-  },
   "document": {
     "close": "Close",
     "loading": "Opening the document…",
@@ -66,19 +56,6 @@
     "common_fee": "Common fee",
     "water_minimum": "Water minimum",
     "other_fixed": "Other fixed charge"
-  },
-  "date": {
-    "calendar": "Choose a date",
-    "previousMonth": "Previous month",
-    "nextMonth": "Next month",
-    "today": "Today",
-    "clear": "Clear"
-  },
-  "signature": {
-    "placeholder": "Sign here",
-    "clear": "Clear",
-    "undo": "Undo",
-    "upload": "Use a signature photo"
   },
   "money": {
     "nav": {

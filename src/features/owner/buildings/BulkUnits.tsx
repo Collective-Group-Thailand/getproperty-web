@@ -19,8 +19,8 @@ import { IconBack } from "@/ui/icons/glyphs/back";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 import { IconForward } from "@/ui/icons/glyphs/forward";
 
-import { fieldErrors } from "../shared/FormDialog";
-import { ProblemNotice, useApiAction } from "../shared/useApiAction";
+import { fieldErrors } from "@/features/shared/console/FormDialog";
+import { ProblemNotice, useApiAction } from "@/features/shared/console/useApiAction";
 
 type Step = "floors" | "numbers" | "confirm" | "done";
 const STEPS: Step[] = ["floors", "numbers", "confirm", "done"];

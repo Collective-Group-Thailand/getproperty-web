@@ -12,10 +12,10 @@ import { DescriptionList } from "@/ui/components/DescriptionList";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 
-import { FilterBar } from "../shared/FilterBar";
+import { FilterBar } from "@/features/shared/console/FilterBar";
 import { ownerPath, withQuery } from "../shared/links";
 import { MoneyNav } from "../shared/MoneyNav";
-import { OwnerPage, PageHeader } from "../shared/PageHeader";
+import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { param, type OwnerContext } from "../shared/server";
 import { SlipDecision, SlipImage } from "./SlipDecision";
 

@@ -13,7 +13,7 @@ import { IconCheck } from "@/ui/icons/glyphs/check";
 import { IconXCircle } from "@/ui/icons/glyphs/x-circle";
 import { lazyWarm } from "@/ui/lib/lazy";
 
-import { ConfirmAction } from "../shared/ConfirmAction";
+import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 
 const ImageViewer = lazyWarm(() => import("@/ui/components/ImageViewer").then((module) => module.ImageViewer));
 const MONEY = /^\d{1,9}(\.\d{1,2})?$/;

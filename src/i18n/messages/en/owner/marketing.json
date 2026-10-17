@@ -72,6 +72,18 @@
     "addon": "Add-on",
     "indicative": "Indicative price",
     "module": {
+      "A1": "Leases & residents",
+      "A2": "Billing & accounting",
+      "A3": "Smart meters & utility billing",
+      "A4": "Service requests & maintenance",
+      "B1": "AGM & e-voting",
+      "B2": "AI juristic assistant",
+      "B3": "Assets, sinking fund & inspections",
+      "C1": "Access control, visitors & parking",
+      "C2": "Energy management",
+      "C3": "PM company back office",
+      "D1": "Post-sale portal",
+      "D2": "Landlord tier",
       "resident_liff": "Resident app in LINE",
       "promptpay": "PromptPay payments"
     }

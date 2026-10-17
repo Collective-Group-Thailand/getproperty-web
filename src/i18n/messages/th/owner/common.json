@@ -1,14 +1,4 @@
 {
-  "pagination": {
-    "nav": "หน้า",
-    "previous": "หน้าก่อน",
-    "next": "หน้าถัดไป",
-    "range": "{from}–{to} จาก {total}",
-    "page": "หน้า {page}"
-  },
-  "confirm": {
-    "typeToConfirm": "พิมพ์ {phrase} เพื่อยืนยัน"
-  },
   "document": {
     "close": "ปิด",
     "loading": "กำลังเปิดเอกสาร…",
@@ -66,19 +56,6 @@
     "common_fee": "ค่าส่วนกลาง",
     "water_minimum": "ค่าน้ำขั้นต่ำ",
     "other_fixed": "ค่าบริการอื่นแบบคงที่"
-  },
-  "date": {
-    "calendar": "เลือกวันที่",
-    "previousMonth": "เดือนก่อน",
-    "nextMonth": "เดือนถัดไป",
-    "today": "วันนี้",
-    "clear": "ล้าง"
-  },
-  "signature": {
-    "placeholder": "เซ็นชื่อที่นี่",
-    "clear": "ล้าง",
-    "undo": "ย้อนกลับ",
-    "upload": "ใช้รูปลายเซ็น"
   },
   "money": {
     "nav": {

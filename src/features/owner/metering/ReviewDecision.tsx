@@ -12,7 +12,7 @@ import { IconCheck } from "@/ui/icons/glyphs/check";
 import { IconEdit } from "@/ui/icons/glyphs/edit";
 import { IconXCircle } from "@/ui/icons/glyphs/x-circle";
 
-import { ConfirmAction } from "../shared/ConfirmAction";
+import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 
 const REGISTER = /^\d{1,9}(\.\d{1,3})?$/;
 

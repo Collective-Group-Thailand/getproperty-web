@@ -16,10 +16,10 @@ import { Icon } from "@/ui/icons";
 import { IconChevronRight } from "@/ui/icons/glyphs/chevron-right";
 import { IconGateway } from "@/ui/icons/glyphs/gateway";
 
-import { FilterBar } from "../shared/FilterBar";
+import { FilterBar } from "@/features/shared/console/FilterBar";
 import { ownerPath } from "../shared/links";
-import { ListPagination } from "../shared/ListPagination";
-import { OwnerPage, PageHeader } from "../shared/PageHeader";
+import { ListPagination } from "@/features/shared/console/ListPagination";
+import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { focusedBuilding, pageParam, param, section, type OwnerContext } from "../shared/server";
 import { DeviceCommands } from "./DeviceCommands";
 

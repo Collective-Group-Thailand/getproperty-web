@@ -2,7 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { ownerPath } from "@/features/owner/shared/links";
-import { OwnerPage, PageHeader } from "@/features/owner/shared/PageHeader";
+import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { ownerContext } from "@/features/owner/shared/server";
 import { loadUnitPanel } from "@/features/owner/units/loadUnit";
 import { UnitPanel } from "@/features/owner/units/UnitPanel";

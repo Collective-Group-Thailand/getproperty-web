@@ -2,8 +2,8 @@ import type { Schemas } from "@/lib/api/types";
 
 /**
  * Meter drivers of getproperty-edge (D-013: `eastron_sdm120`, `eastron_sdm230` on Modbus RTU,
- * `pulse_counter` on GPIO). The API takes any `^[a-z][a-z0-9_]{1,63}$` driver key; this list is what
- * the installer can pick until the API publishes the edge's driver catalogue (contract request).
+ * `pulse_counter` on GPIO). The wizard offers the API's catalogue (`GET /v1/staff/meter-drivers`); this
+ * list is the fallback when that read fails.
  */
 export const KNOWN_DRIVERS = ["eastron_sdm120", "eastron_sdm230", "pulse_counter"] as const;
 

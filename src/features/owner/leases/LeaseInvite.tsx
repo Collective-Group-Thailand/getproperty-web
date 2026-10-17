@@ -18,7 +18,7 @@ import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { IconCopy } from "@/ui/icons/glyphs/copy";
 import { IconQr } from "@/ui/icons/glyphs/qr";
 
-import { ProblemNotice, useApiAction } from "../shared/useApiAction";
+import { ProblemNotice, useApiAction } from "@/features/shared/console/useApiAction";
 
 /**
  * Invite a party of a lease to the resident app (F2 2.2, D-175): a one-time code shown once — as a QR

@@ -14,8 +14,8 @@ import { Input } from "@/ui/components/Input";
 import { NativeSelect } from "@/ui/components/NativeSelect";
 import { IconWallet } from "@/ui/icons/glyphs/wallet";
 
-import { ConfirmAction } from "../shared/ConfirmAction";
-import { DateField } from "../shared/DateField";
+import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
+import { DateField } from "@/features/shared/console/DateField";
 import { uploadOwnerFile } from "../shared/upload";
 
 const MONEY = /^\d{1,9}(\.\d{1,2})?$/;

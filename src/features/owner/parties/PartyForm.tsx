@@ -13,7 +13,7 @@ import { NativeSelect } from "@/ui/components/NativeSelect";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { IconAdd } from "@/ui/icons/glyphs/add";
 
-import { FormDialog, text } from "../shared/FormDialog";
+import { FormDialog, text } from "@/features/shared/console/FormDialog";
 
 /** The fields of a new party; shared by the party directory and the lease wizard's "new resident". */
 export function PartyFields({ errors }: { errors: Record<string, string> }) {

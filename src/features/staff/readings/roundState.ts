@@ -18,8 +18,12 @@ export interface RoundView {
    * round (D-187), so their meter stays in the list and they are shown as "read early".
    */
   early: ReadonlySet<string>;
-  /** Read so far (sent or waiting to send) out of the round's meters this device knows of. */
+  /**
+   * Read so far: the API's count for the whole round (`read`, any staff member) plus this device's
+   * readings of meters the API still lists (queued offline, or sent since the round was loaded).
+   */
   done: number;
+  /** Meters in the round (`RoundBuildingDto.total`). */
   total: number;
   /** The first item still to read after `assetItemId` (round order), for "next meter". */
   next: (assetItemId: string | null) => Schemas["RoundItemDto"] | null;
@@ -28,9 +32,9 @@ export interface RoundView {
 /**
  * Merges the API's round (meters still to read) with this device's queue (readings sent or waiting):
  * a meter with a local reading of the same building and period leaves the list at once — offline too —
- * and shows in "done" with its sync state; a refused one stays visible until it is resolved. The
- * round's own count is the API's; progress is what this device knows (a contract request asks for the
- * round's read count, docs/contract-requests.md). A reading taken before the round's window opens does
+ * and shows in "done" with its sync state; a refused one stays visible until it is resolved. Progress
+ * is the API's round count (`read` of `total`, every staff member's readings) plus what this device
+ * has read of the meters the API still lists. A reading taken before the round's window opens does
  * not count for the round (the API keeps asking for it) and is kept visible as "read early".
  */
 export function roundView(round: Schemas["RoundBuildingDto"], entries: QueueEntry[]): RoundView {
@@ -56,14 +60,16 @@ export function roundView(round: Schemas["RoundBuildingDto"], entries: QueueEntr
     .filter((group) => group.items.length > 0);
   const order = round.floors.flatMap((floor) => floor.items);
   const local = [...latest.values()].sort((a, b) => b.createdAt - a.createdAt);
-  const done = local.filter((entry) => entry.state !== "conflict" && !early.has(entry.id)).length;
-  const left = remaining.reduce((sum, group) => sum + group.items.length, 0);
+  const listed = new Set(order.map((item) => item.assetItemId));
+  const ahead = [...latest.values()].filter(
+    (entry) => entry.state !== "conflict" && !early.has(entry.id) && listed.has(entry.meta.assetItemId),
+  ).length;
   return {
     remaining,
     local,
     early,
-    done,
-    total: done + left,
+    done: Math.min(round.read + ahead, round.total),
+    total: round.total,
     next(assetItemId) {
       const start = assetItemId ? order.findIndex((item) => item.assetItemId === assetItemId) : -1;
       const after = [...order.slice(start + 1), ...order.slice(0, Math.max(start, 0))];

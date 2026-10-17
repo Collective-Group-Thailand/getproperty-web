@@ -10,7 +10,7 @@ import { Button, type ButtonProps } from "@/ui/components/Button";
 import { Icon } from "@/ui/icons";
 import { IconDownload } from "@/ui/icons/glyphs/download";
 
-import { ProblemNotice, useApiAction, useIdempotencyKey } from "./useApiAction";
+import { ProblemNotice, useApiAction, useIdempotencyKey } from "@/features/shared/console/useApiAction";
 
 const POLL_MS = 1000;
 const MAX_POLLS = 120;

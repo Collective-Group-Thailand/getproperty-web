@@ -11,8 +11,8 @@ import { NativeSelect } from "@/ui/components/NativeSelect";
 import { IconAdd } from "@/ui/icons/glyphs/add";
 import { IconDelete } from "@/ui/icons/glyphs/delete";
 
-import { ConfirmAction } from "../shared/ConfirmAction";
-import { FormDialog, integer, text } from "../shared/FormDialog";
+import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
+import { FormDialog, integer, text } from "@/features/shared/console/FormDialog";
 
 const BUILDING_TYPES: Schemas["BuildingType"][] = ["apartment", "condo", "house_cluster", "mixed_use"];
 

@@ -21,9 +21,9 @@ import { IconEdit } from "@/ui/icons/glyphs/edit";
 import { IconRefresh } from "@/ui/icons/glyphs/refresh";
 import { IconXCircle } from "@/ui/icons/glyphs/x-circle";
 
-import { ConfirmAction } from "../shared/ConfirmAction";
-import { FormDialog, text } from "../shared/FormDialog";
-import { ProblemNotice, useApiAction, useIdempotencyKey } from "../shared/useApiAction";
+import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
+import { FormDialog, text } from "@/features/shared/console/FormDialog";
+import { ProblemNotice, useApiAction, useIdempotencyKey } from "@/features/shared/console/useApiAction";
 
 const MONEY = /^\d{1,9}(\.\d{1,2})?$/;
 const REASONS: Schemas["NoteReason"][] = [

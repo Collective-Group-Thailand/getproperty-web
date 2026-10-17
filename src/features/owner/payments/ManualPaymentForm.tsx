@@ -18,8 +18,8 @@ import { NativeSelect } from "@/ui/components/NativeSelect";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
 import { IconPayment } from "@/ui/icons/glyphs/payment";
 
-import { ConfirmAction } from "../shared/ConfirmAction";
-import { DateField } from "../shared/DateField";
+import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
+import { DateField } from "@/features/shared/console/DateField";
 import { uploadOwnerFile } from "../shared/upload";
 
 const MONEY = /^\d{1,9}(\.\d{1,2})?$/;

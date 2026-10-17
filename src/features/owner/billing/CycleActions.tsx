@@ -12,8 +12,8 @@ import { IconBill } from "@/ui/icons/glyphs/bill";
 import { IconCheck } from "@/ui/icons/glyphs/check";
 import { IconRefresh } from "@/ui/icons/glyphs/refresh";
 
-import { ConfirmAction } from "../shared/ConfirmAction";
-import { ProblemNotice, useApiAction } from "../shared/useApiAction";
+import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
+import { ProblemNotice, useApiAction } from "@/features/shared/console/useApiAction";
 
 interface Skipped {
   invoiceId?: string;

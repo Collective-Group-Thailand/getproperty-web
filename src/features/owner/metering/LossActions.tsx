@@ -16,10 +16,10 @@ import { IconAdd } from "@/ui/icons/glyphs/add";
 import { IconDownload } from "@/ui/icons/glyphs/download";
 import { IconRefresh } from "@/ui/icons/glyphs/refresh";
 
-import { DateField } from "../shared/DateField";
-import { FormDialog, text } from "../shared/FormDialog";
+import { DateField } from "@/features/shared/console/DateField";
+import { FormDialog, text } from "@/features/shared/console/FormDialog";
 import { uploadOwnerFile, whenScanned } from "../shared/upload";
-import { ProblemNotice, useApiAction, useIdempotencyKey } from "../shared/useApiAction";
+import { ProblemNotice, useApiAction, useIdempotencyKey } from "@/features/shared/console/useApiAction";
 
 const PROVIDERS: Record<Schemas["Utility"], Schemas["UtilityProvider"][]> = {
   electric: ["mea", "pea"],

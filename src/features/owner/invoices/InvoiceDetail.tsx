@@ -14,7 +14,7 @@ import { DescriptionList } from "@/ui/components/DescriptionList";
 
 import { DocumentButton } from "../shared/DocumentButton";
 import { ownerPath } from "../shared/links";
-import { OwnerPage, PageHeader } from "../shared/PageHeader";
+import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { section, type OwnerContext } from "../shared/server";
 import { InvoiceActions } from "./InvoiceActions";
 import { InvoiceFlags } from "./InvoiceFlags";

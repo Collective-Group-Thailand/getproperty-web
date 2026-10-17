@@ -27,10 +27,10 @@ import { IconForward } from "@/ui/icons/glyphs/forward";
 import { IconSign } from "@/ui/icons/glyphs/sign";
 
 import { DocumentButton } from "../shared/DocumentButton";
-import { fieldErrors } from "../shared/FormDialog";
+import { fieldErrors } from "@/features/shared/console/FormDialog";
 import { ownerPath } from "../shared/links";
-import { useDateLabels } from "../shared/labels";
-import { ProblemNotice, useApiAction, useIdempotencyKey } from "../shared/useApiAction";
+import { useDateLabels } from "@/features/shared/console/labels";
+import { ProblemNotice, useApiAction, useIdempotencyKey } from "@/features/shared/console/useApiAction";
 import { NewPartyButton } from "../parties/PartyForm";
 import { ComplianceChecks } from "./ComplianceChecks";
 import { LeaseInviteButton } from "./LeaseInvite";

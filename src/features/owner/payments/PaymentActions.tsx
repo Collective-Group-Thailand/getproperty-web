@@ -10,7 +10,7 @@ import { Field } from "@/ui/components/Field";
 import { Textarea } from "@/ui/components/Input";
 import { IconUndo } from "@/ui/icons/glyphs/undo";
 
-import { ConfirmAction } from "../shared/ConfirmAction";
+import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 
 /**
  * Reverse a confirmed payment (a bounced transfer, money recorded on the wrong invoice): typed

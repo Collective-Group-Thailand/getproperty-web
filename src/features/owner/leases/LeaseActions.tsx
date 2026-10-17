@@ -16,10 +16,10 @@ import { IconRefresh } from "@/ui/icons/glyphs/refresh";
 import { IconSign } from "@/ui/icons/glyphs/sign";
 import { IconXCircle } from "@/ui/icons/glyphs/x-circle";
 
-import { ConfirmAction } from "../shared/ConfirmAction";
-import { DateField } from "../shared/DateField";
-import { FormDialog, integer, text } from "../shared/FormDialog";
-import { useSignatureLabels } from "../shared/labels";
+import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
+import { DateField } from "@/features/shared/console/DateField";
+import { FormDialog, integer, text } from "@/features/shared/console/FormDialog";
+import { useSignatureLabels } from "@/features/shared/console/labels";
 
 const LESSOR_REASONS: Schemas["LessorReason"][] = [
   "lessee_breach",

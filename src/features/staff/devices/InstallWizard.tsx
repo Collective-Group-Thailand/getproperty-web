@@ -9,7 +9,7 @@ import type { Locale } from "@/i18n/routing";
 import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/errors";
-import type { StaffMeterPoint } from "@/lib/api/pending";
+import type { StaffMeterPoint } from "./server";
 import type { Schemas } from "@/lib/api/types";
 import { uploadFile, UploadError } from "@/lib/pwa/queue";
 import { Button } from "@/ui/components/Button";
@@ -52,6 +52,7 @@ export function InstallWizard({
   points,
   gateways,
   inventory,
+  drivers,
   initial,
 }: {
   /** Meter points of the building with their open channel; `null` while the API cannot list them. */
@@ -59,6 +60,8 @@ export function InstallWizard({
   gateways: Schemas["FleetDeviceDto"][];
   /** Meter devices assigned to the building, not installed yet. */
   inventory: Schemas["FleetDeviceDto"][];
+  /** The edge driver catalogue (`GET /v1/staff/meter-drivers`); `null` → the known keys of D-013. */
+  drivers: Schemas["MeterDriverDto"][] | null;
   initial: { meter?: string; gateway?: string };
 }) {
   const t = useTranslations("staff.devices.install");
@@ -91,6 +94,16 @@ export function InstallWizard({
   const [failure, setFailure] = useState<Failure | null>(null);
   const [installed, setInstalled] = useState<Schemas["DeviceInstalledDto"] | null>(null);
 
+  const driverKeys = useMemo(
+    () =>
+      drivers
+        ? drivers.map((driver) => ({
+            key: driver.key,
+            label: `${driver.vendor} ${driver.models.join(" / ")} (${driver.key})`,
+          }))
+        : KNOWN_DRIVERS.map((key) => ({ key, label: tw(`driver.${key}`) })),
+    [drivers, tw],
+  );
   const point = free.find((candidate) => candidate.assetItemId === pointId) ?? null;
   const gateway = gateways.find((candidate) => candidate.id === wiring.gatewayDeviceId) ?? null;
   const deviceErrors = validateMeterDevice(device);
@@ -225,8 +238,8 @@ export function InstallWizard({
               onChange={(driver) => setDevice({ ...device, driver })}
               options={[
                 { value: "", label: t("choose") },
-                ...KNOWN_DRIVERS.map((driver) => ({ value: driver, label: tw(`driver.${driver}`) })),
-                ...(device.driver && !(KNOWN_DRIVERS as readonly string[]).includes(device.driver)
+                ...driverKeys.map((driver) => ({ value: driver.key, label: driver.label })),
+                ...(device.driver && !driverKeys.some((driver) => driver.key === device.driver)
                   ? [{ value: device.driver, label: device.driver }]
                   : []),
               ]}

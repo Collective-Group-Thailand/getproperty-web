@@ -12,7 +12,7 @@ import type { Locale } from "./routing";
  * file on disk is missing here (or the other way round) and when th and en differ in keys.
  */
 export const MESSAGE_FILES = {
-  common: ["auth", "brand", "common", "errors", "glossary", "notifications", "shell", "status"],
+  common: ["auth", "brand", "common", "console", "errors", "glossary", "notifications", "shell", "status"],
   owner: [
     "arrears",
     "billing",

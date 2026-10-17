@@ -10,7 +10,7 @@ import { IconDownload } from "@/ui/icons/glyphs/download";
 import { IconExternal } from "@/ui/icons/glyphs/external";
 
 import { resolveDocument, type DocumentRef, type ResolvedDocument } from "./documents";
-import { ProblemNotice } from "./useApiAction";
+import { ProblemNotice } from "@/features/shared/console/useApiAction";
 
 /** The PDF viewer of the owner console (lazy chunk of `DocumentButton`). */
 export function DocumentViewer({ document, title }: { document: DocumentRef; title: string }) {

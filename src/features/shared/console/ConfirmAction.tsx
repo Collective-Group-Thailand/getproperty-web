@@ -64,7 +64,7 @@ export function ConfirmAction({
   successMessage,
   onDone,
 }: ConfirmActionProps) {
-  const t = useTranslations("owner.common.confirm");
+  const t = useTranslations("console.confirm");
   const common = useTranslations("common");
   const [open, setOpen] = useState(false);
   const idempotency = useIdempotencyKey();

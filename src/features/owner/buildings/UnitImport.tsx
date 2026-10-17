@@ -19,7 +19,7 @@ import { IconDownload } from "@/ui/icons/glyphs/download";
 import { IconRefresh } from "@/ui/icons/glyphs/refresh";
 
 import { uploadOwnerFile, whenScanned } from "../shared/upload";
-import { ProblemNotice, useApiAction, useIdempotencyKey } from "../shared/useApiAction";
+import { ProblemNotice, useApiAction, useIdempotencyKey } from "@/features/shared/console/useApiAction";
 
 type Step = "upload" | "preview" | "done";
 const STEPS: Step[] = ["upload", "preview", "done"];

@@ -10,11 +10,11 @@ import { Stat } from "@/ui/components/Stat";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 
 import { ExportButton } from "../shared/ExportButton";
-import { FilterBar } from "../shared/FilterBar";
+import { FilterBar } from "@/features/shared/console/FilterBar";
 import { ownerPath, withQuery } from "../shared/links";
-import { ListPagination } from "../shared/ListPagination";
+import { ListPagination } from "@/features/shared/console/ListPagination";
 import { MoneyNav } from "../shared/MoneyNav";
-import { OwnerPage, PageHeader } from "../shared/PageHeader";
+import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { focusedBuilding, pageParam, param, section, type OwnerContext } from "../shared/server";
 import { SettingValue } from "../shared/SettingValue";
 import { slipsToReview } from "./PaymentsView";

@@ -37,7 +37,7 @@ import { IconUpload } from "@/ui/icons/glyphs/upload";
 import { IconWallet } from "@/ui/icons/glyphs/wallet";
 
 import { ownerPath, withQuery } from "../shared/links";
-import { OwnerPage, PageHeader } from "../shared/PageHeader";
+import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { focusedBuilding, section, type OwnerContext } from "../shared/server";
 
 interface QueueItem {

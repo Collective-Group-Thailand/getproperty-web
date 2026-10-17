@@ -16,7 +16,7 @@ import { IconClock } from "@/ui/icons/glyphs/clock";
 
 import { DocumentButton } from "../shared/DocumentButton";
 import { ownerPath } from "../shared/links";
-import { OwnerPage, PageHeader } from "../shared/PageHeader";
+import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { PhotoThumb } from "../shared/PhotoThumb";
 import { section, type OwnerContext } from "../shared/server";
 import { daysUntil } from "./DepositsView";
@@ -92,6 +92,20 @@ export async function DepositDetail({ context, depositId }: { context: OwnerCont
       {settlement?.residentResponse === "disputed" ? (
         <Callout tone="warning" title={t("disputedTitle")}>
           <span data-testid="dispute-reason">{settlement.disputeReason ?? "—"}</span>
+          {settlement.disputeDocumentIds.length > 0 ? (
+            <ul className="mt-2 flex flex-wrap gap-2" aria-label={t("disputePhotos")} data-testid="dispute-photos">
+              {settlement.disputeDocumentIds.map((documentId, index) => (
+                <li key={documentId}>
+                  <PhotoThumb
+                    fileId={documentId}
+                    alt={t("disputePhoto", { number: index + 1 })}
+                    purpose="deposit_settlement"
+                    size="sm"
+                  />
+                </li>
+              ))}
+            </ul>
+          ) : null}
         </Callout>
       ) : null}
       {settlement?.residentResponse === "accepted" ? (

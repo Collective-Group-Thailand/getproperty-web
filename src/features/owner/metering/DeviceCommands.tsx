@@ -9,7 +9,7 @@ import { Button } from "@/ui/components/Button";
 import { IconIdentify } from "@/ui/icons/glyphs/identify";
 import { IconRefresh } from "@/ui/icons/glyphs/refresh";
 
-import { ProblemNotice, useApiAction } from "../shared/useApiAction";
+import { ProblemNotice, useApiAction } from "@/features/shared/console/useApiAction";
 
 const OFFERED: { action: string; type: Schemas["OperatorCommandType"] }[] = [
   { action: "identify", type: "identify" },
