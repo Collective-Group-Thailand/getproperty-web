@@ -65,12 +65,17 @@ Each component: props documented, keyboard map, ARIA pattern, dark-mode story, i
 ## 7. Performance budgets (CI-enforced with Lighthouse CI + Web Vitals RUM)
 | Route type | LCP (p75) | INP (p75) | CLS | JS shipped (gz, initial) |
 |---|---|---|---|---|
-| Marketing (owner host) | ≤ 2.0 s | ≤ 200 ms | ≤ 0.05 | ≤ 120 KB |
-| Resident LIFF pages (`getproperty-liff`) | ≤ 2.0 s on 4G mid-range | ≤ 200 ms | ≤ 0.05 | ≤ 150 KB |
-| Owner dashboard / list / detail | ≤ 2.5 s | ≤ 200 ms | ≤ 0.1 | ≤ 250 KB |
+| Marketing (owner host) | ≤ 2.0 s | ≤ 200 ms | ≤ 0.05 | ≤ 180 KB |
+| Resident LIFF pages (`getproperty-liff`) | ≤ 2.0 s on 4G mid-range | ≤ 200 ms | ≤ 0.05 | ≤ 180 KB |
+| Owner dashboard / list / detail | ≤ 2.5 s | ≤ 200 ms | ≤ 0.1 | ≤ 260 KB |
 | Owner workspaces (cycle review, unit board) | ≤ 2.5 s | ≤ 200 ms | ≤ 0.1 | ≤ 300 KB |
-| Staff PWA | ≤ 2.5 s on 4G mid-range; instant from cache offline | ≤ 200 ms | ≤ 0.1 | ≤ 180 KB |
-| Admin | ≤ 2.5 s | ≤ 200 ms | ≤ 0.1 | ≤ 250 KB |
+| Staff PWA | ≤ 2.5 s on 4G mid-range; instant from cache offline | ≤ 200 ms | ≤ 0.1 | ≤ 200 KB |
+| Admin | ≤ 2.5 s | ≤ 200 ms | ≤ 0.1 | ≤ 260 KB |
+
+JS budgets per D-179 (re-based on the Next 16 + React 19 runtime floor of ≈ 130 KB gz). They hold because
+of four rules: icons are imported one glyph at a time (`@/ui/icons/glyphs/<name>`), messages are
+precompiled at build time (no ICU parser in the client), error pages carry only the glyphs they draw, and
+console providers and overlays load on first use (`@/ui/components/overlays`, TanStack Query on demand).
 
 Techniques: RSC by default, client components only where interactive, route-level splitting, `next/image` AVIF/WebP with `sizes`, font subsetting, preconnect to S3/CDN, TanStack Query hydration, virtualised long lists (unit board with 300 units), no layout shift from fonts/images.
 
