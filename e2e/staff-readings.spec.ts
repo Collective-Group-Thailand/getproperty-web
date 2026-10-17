@@ -56,7 +56,17 @@ test("Today groups the work with counts, by floor", async ({ page }) => {
   await expect(page.getByTestId("building-select")).toHaveValue("5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c");
   await expect(page.getByTestId("today-readings").getByTestId("big-action-count")).toHaveText("5");
   await expect(page.getByTestId("today-floors")).toContainText("ชั้น 2 · 3 left");
-  await expect(page.getByTestId("today-inspections").getByRole("link")).toHaveCount(2);
+  // The inspections still open — staff-inspections.spec.ts completes one of the seeded two when it runs
+  // first, so the count comes from the API rather than from the seed.
+  const open = await page.evaluate(async () => {
+    const page = (await (await fetch("/bff/v1/staff/inspections?perPage=50")).json()) as {
+      data: { status: string }[];
+    };
+    return page.data.filter((inspection) => inspection.status === "scheduled" || inspection.status === "in_progress")
+      .length;
+  });
+  expect(open).toBeGreaterThan(0);
+  await expect(page.getByTestId("today-inspections").getByRole("link")).toHaveCount(open);
   await expectAxeClean(page);
   await expectTargets48(page.locator("body"));
 

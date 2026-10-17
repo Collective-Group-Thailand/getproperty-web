@@ -9,7 +9,7 @@ ratchets (D-179, 2026-10-17).
 |---|---|---|---|---|---|
 | Marketing (owner host) | ≤ 2.0 s | ≤ 200 ms | ≤ 0.05 | ≤ 180 KB | `owner-marketing` |
 | Owner dashboard / list / detail | ≤ 2.5 s | ≤ 200 ms | ≤ 0.1 | ≤ 260 KB | `owner` |
-| Owner workspaces (cycle review, room map) | ≤ 2.5 s | ≤ 200 ms | ≤ 0.1 | ≤ 300 KB | `owner-workspaces` (F2) |
+| Owner workspaces (cycle review, room map) | ≤ 2.5 s | ≤ 200 ms | ≤ 0.1 | ≤ 260 KB (D-179; measured in the `owner` set) | `owner` |
 | Staff PWA | ≤ 2.5 s on 4G mid-range; instant from cache offline | ≤ 200 ms | ≤ 0.1 | ≤ 200 KB | `staff` |
 | Admin | ≤ 2.5 s | ≤ 200 ms | ≤ 0.1 | ≤ 260 KB | `admin` |
 
@@ -42,6 +42,31 @@ them hard limits once the reductions below landed.
 
 Lighthouse reported the same figures (±0.2 KB; e.g. staff 187.3 KB in all three runs); accessibility 1.0 on every
 page of every set.
+
+## Owner console after F2 2.1–2.5 (2026-10-17, `pnpm lhci owner`, desktop preset, signed in as the owner persona)
+
+| URL | Initial JS | Budget | Headroom | What loads later (on first use) |
+|---|---|---|---|---|
+| `/dashboard` | 183.7 KB | 260 KB | 76.3 KB | — |
+| `/units?building=` (board, 8 units) | 215.6 KB | 260 KB | 44.4 KB | unit drawer, status dialog |
+| `/units?building=` (board, 300 units, virtualised) | 215.6 KB | 260 KB | 44.4 KB | unit drawer |
+| `/leases/new` (wizard) | 225.7 KB | 260 KB | 34.3 KB | date picker popover, dialogs, PDF viewer |
+| `/leases/[id]` | 220.3 KB | 260 KB | 39.7 KB | signature pad dialog, PDF viewer |
+| `/deposits/[id]` (settlement) | 193.3 KB | 260 KB | 66.7 KB | photo viewer, deduction / refund dialogs |
+| `/billing` (cycle workspace) | 198.6 KB | 260 KB | 61.4 KB | draft lines, charge dialog, issue confirmation |
+| `/invoices` | 186.0 KB | 260 KB | 74.0 KB | — |
+| `/invoices/[id]` | 200.9 KB | 260 KB | 59.1 KB | note wizard, PDF viewer |
+| `/payments/slips` | 190.5 KB | 260 KB | 69.5 KB | zoomable slip viewer, decision dialogs |
+| `/arrears` | 188.5 KB | 260 KB | 71.5 KB | — |
+| `/meters/[id]` (series chart) | 189.3 KB | 260 KB | 70.7 KB | — (the chart is server SVG) |
+| `/loss` | 220.0 KB | 260 KB | 40.0 KB | bill entry dialog with date pickers |
+
+Every URL within the 260 KB hard limit (D-179); accessibility 1.0 asserted on each. The F2 screens stay
+lean because charts are server-rendered SVG with a `<details>` table (no chart library), the PDF viewer
+is the browser's own (a `blob:` URL in an iframe, loaded with the dialog), overlays are the lazy
+`@/ui/components/overlays` versions, the board virtualises floors with `@tanstack/react-virtual`
+(≈ 4 KB), and the image viewer is a `lazyWarm` chunk. The heaviest page is the lease wizard (one client
+component with every step); split it per step first if it gets close to the limit.
 
 ## Staff PWA after F4 (2026-10-17, `pnpm lhci staff`, mobile preset, signed in as the staff persona)
 

@@ -53,3 +53,23 @@ export async function uploadOwnerFile(file: File, target: UploadTarget): Promise
     }),
   );
 }
+
+/**
+ * Runs a request that reads an uploaded file's bytes (Excel import preview, utility bill prefill) and
+ * repeats it while the API answers `document.scan_pending` — the worker scans each upload a moment after
+ * `complete` (contract §3 "Files"), so the first try right after an upload can arrive before the scan.
+ */
+export async function whenScanned<T>(
+  read: () => Promise<T>,
+  options: { attempts?: number; delayMs?: number } = {},
+): Promise<T> {
+  const { attempts = 20, delayMs = 750 } = options;
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      return await read();
+    } catch (error) {
+      if (!(error instanceof ApiError) || error.code !== "document.scan_pending" || attempt >= attempts) throw error;
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+  }
+}

@@ -18,7 +18,7 @@ import { IconRefresh } from "@/ui/icons/glyphs/refresh";
 
 import { DateField } from "../shared/DateField";
 import { FormDialog, text } from "../shared/FormDialog";
-import { uploadOwnerFile } from "../shared/upload";
+import { uploadOwnerFile, whenScanned } from "../shared/upload";
 import { ProblemNotice, useApiAction, useIdempotencyKey } from "../shared/useApiAction";
 
 const PROVIDERS: Record<Schemas["Utility"], Schemas["UtilityProvider"][]> = {
@@ -169,11 +169,13 @@ export function UtilityInvoiceButton({
               setReadFailed(false);
               uploadOwnerFile(file, { kind: "utility_invoice", scopeType: "building", scopeId: buildingId })
                 .then(async (stored) => {
-                  const answer = await unwrap(
-                    browserApi().POST("/v1/owner/buildings/{buildingId}/utility-invoices/actions/prefill", {
-                      params: { path: { buildingId } },
-                      body: { documentId: stored.id, utility },
-                    }),
+                  const answer = await whenScanned(() =>
+                    unwrap(
+                      browserApi().POST("/v1/owner/buildings/{buildingId}/utility-invoices/actions/prefill", {
+                        params: { path: { buildingId } },
+                        body: { documentId: stored.id, utility },
+                      }),
+                    ),
                   );
                   setPrefill((current) => ({
                     version: current.version + 1,

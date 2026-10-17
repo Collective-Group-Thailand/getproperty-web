@@ -1,10 +1,24 @@
 {
   "extends": "./shared.json",
-  "$comment": "Owner console (dashboard / list / detail): LCP ≤ 2.5 s, CLS ≤ 0.1, initial JS ≤ 260 KB gz (D-179, docs/performance-budgets.md) — a hard limit. Measured signed in (scripts/lhci.ts signs the owner persona in on the mock API and sends the session cookies). F2 adds units, invoices, payments and the workspaces set.",
+  "$comment": "Owner console (dashboard / board / wizard / workspaces / lists / details): LCP ≤ 2.5 s, CLS ≤ 0.1, initial JS ≤ 260 KB gz (D-179, docs/performance-budgets.md) — a hard limit on every URL, the F2 workspaces included. Measured signed in (scripts/lhci.ts signs the owner persona in on the mock API and sends the session cookies). One run per URL (13 URLs); the JS size does not vary between runs.",
   "ci": {
     "collect": {
-      "url": ["http://localhost:3200/dashboard"],
-      "numberOfRuns": 3,
+      "url": [
+        "http://localhost:3200/dashboard",
+        "http://localhost:3200/units?building=5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+        "http://localhost:3200/units?building=5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b8e",
+        "http://localhost:3200/leases/new",
+        "http://localhost:3200/leases/1ea50000-0000-4000-8000-000000000002",
+        "http://localhost:3200/deposits/de900000-0000-4000-8000-000000000303",
+        "http://localhost:3200/billing",
+        "http://localhost:3200/invoices",
+        "http://localhost:3200/invoices/1e700000-0000-4000-8000-000000000102",
+        "http://localhost:3200/payments/slips",
+        "http://localhost:3200/arrears",
+        "http://localhost:3200/meters/a1000000-0000-4000-8000-000000000004?building=5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+        "http://localhost:3200/loss"
+      ],
+      "numberOfRuns": 1,
       "settings": {
         "preset": "desktop",
         "throttlingMethod": "simulate"

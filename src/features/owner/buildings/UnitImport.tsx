@@ -18,7 +18,7 @@ import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 import { IconDownload } from "@/ui/icons/glyphs/download";
 import { IconRefresh } from "@/ui/icons/glyphs/refresh";
 
-import { uploadOwnerFile } from "../shared/upload";
+import { uploadOwnerFile, whenScanned } from "../shared/upload";
 import { ProblemNotice, useApiAction, useIdempotencyKey } from "../shared/useApiAction";
 
 type Step = "upload" | "preview" | "done";
@@ -62,11 +62,13 @@ export function UnitImport({
           scopeId: building.id,
           title: chosen.name,
         });
-        return unwrap(
-          browserApi().POST("/v1/owner/buildings/{buildingId}/unit-imports/actions/preview", {
-            params: { path: { buildingId: building.id } },
-            body: { fileId: uploaded.id, createFloors: floors },
-          }),
+        return whenScanned(() =>
+          unwrap(
+            browserApi().POST("/v1/owner/buildings/{buildingId}/unit-imports/actions/preview", {
+              params: { path: { buildingId: building.id } },
+              body: { fileId: uploaded.id, createFloors: floors },
+            }),
+          ),
         );
       },
       (answer) => {

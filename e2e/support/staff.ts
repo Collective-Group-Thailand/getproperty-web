@@ -38,6 +38,30 @@ export async function resetMock(): Promise<void> {
 
 /** WCAG 2.2 AA with axe (target-size included), on the page or a part of it. */
 export async function expectAxeClean(page: Page, include?: string): Promise<void> {
+  // Measure the page at rest: colours as painted once fade-ins (a toast, a dialog) are over — a
+  // half-transparent frame reads as low contrast. "At rest" = five consecutive animation frames without
+  // a running finite animation.
+  await page.evaluate(() => {
+    (window as unknown as { __axeQuiet?: number }).__axeQuiet = 0;
+  });
+  // Streamed metadata can land a moment after the content; a page that never gets a title still fails
+  // axe's `document-title` below.
+  await page.waitForFunction(() => document.title !== "", undefined, { timeout: 3000 }).catch(() => undefined);
+  await page.waitForFunction(
+    () => {
+      const state = window as unknown as { __axeQuiet?: number };
+      const busy = document
+        .getAnimations()
+        .some(
+          (animation) =>
+            animation.playState === "running" && animation.effect?.getComputedTiming().iterations !== Infinity,
+        );
+      state.__axeQuiet = busy ? 0 : (state.__axeQuiet ?? 0) + 1;
+      return state.__axeQuiet >= 5;
+    },
+    undefined,
+    { polling: "raf" },
+  );
   let builder = new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]);
   if (include) builder = builder.include(include);
   const results = await builder.analyze();

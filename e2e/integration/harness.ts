@@ -15,6 +15,13 @@
  *      `GET /health`, `GET /invitation` (the onboarding invitation), `GET /staff-invitation` (the staff
  *      world), `GET /sms/last-code?phone=` (the fake SMS outbox), `GET /totp?secret=` (an authenticator
  *      code), `PUT /storage?url=` (a presigned upload into the API's fake object storage).
+ *   5. The F2 owner-console world (`GET /f2`): a third tenant whose owner (+66810000021) has a property, a
+ *      building with one floor and a confirmed bank account on the fake KBank merchant; `GET /f2/units.xlsx`
+ *      (the API's own import template with three rows), `POST /f2/resident-sign?code=&lease=&phone=` (the
+ *      resident signs in with LINE, consents, accepts the invitation and signs the lease with the SMS OTP —
+ *      what getproperty-liff does), `POST /f2/pay?invoice=<number>` (the fake provider's signed callback for
+ *      the invoice's QR reference). The API's worker runs in this process (`WorkerRunner`, ticking every
+ *      second) so QR codes, payment confirmations and receipts happen as they do in production.
  *
  * Nothing here is part of the app: it exists so the suite can run the real sign-in flows once.
  */
@@ -36,6 +43,12 @@ const DB = "getproperty_webint";
 const OWNER_PHONE = "+66810000001";
 const STAFF_OWNER_PHONE = "+66810000009";
 const STAFF_PHONE = "+66810000010";
+const F2_OWNER_PHONE = "+66810000021";
+const F2_MERCHANT = "010555000000777";
+const PNG_BASE64 = Buffer.from(
+  "89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000d4944415478da6364f8cf00000301010018dd8db00000000049454e44ae426082",
+  "hex",
+).toString("base64");
 const ADMIN_EMAIL = "admin@getproperty.invalid";
 
 const log = (...args: unknown[]) => console.info("[integration]", ...args);
@@ -192,18 +205,28 @@ async function startApi(apiDir: string, databaseUrl: string) {
     LOG_PRETTY: "false",
     THROTTLE_LIMIT: "100000",
     AUTH_THROTTLE_LIMIT: "100000",
+    OTP_MAX_PER_HOUR: "20",
+    OTP_RESEND_SECONDS: "10",
     S3_BUCKET: "getproperty-webint",
     PUBLIC_WEB_APP_URL: "http://localhost:3200",
   });
   const require = createRequire(join(apiDir, "package.json"));
   const { NestFactory } = require("@nestjs/core") as NestCore;
+  const { Module } = require("@nestjs/common") as {
+    Module: (metadata: Record<string, unknown>) => (target: new () => unknown) => void;
+  };
   const { AppModule } = require(join(apiDir, "dist/src/app.module.js")) as { AppModule: new () => unknown };
+  // The worker's processors in this process (as the API's own integration suite does): with the in-memory
+  // queue outside tests it ticks every second — QR codes, payment confirmations, receipts, documents.
+  const { WorkerRunner } = require(join(apiDir, "dist/src/worker.runner.js")) as { WorkerRunner: unknown };
+  class ApiWithWorker {}
+  Module({ imports: [AppModule], providers: [WorkerRunner] })(ApiWithWorker);
   const { configureApp } = require(join(apiDir, "dist/src/bootstrap.js")) as { configureApp: (app: unknown) => void };
   const { SMS } = require(join(apiDir, "dist/src/integrations/sms/sms.port.js")) as { SMS: symbol | string };
   const { totpAt } = require(join(apiDir, "dist/src/core/identity/crypto/totp.js")) as {
     totpAt: (secret: string, at: Date) => string;
   };
-  const app = await NestFactory.create(AppModule, { logger: ["error", "warn"], abortOnError: false });
+  const app = await NestFactory.create(ApiWithWorker, { logger: ["error", "warn"], abortOnError: false });
   configureApp(app);
   await app.listen(API_PORT, "127.0.0.1");
   log(`getproperty-api listening on http://127.0.0.1:${API_PORT}`);
@@ -356,6 +379,249 @@ async function setupStaffWorld(token: string, sms: { lastCodeTo(phone: string): 
   };
 }
 
+/** An operator session kept fresh (access tokens are short-lived; the F2 controls run minutes later). */
+class OperatorSession {
+  constructor(
+    private access: string,
+    private refresh: string,
+    private at = Date.now(),
+  ) {}
+  async header(): Promise<Record<string, string>> {
+    if (Date.now() - this.at > 4 * 60_000) {
+      const renewed = await call("POST", "/v1/auth/refresh", { refreshToken: this.refresh });
+      if (renewed.status !== 200) throw new Error(`refresh: ${JSON.stringify(renewed.body)}`);
+      this.access = String(renewed.body.accessToken);
+      this.refresh = String(renewed.body.refreshToken);
+      this.at = Date.now();
+    }
+    return { authorization: `Bearer ${this.access}` };
+  }
+}
+
+/** An SMS OTP challenge, waiting out the resend gap when the phone just received one. */
+async function otpChallenge(path: string, body: Record<string, unknown>, headers: Record<string, string> = {}) {
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const challenge = await call("POST", path, body, headers);
+    if (challenge.status < 300) return challenge.body;
+    if (challenge.status !== 429) throw new Error(`${path}: ${challenge.status} ${JSON.stringify(challenge.body)}`);
+    await new Promise((resolve) => setTimeout(resolve, 15_000));
+  }
+  throw new Error(`${path}: still rate limited`);
+}
+
+/**
+ * 4d. The F2 owner-console world: a tenant whose owner signs in through the API with the invitation, a
+ * property and a building with floor 1 (the units come from the Excel import in the browser), and a bank
+ * account on the fake KBank merchant confirmed with the SMS OTP — so issued invoices get their QR.
+ */
+async function setupF2World(token: string, sms: { lastCodeTo(phone: string): string | undefined }) {
+  const owner = await createTenant(token, "web-integration-f2", "หอพักทดสอบคอนโซล", F2_OWNER_PHONE);
+  const challenge = await otpChallenge("/v1/auth/operator/otp/request", { phone: owner.phone });
+  const pair = await call("POST", "/v1/auth/operator/otp/verify", {
+    challengeId: challenge.challengeId,
+    code: sms.lastCodeTo(owner.phone),
+    invitationCode: owner.code,
+  });
+  if (pair.status !== 200) throw new Error(`f2 owner sign-in: ${JSON.stringify(pair.body)}`);
+  const session = new OperatorSession(String(pair.body.accessToken), String(pair.body.refreshToken));
+  const ok = (step: string, result: { status: number; body: unknown }) => {
+    if (result.status >= 300) throw new Error(`${step}: ${result.status} ${JSON.stringify(result.body)}`);
+    return result.body as Record<string, unknown> & unknown[];
+  };
+  const property = ok(
+    "f2 property",
+    await call("POST", "/v1/owner/properties", { code: "F2", name: "หอพักคอนโซล" }, await session.header()),
+  );
+  const building = ok(
+    "f2 building",
+    await call(
+      "POST",
+      "/v1/owner/buildings",
+      { propertyId: property.id, code: "F", name: "อาคาร F", type: "apartment" },
+      await session.header(),
+    ),
+  );
+  ok(
+    "f2 floor",
+    await call(
+      "POST",
+      `/v1/owner/buildings/${String(building.id)}/floors`,
+      { level: 1, name: "ชั้น 1" },
+      await session.header(),
+    ),
+  );
+  const account = ok(
+    "f2 bank account",
+    await call(
+      "POST",
+      "/v1/owner/bank-accounts",
+      {
+        bankCode: "004",
+        bankNameTh: "ธนาคารกสิกรไทย",
+        accountNo: "123-4-56789-0",
+        accountName: "บริษัท หอพักทดสอบคอนโซล จำกัด",
+        isDefault: true,
+        paymentProvider: "kbank",
+        providerMerchantRef: F2_MERCHANT,
+      },
+      { ...(await session.header()), "idempotency-key": randomUUID() },
+    ),
+  ) as unknown as { account: { id: string }; otp: { challengeId: string } };
+  ok(
+    "f2 bank account confirm",
+    await call(
+      "POST",
+      `/v1/owner/bank-accounts/${account.account.id}/actions/confirm`,
+      { challengeId: account.otp.challengeId, code: sms.lastCodeTo(owner.phone) },
+      await session.header(),
+    ),
+  );
+  log(`f2 world: ${owner.tenantName}, building ${String(building.name)}, merchant ${F2_MERCHANT}`);
+  return {
+    session,
+    world: {
+      phone: owner.phone,
+      tenantName: owner.tenantName,
+      buildingId: String(building.id),
+      buildingName: String(building.name),
+      propertyId: String(property.id),
+    },
+  };
+}
+
+/** The API's own unit-import template with three units on floors 1 and 2 (floor 2 is created by the import). */
+async function f2UnitsWorkbook(apiDir: string, session: OperatorSession, buildingId: string): Promise<Buffer> {
+  const response = await fetch(`${API}/v1/owner/buildings/${buildingId}/unit-imports/template`, {
+    headers: await session.header(),
+  });
+  if (!response.ok) throw new Error(`template: ${response.status}`);
+  const require = createRequire(join(apiDir, "package.json"));
+  const ExcelJS = require("exceljs") as {
+    Workbook: new () => {
+      xlsx: { load(data: ArrayBuffer): Promise<unknown>; writeBuffer(): Promise<ArrayBuffer> };
+      getWorksheet(name: string): { addRow(values: unknown[]): unknown } | undefined;
+    };
+  };
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(await response.arrayBuffer());
+  const sheet = workbook.getWorksheet("units");
+  if (!sheet) throw new Error("template has no units sheet");
+  sheet.addRow(["F-101", 1, "room", "25", "4500", "", ""]);
+  sheet.addRow(["F-102", 1, "room", "25", "4500", "", ""]);
+  sheet.addRow(["F-201", 2, "room", "28", "5200", "", ""]);
+  return Buffer.from(await workbook.xlsx.writeBuffer());
+}
+
+/** What getproperty-liff does for the lessee: LINE login → consents → accept the invitation → sign with OTP. */
+async function f2ResidentSigns(
+  apiDir: string,
+  sms: { lastCodeTo(phone: string): string | undefined },
+  input: { code: string; leaseId: string; phone: string },
+) {
+  const require = createRequire(join(apiDir, "package.json"));
+  const { fakeLineIdToken } = require(join(apiDir, "dist/src/integrations/line/fake-line-login.js")) as {
+    fakeLineIdToken: (claims: { sub: string; name?: string }) => string;
+  };
+  const step = (name: string, result: { status: number; body: unknown }) => {
+    if (result.status >= 300) throw new Error(`${name}: ${result.status} ${JSON.stringify(result.body)}`);
+    return result.body as Record<string, unknown> & unknown[];
+  };
+  const login = step(
+    "resident line",
+    await call("POST", "/v1/auth/resident/line", {
+      idToken: fakeLineIdToken({ sub: `U${randomUUID().replace(/-/g, "")}`, name: "ผู้เช่าทดสอบ" }),
+    }),
+  );
+  const first = { authorization: `Bearer ${String(login.accessToken)}` };
+  const purposes = step("consents", await call("GET", "/v1/resident/consents", undefined, first)) as unknown as {
+    key: string;
+    version: number;
+    required: boolean;
+  }[];
+  step(
+    "consent",
+    await call(
+      "POST",
+      "/v1/resident/consents",
+      {
+        items: purposes
+          .filter((purpose) => purpose.required)
+          .map((purpose) => ({ purposeKey: purpose.key, version: purpose.version, granted: true })),
+      },
+      first,
+    ),
+  );
+  step("accept", await call("POST", `/v1/resident/invitations/${encodeURIComponent(input.code)}/accept`, {}, first));
+  const refreshed = step("refresh", await call("POST", "/v1/auth/refresh", { refreshToken: login.refreshToken }));
+  const auth = { authorization: `Bearer ${String(refreshed.accessToken)}` };
+  const contract = step(
+    "contract",
+    await call("GET", `/v1/resident/leases/${input.leaseId}/contract`, undefined, auth),
+  );
+  const otp = await otpChallenge(`/v1/resident/leases/${input.leaseId}/signature/otp`, {}, auth);
+  return step(
+    "sign",
+    await call(
+      "POST",
+      `/v1/resident/leases/${input.leaseId}/sign`,
+      {
+        challengeId: otp.challengeId,
+        code: sms.lastCodeTo(input.phone),
+        contractSha256: contract.sha256,
+        signaturePng: PNG_BASE64,
+      },
+      { ...auth, "idempotency-key": randomUUID() },
+    ),
+  );
+}
+
+/** The fake KBank's signed callback for an issued invoice's QR reference (D-042). */
+async function f2ProviderPays(app: NestApp, apiDir: string, session: OperatorSession, number: string) {
+  const list = await call(
+    "GET",
+    `/v1/owner/invoices?q=${encodeURIComponent(number)}`,
+    undefined,
+    await session.header(),
+  );
+  const summary = (list.body.data as unknown as { id: string; number: string | null }[] | undefined)?.find(
+    (candidate) => candidate.number === number,
+  );
+  if (!summary) throw new Error(`invoice ${number} not found`);
+  const detail = await call("GET", `/v1/owner/invoices/${summary.id}`, undefined, await session.header());
+  const reference = String(detail.body.promptpayRef ?? number.replace(/-/g, ""));
+  const amount = String(detail.body.amountDue ?? detail.body.balance);
+  const require = createRequire(join(apiDir, "package.json"));
+  const { PAYMENT_PROVIDERS } = require(join(apiDir, "dist/src/integrations/payments/payment-provider.port.js")) as {
+    PAYMENT_PROVIDERS: symbol;
+  };
+  const fake = app
+    .get<{
+      adapter(provider: string): {
+        simulatePayment(p: Record<string, unknown>): { body: string; headers: Record<string, string> };
+      };
+    }>(PAYMENT_PROVIDERS)
+    .adapter("kbank");
+  const callback = fake.simulatePayment({
+    merchantRef: F2_MERCHANT,
+    reference,
+    amount,
+    providerRef: `KB-${Date.now()}`,
+    paidAt: new Date(),
+  });
+  const response = await fetch(`${API}/webhooks/payments/kbank`, {
+    method: "POST",
+    headers: callback.headers,
+    body: callback.body,
+  });
+  return {
+    status: response.status,
+    body: await response.json().catch(() => ({})),
+    invoiceId: summary.id,
+    amount,
+    reference,
+  };
+}
+
 /**
  * 3b. The worker's `document-scan` subscriber, in this process: the harness runs the API only (no
  * worker, no outbox relay), and the uploaded bytes live in the API process's fake object storage, so
@@ -407,6 +673,7 @@ async function main() {
   const token = await platformToken(totpAt);
   const invitation = await createTenant(token, "web-integration", "หอพักทดสอบเว็บ", OWNER_PHONE);
   const staffWorld = await setupStaffWorld(token, sms);
+  const f2 = await setupF2World(token, sms);
   startDocumentScans(app, apiDir);
 
   createServer(async (req, res) => {
@@ -418,6 +685,27 @@ async function main() {
     if (url.pathname === "/health") return send(200, { ok: true });
     if (url.pathname === "/invitation") return send(200, invitation);
     if (url.pathname === "/staff-invitation") return send(200, staffWorld);
+    try {
+      if (url.pathname === "/f2") return send(200, f2.world);
+      if (url.pathname === "/f2/units.xlsx") {
+        const workbook = await f2UnitsWorkbook(apiDir, f2.session, f2.world.buildingId);
+        res.writeHead(200, { "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        return res.end(workbook);
+      }
+      if (url.pathname === "/f2/resident-sign" && req.method === "POST") {
+        const signed = await f2ResidentSigns(apiDir, sms, {
+          code: url.searchParams.get("code") ?? "",
+          leaseId: url.searchParams.get("lease") ?? "",
+          phone: url.searchParams.get("phone") ?? "",
+        });
+        return send(200, signed);
+      }
+      if (url.pathname === "/f2/pay" && req.method === "POST")
+        return send(200, await f2ProviderPays(app, apiDir, f2.session, url.searchParams.get("invoice") ?? ""));
+    } catch (error) {
+      log("control failed:", (error as Error).message);
+      return send(500, { error: (error as Error).message });
+    }
     // What a browser's presigned PUT to object storage does (the fake storage's URLs are not reachable).
     if (url.pathname === "/storage" && req.method === "PUT") {
       const target = new URL(url.searchParams.get("url") ?? "");
