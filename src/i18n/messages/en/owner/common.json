@@ -79,5 +79,21 @@
     "clear": "Clear",
     "undo": "Undo",
     "upload": "Use a signature photo"
+  },
+  "money": {
+    "nav": {
+      "billing": "Billing",
+      "payments": "Payments"
+    },
+    "tab": {
+      "billing": "Billing cycle",
+      "invoices": "Invoices",
+      "payments": "Payments",
+      "slips": "Slips to review",
+      "manual": "Record a payment",
+      "credits": "Credits & refunds",
+      "arrears": "Arrears",
+      "documents": "Documents"
+    }
   }
 }

@@ -1042,6 +1042,7 @@ function initialInvoices(): MockInvoice[] {
   a201prev.lines[1]!.complianceAcknowledgementId = id("ac000000", 1);
   a201prev.paidTotal = a201prev.total;
   a201prev.balance = "0.00";
+  a201prev.nextActions = ["resend", "credit-note", "debit-note"];
 
   const a302prev = invoice({
     id: INVOICE.a302prev,
@@ -1061,7 +1062,7 @@ function initialInvoices(): MockInvoice[] {
     dueDate: day(-35),
     promptpayRef: "INV2569000102",
     snapshotSha256: "2b2c3d4e5f60718293a4b5c6d7e8f9011b2c3d4e5f60718293a4b5c6d7e8f902",
-    nextActions: ["send-reminder", "resend"],
+    nextActions: ["resend", "send-reminder", "credit-note", "debit-note"],
     lines: [
       rent(1, "6500.00", "A-302"),
       meterLine(2, "electric", "3010.000", "3190.000", "180.000", "4.0000", "720.00", { code: "E-A-302" }),
@@ -1122,7 +1123,7 @@ function initialInvoices(): MockInvoice[] {
     dueDate: day(0),
     promptpayRef: "INV2569000103",
     snapshotSha256: "3b2c3d4e5f60718293a4b5c6d7e8f9011b2c3d4e5f60718293a4b5c6d7e8f903",
-    nextActions: ["void", "resend", "send-reminder"],
+    nextActions: ["void", "resend", "send-reminder", "credit-note", "debit-note"],
     lines: [
       rent(1, "5200.00", "B-101"),
       meterLine(2, "electric", "40.000", "100.000", "60.000", "4.0000", "240.00", {
@@ -1148,7 +1149,7 @@ function initialInvoices(): MockInvoice[] {
     periodEnd: cur.end,
     reviewFlags: ["acknowledgement_required:tariff_cap"],
     complianceFlags: ["above_cap:electricity"],
-    nextActions: ["recompute"],
+    nextActions: ["recompute", "issue"],
     lines: [
       rent(1, "4500.00", "A-201"),
       meterLine(2, "electric", "12300.000", "12512.400", "212.400", "5.0000", "1062.00", {
@@ -1175,7 +1176,7 @@ function initialInvoices(): MockInvoice[] {
     status: "draft",
     periodStart: cur.start,
     periodEnd: cur.end,
-    nextActions: ["recompute"],
+    nextActions: ["recompute", "issue"],
     lines: [
       rent(1, "6500.00", "A-302"),
       meterLine(2, "electric", "3190.000", "3375.000", "185.000", "4.0000", "740.00", {
