@@ -15,6 +15,9 @@ import { AppShell, TopBar } from "@/ui/components/AppShell";
 import { Badge } from "@/ui/components/Badge";
 import { EnvBadge } from "@/ui/components/EnvBadge";
 import { IconButton } from "@/ui/components/IconButton";
+import { IconInfo } from "@/ui/icons/glyphs/info";
+import { IconSidebarCollapse } from "@/ui/icons/glyphs/sidebar-collapse";
+import { IconSidebarExpand } from "@/ui/icons/glyphs/sidebar-expand";
 
 import { CommandPalette } from "./CommandPalette";
 
@@ -42,7 +45,7 @@ export function AdminShellFrame(props: AdminShellFrameProps) {
       header={
         <TopBar>
           <IconButton
-            name={collapsed ? "sidebar-expand" : "sidebar-collapse"}
+            icon={collapsed ? IconSidebarExpand : IconSidebarCollapse}
             label={collapsed ? t("shell.expandSidebar") : t("shell.collapseSidebar")}
             onClick={toggleCollapsed}
             className="hidden md:inline-flex"
@@ -59,7 +62,7 @@ export function AdminShellFrame(props: AdminShellFrameProps) {
           <span className="ms-auto flex items-center gap-1">
             <EnvBadge label={props.envBadge} />
             {props.apiFakes ? (
-              <Badge tone="info" size="sm" icon="info">
+              <Badge tone="info" size="sm" icon={IconInfo}>
                 {props.fakesLabel}
               </Badge>
             ) : null}

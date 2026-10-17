@@ -5,6 +5,7 @@ import { Badge } from "./Badge";
 import { DataTable } from "./DataTable";
 import { EmptyState } from "./EmptyState";
 import { MoneyDisplay } from "./MoneyDisplay";
+import { IconBill } from "../icons/glyphs/bill";
 
 interface Row {
   room: string;
@@ -58,7 +59,7 @@ export const Loading: Story = { args: { loading: true } };
 export const Empty: Story = {
   args: {
     data: [],
-    empty: <EmptyState icon="bill" title="ยังไม่มีบิลในรอบนี้" description="ออกบิลเมื่อเลขมิเตอร์ครบทุกห้อง" />,
+    empty: <EmptyState icon={IconBill} title="ยังไม่มีบิลในรอบนี้" description="ออกบิลเมื่อเลขมิเตอร์ครบทุกห้อง" />,
   },
 };
 export const Compact: Story = { args: { density: "compact" } };

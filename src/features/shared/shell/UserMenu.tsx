@@ -4,11 +4,23 @@ import { useTranslations } from "next-intl";
 import { useTransition } from "react";
 
 import { signOut } from "@/lib/auth/actions";
-import { DropdownMenu, type MenuItem } from "@/ui/components/DropdownMenu";
 import { IconButton } from "@/ui/components/IconButton";
 import { useTheme } from "@/ui/theme/ThemeProvider";
+import { LazyDropdownMenu } from "@/ui/components/overlays";
+import { type MenuItem } from "@/ui/components/DropdownMenu";
+import { IconLogOut } from "@/ui/icons/glyphs/log-out";
+import { IconResident } from "@/ui/icons/glyphs/resident";
+import { IconThemeContrast } from "@/ui/icons/glyphs/theme-contrast";
+import { IconThemeDark } from "@/ui/icons/glyphs/theme-dark";
+import { IconThemeLight } from "@/ui/icons/glyphs/theme-light";
+import { IconThemeSystem } from "@/ui/icons/glyphs/theme-system";
 
-const THEME_ICONS = { system: "theme-system", light: "theme-light", dark: "theme-dark", hc: "theme-contrast" } as const;
+const THEME_ICONS = {
+  system: IconThemeSystem,
+  light: IconThemeLight,
+  dark: IconThemeDark,
+  hc: IconThemeContrast,
+} as const;
 
 /**
  * Account menu of every shell: who is signed in (and in which role), theme (high contrast offered on
@@ -52,7 +64,7 @@ export function UserMenu({
     {
       id: "sign-out",
       label: t("auth.signOut"),
-      icon: "log-out",
+      icon: IconLogOut,
       separatorBefore: true,
       onSelect: () =>
         startTransition(async () => {
@@ -63,10 +75,14 @@ export function UserMenu({
   ];
 
   return (
-    <DropdownMenu
+    <LazyDropdownMenu
       label={t("shell.user.menu")}
       trigger={
-        <IconButton name="resident" label={t("shell.user.signedInAs", { name: displayName })} data-testid="user-menu" />
+        <IconButton
+          icon={IconResident}
+          label={t("shell.user.signedInAs", { name: displayName })}
+          data-testid="user-menu"
+        />
       }
       items={items}
     />

@@ -1,6 +1,6 @@
 import createClient, { type Client, type Middleware } from "openapi-fetch";
 
-import { OPERATIONS } from "./generated/operations";
+import { IDEMPOTENT_OPERATIONS } from "./generated/idempotent";
 import { IDEMPOTENCY_HEADER, REQUEST_ID_HEADER } from "./headers";
 import { NetworkError, problemError, toApiError } from "./errors";
 import type { Problem, paths } from "./types";
@@ -30,8 +30,8 @@ export function createApiClient({ baseUrl, headers, fetch: fetchImpl }: ApiClien
         if (value !== undefined && !request.headers.has(name)) request.headers.set(name, value);
       }
       if (!request.headers.has(REQUEST_ID_HEADER)) request.headers.set(REQUEST_ID_HEADER, crypto.randomUUID());
-      const flags = OPERATIONS[`${request.method} ${schemaPath}`];
-      if (flags?.idempotencyKey && !request.headers.has(IDEMPOTENCY_HEADER)) {
+      const idempotent = IDEMPOTENT_OPERATIONS.has(`${request.method} ${schemaPath}`);
+      if (idempotent && !request.headers.has(IDEMPOTENCY_HEADER)) {
         request.headers.set(IDEMPOTENCY_HEADER, crypto.randomUUID());
       }
       return request;

@@ -19,8 +19,11 @@ import { Mark, Wordmark } from "@/ui/brand";
 import { AppShell, BottomNav, TopBar, type NavItem } from "@/ui/components/AppShell";
 import { EnvBadge } from "@/ui/components/EnvBadge";
 import { IconButton } from "@/ui/components/IconButton";
-import { Sheet } from "@/ui/components/Sheet";
 import { Icon } from "@/ui/icons";
+import { IconMore } from "@/ui/icons/glyphs/more";
+import { IconSidebarCollapse } from "@/ui/icons/glyphs/sidebar-collapse";
+import { IconSidebarExpand } from "@/ui/icons/glyphs/sidebar-expand";
+import { LazySheet } from "@/ui/components/overlays";
 
 import { BuildingSwitcher } from "./BuildingSwitcher";
 import { GlobalSearch } from "./GlobalSearch";
@@ -59,13 +62,13 @@ export function OwnerShellFrame(props: OwnerShellFrameProps) {
     ...props.bottomNav.map(({ item, label }) => ({
       href: item.href,
       label,
-      icon: <Icon name={item.icon} />,
+      icon: <Icon icon={item.icon} />,
       active: isActive(item.href, pathname),
     })),
     {
       href: "#more",
       label: t("owner.nav.bottom.more"),
-      icon: <Icon name="more" />,
+      icon: <Icon icon={IconMore} />,
       onSelect: () => setMoreOpen(true),
     },
   ];
@@ -78,7 +81,7 @@ export function OwnerShellFrame(props: OwnerShellFrameProps) {
       header={
         <TopBar>
           <IconButton
-            name={collapsed ? "sidebar-expand" : "sidebar-collapse"}
+            icon={collapsed ? IconSidebarExpand : IconSidebarCollapse}
             label={collapsed ? t("shell.expandSidebar") : t("shell.collapseSidebar")}
             onClick={toggleCollapsed}
             className="hidden md:inline-flex"
@@ -126,7 +129,7 @@ export function OwnerShellFrame(props: OwnerShellFrameProps) {
       <ShellBreadcrumbs items={items} home={home}>
         {props.children}
       </ShellBreadcrumbs>
-      <Sheet
+      <LazySheet
         open={moreOpen}
         onOpenChange={setMoreOpen}
         title={t("shell.moreMenu")}
@@ -138,7 +141,7 @@ export function OwnerShellFrame(props: OwnerShellFrameProps) {
           <LanguageSwitch zone="owner" />
         </div>
         <ZoneSidebar groups={props.groups} collapsed={false} />
-      </Sheet>
+      </LazySheet>
     </AppShell>
   );
 }

@@ -1,4 +1,9 @@
 import type { ContractEnum } from "@/lib/api/types";
+import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
+import { IconClock } from "@/ui/icons/glyphs/clock";
+import { IconLock } from "@/ui/icons/glyphs/lock";
+import { IconWallet } from "@/ui/icons/glyphs/wallet";
+import { IconXCircle } from "@/ui/icons/glyphs/x-circle";
 
 import { defineStatuses } from "./define";
 
@@ -14,11 +19,11 @@ export type SubscriptionState = ContractEnum<
 >;
 
 export const SUBSCRIPTION_STATUS = defineStatuses<SubscriptionState>("subscription", {
-  trial: { tone: "info", icon: "clock" },
-  active: { tone: "success", icon: "check-circle" },
-  past_due: { tone: "warning", icon: "wallet" },
-  suspended: { tone: "danger", icon: "lock" },
-  cancelled: { tone: "neutral", icon: "x-circle" },
+  trial: { tone: "info", icon: IconClock },
+  active: { tone: "success", icon: IconCheckCircle },
+  past_due: { tone: "warning", icon: IconWallet },
+  suspended: { tone: "danger", icon: IconLock },
+  cancelled: { tone: "neutral", icon: IconXCircle },
 });
 
 export const SUBSCRIPTION_VALUES = Object.keys(SUBSCRIPTION_STATUS) as SubscriptionState[];

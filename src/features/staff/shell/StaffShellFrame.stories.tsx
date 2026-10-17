@@ -2,6 +2,9 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { CURRENT_TENANT, TENANTS } from "@/features/shared/storybook/fixtures";
 import { ShellStory } from "@/features/shared/storybook/ShellStory";
+import { IconCamera } from "@/ui/icons/glyphs/camera";
+import { IconGateway } from "@/ui/icons/glyphs/gateway";
+import { IconMeter } from "@/ui/icons/glyphs/meter";
 
 import { DeviceLock } from "../lock/DeviceLock";
 import { StaffShellFrame } from "./StaffShellFrame";
@@ -26,9 +29,9 @@ const meta: Meta<typeof StaffShellFrame> = {
     userName: "สมศักดิ์ ช่างประจำ",
     roleLabel: "เจ้าหน้าที่",
     items: [
-      { key: "readings", href: "/readings", icon: "meter", label: "จดมิเตอร์", group: "work" },
-      { key: "inspections", href: "/inspections", icon: "camera", label: "ตรวจห้อง", group: "work" },
-      { key: "installs", href: "/devices", icon: "gateway", label: "อุปกรณ์", group: "work" },
+      { key: "readings", href: "/readings", icon: IconMeter, label: "จดมิเตอร์", group: "work" },
+      { key: "inspections", href: "/inspections", icon: IconCamera, label: "ตรวจห้อง", group: "work" },
+      { key: "installs", href: "/devices", icon: IconGateway, label: "อุปกรณ์", group: "work" },
     ],
     todayLabel: "วันนี้",
     envBadge: "uat",

@@ -11,6 +11,9 @@ import {
 import { useState } from "react";
 
 import { Icon } from "../icons";
+import { IconChevronDown } from "../icons/glyphs/chevron-down";
+import { IconChevronUp } from "../icons/glyphs/chevron-up";
+import { IconChevronsUpDown } from "../icons/glyphs/chevrons-up-down";
 import { cn } from "../lib/cn";
 import { Skeleton } from "./Skeleton";
 
@@ -103,8 +106,8 @@ export function DataTable<Row>({
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
                         <Icon
-                          name={
-                            sorted === "asc" ? "chevron-up" : sorted === "desc" ? "chevron-down" : "chevrons-up-down"
+                          icon={
+                            sorted === "asc" ? IconChevronUp : sorted === "desc" ? IconChevronDown : IconChevronsUpDown
                           }
                         />
                       </button>

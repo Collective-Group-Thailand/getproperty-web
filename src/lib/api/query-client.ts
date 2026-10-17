@@ -1,5 +1,7 @@
 import { QueryClient, isServer } from "@tanstack/react-query";
 
+import { announceQueryClient } from "./query-runtime";
+
 /**
  * TanStack Query defaults for every zone (ADR-0004). Server Components fetch the first page and
  * hydrate; the client then keeps it fresh. A 4xx never retries (the request is wrong, not the
@@ -30,6 +32,9 @@ let browserClient: QueryClient | undefined;
 /** One client per request on the server, one per tab in the browser. */
 export function getQueryClient(): QueryClient {
   if (isServer) return makeQueryClient();
-  browserClient ??= makeQueryClient();
+  if (!browserClient) {
+    browserClient = makeQueryClient();
+    announceQueryClient(browserClient);
+  }
   return browserClient;
 }

@@ -35,6 +35,7 @@ const VENDORED = resolve(ROOT, "contract/openapi.json");
 const OUT_SCHEMA = resolve(ROOT, "src/lib/api/schema.d.ts");
 const OUT_OPERATIONS = resolve(ROOT, "src/lib/api/generated/operations.ts");
 const OUT_MOCK_OPERATIONS = resolve(ROOT, "mocks/generated/operations.ts");
+const OUT_IDEMPOTENT = resolve(ROOT, "src/lib/api/generated/idempotent.ts");
 const OUT_MOCK_PROBLEMS = resolve(ROOT, "mocks/generated/problems.ts");
 
 /** Surfaces this app talks to. `/v1/resident`, `/v1/technician` belong to getproperty-liff (D-154). */
@@ -297,6 +298,21 @@ export const OPERATIONS: Readonly<Record<string, OperationFlags>> = ${json(byKey
 `;
 }
 
+/**
+ * The one flag the client acts on at runtime, as a small set: `OPERATIONS` (every flag of every
+ * operation) stays out of the browser bundle (D-179).
+ */
+function emitIdempotent(lock: ContractLock, operations: OperationMeta[]): string {
+  const keys = operations
+    .filter((op) => op.idempotencyKey)
+    .map((op) => `${op.method} ${op.path}`)
+    .sort();
+  return `${banner(lock, "Operations whose contract requires Idempotency-Key (src/lib/api/client.ts adds one when missing).")}
+/** \`"METHOD /path/{template}"\` exactly as \`schema.d.ts\` names the path. */
+export const IDEMPOTENT_OPERATIONS: ReadonlySet<string> = new Set(${json(keys)});
+`;
+}
+
 function emitMockOperations(lock: ContractLock, mocks: MockOperation[]): string {
   return `${banner(lock, "MSW base data: the success example of every operation this app can reach (mocks/handlers/generated.ts).")}
 export interface MockOperation {
@@ -343,6 +359,7 @@ async function generate(check: boolean): Promise<void> {
   const outputs: [string, string][] = [
     [OUT_SCHEMA, header + astToString(ast)],
     [OUT_OPERATIONS, emitOperations(lock, walked.operations)],
+    [OUT_IDEMPOTENT, emitIdempotent(lock, walked.operations)],
     [OUT_MOCK_OPERATIONS, emitMockOperations(lock, walked.mocks)],
     [OUT_MOCK_PROBLEMS, emitProblems(lock, walked.problemsByOperation, walked.problemExamples)],
   ];

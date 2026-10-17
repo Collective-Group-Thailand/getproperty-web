@@ -1,4 +1,4 @@
-import type { IconName } from "@/ui/icons";
+import type { IconGlyph } from "@/ui/icons";
 
 /**
  * Next-action helpers (F1 1.3 §3): the API decides which state transitions the actor may perform now
@@ -8,7 +8,7 @@ import type { IconName } from "@/ui/icons";
  */
 export interface ActionPresentation {
   labelKey: string;
-  icon: IconName;
+  icon: IconGlyph;
   /** Irreversible actions go through a typed confirmation that restates the target (00-master-plan.md §8). */
   irreversible: boolean;
   tone: "primary" | "secondary" | "destructive";

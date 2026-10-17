@@ -30,6 +30,7 @@ export {
 export { MoneyDisplay, type MoneyDisplayProps } from "./MoneyDisplay";
 export { OTPInput, type OTPInputProps } from "./OTPInput";
 export { PhoneInput, toE164, type PhoneInputProps } from "./PhoneInput";
+export { LazyAlertDialog, LazyDialog, LazyDropdownMenu, LazyPopover, LazySheet } from "./overlays";
 export { Popover, type PopoverProps } from "./Popover";
 export { RadioCards, type RadioCardOption, type RadioCardsProps } from "./RadioCards";
 export { SegmentedControl, type SegmentedControlProps, type SegmentOption } from "./SegmentedControl";

@@ -6,6 +6,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../lib/cn";
 import { useReturnFocus } from "../lib/useReturnFocus";
 import { IconButton } from "./IconButton";
+import { IconClose } from "../icons/glyphs/close";
 
 const contentVariants = cva(
   [
@@ -81,7 +82,7 @@ export function Dialog({
             </div>
             {closeLabel ? (
               <DialogPrimitive.Close asChild>
-                <IconButton name="close" label={closeLabel} size="sm" />
+                <IconButton icon={IconClose} label={closeLabel} size="sm" />
               </DialogPrimitive.Close>
             ) : null}
           </div>

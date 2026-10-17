@@ -3,13 +3,15 @@
 import { useFormatter, useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { AlertDialog } from "@/ui/components/AlertDialog";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { CountBadge } from "@/ui/components/CountBadge";
 import { IconButton } from "@/ui/components/IconButton";
-import { Sheet } from "@/ui/components/Sheet";
+import { LazyAlertDialog, LazySheet } from "@/ui/components/overlays";
+import { IconOffline } from "@/ui/icons/glyphs/offline";
+import { IconSyncFailed } from "@/ui/icons/glyphs/sync-failed";
+import { IconSyncPending } from "@/ui/icons/glyphs/sync-pending";
 
 import { useOfflineQueue, useOnlineStatus } from "./useOfflineQueue";
 
@@ -31,12 +33,12 @@ export function SyncCenter() {
   return (
     <div className="flex items-center gap-1">
       {online ? null : (
-        <Badge tone="warning" icon="offline" size="sm" className="whitespace-nowrap">
+        <Badge tone="warning" icon={IconOffline} size="sm" className="whitespace-nowrap">
           <span data-testid="offline-indicator">{t("offline")}</span>
         </Badge>
       )}
       <IconButton
-        name={queue.conflicts > 0 ? "sync-failed" : "sync-pending"}
+        icon={queue.conflicts > 0 ? IconSyncFailed : IconSyncPending}
         label={t("syncLabel", { count: waiting })}
         onClick={() => setOpen(true)}
         data-testid="sync-badge"
@@ -44,7 +46,7 @@ export function SyncCenter() {
         data-conflicts={queue.conflicts}
         badge={<CountBadge count={waiting} />}
       />
-      <Sheet open={open} onOpenChange={setOpen} title={t("syncTitle")} closeLabel={common("close")} side="bottom">
+      <LazySheet open={open} onOpenChange={setOpen} title={t("syncTitle")} closeLabel={common("close")} side="bottom">
         {queue.lastResult?.stopped === "signed-out" ? <Callout tone="warning">{t("signedOut")}</Callout> : null}
         {queue.entries.length === 0 ? (
           <p className="text-muted py-6 text-center">{t("syncEmpty")}</p>
@@ -94,8 +96,8 @@ export function SyncCenter() {
             {t("sendNow")}
           </Button>
         ) : null}
-      </Sheet>
-      <AlertDialog
+      </LazySheet>
+      <LazyAlertDialog
         open={removing !== null}
         onOpenChange={(next) => !next && setRemoving(null)}
         title={t("discard")}

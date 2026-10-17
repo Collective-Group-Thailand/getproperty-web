@@ -48,6 +48,25 @@ const TONE_OUTSIDE_UI = classPattern(
   'warning (amber) and danger (red) are reached through src/ui components — <StatusBadge>, <Callout tone>, <Button variant="destructive"> — never as raw utilities in a zone (design-system.md §2).',
 );
 
+/** D-179: single glyphs only — the registry and Lucide would ship the whole icon set. */
+const ICON_PATHS = [
+  {
+    name: "lucide-react",
+    message: "Icons come from the curated set: import { IconX } from '@/ui/icons/glyphs/x' (D-179).",
+  },
+];
+const ICON_PATTERNS = [
+  {
+    regex: "(^@/ui/icons/registry$|/icons/registry$|^\\./registry$)",
+    message:
+      "The icon registry holds every glyph and is for Storybook/tests only. Import single glyphs from '@/ui/icons/glyphs/<name>' (D-179).",
+  },
+  {
+    regex: "^lucide-react/",
+    message: "Icons come from the curated set: import { IconX } from '@/ui/icons/glyphs/x' (D-179).",
+  },
+];
+
 const eslintConfig = [
   {
     ignores: [
@@ -138,6 +157,38 @@ const eslintConfig = [
     // all of src/ so the shared middle cannot import a retired zone either (D-154).
     files: ["src/**/*.{ts,tsx}"],
     rules: { "getproperty/zone-boundaries": "error" },
+  },
+
+  {
+    // Initial-JS budgets (D-179): a page ships only the glyphs it draws. Icons are imported one by one
+    // from `@/ui/icons/glyphs/<name>`; the by-name registry and Lucide's components would pull the whole set.
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["**/*.stories.tsx", "**/*.test.{ts,tsx}", "src/ui/icons/registry.ts"],
+    rules: { "no-restricted-imports": ["error", { paths: ICON_PATHS, patterns: ICON_PATTERNS }] },
+  },
+
+  {
+    // D-179: zones open overlays through `@/ui/components/overlays` (loaded on first open); the eager
+    // components would put Radix Dialog/Menu/Popper into every page of the zone.
+    files: ["src/app/**/*.{ts,tsx}", "src/features/**/*.{ts,tsx}"],
+    ignores: ["**/*.stories.tsx", "**/*.test.{ts,tsx}", "src/features/shared/storybook/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: ICON_PATHS,
+          patterns: [
+            ...ICON_PATTERNS,
+            {
+              regex: "^@/ui/components/(Sheet|Dialog|AlertDialog|DropdownMenu|Popover|ToastViewport)$",
+              allowTypeImports: true,
+              message:
+                "Use LazySheet / LazyDialog / LazyAlertDialog / LazyDropdownMenu / LazyPopover from '@/ui/components/overlays' and toast/Toaster from '@/ui/components/Toast' (D-179).",
+            },
+          ],
+        },
+      ],
+    },
   },
 
   {

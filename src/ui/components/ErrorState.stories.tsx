@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { Button } from "./Button";
 import { ErrorState } from "./ErrorState";
+import { IconRefresh } from "../icons/glyphs/refresh";
 
 const meta: Meta<typeof ErrorState> = {
   title: "Feedback/ErrorState",
@@ -12,7 +13,7 @@ const meta: Meta<typeof ErrorState> = {
     requestId: "req_01J9X7K2M4",
     requestIdLabel: "รหัสคำขอ",
     action: (
-      <Button variant="secondary" iconStart="refresh">
+      <Button variant="secondary" iconStart={IconRefresh}>
         ลองอีกครั้ง
       </Button>
     ),

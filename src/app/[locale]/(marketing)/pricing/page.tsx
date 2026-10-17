@@ -10,6 +10,7 @@ import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
 import { Icon } from "@/ui/icons";
+import { IconCheck } from "@/ui/icons/glyphs/check";
 
 type Params = { params: Promise<{ locale: Locale }> };
 
@@ -63,7 +64,7 @@ export default async function Pricing({ params }: Params) {
                   <ul className="flex flex-1 flex-col gap-1 text-sm">
                     {plan.features.map((feature) => (
                       <li key={feature} className="flex items-start gap-2">
-                        <Icon name="check" className="text-primary mt-0.5" />
+                        <Icon icon={IconCheck} className="text-primary mt-0.5" />
                         {feature}
                       </li>
                     ))}

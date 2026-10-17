@@ -6,6 +6,7 @@ import { ComplianceNotice } from "@/features/shared/compliance/ComplianceNotice"
 import { isApiError } from "@/lib/api/errors";
 import { Button } from "@/ui/components/Button";
 import { ErrorState } from "@/ui/components/ErrorState";
+import { IconRefresh } from "@/ui/icons/glyphs/refresh";
 
 /**
  * The error state of a client query or mutation: compliance answers with their legal reference, API
@@ -28,7 +29,7 @@ export function QueryErrorState({ error, onRetry }: { error: unknown; onRetry?: 
       requestIdLabel={common("requestId")}
       action={
         onRetry ? (
-          <Button variant="secondary" iconStart="refresh" onClick={onRetry}>
+          <Button variant="secondary" iconStart={IconRefresh} onClick={onRetry}>
             {common("retry")}
           </Button>
         ) : undefined

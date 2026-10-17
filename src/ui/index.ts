@@ -4,6 +4,6 @@
  */
 export * from "./brand";
 export * from "./components";
-export { Icon, ICON_NAMES, ICONS, type IconName, type IconProps } from "./icons";
+export { Icon, type IconGlyph, type IconProps } from "./icons";
 export { cn } from "./lib/cn";
 export { ThemeProvider, ThemeToggle, useTheme, type Theme, type ThemeChoice } from "./theme";

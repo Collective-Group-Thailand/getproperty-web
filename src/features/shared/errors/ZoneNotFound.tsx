@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { EmptyState } from "@/ui/components/EmptyState";
+import { IconSearch } from "@/ui/icons/glyphs/search";
 
 /** The not-found page body of every zone: says what happened, offers the way home. */
 export async function ZoneNotFound({ homeHref }: { homeHref: string }) {
@@ -8,7 +9,7 @@ export async function ZoneNotFound({ homeHref }: { homeHref: string }) {
   return (
     <div className="mx-auto max-w-lg px-4 py-16" data-testid="not-found">
       <EmptyState
-        icon="search"
+        icon={IconSearch}
         title={t("title")}
         description={t("body")}
         action={

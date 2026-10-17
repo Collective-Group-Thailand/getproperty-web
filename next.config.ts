@@ -1,3 +1,4 @@
+import bundleAnalyzer from "@next/bundle-analyzer";
 import createNextIntlPlugin from "next-intl/plugin";
 import type { NextConfig } from "next";
 
@@ -26,6 +27,18 @@ const nextConfig: NextConfig = {
   },
 };
 
-const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
+const withNextIntl = createNextIntlPlugin({
+  requestConfig: "./src/i18n/request.ts",
+  experimental: {
+    // D-179: every catalog under src/i18n/messages is compiled from ICU to a compact AST at build time
+    // and the client gets next-intl's format-only runtime — no ICU parser in any bundle. The JSON files
+    // stay the source (tests, Storybook and `messages.test.ts` read them as written).
+    messages: { path: "./src/i18n/messages", format: "json", locales: "infer", precompile: true },
+  },
+});
 
-export default withNextIntl(nextConfig);
+// `pnpm analyze` (ANALYZE=true, webpack build): treemaps of every client chunk in `.next/analyze/`.
+// The Turbopack build that ships has its own viewer, `pnpm exec next analyze`.
+const withBundleAnalyzer = bundleAnalyzer({ enabled: process.env.ANALYZE === "true", openAnalyzer: false });
+
+export default withBundleAnalyzer(withNextIntl(nextConfig));

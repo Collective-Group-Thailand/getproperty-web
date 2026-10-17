@@ -2,15 +2,19 @@
 
 import { DropdownMenu } from "../components/DropdownMenu";
 import { IconButton } from "../components/IconButton";
-import type { IconName } from "../icons";
+import type { IconGlyph } from "../icons";
+import { IconThemeContrast } from "../icons/glyphs/theme-contrast";
+import { IconThemeDark } from "../icons/glyphs/theme-dark";
+import { IconThemeLight } from "../icons/glyphs/theme-light";
+import { IconThemeSystem } from "../icons/glyphs/theme-system";
 import { useTheme } from "./ThemeProvider";
 import type { ThemeChoice } from "./themes";
 
-const CHOICE_ICON: Record<ThemeChoice, IconName> = {
-  system: "theme-system",
-  light: "theme-light",
-  dark: "theme-dark",
-  hc: "theme-contrast",
+const CHOICE_ICON: Record<ThemeChoice, IconGlyph> = {
+  system: IconThemeSystem,
+  light: IconThemeLight,
+  dark: IconThemeDark,
+  hc: IconThemeContrast,
 };
 
 export interface ThemeToggleProps {
@@ -30,7 +34,7 @@ export function ThemeToggle({ label, choiceLabels }: ThemeToggleProps) {
   return (
     <DropdownMenu
       label={label}
-      trigger={<IconButton name={CHOICE_ICON[choice]} label={label} size="sm" variant="ghost" />}
+      trigger={<IconButton icon={CHOICE_ICON[choice]} label={label} size="sm" variant="ghost" />}
       items={choices.map((option) => ({
         id: option,
         label: choiceLabels[option],

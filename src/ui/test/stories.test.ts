@@ -9,7 +9,8 @@ describe("src/ui/components", () => {
   const files = readdirSync(dir);
   const components = files.filter((f) => /^[A-Z][A-Za-z]+\.tsx$/.test(f)).map((f) => f.replace(".tsx", ""));
   // Several components share one file and one story: Input/NumberInput/Textarea live in Field's.
-  const coveredBy: Record<string, string> = { Input: "Field" };
+  // ToastViewport is the lazily loaded half of Toast (D-179).
+  const coveredBy: Record<string, string> = { Input: "Field", ToastViewport: "Toast" };
 
   it.each(components)("%s has a story", (component) => {
     const story = `${coveredBy[component] ?? component}.stories.tsx`;

@@ -1,4 +1,4 @@
-import type { IconName } from "@/ui/icons/registry";
+import type { IconGlyph } from "@/ui/icons";
 
 /**
  * Status presentation (design-system.md §2): every status the API returns maps to a tone, an icon and
@@ -8,7 +8,7 @@ export type StatusTone = "neutral" | "primary" | "success" | "warning" | "danger
 
 export interface StatusMeta {
   tone: StatusTone;
-  icon: IconName;
+  icon: IconGlyph;
   /** Key under `status.<domain>.<value>` in `src/i18n/messages/<locale>/common/status.json`. */
   labelKey: string;
 }

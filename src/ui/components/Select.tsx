@@ -3,6 +3,8 @@
 import { Select as SelectPrimitive } from "radix-ui";
 
 import { Icon } from "../icons";
+import { IconCheck } from "../icons/glyphs/check";
+import { IconChevronDown } from "../icons/glyphs/chevron-down";
 import { cn } from "../lib/cn";
 import { useFieldProps } from "./Field";
 import { controlVariants } from "./Input";
@@ -48,7 +50,7 @@ export function Select({ options, placeholder, inputSize = "md", className, disa
       >
         <SelectPrimitive.Value placeholder={placeholder} />
         <SelectPrimitive.Icon asChild>
-          <Icon name="chevron-down" className="text-muted" />
+          <Icon icon={IconChevronDown} className="text-muted" />
         </SelectPrimitive.Icon>
       </SelectPrimitive.Trigger>
       <SelectPrimitive.Portal>
@@ -66,7 +68,7 @@ export function Select({ options, placeholder, inputSize = "md", className, disa
                 className="rounded-control data-highlighted:bg-bg-subtle relative flex cursor-default items-center gap-2 py-2 ps-8 pe-3 text-base outline-none select-none data-disabled:opacity-50"
               >
                 <SelectPrimitive.ItemIndicator className="absolute start-2">
-                  <Icon name="check" className="text-primary" />
+                  <Icon icon={IconCheck} className="text-primary" />
                 </SelectPrimitive.ItemIndicator>
                 <SelectPrimitive.ItemText>{option.label}</SelectPrimitive.ItemText>
               </SelectPrimitive.Item>

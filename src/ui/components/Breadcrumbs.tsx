@@ -1,4 +1,5 @@
 import { Icon } from "../icons";
+import { IconChevronRight } from "../icons/glyphs/chevron-right";
 import { cn } from "../lib/cn";
 
 export interface Crumb {
@@ -20,7 +21,7 @@ export function Breadcrumbs({ items, label, className }: { items: Crumb[]; label
           const last = index === items.length - 1;
           return (
             <li key={`${item.label}-${index}`} className="flex items-center gap-1">
-              {index > 0 ? <Icon name="chevron-right" className="text-subtle rtl:rotate-180" /> : null}
+              {index > 0 ? <Icon icon={IconChevronRight} className="text-subtle rtl:rotate-180" /> : null}
               {item.href && !last ? (
                 <a href={item.href} className="hover:text-fg underline-offset-4 hover:underline">
                   {item.label}

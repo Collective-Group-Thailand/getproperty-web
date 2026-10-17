@@ -4,6 +4,9 @@ import { BUILDINGS, CURRENT_TENANT, OWNER_GROUPS, TENANTS } from "@/features/sha
 import { ShellStory } from "@/features/shared/storybook/ShellStory";
 import { Callout } from "@/ui/components/Callout";
 import { Stat } from "@/ui/components/Stat";
+import { IconBill } from "@/ui/icons/glyphs/bill";
+import { IconClock } from "@/ui/icons/glyphs/clock";
+import { IconRoom } from "@/ui/icons/glyphs/room";
 
 import { OwnerShellFrame } from "./OwnerShellFrame";
 
@@ -42,9 +45,9 @@ const meta: Meta<typeof OwnerShellFrame> = {
       <div className="px-4 py-6 md:px-8">
         <h1 className="text-2xl font-semibold">เช้านี้</h1>
         <div className="mt-4 grid gap-4 md:grid-cols-3">
-          <Stat label="รอตรวจสลิป" value="3" icon="bill" />
-          <Stat label="บิลเลยกำหนด" value="5" icon="clock" />
-          <Stat label="ห้องว่าง" value="2" icon="room" />
+          <Stat label="รอตรวจสลิป" value="3" icon={IconBill} />
+          <Stat label="บิลเลยกำหนด" value="5" icon={IconClock} />
+          <Stat label="ห้องว่าง" value="2" icon={IconRoom} />
         </div>
       </div>
     ),

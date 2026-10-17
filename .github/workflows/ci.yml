@@ -41,6 +41,8 @@ jobs:
         run: pnpm tokens:check
       - name: Font files match the installed packages
         run: pnpm fonts --check
+      - name: Icon glyphs match the curated set (D-179)
+        run: pnpm icons:check
       # The staff service worker bundle and the PWA icons are committed too.
       - name: Service worker bundle is up to date
         run: pnpm sw:check

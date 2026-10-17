@@ -3,7 +3,9 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { ICON_NAMES } from "@/ui/icons/registry";
+import { ICONS } from "@/ui/icons/registry";
+import { IconAlert } from "@/ui/icons/glyphs/alert";
+import { IconCheck } from "@/ui/icons/glyphs/check";
 
 import { defineStatuses, INVOICE_STATUS, READING_SOURCE, STATUS_MAPS, SUBSCRIPTION_STATUS } from "./index";
 
@@ -36,15 +38,15 @@ const CONTRACT_ENUM: Partial<Record<keyof typeof STATUS_MAPS, string>> = {
 describe("status maps", () => {
   it("derive the label key from the domain and value", () => {
     const map = defineStatuses<"a" | "b">("thing", {
-      a: { tone: "success", icon: "check" },
-      b: { tone: "danger", icon: "alert" },
+      a: { tone: "success", icon: IconCheck },
+      b: { tone: "danger", icon: IconAlert },
     });
     expect(map.a.labelKey).toBe("status.thing.a");
   });
 
-  it.each(Object.entries(STATUS_MAPS))("%s names only registry icons and has th + en labels", (domain, map) => {
+  it.each(Object.entries(STATUS_MAPS))("%s uses only curated glyphs and has th + en labels", (domain, map) => {
     for (const [value, meta] of Object.entries(map)) {
-      expect(ICON_NAMES).toContain(meta.icon);
+      expect(Object.values(ICONS)).toContain(meta.icon);
       expect(meta.labelKey).toBe(`status.${domain}.${value}`);
       for (const locale of ["th", "en"])
         expect(messages(locale)[domain]?.[value], `${locale} ${meta.labelKey}`).toBeTruthy();

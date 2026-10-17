@@ -2,21 +2,30 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { Wordmark } from "../brand";
 import { Icon } from "../icons";
+import { IconBill } from "../icons/glyphs/bill";
+import { IconBuilding } from "../icons/glyphs/building";
+import { IconCamera } from "../icons/glyphs/camera";
+import { IconClock } from "../icons/glyphs/clock";
+import { IconDashboard } from "../icons/glyphs/dashboard";
+import { IconGateway } from "../icons/glyphs/gateway";
+import { IconMeter } from "../icons/glyphs/meter";
+import { IconRoom } from "../icons/glyphs/room";
+import { IconTicket } from "../icons/glyphs/ticket";
 import { AppShell, BottomNav, SidebarNav, TopBar } from "./AppShell";
 import { Stat } from "./Stat";
 
 const OWNER_NAV = [
-  { href: "#", label: "เช้านี้", icon: <Icon name="dashboard" />, active: true },
-  { href: "#", label: "อาคารและห้อง", icon: <Icon name="building" /> },
-  { href: "#", label: "บิล", icon: <Icon name="bill" /> },
-  { href: "#", label: "มิเตอร์", icon: <Icon name="meter" /> },
+  { href: "#", label: "เช้านี้", icon: <Icon icon={IconDashboard} />, active: true },
+  { href: "#", label: "อาคารและห้อง", icon: <Icon icon={IconBuilding} /> },
+  { href: "#", label: "บิล", icon: <Icon icon={IconBill} /> },
+  { href: "#", label: "มิเตอร์", icon: <Icon icon={IconMeter} /> },
 ];
 
 const STAFF_NAV = [
-  { href: "#", label: "วันนี้", icon: <Icon name="ticket" />, active: true },
-  { href: "#", label: "จดมิเตอร์", icon: <Icon name="meter" /> },
-  { href: "#", label: "ตรวจห้อง", icon: <Icon name="camera" /> },
-  { href: "#", label: "อุปกรณ์", icon: <Icon name="gateway" /> },
+  { href: "#", label: "วันนี้", icon: <Icon icon={IconTicket} />, active: true },
+  { href: "#", label: "จดมิเตอร์", icon: <Icon icon={IconMeter} /> },
+  { href: "#", label: "ตรวจห้อง", icon: <Icon icon={IconCamera} /> },
+  { href: "#", label: "อุปกรณ์", icon: <Icon icon={IconGateway} /> },
 ];
 
 const meta: Meta<typeof AppShell> = {
@@ -43,9 +52,9 @@ export const Console: Story = {
       <div className="p-6">
         <h1 className="mb-4 text-2xl">เช้านี้</h1>
         <div className="grid gap-4 md:grid-cols-3">
-          <Stat label="รอตรวจสลิป" value="3" icon="bill" />
-          <Stat label="ค้างชำระ" value="฿9,700.00" icon="clock" />
-          <Stat label="ห้องว่าง" value="2" icon="room" />
+          <Stat label="รอตรวจสลิป" value="3" icon={IconBill} />
+          <Stat label="ค้างชำระ" value="฿9,700.00" icon={IconClock} />
+          <Stat label="ห้องว่าง" value="2" icon={IconRoom} />
         </div>
       </div>
     </AppShell>

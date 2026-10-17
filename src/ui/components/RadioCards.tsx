@@ -2,7 +2,7 @@
 
 import { RadioGroup as RadioGroupPrimitive } from "radix-ui";
 
-import { Icon, type IconName } from "../icons";
+import { Icon, type IconGlyph } from "../icons";
 import { cn } from "../lib/cn";
 import { useFieldGroupProps } from "./Field";
 
@@ -10,7 +10,7 @@ export interface RadioCardOption {
   value: string;
   label: React.ReactNode;
   description?: React.ReactNode;
-  icon?: IconName;
+  icon?: IconGlyph;
   disabled?: boolean;
 }
 
@@ -53,7 +53,7 @@ export function RadioCards({ options, columns = 2, className, ...props }: RadioC
           <span className="border-border-strong bg-surface mt-1 flex size-5 shrink-0 items-center justify-center rounded-full border">
             <RadioGroupPrimitive.Indicator className="bg-primary block size-2.5 rounded-full" />
           </span>
-          {option.icon ? <Icon name={option.icon} className="text-primary mt-1 text-xl" /> : null}
+          {option.icon ? <Icon icon={option.icon} className="text-primary mt-1 text-xl" /> : null}
           <span className="flex flex-col">
             <span className="font-medium">{option.label}</span>
             {option.description ? <span className="text-muted text-sm">{option.description}</span> : null}

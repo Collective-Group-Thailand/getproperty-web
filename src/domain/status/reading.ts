@@ -1,4 +1,8 @@
 import type { ContractEnum } from "@/lib/api/types";
+import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
+import { IconClock } from "@/ui/icons/glyphs/clock";
+import { IconEdit } from "@/ui/icons/glyphs/edit";
+import { IconXCircle } from "@/ui/icons/glyphs/x-circle";
 
 import { defineStatuses } from "./define";
 
@@ -13,10 +17,10 @@ export type ReadingReviewState = ContractEnum<
 >;
 
 export const READING_STATUS = defineStatuses<ReadingReviewState>("reading", {
-  accepted: { tone: "success", icon: "check-circle" },
-  pending_review: { tone: "warning", icon: "clock" },
-  rejected: { tone: "danger", icon: "x-circle" },
-  corrected: { tone: "info", icon: "edit" },
+  accepted: { tone: "success", icon: IconCheckCircle },
+  pending_review: { tone: "warning", icon: IconClock },
+  rejected: { tone: "danger", icon: IconXCircle },
+  corrected: { tone: "info", icon: IconEdit },
 });
 
 export const READING_VALUES = Object.keys(READING_STATUS) as ReadingReviewState[];

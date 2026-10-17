@@ -33,7 +33,15 @@ export default async function LegalPage({ params }: Params) {
   if (!isDoc(doc)) notFound();
   setRequestLocale(locale);
   const t = await getTranslations("owner.marketing.legal");
-  const sections = t.raw(`docs.${doc}.sections`) as { heading: string; body: string }[];
+  // Messages are precompiled at build time (D-179), so the sections are read one by one through `t`
+  // rather than as raw strings; the catalog keeps them as an array.
+  const sections: { heading: string; body: string }[] = [];
+  for (let index = 0; t.has(`docs.${doc}.sections.${index}.heading` as never); index += 1) {
+    sections.push({
+      heading: t(`docs.${doc}.sections.${index}.heading` as never),
+      body: t(`docs.${doc}.sections.${index}.body` as never),
+    });
+  }
   return (
     <article className="mx-auto max-w-3xl px-4 py-14" data-testid="legal-page">
       <h1 className="font-display text-3xl font-semibold">{t(`docs.${doc}.title`)}</h1>

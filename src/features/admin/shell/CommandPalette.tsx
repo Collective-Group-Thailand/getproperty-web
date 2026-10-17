@@ -4,11 +4,12 @@ import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 
 import type { ShellNavItem } from "@/features/shared/shell/types";
-import { Dialog } from "@/ui/components/Dialog";
 import { IconButton } from "@/ui/components/IconButton";
 import { Input } from "@/ui/components/Input";
 import { Icon } from "@/ui/icons";
+import { IconCommand } from "@/ui/icons/glyphs/command";
 import { cn } from "@/ui/lib/cn";
+import { LazyDialog } from "@/ui/components/overlays";
 
 /**
  * The admin command palette (Ctrl/⌘ K): jump to any entitled back-office page by name. Arrow keys
@@ -46,12 +47,12 @@ export function CommandPalette({ items }: { items: ShellNavItem[] }) {
   return (
     <>
       <IconButton
-        name="command"
+        icon={IconCommand}
         label={`${t("open")} (${t("hint")})`}
         onClick={() => setOpen(true)}
         data-testid="command-palette"
       />
-      <Dialog
+      <LazyDialog
         open={open}
         onOpenChange={(next) => {
           setOpen(next);
@@ -106,12 +107,12 @@ export function CommandPalette({ items }: { items: ShellNavItem[] }) {
                 position === index && "bg-primary-subtle text-primary-subtle-fg",
               )}
             >
-              <Icon name={item.icon} />
+              <Icon icon={item.icon} />
               {item.label}
             </li>
           ))}
         </ul>
-      </Dialog>
+      </LazyDialog>
     </>
   );
 }

@@ -1,4 +1,11 @@
 import type { ContractEnum } from "@/lib/api/types";
+import { IconCheck } from "@/ui/icons/glyphs/check";
+import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
+import { IconClock } from "@/ui/icons/glyphs/clock";
+import { IconShield } from "@/ui/icons/glyphs/shield";
+import { IconStaff } from "@/ui/icons/glyphs/staff";
+import { IconTicket } from "@/ui/icons/glyphs/ticket";
+import { IconXCircle } from "@/ui/icons/glyphs/x-circle";
 
 import { defineStatuses } from "./define";
 
@@ -13,13 +20,13 @@ export type WorkOrderStatus = ContractEnum<
 >;
 
 export const WORK_ORDER_STATUS = defineStatuses<WorkOrderStatus>("workOrder", {
-  open: { tone: "info", icon: "ticket" },
-  assigned: { tone: "primary", icon: "staff" },
-  accepted: { tone: "primary", icon: "check" },
-  in_progress: { tone: "primary", icon: "clock" },
-  done: { tone: "success", icon: "check-circle" },
-  verified: { tone: "success", icon: "shield" },
-  cancelled: { tone: "neutral", icon: "x-circle" },
+  open: { tone: "info", icon: IconTicket },
+  assigned: { tone: "primary", icon: IconStaff },
+  accepted: { tone: "primary", icon: IconCheck },
+  in_progress: { tone: "primary", icon: IconClock },
+  done: { tone: "success", icon: IconCheckCircle },
+  verified: { tone: "success", icon: IconShield },
+  cancelled: { tone: "neutral", icon: IconXCircle },
 });
 
 export const WORK_ORDER_VALUES = Object.keys(WORK_ORDER_STATUS) as WorkOrderStatus[];

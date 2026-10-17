@@ -3,6 +3,8 @@
 import { useId, useMemo, useRef, useState } from "react";
 
 import { Icon } from "../icons";
+import { IconCheck } from "../icons/glyphs/check";
+import { IconChevronsUpDown } from "../icons/glyphs/chevrons-up-down";
 import { cn } from "../lib/cn";
 import { useFieldProps } from "./Field";
 import { controlVariants } from "./Input";
@@ -123,7 +125,7 @@ export function Combobox({
         {...field}
       />
       <Icon
-        name="chevrons-up-down"
+        icon={IconChevronsUpDown}
         className="text-muted pointer-events-none absolute end-3 top-1/2 -translate-y-1/2"
       />
       <ul
@@ -152,7 +154,7 @@ export function Combobox({
             >
               <span className="flex items-center justify-between gap-2">
                 <span>{option.label}</span>
-                {option.value === value ? <Icon name="check" className="text-primary" /> : null}
+                {option.value === value ? <Icon icon={IconCheck} className="text-primary" /> : null}
               </span>
               {option.description ? <span className="text-muted text-sm">{option.description}</span> : null}
             </li>

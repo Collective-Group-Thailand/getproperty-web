@@ -14,8 +14,12 @@ import type { Schemas } from "@/lib/api/types";
 import { Mark } from "@/ui/brand";
 import { AppShell, BottomNav, TopBar, type NavItem } from "@/ui/components/AppShell";
 import { EnvBadge } from "@/ui/components/EnvBadge";
-import { Sheet } from "@/ui/components/Sheet";
 import { Icon } from "@/ui/icons";
+import { IconClose } from "@/ui/icons/glyphs/close";
+import { IconHome } from "@/ui/icons/glyphs/home";
+import { IconLock } from "@/ui/icons/glyphs/lock";
+import { IconMore } from "@/ui/icons/glyphs/more";
+import { LazySheet } from "@/ui/components/overlays";
 
 import { useDeviceLock } from "../lock/DeviceLock";
 import { PushPrompt } from "../pwa/PushPrompt";
@@ -49,14 +53,14 @@ export function StaffShellFrame(props: StaffShellFrameProps) {
   const rest = props.items.slice(3);
 
   const bottom: NavItem[] = [
-    { href: "/", label: props.todayLabel, icon: <Icon name="home" />, active: pathname === "/" },
+    { href: "/", label: props.todayLabel, icon: <Icon icon={IconHome} />, active: pathname === "/" },
     ...primary.map((item) => ({
       href: item.href,
       label: item.label,
-      icon: <Icon name={item.icon} />,
+      icon: <Icon icon={item.icon} />,
       active: isActive(item.href, pathname),
     })),
-    { href: "#more", label: t("staff.nav.more"), icon: <Icon name="more" />, onSelect: () => setMoreOpen(true) },
+    { href: "#more", label: t("staff.nav.more"), icon: <Icon icon={IconMore} />, onSelect: () => setMoreOpen(true) },
   ];
 
   return (
@@ -90,7 +94,7 @@ export function StaffShellFrame(props: StaffShellFrameProps) {
                 {
                   id: "pin",
                   label: lock.enabled ? t("staff.lock.changePin") : t("staff.lock.setPin"),
-                  icon: "lock",
+                  icon: IconLock,
                   separatorBefore: true,
                   onSelect: lock.openSetup,
                 },
@@ -99,7 +103,7 @@ export function StaffShellFrame(props: StaffShellFrameProps) {
                       {
                         id: "pin-remove",
                         label: t("staff.lock.removePin"),
-                        icon: "close" as const,
+                        icon: IconClose,
                         onSelect: lock.remove,
                       },
                     ]
@@ -114,7 +118,7 @@ export function StaffShellFrame(props: StaffShellFrameProps) {
       {props.banner}
       <PushPrompt vapidPublicKey={props.vapidPublicKey} />
       {props.children}
-      <Sheet open={moreOpen} onOpenChange={setMoreOpen} title={t("shell.moreMenu")} closeLabel={t("common.close")}>
+      <LazySheet open={moreOpen} onOpenChange={setMoreOpen} title={t("shell.moreMenu")} closeLabel={t("common.close")}>
         <ul className="flex flex-col gap-1">
           {rest.map((item) => (
             <li key={item.key}>
@@ -122,7 +126,7 @@ export function StaffShellFrame(props: StaffShellFrameProps) {
                 href={item.href}
                 className="rounded-control hover:bg-bg-subtle flex min-h-12 items-center gap-3 px-3 text-lg"
               >
-                <Icon name={item.icon} className="text-muted" />
+                <Icon icon={item.icon} className="text-muted" />
                 {item.label}
               </a>
             </li>
@@ -132,7 +136,7 @@ export function StaffShellFrame(props: StaffShellFrameProps) {
             <LanguageSwitch zone="staff" />
           </li>
         </ul>
-      </Sheet>
+      </LazySheet>
     </AppShell>
   );
 }

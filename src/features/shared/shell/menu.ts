@@ -1,4 +1,4 @@
-import type { IconName } from "@/ui/icons";
+import type { IconGlyph } from "@/ui/icons";
 
 /**
  * Menu entitlements (`/v1/{owner,staff,admin}/me` → `menu`) are stable keys decided by the API from
@@ -10,7 +10,7 @@ import type { IconName } from "@/ui/icons";
 export interface MenuDefinition {
   /** Path inside the zone (owner paths get the locale prefix when rendered). */
   href: string;
-  icon: IconName;
+  icon: IconGlyph;
   /** Section in the sidebar and the "more" sheet. */
   group: string;
 }

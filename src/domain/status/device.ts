@@ -1,4 +1,11 @@
 import type { ContractEnum } from "@/lib/api/types";
+import { IconBuilding } from "@/ui/icons/glyphs/building";
+import { IconCheck } from "@/ui/icons/glyphs/check";
+import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
+import { IconOffline } from "@/ui/icons/glyphs/offline";
+import { IconParcel } from "@/ui/icons/glyphs/parcel";
+import { IconWarning } from "@/ui/icons/glyphs/warning";
+import { IconXCircle } from "@/ui/icons/glyphs/x-circle";
 
 import { defineStatuses } from "./define";
 
@@ -13,13 +20,13 @@ export type DeviceStatus = ContractEnum<
 >;
 
 export const DEVICE_STATUS = defineStatuses<DeviceStatus>("device", {
-  inventory: { tone: "neutral", icon: "parcel" },
-  assigned: { tone: "info", icon: "building" },
-  provisioned: { tone: "primary", icon: "check" },
-  online: { tone: "success", icon: "check-circle" },
-  degraded: { tone: "warning", icon: "warning" },
-  offline: { tone: "danger", icon: "offline" },
-  retired: { tone: "neutral", icon: "x-circle" },
+  inventory: { tone: "neutral", icon: IconParcel },
+  assigned: { tone: "info", icon: IconBuilding },
+  provisioned: { tone: "primary", icon: IconCheck },
+  online: { tone: "success", icon: IconCheckCircle },
+  degraded: { tone: "warning", icon: IconWarning },
+  offline: { tone: "danger", icon: IconOffline },
+  retired: { tone: "neutral", icon: IconXCircle },
 });
 
 export const DEVICE_VALUES = Object.keys(DEVICE_STATUS) as DeviceStatus[];

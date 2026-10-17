@@ -1,34 +1,17 @@
 "use client";
 
-import { useTranslations } from "next-intl";
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-  useSyncExternalStore,
-  useTransition,
-} from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, useSyncExternalStore } from "react";
 
-import { signOut } from "@/lib/auth/actions";
-import { Button } from "@/ui/components/Button";
-import { Dialog } from "@/ui/components/Dialog";
-import { Field } from "@/ui/components/Field";
-import { Input } from "@/ui/components/Input";
+import { lazyOverlay } from "@/ui/lib/lazy";
 
-import {
-  clearPin,
-  lastActivity,
-  LOCK_AFTER_MINUTES,
-  MAX_PIN_ATTEMPTS,
-  PIN_PATTERN,
-  recordActivity,
-  setPin,
-  verifyPin,
-} from "./pin";
+import type { DeviceLockDialogsProps } from "./DeviceLockDialogs";
+import { clearPin, lastActivity, LOCK_AFTER_MINUTES, recordActivity } from "./pin";
 import { lockStore } from "./store";
+
+/** The set-up dialog and lock screen load when one first opens (D-179). */
+const DeviceLockDialogs = lazyOverlay<DeviceLockDialogsProps>(() =>
+  import("./DeviceLockDialogs").then((module) => module.DeviceLockDialogs),
+);
 
 interface DeviceLockContext {
   enabled: boolean;
@@ -49,19 +32,12 @@ const ACTIVITY_EVENTS = ["pointerdown", "keydown", "touchstart", "scroll"] as co
  * The overlay cannot be dismissed; the PIN unlocks it, five wrong tries sign the device out.
  */
 export function DeviceLock({ loginHref, children }: { loginHref: string; children: React.ReactNode }) {
-  const t = useTranslations("staff.lock");
-  const common = useTranslations("common");
   const { enabled, locked } = useSyncExternalStore(
     lockStore.subscribe,
     lockStore.getSnapshot,
     lockStore.getServerSnapshot,
   );
   const [setupOpen, setSetupOpen] = useState(false);
-  const [pin, setPinValue] = useState("");
-  const [again, setAgain] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [attempts, setAttempts] = useState(0);
-  const [pending, startTransition] = useTransition();
   const lastTouch = useRef(0);
   const limit = LOCK_AFTER_MINUTES * 60_000;
 
@@ -88,128 +64,24 @@ export function DeviceLock({ loginHref, children }: { loginHref: string; childre
     };
   }, [enabled, locked, limit]);
 
-  const openSetup = useCallback(() => {
-    setPinValue("");
-    setAgain("");
-    setError(null);
-    setSetupOpen(true);
-  }, []);
+  const openSetup = useCallback(() => setSetupOpen(true), []);
   const remove = useCallback(() => {
     clearPin();
     lockStore.setEnabled(false);
   }, []);
-
-  const save = () =>
-    startTransition(async () => {
-      if (!PIN_PATTERN.test(pin)) return setError(t("pinInvalid"));
-      if (pin !== again) return setError(t("pinMismatch"));
-      await setPin(pin);
-      recordActivity();
-      lockStore.setEnabled(true);
-      setSetupOpen(false);
-    });
-
-  const unlock = () =>
-    startTransition(async () => {
-      if (await verifyPin(pin)) {
-        recordActivity();
-        lockStore.unlock();
-        setAttempts(0);
-        setPinValue("");
-        setError(null);
-        return;
-      }
-      const used = attempts + 1;
-      setAttempts(used);
-      setPinValue("");
-      if (used >= MAX_PIN_ATTEMPTS) {
-        clearPin();
-        await signOut();
-        window.location.assign(loginHref);
-        return;
-      }
-      setError(t("wrongPin", { count: MAX_PIN_ATTEMPTS - used }));
-    });
 
   return (
     <Context.Provider value={{ enabled, openSetup, remove }}>
       <div aria-hidden={locked || undefined} inert={locked || undefined}>
         {children}
       </div>
-      <Dialog
-        open={setupOpen}
-        onOpenChange={setSetupOpen}
-        title={t("setupTitle")}
-        description={t("setupBody", { minutes: LOCK_AFTER_MINUTES })}
-        closeLabel={common("close")}
-        footer={
-          <Button size="lg" loading={pending} onClick={save}>
-            {t("save")}
-          </Button>
-        }
-      >
-        <div className="flex flex-col gap-4">
-          <Field label={t("pin")} error={error ?? undefined}>
-            <Input
-              type="password"
-              inputMode="numeric"
-              autoComplete="off"
-              maxLength={6}
-              value={pin}
-              onChange={(e) => setPinValue(e.target.value)}
-            />
-          </Field>
-          <Field label={t("pinAgain")}>
-            <Input
-              type="password"
-              inputMode="numeric"
-              autoComplete="off"
-              maxLength={6}
-              value={again}
-              onChange={(e) => setAgain(e.target.value)}
-            />
-          </Field>
-        </div>
-      </Dialog>
-      <Dialog open={locked} onOpenChange={() => {}} title={t("lockedTitle")} description={t("lockedBody")}>
-        <form
-          className="flex flex-col gap-4"
-          data-testid="device-lock"
-          onSubmit={(event) => {
-            event.preventDefault();
-            unlock();
-          }}
-        >
-          <Field label={t("pin")} error={error ?? undefined}>
-            <Input
-              type="password"
-              inputMode="numeric"
-              autoComplete="off"
-              maxLength={6}
-              autoFocus
-              value={pin}
-              onChange={(e) => setPinValue(e.target.value)}
-            />
-          </Field>
-          <Button type="submit" size="lg" block loading={pending}>
-            {t("unlock")}
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="md"
-            onClick={() =>
-              startTransition(async () => {
-                clearPin();
-                await signOut();
-                window.location.assign(loginHref);
-              })
-            }
-          >
-            {t("signOutInstead")}
-          </Button>
-        </form>
-      </Dialog>
+      <DeviceLockDialogs
+        open={setupOpen || locked}
+        setupOpen={setupOpen}
+        onSetupOpenChange={setSetupOpen}
+        locked={locked}
+        loginHref={loginHref}
+      />
     </Context.Provider>
   );
 }

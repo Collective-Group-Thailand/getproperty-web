@@ -3,6 +3,8 @@
 import { useRef } from "react";
 
 import { Icon } from "../icons";
+import { IconCamera } from "../icons/glyphs/camera";
+import { IconScan } from "../icons/glyphs/scan";
 import { cn } from "../lib/cn";
 import { Button } from "./Button";
 
@@ -40,7 +42,7 @@ export function CameraCapture({ onCapture, label, hint, multiple = false, disabl
           event.target.value = "";
         }}
       />
-      <Button size="xl" block iconStart="camera" disabled={disabled} onClick={() => inputRef.current?.click()}>
+      <Button size="xl" block iconStart={IconCamera} disabled={disabled} onClick={() => inputRef.current?.click()}>
         {label}
       </Button>
       {hint ? <p className="text-muted text-center text-sm">{hint}</p> : null}
@@ -68,7 +70,7 @@ export function ScanButton({ onScan, label, disabled, className }: ScanButtonPro
       // The stub cannot decode yet; it surfaces the gap loudly instead of pretending.
       onClick={() => onScan("")}
     >
-      <Icon name="scan" />
+      <Icon icon={IconScan} />
       {label}
     </Button>
   );

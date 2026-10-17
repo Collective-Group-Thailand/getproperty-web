@@ -19,6 +19,8 @@ import { Input } from "@/ui/components/Input";
 import { OTPInput } from "@/ui/components/OTPInput";
 import { PhoneInput } from "@/ui/components/PhoneInput";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
+import { IconKey } from "@/ui/icons/glyphs/key";
+import { IconPhone } from "@/ui/icons/glyphs/phone";
 
 import { authProblemMessage } from "./problemMessage";
 
@@ -64,8 +66,8 @@ export function OperatorSignIn({
           value={method}
           onValueChange={(value) => setMethod(value as Method)}
           options={[
-            { value: "otp", label: t("signIn.method.otp"), icon: "phone" },
-            { value: "password", label: t("signIn.method.password"), icon: "key" },
+            { value: "otp", label: t("signIn.method.otp"), icon: IconPhone },
+            { value: "password", label: t("signIn.method.password"), icon: IconKey },
           ]}
           className="w-full [&>*]:flex-1"
         />

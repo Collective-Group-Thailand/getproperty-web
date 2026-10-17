@@ -5,6 +5,7 @@ import { useEffect } from "react";
 
 import { Button } from "@/ui/components/Button";
 import { ErrorState } from "@/ui/components/ErrorState";
+import { IconRefresh } from "@/ui/icons/glyphs/refresh";
 
 /**
  * The error boundary body of every segment (`error.tsx`). It shows a recoverable message, a retry
@@ -35,7 +36,7 @@ export function ZoneError({
       requestId={reference}
       requestIdLabel={common("requestId")}
       action={
-        <Button variant="secondary" iconStart="refresh" onClick={reset}>
+        <Button variant="secondary" iconStart={IconRefresh} onClick={reset}>
           {common("retry")}
         </Button>
       }

@@ -1,4 +1,8 @@
 import type { ContractEnum } from "@/lib/api/types";
+import { IconCamera } from "@/ui/icons/glyphs/camera";
+import { IconEdit } from "@/ui/icons/glyphs/edit";
+import { IconGateway } from "@/ui/icons/glyphs/gateway";
+import { IconHelp } from "@/ui/icons/glyphs/help";
 
 import { defineStatuses } from "./define";
 
@@ -9,10 +13,10 @@ import { defineStatuses } from "./define";
 export type ReadingSource = ContractEnum<"ReadingSource", "iot" | "ocr" | "manual" | "estimated">;
 
 export const READING_SOURCE = defineStatuses<ReadingSource>("readingSource", {
-  iot: { tone: "primary", icon: "gateway" },
-  ocr: { tone: "info", icon: "camera" },
-  manual: { tone: "neutral", icon: "edit" },
-  estimated: { tone: "warning", icon: "help" },
+  iot: { tone: "primary", icon: IconGateway },
+  ocr: { tone: "info", icon: IconCamera },
+  manual: { tone: "neutral", icon: IconEdit },
+  estimated: { tone: "warning", icon: IconHelp },
 });
 
 export const READING_SOURCE_VALUES = Object.keys(READING_SOURCE) as ReadingSource[];

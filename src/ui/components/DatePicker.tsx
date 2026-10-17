@@ -7,6 +7,9 @@ import { formatDate, TIME_ZONE } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
 
 import { Icon } from "../icons";
+import { IconCalendar } from "../icons/glyphs/calendar";
+import { IconChevronLeft } from "../icons/glyphs/chevron-left";
+import { IconChevronRight } from "../icons/glyphs/chevron-right";
 import { cn } from "../lib/cn";
 import { useFieldProps } from "./Field";
 import { IconButton } from "./IconButton";
@@ -143,7 +146,7 @@ export function DatePicker({
         )}
       >
         <span className="tabular-nums">{value ? formatDate(`${value}T00:00:00+07:00`, locale) : placeholder}</span>
-        <Icon name="calendar" className="text-muted" />
+        <Icon icon={IconCalendar} className="text-muted" />
       </PopoverPrimitive.Trigger>
       <PopoverPrimitive.Portal>
         <PopoverPrimitive.Content
@@ -153,11 +156,11 @@ export function DatePicker({
           aria-label={labels.calendar}
         >
           <div className="mb-2 flex items-center justify-between">
-            <IconButton name="chevron-left" label={labels.previousMonth} size="sm" onClick={() => shiftMonth(-1)} />
+            <IconButton icon={IconChevronLeft} label={labels.previousMonth} size="sm" onClick={() => shiftMonth(-1)} />
             <span id={`${id}-month`} className="font-medium" aria-live="polite">
               {monthName} {shownYear}
             </span>
-            <IconButton name="chevron-right" label={labels.nextMonth} size="sm" onClick={() => shiftMonth(1)} />
+            <IconButton icon={IconChevronRight} label={labels.nextMonth} size="sm" onClick={() => shiftMonth(1)} />
           </div>
           <table
             role="grid"

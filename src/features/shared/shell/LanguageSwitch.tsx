@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 
 import { usePathname as useLocalePathname, useRouter as useLocaleRouter } from "@/i18n/navigation";
 import { LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE, routing, type Locale } from "@/i18n/routing";
-import { DropdownMenu } from "@/ui/components/DropdownMenu";
 import { IconButton } from "@/ui/components/IconButton";
+import { LazyDropdownMenu } from "@/ui/components/overlays";
+import { IconLanguage } from "@/ui/icons/glyphs/language";
 
 /** `gp_locale` carries no identity, so the switcher writes it directly (like `gp_theme`). */
 function writeLocaleCookie(locale: Locale): void {
@@ -37,9 +38,9 @@ export function LanguageSwitch({ zone }: { zone: "owner" | "staff" | "admin" }) 
   };
 
   return (
-    <DropdownMenu
+    <LazyDropdownMenu
       label={t("label")}
-      trigger={<IconButton name="language" label={t("label")} data-testid="language-switch" />}
+      trigger={<IconButton icon={IconLanguage} label={t("label")} data-testid="language-switch" />}
       items={routing.locales.map((value) => ({
         id: value,
         label: t(value),

@@ -31,7 +31,7 @@ export function ZoneSidebar({ groups, collapsed }: { groups: ShellNavGroup[]; co
             items={group.items.map((item) => ({
               href: item.href,
               label: item.label,
-              icon: <Icon name={item.icon} />,
+              icon: <Icon icon={item.icon} />,
               active: isActive(item.href, pathname),
             }))}
           />

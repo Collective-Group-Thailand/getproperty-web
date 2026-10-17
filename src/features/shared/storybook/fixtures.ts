@@ -1,5 +1,17 @@
 import type { ShellNavGroup } from "@/features/shared/shell/types";
 import type { Schemas } from "@/lib/api/types";
+import { IconBill } from "@/ui/icons/glyphs/bill";
+import { IconBuilding } from "@/ui/icons/glyphs/building";
+import { IconChat } from "@/ui/icons/glyphs/chat";
+import { IconDashboard } from "@/ui/icons/glyphs/dashboard";
+import { IconElectric } from "@/ui/icons/glyphs/electric";
+import { IconGateway } from "@/ui/icons/glyphs/gateway";
+import { IconHistory } from "@/ui/icons/glyphs/history";
+import { IconLease } from "@/ui/icons/glyphs/lease";
+import { IconMeter } from "@/ui/icons/glyphs/meter";
+import { IconPayment } from "@/ui/icons/glyphs/payment";
+import { IconRoom } from "@/ui/icons/glyphs/room";
+import { IconSettings } from "@/ui/icons/glyphs/settings";
 
 /** Shell story data in the contract's shapes (generated types), with the contract's example values. */
 export const TENANTS: Schemas["OperatorTenantDto"][] = [
@@ -51,25 +63,25 @@ export const OWNER_GROUPS: ShellNavGroup[] = [
     key: "operations",
     label: "งานประจำวัน",
     items: [
-      { key: "dashboard", href: "/dashboard", icon: "dashboard", label: "เช้านี้", group: "operations" },
-      { key: "buildings", href: "/buildings", icon: "building", label: "อาคาร", group: "operations" },
-      { key: "units", href: "/units", icon: "room", label: "ห้อง", group: "operations" },
-      { key: "leases", href: "/leases", icon: "lease", label: "สัญญาเช่า", group: "operations" },
-      { key: "readings", href: "/meters", icon: "meter", label: "มิเตอร์", group: "operations" },
+      { key: "dashboard", href: "/dashboard", icon: IconDashboard, label: "เช้านี้", group: "operations" },
+      { key: "buildings", href: "/buildings", icon: IconBuilding, label: "อาคาร", group: "operations" },
+      { key: "units", href: "/units", icon: IconRoom, label: "ห้อง", group: "operations" },
+      { key: "leases", href: "/leases", icon: IconLease, label: "สัญญาเช่า", group: "operations" },
+      { key: "readings", href: "/meters", icon: IconMeter, label: "มิเตอร์", group: "operations" },
     ],
   },
   {
     key: "money",
     label: "การเงิน",
     items: [
-      { key: "invoices", href: "/invoices", icon: "bill", label: "บิล", group: "money" },
-      { key: "payments", href: "/payments", icon: "payment", label: "รับชำระเงิน", group: "money" },
+      { key: "invoices", href: "/invoices", icon: IconBill, label: "บิล", group: "money" },
+      { key: "payments", href: "/payments", icon: IconPayment, label: "รับชำระเงิน", group: "money" },
     ],
   },
   {
     key: "settings",
     label: "องค์กร",
-    items: [{ key: "settings", href: "/settings", icon: "settings", label: "ตั้งค่า", group: "settings" }],
+    items: [{ key: "settings", href: "/settings", icon: IconSettings, label: "ตั้งค่า", group: "settings" }],
   },
 ];
 
@@ -78,21 +90,21 @@ export const ADMIN_GROUPS: ShellNavGroup[] = [
     key: "customers",
     label: "ลูกค้า",
     items: [
-      { key: "tenants", href: "/tenants", icon: "building", label: "องค์กรลูกค้า", group: "customers" },
-      { key: "support_grants", href: "/support", icon: "chat", label: "สิทธิ์ซัพพอร์ต", group: "customers" },
+      { key: "tenants", href: "/tenants", icon: IconBuilding, label: "องค์กรลูกค้า", group: "customers" },
+      { key: "support_grants", href: "/support", icon: IconChat, label: "สิทธิ์ซัพพอร์ต", group: "customers" },
     ],
   },
   {
     key: "platform",
     label: "แพลตฟอร์ม",
     items: [
-      { key: "utility_tariffs", href: "/tariffs", icon: "electric", label: "อัตราค่าไฟ-น้ำ", group: "platform" },
-      { key: "devices", href: "/devices", icon: "gateway", label: "อุปกรณ์", group: "platform" },
+      { key: "utility_tariffs", href: "/tariffs", icon: IconElectric, label: "อัตราค่าไฟ-น้ำ", group: "platform" },
+      { key: "devices", href: "/devices", icon: IconGateway, label: "อุปกรณ์", group: "platform" },
     ],
   },
   {
     key: "operations",
     label: "ปฏิบัติการ",
-    items: [{ key: "audit_log", href: "/audit", icon: "history", label: "บันทึกตรวจสอบ", group: "operations" }],
+    items: [{ key: "audit_log", href: "/audit", icon: IconHistory, label: "บันทึกตรวจสอบ", group: "operations" }],
   },
 ];

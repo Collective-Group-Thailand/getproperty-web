@@ -1,4 +1,11 @@
 import type { ContractEnum } from "@/lib/api/types";
+import { IconCalendar } from "@/ui/icons/glyphs/calendar";
+import { IconCheck } from "@/ui/icons/glyphs/check";
+import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
+import { IconClock } from "@/ui/icons/glyphs/clock";
+import { IconEdit } from "@/ui/icons/glyphs/edit";
+import { IconLease } from "@/ui/icons/glyphs/lease";
+import { IconXCircle } from "@/ui/icons/glyphs/x-circle";
 
 import { defineStatuses } from "./define";
 
@@ -13,14 +20,14 @@ export type LeaseStatus = ContractEnum<
 >;
 
 export const LEASE_STATUS = defineStatuses<LeaseStatus>("lease", {
-  draft: { tone: "neutral", icon: "edit" },
-  pending_signature: { tone: "info", icon: "lease" },
-  active: { tone: "success", icon: "check-circle" },
-  notice_given: { tone: "warning", icon: "calendar" },
-  ending: { tone: "warning", icon: "clock" },
-  ended: { tone: "neutral", icon: "check" },
-  terminated: { tone: "danger", icon: "x-circle" },
-  cancelled: { tone: "neutral", icon: "x-circle" },
+  draft: { tone: "neutral", icon: IconEdit },
+  pending_signature: { tone: "info", icon: IconLease },
+  active: { tone: "success", icon: IconCheckCircle },
+  notice_given: { tone: "warning", icon: IconCalendar },
+  ending: { tone: "warning", icon: IconClock },
+  ended: { tone: "neutral", icon: IconCheck },
+  terminated: { tone: "danger", icon: IconXCircle },
+  cancelled: { tone: "neutral", icon: IconXCircle },
 });
 
 export const LEASE_VALUES = Object.keys(LEASE_STATUS) as LeaseStatus[];

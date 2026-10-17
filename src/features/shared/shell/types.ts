@@ -1,10 +1,10 @@
-import type { IconName } from "@/ui/icons";
+import type { IconGlyph } from "@/ui/icons";
 
 /** A menu entry resolved for rendering: route (locale-prefixed on the owner host), icon, label. */
 export interface ShellNavItem {
   key: string;
   href: string;
-  icon: IconName;
+  icon: IconGlyph;
   label: string;
   group: string;
 }

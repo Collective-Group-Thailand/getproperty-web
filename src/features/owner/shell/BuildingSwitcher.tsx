@@ -5,7 +5,9 @@ import { useRouter } from "next/navigation";
 
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
-import { DropdownMenu } from "@/ui/components/DropdownMenu";
+import { LazyDropdownMenu } from "@/ui/components/overlays";
+import { IconBuilding } from "@/ui/icons/glyphs/building";
+import { IconChevronDown } from "@/ui/icons/glyphs/chevron-down";
 
 import { writeBuildingCookie } from "./building";
 
@@ -36,11 +38,17 @@ export function BuildingSwitcher({
     router.refresh();
   };
   return (
-    <DropdownMenu
+    <LazyDropdownMenu
       label={t("label")}
       align="start"
       trigger={
-        <Button variant="ghost" size="sm" iconStart="building" iconEnd="chevron-down" data-testid="building-switcher">
+        <Button
+          variant="ghost"
+          size="sm"
+          iconStart={IconBuilding}
+          iconEnd={IconChevronDown}
+          data-testid="building-switcher"
+        >
           <span className="max-w-40 truncate">{current?.name ?? t("all")}</span>
         </Button>
       }
@@ -49,7 +57,7 @@ export function BuildingSwitcher({
         ...buildings.map((building, index) => ({
           id: building.id,
           label: building.name,
-          icon: "building" as const,
+          icon: IconBuilding,
           selected: building.id === current?.id,
           separatorBefore: index === 0,
           onSelect: () => choose(building.id),

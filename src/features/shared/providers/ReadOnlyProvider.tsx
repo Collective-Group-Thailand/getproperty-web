@@ -1,9 +1,9 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
 import { createContext, useContext, useEffect, useState } from "react";
 
 import { SubscriptionSuspendedError } from "@/lib/api/errors";
+import { onQueryClient } from "@/lib/api/query-runtime";
 
 const ReadOnlyContext = createContext(false);
 
@@ -15,15 +15,19 @@ const ReadOnlyContext = createContext(false);
  */
 export function ReadOnlyProvider({ initial, children }: { initial: boolean; children: React.ReactNode }) {
   const [readOnly, setReadOnly] = useState(initial);
-  const client = useQueryClient();
 
-  useEffect(() => {
-    return client.getMutationCache().subscribe((event) => {
-      if (event.type === "updated" && event.mutation.state.error instanceof SubscriptionSuspendedError) {
-        setReadOnly(true);
-      }
-    });
-  }, [client]);
+  // Mutations run through TanStack Query, which loads on demand (D-179): watch its cache once it exists.
+  useEffect(
+    () =>
+      onQueryClient((client) =>
+        client.getMutationCache().subscribe((event) => {
+          if (event.type === "updated" && event.mutation.state.error instanceof SubscriptionSuspendedError) {
+            setReadOnly(true);
+          }
+        }),
+      ),
+    [],
+  );
 
   return <ReadOnlyContext.Provider value={readOnly}>{children}</ReadOnlyContext.Provider>;
 }

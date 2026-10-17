@@ -6,8 +6,10 @@ import { useTransition } from "react";
 import { selectTenant } from "@/lib/auth/actions";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
-import { DropdownMenu } from "@/ui/components/DropdownMenu";
 import { toast } from "@/ui/components/Toast";
+import { LazyDropdownMenu } from "@/ui/components/overlays";
+import { IconBuilding } from "@/ui/icons/glyphs/building";
+import { IconChevronsUpDown } from "@/ui/icons/glyphs/chevrons-up-down";
 
 /**
  * Top-bar tenant switcher (contract §8), shown only to operators of several tenants. Choosing one
@@ -38,14 +40,14 @@ export function TenantSwitcher({
     });
 
   return (
-    <DropdownMenu
+    <LazyDropdownMenu
       label={t("shell.tenantSwitcher.label")}
       align="start"
       trigger={
         <Button
           variant="secondary"
           size="sm"
-          iconEnd="chevrons-up-down"
+          iconEnd={IconChevronsUpDown}
           loading={pending}
           data-testid="tenant-switcher"
         >
@@ -55,7 +57,7 @@ export function TenantSwitcher({
       items={tenants.map((tenant) => ({
         id: tenant.id,
         label: tenant.displayName,
-        icon: "building",
+        icon: IconBuilding,
         selected: tenant.id === currentTenantId,
         disabled: tenant.status === "deactivated",
         onSelect: () => tenant.id !== currentTenantId && choose(tenant.id),

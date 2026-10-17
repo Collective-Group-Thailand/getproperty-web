@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
 import { Button } from "./Button";
+import { IconAdd } from "../icons/glyphs/add";
 
 const meta: Meta<typeof Button> = {
   title: "Foundations/Button",
@@ -15,7 +16,7 @@ export const Secondary: Story = { args: { variant: "secondary", children: "ด�
 export const Ghost: Story = { args: { variant: "ghost", children: "ยกเลิก" } };
 export const Destructive: Story = { args: { variant: "destructive", children: "ยกเลิกบิล" } };
 export const Link: Story = { args: { variant: "link", children: "ค่า Ft คืออะไร?" } };
-export const WithIcon: Story = { args: { iconStart: "add", children: "เพิ่มห้อง" } };
+export const WithIcon: Story = { args: { iconStart: IconAdd, children: "เพิ่มห้อง" } };
 export const Loading: Story = { args: { loading: true, children: "กำลังบันทึก…" } };
 export const Disabled: Story = { args: { disabled: true } };
 export const Sizes: Story = {

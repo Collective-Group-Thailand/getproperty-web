@@ -1,6 +1,6 @@
 {
   "extends": "./shared.json",
-  "$comment": "Owner-host marketing pages (F1 1.3 §7): LCP ≤ 2.0 s, CLS ≤ 0.05, initial JS ≤ 120 KB gz (docs/performance-budgets.md). Public, no session; SEO category asserted too. RATCHET (F1 1.3, 2026-10-17): measured 189–199 KB; ceiling 200 KB until the root bundle shrinks (see docs/performance-budgets.md › Ratchets) — target 120 KB.",
+  "$comment": "Owner-host marketing pages (F1 1.3 §7): LCP ≤ 2.0 s, CLS ≤ 0.05, initial JS ≤ 180 KB gz (D-179, docs/performance-budgets.md) — a hard limit. Public, no session; SEO category asserted too.",
   "ci": {
     "collect": {
       "url": ["http://localhost:3200/", "http://localhost:3200/en", "http://localhost:3200/pricing"],
@@ -33,7 +33,7 @@
         "resource-summary:script:size": [
           "error",
           {
-            "maxNumericValue": 204800
+            "maxNumericValue": 184320
           }
         ]
       }

@@ -9,7 +9,11 @@ import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { Button } from "@/ui/components/Button";
 import { Card } from "@/ui/components/Card";
-import { Icon, type IconName } from "@/ui/icons";
+import { Icon, type IconGlyph } from "@/ui/icons";
+import { IconBill } from "@/ui/icons/glyphs/bill";
+import { IconChat } from "@/ui/icons/glyphs/chat";
+import { IconMeter } from "@/ui/icons/glyphs/meter";
+import { IconShield } from "@/ui/icons/glyphs/shield";
 
 type Params = { params: Promise<{ locale: Locale }> };
 
@@ -20,11 +24,11 @@ export async function generateMetadata({ params }: Params) {
   return marketingMetadata("/", locale, { title: t("title"), description: t("description") });
 }
 
-const FEATURES: { key: "readings" | "billing" | "line" | "receipts"; icon: IconName }[] = [
-  { key: "readings", icon: "meter" },
-  { key: "billing", icon: "shield" },
-  { key: "line", icon: "chat" },
-  { key: "receipts", icon: "bill" },
+const FEATURES: { key: "readings" | "billing" | "line" | "receipts"; icon: IconGlyph }[] = [
+  { key: "readings", icon: IconMeter },
+  { key: "billing", icon: IconShield },
+  { key: "line", icon: IconChat },
+  { key: "receipts", icon: IconBill },
 ];
 
 /** The landing page: the zero-touch billing promise (D-011), the lawful-rate teaser, sign-in. */
@@ -87,7 +91,7 @@ export default async function Landing({ params }: Params) {
             {FEATURES.map((feature) => (
               <li key={feature.key}>
                 <Card padding="lg" className="h-full">
-                  <Icon name={feature.icon} className="text-primary mb-3 text-2xl" />
+                  <Icon icon={feature.icon} className="text-primary mb-3 text-2xl" />
                   <h3 className="font-semibold">{t(`features.items.${feature.key}.title`)}</h3>
                   <p className="text-muted mt-1 text-sm">{t(`features.items.${feature.key}.body`)}</p>
                 </Card>

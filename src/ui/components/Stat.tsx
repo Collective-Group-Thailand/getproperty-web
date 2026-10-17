@@ -1,4 +1,7 @@
-import { Icon, type IconName } from "../icons";
+import { Icon, type IconGlyph } from "../icons";
+import { IconChevronDown } from "../icons/glyphs/chevron-down";
+import { IconChevronUp } from "../icons/glyphs/chevron-up";
+import { IconRemove } from "../icons/glyphs/remove";
 import { cn } from "../lib/cn";
 import { Card } from "./Card";
 
@@ -9,13 +12,17 @@ export interface StatProps {
   /** "จาก 42 ห้อง", "เทียบเดือนก่อน +3" — formatted text from the API's figures. */
   hint?: React.ReactNode;
   trend?: { direction: "up" | "down" | "flat"; label: React.ReactNode; good?: boolean };
-  icon?: IconName;
+  icon?: IconGlyph;
   /** The "money recovered" variant: teal figure. */
   variant?: "default" | "recovered";
   className?: string;
 }
 
-const TREND_ICON: Record<"up" | "down" | "flat", IconName> = { up: "chevron-up", down: "chevron-down", flat: "remove" };
+const TREND_ICON: Record<"up" | "down" | "flat", IconGlyph> = {
+  up: IconChevronUp,
+  down: IconChevronDown,
+  flat: IconRemove,
+};
 
 /** A KPI card for the morning dashboard: one figure, its unit, and what changed. */
 export function Stat({ label, value, hint, trend, icon, variant = "default", className }: StatProps) {
@@ -23,7 +30,7 @@ export function Stat({ label, value, hint, trend, icon, variant = "default", cla
     <Card padding="md" className={cn("flex flex-col gap-1", className)}>
       <div className="text-muted flex items-center justify-between gap-2 text-sm">
         <span>{label}</span>
-        {icon ? <Icon name={icon} className="text-lg" /> : null}
+        {icon ? <Icon icon={icon} className="text-lg" /> : null}
       </div>
       <p className={cn("font-display text-3xl font-semibold tabular-nums", variant === "recovered" && "text-primary")}>
         {value}
@@ -38,7 +45,7 @@ export function Stat({ label, value, hint, trend, icon, variant = "default", cla
                 trend.good === false && "text-danger-subtle-fg",
               )}
             >
-              <Icon name={TREND_ICON[trend.direction]} />
+              <Icon icon={TREND_ICON[trend.direction]} />
               {trend.label}
             </span>
           ) : null}
