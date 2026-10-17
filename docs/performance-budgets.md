@@ -31,7 +31,7 @@ them hard limits once the reductions below landed.
 
 | Set | URL | Before (F1 1.3) | After (D-179 work) | Budget | Headroom |
 |---|---|---|---|---|---|
-| `owner-marketing` | `/`, `/en` | 194.2 KB | 169.3 KB | 180 KB | 10.7 KB |
+| `owner-marketing` | `/`, `/en` | 194.2 KB | 169.5 KB | 180 KB | 10.5 KB |
 | `owner-marketing` | `/pricing` | 184.7 KB | 167.5 KB | 180 KB | 12.5 KB |
 | `owner` | `/dashboard` (signed in) | 261.2 KB | 181.7 KB | 260 KB | 78.3 KB |
 | `staff` | `/` (signed in, mobile) | 265.2 KB | 187.3 KB | 200 KB | 12.7 KB |
@@ -40,7 +40,7 @@ them hard limits once the reductions below landed.
 | (not a set) | staff `/login` | 240.0 KB | 181.7 KB | — | — |
 | (not a set) | owner 404 page | 175.7 KB | 156.2 KB | — | — |
 
-Lighthouse reported the same figures (e.g. staff 187.3 KB in all three runs); accessibility 1.0 on every
+Lighthouse reported the same figures (±0.2 KB; e.g. staff 187.3 KB in all three runs); accessibility 1.0 on every
 page of every set.
 
 ## What made the difference

@@ -33,4 +33,4 @@ The backend is a separate repository (`getproperty-api`, NestJS). This app never
 - Plan Mode first for each deliverable; wait for approval. Small vertical slices, Conventional Commits, green CI per slice. When ambiguous: record the assumption in `docs/PROGRESS.md` and take the most conservative option.
 
 ## Commands
-`pnpm dev` (open http://localhost:3000 owner, http://staff.localhost:3000, http://admin.localhost:3000) · `pnpm dev:mock` (MSW, no backend) · `pnpm gen:api` · `pnpm lint` · `pnpm typecheck` · `pnpm test` · `pnpm e2e` · `pnpm storybook` · `pnpm build` · `pnpm lhci`
+`pnpm dev` (open http://localhost:3000 owner, http://staff.localhost:3000, http://admin.localhost:3000) · `pnpm dev:mock` (MSW, no backend) · `pnpm gen:api` · `pnpm lint` · `pnpm typecheck` · `pnpm test` · `pnpm e2e` · `pnpm storybook` · `pnpm build` · `pnpm lhci` · `pnpm icons` (`icons:check`; glyphs from `src/ui/icons/curated.ts`) · `pnpm analyze` (bundle treemaps)
