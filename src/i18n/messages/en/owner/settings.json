@@ -28,6 +28,7 @@
     "notifications": "Notifications",
     "readings": "Meter readings",
     "deposits": "Deposits",
+    "access": "Doors and access",
     "compliance": "Compliance and tax",
     "other": "Other"
   },
@@ -51,7 +52,11 @@
     "deposit_max_months_short": "Deposit and advance cap",
     "tax_vat": "VAT on invoices",
     "compliance_tariff_cap_severity": "Utility cap rule",
-    "tenant_subject_to_ocpb_2568": "Covered by the 2025 dormitory notice"
+    "tenant_subject_to_ocpb_2568": "Covered by the 2025 dormitory notice",
+    "access_work_order_window_hours": "Door code for a work order",
+    "access_resident_visitor_codes": "Residents create visitor codes",
+    "access_resident_visitor_max_hours": "Longest resident visitor code",
+    "access_battery_low_pct": "Low lock battery"
   },
   "property": {
     "title": "Building settings",
@@ -78,6 +83,18 @@
     "quietEnd": "Quiet until",
     "estimateAllow": "Allow estimates when a reading is missing",
     "estimateBlock": "Wait for a real reading"
+  },
+  "history": {
+    "open": "History",
+    "title": "Versions of {name}",
+    "description": "The platform default, your company's and the building's versions, newest first — a change scheduled for later is marked.",
+    "loading": "Reading the versions…",
+    "empty": "No version",
+    "scheduled": "Scheduled",
+    "until": "Until {date}",
+    "openEnded": "No end date",
+    "created": "saved {date}",
+    "reason": "Reason: {reason}"
   },
   "company": {
     "title": "Company data",

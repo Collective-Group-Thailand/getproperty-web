@@ -4,6 +4,7 @@ import type { components } from "../../src/lib/api/schema";
 import { state } from "../state";
 import { add, baht, satang } from "./money";
 import { json, owner, query } from "./support";
+import { slaBreachedOf } from "../r2/world";
 import { BUILDING_A, day, iso, lossView, PERIODS } from "./world";
 
 type Schemas = components["schemas"];
@@ -100,6 +101,17 @@ export const dashboardHandlers: HttpHandler[] = [
       attention: {
         draftsToReview: invoices.filter((invoice) => invoice.status === "draft").length,
         slipsToReview: ok.own ? w().slips.filter((slip) => slip.status === "pending_review").length : 0,
+        // R2 (F6): open requests past their SLA and parcels at the desk, for the focused building or all.
+        serviceRequestsOverdue: ok.own
+          ? state.r2.requests.filter((sr) => (!buildingId || sr.buildingId === buildingId) && slaBreachedOf(sr)).length
+          : 0,
+        parcelsWaiting: ok.own
+          ? state.r2.parcels.filter(
+              (parcel) =>
+                (!buildingId || parcel.buildingId === buildingId) &&
+                (parcel.status === "received" || parcel.status === "notified"),
+            ).length
+          : 0,
       },
       arrears: {
         balance: add(...overdue.map((invoice) => invoice.balance)),

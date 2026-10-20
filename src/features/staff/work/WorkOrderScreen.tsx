@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Suspense, useState } from "react";
 
 import { WORK_ORDER_STATUS } from "@/domain/status/workOrder";
+import { ServiceThread } from "@/features/shared/console/ServiceThread";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { formatDateTime, formatTHB } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
@@ -49,12 +50,21 @@ export function WorkOrderScreen({
   workOrder,
   request,
   access,
+  messages,
+  canWrite,
 }: {
   workOrder: Schemas["WorkOrderDto"];
-  request: Pick<Schemas["ServiceRequestDto"], "ref" | "description" | "photoIds"> | null;
+  request: Pick<
+    Schemas["ServiceRequestDto"],
+    "ref" | "description" | "photoIds" | "status" | "preferredVisit" | "visitConfirmedAt"
+  > | null;
   access: Schemas["RevealedCredentialDto"][] | null;
+  /** The thread (the request's, or the work order's own); `null` when it could not be read. */
+  messages: Schemas["ServiceMessageDto"][] | null;
+  canWrite: boolean;
 }) {
   const t = useTranslations("staff.work");
+  const visit = useTranslations("console.visit");
   const locale = useLocale() as Locale;
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
@@ -176,6 +186,17 @@ export function WorkOrderScreen({
             {request ? t("reported", { ref: request.ref }) : t("details")}
           </h2>
           <p className="whitespace-pre-line">{request?.description ?? workOrder.description}</p>
+          {request ? (
+            <p className="text-base" data-testid="work-order-visit-preference">
+              {visit("preferred")}:{" "}
+              {request.preferredVisit ? visit(`preference.${request.preferredVisit}`) : visit("noPreference")}
+              {request.visitConfirmedAt
+                ? ` · ${visit("confirmedAt", { at: formatDateTime(request.visitConfirmedAt, locale) })}`
+                : workOrder.scheduledAt && !workOrder.completedAt
+                  ? ` · ${visit("notConfirmed")}`
+                  : ""}
+            </p>
+          ) : null}
           {request?.photoIds.length ? (
             <ul className="flex flex-wrap gap-2">
               {request.photoIds.map((id, index) => (
@@ -473,6 +494,17 @@ export function WorkOrderScreen({
           {t("doneBody")}
         </Callout>
       ) : null}
+
+      <ServiceThread
+        target={{ surface: "staff", kind: "workOrder", id: workOrder.id }}
+        initial={messages}
+        canWrite={canWrite}
+        ended={
+          workOrder.status === "cancelled" ||
+          (request !== null && (request.status === "closed" || request.status === "cancelled"))
+        }
+        touch
+      />
 
       {error ? (
         <Callout tone="danger">

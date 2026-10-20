@@ -35,6 +35,16 @@ test("tariff: enter → second person verifies → publish; diff and sample bill
   const editor = page.getByRole("dialog");
   await editor.getByTestId("tariff-effective-from").fill("2030-01-01");
   await editor.getByTestId("tariff-source-url").fill("https://www.mea.or.th/tariff-2030");
+  // A copy of the notice goes up as a platform file (/v1/admin/files presign → PUT → complete).
+  await editor
+    .getByTestId("tariff-source-file")
+    .locator('input[type="file"]')
+    .setInputFiles({
+      name: "mea-2030.pdf",
+      mimeType: "application/pdf",
+      buffer: Buffer.from("%PDF-1.4\n% MEA tariff notice 2030\n"),
+    });
+  await expect(editor.getByTestId("tariff-source-file-name")).toContainText("mea-2030.pdf");
   await editor.getByTestId("ft-price").fill("0.4200");
   await editor.getByTestId("ft-period").fill("2030-01");
   await editor.getByTestId("enter-version-submit").click();
@@ -45,6 +55,8 @@ test("tariff: enter → second person verifies → publish; diff and sample bill
     effectiveFrom: "2030-01-01",
     structure: { ft: { pricePerUnit: "0.4200" } },
   });
+  expect(entered.at(-1)?.body.sourceDocumentId).toMatch(/^[0-9a-f-]{36}$/);
+  await expect(page.locator('[data-testid^="source-document-"]')).toHaveCount(1);
 
   const workflow = page.getByTestId("tariff-workflow");
   await expect(workflow).toHaveAttribute("data-state", "entered");
@@ -142,6 +154,27 @@ test("DSR console, audit search with cursor pages, outbox replay", async ({ page
   await expect(page.getByTestId("dsr-overdue")).toBeVisible();
   await expect(page.getByTestId("dsr-row").first()).toHaveAttribute("data-overdue", "true");
   await expectAxeClean(page);
+  // A request where Collective is the controller (tenantId null) is moved here: verify → start → fulfil (typed).
+  const own = "9f000000-0000-4000-8000-000000000004";
+  // Tenant-controlled requests offer no action on the platform.
+  await expect(page.getByTestId("dsr-actions-9f000000-0000-4000-8000-000000000001")).toHaveCount(0);
+  for (const [action, label] of [
+    ["verify", "Verify identity"],
+    ["start", "Start"],
+  ] as const) {
+    await page.getByTestId(`dsr-${action}-${own}`).click();
+    await page.getByRole("alertdialog").getByRole("button", { name: label }).click();
+    await expect(page.getByRole("alertdialog")).toHaveCount(0);
+  }
+  await page.getByTestId(`dsr-fulfil-${own}`).click();
+  const fulfil = page.getByRole("alertdialog");
+  await typePhrase(fulfil);
+  await fulfil.getByRole("button", { name: "Fulfil" }).click();
+  await expect(fulfil).toHaveCount(0);
+  await expect(page.getByTestId(`dsr-export-${own}`)).toBeVisible();
+  const moved = await platformReceived("admin.dataSubjectRequests.transition");
+  expect(moved).toHaveLength(3);
+  await expectAxeClean(page);
 
   await gotoAdmin(page, "/audit");
   await expect(page.getByTestId("audit-row").first()).toBeVisible();
@@ -198,7 +231,14 @@ test("platform users: create with roles, grant and revoke a role; integration ev
   const created = await platformReceived("admin.platformUsers.create");
   expect(created.at(-1)?.idempotencyKey).toMatch(/^[0-9a-f-]{36}$/);
 
+  // Integration events of the bridge (GET /v1/admin/integration-events): filters in the URL, no payloads.
   await gotoAdmin(page, "/integration-events");
-  await expect(page.getByTestId("integration-events")).toBeVisible();
+  await expect(page.getByTestId("integration-event")).toHaveCount(3);
   await expectAxeClean(page);
+  await page.getByTestId("filter-state").selectOption("dead");
+  await page.getByTestId("integration-filters").getByRole("button").click();
+  await expect(page).toHaveURL(/state=dead/);
+  await expect(page.getByTestId("integration-event")).toHaveCount(1);
+  await expect(page.getByTestId("integration-event")).toHaveAttribute("data-state", "dead");
+  await expect(page.getByTestId("integration-event")).toContainText("getbuild bridge 503");
 });

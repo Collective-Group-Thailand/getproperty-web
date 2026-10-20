@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { DateField } from "@/features/shared/console/DateField";
 import { FormDialog, integer, text } from "@/features/shared/console/FormDialog";
@@ -22,6 +22,8 @@ import { AssigneeFields } from "./AssigneeFields";
 export interface AssetChoice {
   id: string;
   label: string;
+  /** The unit the item belongs to; `null` for the building's own equipment. */
+  unitId: string | null;
 }
 
 type Category = Pick<Schemas["ServiceCategoryDto"], "id" | "nameTh">;
@@ -104,8 +106,9 @@ function planBody(data: FormData) {
 
 /**
  * A preventive maintenance plan on an asset item (D-210): the API opens one preventive work order at a time,
- * `leadDays` before each due date, and moves the next due date by the interval. The asset item is one of the
- * building's meters or locks, or an item of a unit (air conditioner, water heater…).
+ * `leadDays` before each due date, and moves the next due date by the interval. The asset item is the building's
+ * own equipment (pumps, lifts, water tanks, door locks…) or, once a unit is chosen, an item of that unit (air
+ * conditioner, water heater, its meters and lock) — all from `GET /v1/owner/buildings/{id}/asset-items`.
  */
 export function NewPlan({
   assets,
@@ -120,18 +123,7 @@ export function NewPlan({
 }) {
   const t = useTranslations("owner.service.maintenance");
   const [unitId, setUnitId] = useState("");
-  const [unitAssets, setUnitAssets] = useState<AssetChoice[]>([]);
-  useEffect(() => {
-    if (!unitId) return;
-    let alive = true;
-    void unwrap(browserApi().GET("/v1/owner/units/{unitId}/asset-items", { params: { path: { unitId } } }))
-      .then((items) => alive && setUnitAssets(items.map((item) => ({ id: item.id, label: item.name }))))
-      .catch(() => alive && setUnitAssets([]));
-    return () => {
-      alive = false;
-    };
-  }, [unitId]);
-  const options = [...(unitId ? unitAssets : []), ...assets];
+  const options = assets.filter((asset) => asset.unitId === (unitId || null));
   return (
     <FormDialog
       label={t("add")}
@@ -162,10 +154,7 @@ export function NewPlan({
             <Field label={t("unit")} hint={t("unitHint")}>
               <NativeSelect
                 value={unitId}
-                onChange={(event) => {
-                  setUnitId(event.target.value);
-                  setUnitAssets([]);
-                }}
+                onChange={(event) => setUnitId(event.target.value)}
                 placeholder={t("buildingWide")}
                 options={units.map((unit) => ({ value: unit.id, label: unit.unitNo }))}
                 data-testid="plan-unit"

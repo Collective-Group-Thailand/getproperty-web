@@ -39,6 +39,7 @@ export async function RequestsView({ context, searchParams }: { context: OwnerCo
   const building = focusedBuilding(context);
   const view = param(searchParams.view) ?? "open";
   const status = enumParam(searchParams.status, SERVICE_REQUEST_VALUES);
+  const sla = enumParam(searchParams.sla, ["breached"] as const);
   const now = currentTime();
   const [list, categories, units] = await Promise.all([
     unwrap(
@@ -52,6 +53,7 @@ export async function RequestsView({ context, searchParams }: { context: OwnerCo
             open: !status && view === "open" ? true : undefined,
             categoryId: param(searchParams.category),
             inWarranty: param(searchParams.warranty) === "true" ? true : undefined,
+            slaBreached: sla === "breached" ? true : undefined,
             q: param(searchParams.q),
           },
         },
@@ -102,6 +104,13 @@ export async function RequestsView({ context, searchParams }: { context: OwnerCo
             type: "select",
             placeholder: t("filter.anyCategory"),
             options: categories.map((category) => ({ value: category.id, label: categoryName(category, locale) })),
+          },
+          {
+            name: "sla",
+            label: t("filter.sla"),
+            type: "select",
+            placeholder: t("filter.anySla"),
+            options: [{ value: "breached", label: t("filter.slaBreached") }],
           },
           {
             name: "warranty",

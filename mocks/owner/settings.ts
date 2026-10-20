@@ -114,6 +114,26 @@ function checkValue(setting: Schemas["SettingDto"], value: unknown): boolean {
   }
 }
 
+/** The version log of a key, seeded once with the version in force (platform default or the tenant's). */
+function historyOf(setting: Schemas["SettingDto"]) {
+  const log = w().settingHistory;
+  if (!log.some((entry) => entry.key === setting.key))
+    log.push({
+      key: setting.key,
+      versionId: crypto.randomUUID(),
+      scope: setting.scope,
+      propertyId: null,
+      value: setting.value,
+      effectiveFrom: setting.effectiveFrom,
+      effectiveTo: null,
+      scheduled: false,
+      reason: setting.scope === "platform" ? "platform default" : "initial setup",
+      createdBy: null,
+      createdAt: setting.effectiveFrom,
+    });
+  return log.filter((entry) => entry.key === setting.key);
+}
+
 function saveSetting(request: Request, op: string, scope: "tenant" | "property", propertyId: string | null) {
   return async ({ params }: { params: Record<string, string | readonly string[] | undefined> }) => {
     const ok = mutating(request, op);
@@ -129,6 +149,29 @@ function saveSetting(request: Request, op: string, scope: "tenant" | "property",
     if (!checkValue(setting, input.value)) return problem(op, "settings.invalid_value");
     const effectiveFrom = input.effectiveFrom ?? new Date().toISOString();
     const scheduled = new Date(effectiveFrom).getTime() > Date.now() + 60_000;
+    const versionId = crypto.randomUUID();
+    // The version log: the same scope's open version ends where this one starts.
+    for (const entry of historyOf(setting))
+      if (
+        entry.scope === scope &&
+        entry.propertyId === propertyId &&
+        entry.effectiveTo === null &&
+        entry.effectiveFrom < effectiveFrom
+      )
+        entry.effectiveTo = effectiveFrom;
+    w().settingHistory.push({
+      key: setting.key,
+      versionId,
+      scope,
+      propertyId,
+      value: input.value as Schemas["SettingHistoryEntryDto"]["value"],
+      effectiveFrom,
+      effectiveTo: null,
+      scheduled,
+      reason: input.reason.trim(),
+      createdBy: ok.persona.user.id,
+      createdAt: new Date().toISOString(),
+    });
     // A version scheduled for later does not change what is in force now (the API keeps both).
     if (!scheduled) {
       if (scope === "tenant") Object.assign(setting, { value: input.value, scope: "tenant", effectiveFrom });
@@ -138,7 +181,7 @@ function saveSetting(request: Request, op: string, scope: "tenant" | "property",
       key: setting.key,
       scope,
       effectiveFrom,
-      versionId: crypto.randomUUID(),
+      versionId,
     } satisfies Schemas["SettingVersionDto"]);
   };
 }
@@ -151,6 +194,22 @@ const settingHandlers: HttpHandler[] = [
     if (propertyId && !w().properties.some((property) => property.id === propertyId))
       return notFound("owner.settings.list");
     return json(settingsAt(propertyId));
+  }),
+  http.get("*/v1/owner/settings/:key/versions", ({ request, params }) => {
+    const op = "owner.settings.versions";
+    const ok = owner(request, op);
+    if (ok instanceof Response) return ok;
+    const propertyId = query(request).get("propertyId");
+    if (propertyId && !w().properties.some((property) => property.id === propertyId)) return notFound(op);
+    const setting = w().settings.find((candidate) => candidate.key === params.key);
+    if (!setting || (!setting.scopeAllowed.includes("tenant") && !setting.scopeAllowed.includes("property")))
+      return problem(op, "settings.unknown_key");
+    const now = Date.now();
+    const rows: Schemas["SettingHistoryEntryDto"][] = historyOf(setting)
+      .filter((entry) => !propertyId || entry.propertyId === null || entry.propertyId === propertyId)
+      .map(({ key: _key, ...entry }) => ({ ...entry, scheduled: new Date(entry.effectiveFrom).getTime() > now }))
+      .sort((a, b) => b.effectiveFrom.localeCompare(a.effectiveFrom));
+    return json(rows);
   }),
   http.put("*/v1/owner/settings/:key", (info) =>
     saveSetting(info.request, "owner.settings.update", "tenant", null)(info),
@@ -498,9 +557,30 @@ const tariffHandlers: HttpHandler[] = [
 
 const memberHandlers: HttpHandler[] = [
   http.get("*/v1/owner/members", ({ request }) => {
-    const ok = owner(request, "owner.members.list");
+    const op = "owner.members.list";
+    const ok = owner(request, op);
     if (ok instanceof Response) return ok;
-    return json(p().members[ok.tenantId] ?? []);
+    const params = new URL(request.url).searchParams;
+    const permission = params.get("permission");
+    const buildingId = params.get("buildingId");
+    let members = p().members[ok.tenantId] ?? [];
+    // MemberListQuery (F6): active members whose role holds the permission / who may work in the building.
+    if (permission) {
+      const known = (["owner", "manager", "staff", "accountant"] as const).some((role) =>
+        tenantPermissions(role).includes(permission),
+      );
+      if (!known)
+        return problem(op, "validation.failed", {
+          errors: [{ path: "permission", code: "isIn", message: "a permission key" }],
+        });
+      members = members.filter((member) => tenantPermissions(member.role).includes(permission));
+    }
+    if (buildingId) {
+      if (!ok.own || !state.owner.buildings.some((building) => building.id === buildingId)) return notFound(op);
+      members = members.filter((member) => !member.buildingIds || member.buildingIds.includes(buildingId));
+    }
+    if (permission || buildingId) members = members.filter((member) => member.status === "active");
+    return json(members);
   }),
   http.patch("*/v1/owner/members/:membershipId", async ({ request, params }) => {
     const op = "owner.members.update";
@@ -978,14 +1058,15 @@ const subscriptionHandlers: HttpHandler[] = [
       return { status: 201, body: survey };
     });
   }),
-  // CONTRACT-REQUEST: `GET /v1/owner/pilot-kpis?window=` — the tenant's own pilot KPIs (B6.3 insights,
-  // docs/contract-requests.md). Answers the admin's `PilotKpisDto` for the tenant; 404 without a pilot.
+  // `GET /v1/owner/pilot-kpis?window=` (owner.insights.pilotKpis, D-214): the admin's `PilotKpisDto` for my
+  // tenant, default window 90 days; 404 without a pilot agreement.
   http.get("*/v1/owner/pilot-kpis", ({ request }) => {
-    const ok = owner(request, "owner.subscription.get");
+    const op = "owner.insights.pilotKpis";
+    const ok = owner(request, op);
     if (ok instanceof Response) return ok;
-    const window = query(request).get("window") === "90d" ? "90d" : "30d";
+    const window = query(request).get("window") === "30d" ? "30d" : "90d";
     const kpis = pilotKpis(ok.tenantId, window);
-    return kpis ? json(kpis) : notFound("owner.subscription.get");
+    return kpis ? json(kpis) : notFound(op);
   }),
 ];
 

@@ -145,5 +145,37 @@
       "date": "YYYY-MM-DD",
       "time": "HH:MM"
     }
+  },
+  "serviceThread": {
+    "title": "Messages",
+    "reload": "Refresh",
+    "hint": "The resident, the office and the technician write here — no phone numbers are exchanged. The others are told on LINE (quiet hours apply).",
+    "unavailable": "The messages could not be read. Refresh to try again.",
+    "empty": "No message yet",
+    "you": "You",
+    "author": {
+      "resident": "Resident",
+      "office": "Office",
+      "technician": "Technician",
+      "system": "getproperty"
+    },
+    "ended": "The request has ended — no new message can be written.",
+    "write": "Write a message",
+    "writeHint": "{count}/{max} characters",
+    "tooLong": "At most {max} characters",
+    "send": "Send"
+  },
+  "visit": {
+    "preferred": "Preferred visit",
+    "preference": {
+      "anytime": "Any time",
+      "morning": "Morning",
+      "afternoon": "Afternoon",
+      "evening": "Evening"
+    },
+    "noPreference": "Not given",
+    "confirmed": "Visit confirmed",
+    "confirmedAt": "The resident confirmed the visit {at}",
+    "notConfirmed": "The resident has not confirmed the planned visit"
   }
 }

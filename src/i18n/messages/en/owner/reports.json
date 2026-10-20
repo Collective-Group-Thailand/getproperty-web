@@ -51,6 +51,10 @@
       "title": "VAT working figures (PP 30)",
       "body": "Output VAT by tax invoice for the monthly return"
     },
+    "etax_monthly_xlsx": {
+      "title": "e-Tax invoice register (Excel)",
+      "body": "Every e-Tax invoice and receipt of the month with its ETDA status"
+    },
     "tax_annual_summary": {
       "title": "Annual tax summary",
       "body": "Income for the year to date, for the year-end filing"

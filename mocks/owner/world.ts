@@ -1713,6 +1713,8 @@ export interface OwnerWorld {
   settings: Schemas["SettingDto"][];
   /** Values set for one property (F2 2.6): property id → key → value in force. */
   propertySettings: Record<string, Record<string, { value: Schemas["SettingDto"]["value"]; effectiveFrom: string }>>;
+  /** Every saved version per setting key (`GET /settings/{key}/versions`), seeded from the value in force. */
+  settingHistory: (Schemas["SettingHistoryEntryDto"] & { key: string })[];
   bankAccounts: Schemas["BankAccountDto"][];
   /** Open OTP challenges of bank account changes: account id → challenge (the fake SMS code is 123456). */
   bankOtps: Map<string, Schemas["OtpChallengeDto"]>;
@@ -1786,6 +1788,27 @@ function initialSettings(): Schemas["SettingDto"][] {
       TENANT_UP,
     ),
     setting("readings.plausibility_pct", "60", "decimal", "Plausibility band (D-035)"),
+    setting("access.work_order_window_hours", 4, "int", "Door code length for a work order without a window (D-211)"),
+    setting(
+      "access.resident_visitor_codes",
+      false,
+      "bool",
+      "Residents may create visitor codes for their own unit's lock in the app (D-218, off by default)",
+    ),
+    setting(
+      "access.resident_visitor_max_hours",
+      24,
+      "int",
+      "Longest visitor code a resident may create, hours (D-218)",
+    ),
+    setting(
+      "access.battery_low_pct",
+      20,
+      "int",
+      "Lock battery % that opens a repair request (D-211)",
+      "platform",
+      TENANT_UP,
+    ),
     setting("tax.vat", { rate: "0.07", applicableLineKinds: [] }, "json", "VAT (O-007)", "platform", TENANT_UP),
     setting(
       "compliance.tariff_cap.severity",
@@ -2063,6 +2086,7 @@ export function initialOwnerWorld(): OwnerWorld {
     received: [],
     settings: initialSettings(),
     propertySettings: {},
+    settingHistory: [],
     bankAccounts: initialBankAccounts(),
     bankOtps: new Map(),
     ratePlans: initialRatePlans(),

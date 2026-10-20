@@ -50,6 +50,7 @@ const EXPORTS: ExportCard[] = [
   { kind: "readings_csv", group: "operations" },
   { kind: "document_archive_zip", group: "operations" },
   { kind: "vat_pp30", group: "tax", vatOnly: true },
+  { kind: "etax_monthly_xlsx", group: "tax", vatOnly: true },
   { kind: "tax_annual_summary", group: "tax" },
 ];
 

@@ -16,6 +16,7 @@ import { ownerCan, param, readOnly, section, type OwnerContext } from "../shared
 import { SettingValue } from "../shared/SettingValue";
 import { EditCompany, LogoUpload } from "./CompanyActions";
 import { OwnerSettingEditor } from "./OwnerSettingEditor";
+import { SettingHistory } from "./SettingHistory";
 import { SettingsNav } from "./SettingsNav";
 
 /** Sections of the tenant's settings, by key prefix, in the order an operator sets a building up. */
@@ -25,6 +26,7 @@ const GROUPS: { id: string; prefixes: string[] }[] = [
   { id: "notifications", prefixes: ["notifications."] },
   { id: "readings", prefixes: ["readings.", "health."] },
   { id: "deposits", prefixes: ["deposit."] },
+  { id: "access", prefixes: ["access."] },
   { id: "compliance", prefixes: ["compliance.", "tenant.", "tax."] },
 ];
 /** Property-level settings the building page links to (D-031: billing cycle, cut-off, grace). */
@@ -84,10 +86,14 @@ async function SettingsTable({
               {propertyId && setting.scope !== "property" ? <Badge size="sm">{t("inherited")}</Badge> : null}
             </span>
           ),
-          actions:
-            setting.editable && setting.scopeAllowed.includes(scope) && !readOnly(me) ? (
-              <OwnerSettingEditor setting={setting} label={label(setting.key)} propertyId={propertyId} />
-            ) : null,
+          actions: (
+            <span className="flex flex-wrap justify-end gap-1">
+              <SettingHistory setting={setting} label={label(setting.key)} propertyId={propertyId} />
+              {setting.editable && setting.scopeAllowed.includes(scope) && !readOnly(me) ? (
+                <OwnerSettingEditor setting={setting} label={label(setting.key)} propertyId={propertyId} />
+              ) : null}
+            </span>
+          ),
         },
       }))}
     />

@@ -3,12 +3,8 @@
 import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
 import { ApiError } from "@/lib/api/errors";
+import { sha256Hex } from "@/lib/api/sha256";
 import type { Schemas } from "@/lib/api/types";
-
-async function sha256Hex(file: Blob): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
-  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
-}
 
 export interface UploadTarget {
   kind: Schemas["UploadKind"];

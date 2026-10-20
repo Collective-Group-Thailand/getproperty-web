@@ -44,12 +44,12 @@ test("legal pages in both languages; an unknown one is 404", async ({ page }) =>
 
 test("sitemap lists only the marketing pages, robots points at it", async ({ request }) => {
   const sitemap = await (await get(request, HOSTS.owner, "/sitemap.xml")).text();
-  expect(sitemap).toContain("<loc>http://localhost:3100/</loc>");
+  expect(sitemap).toContain(`<loc>${HOSTS.owner}/</loc>`);
   expect(sitemap).toContain("/pricing</loc>");
-  expect(sitemap).toContain('hreflang="en" href="http://localhost:3100/en/legal/dpa"');
+  expect(sitemap).toContain(`hreflang="en" href="${HOSTS.owner}/en/legal/dpa"`);
   expect(sitemap).not.toContain("dashboard");
   const robots = await (await get(request, HOSTS.owner, "/robots.txt")).text();
-  expect(robots).toContain("Sitemap: http://localhost:3100/sitemap.xml");
+  expect(robots).toContain(`Sitemap: ${HOSTS.owner}/sitemap.xml`);
   expect(robots).toContain("Disallow: /");
   expect((await get(request, HOSTS.staff, "/sitemap.xml")).status()).toBe(404);
 });

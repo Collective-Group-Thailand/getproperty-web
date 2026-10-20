@@ -55,8 +55,8 @@ export async function MeteringNav({
 /**
  * Meter points of a building (F2 2.5, B3.1): each `asset_item` meter with its `meter_assignment` (unit or
  * common area), its health and last reading with source — filtered by utility, purpose and search, a
- * page at a time — and the readings export. The last reading of each meter on the page is read from its
- * history (`MeterDto` carries neither; contract request).
+ * page at a time — and the readings export. Health and the last accepted reading come on `MeterDto`
+ * (`smart.meter_status`, D-208).
  */
 export async function MetersView({ context, searchParams }: { context: OwnerContext; searchParams: SearchParams }) {
   const t = await getTranslations("owner.meters");

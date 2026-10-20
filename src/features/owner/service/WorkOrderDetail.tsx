@@ -15,6 +15,8 @@ import { SimpleTable } from "@/ui/components/SimpleTable";
 
 import { ownerPath } from "../shared/links";
 import { fieldMembers } from "../shared/members";
+import { section } from "@/features/shared/console/params";
+import { ServiceThread } from "@/features/shared/console/ServiceThread";
 import { PhotoThumb } from "../shared/PhotoThumb";
 import { ownerCan, readOnly, type OwnerContext } from "../shared/server";
 import { AddCostLine, RemoveCostLine, WorkOrderActions, WorkOrderPhotoUpload } from "./WorkOrderActions";
@@ -31,6 +33,7 @@ export async function WorkOrderDetail({ context, workOrderId }: { context: Owner
   const t = await getTranslations("owner.service.workOrder");
   const kinds = await getTranslations("owner.service.kind");
   const costT = await getTranslations("owner.service.cost");
+  const visit = await getTranslations("console.visit");
   const { api, locale, me } = context;
   const workOrder = await unwrap(
     api.GET("/v1/owner/work-orders/{workOrderId}", { params: { path: { workOrderId } } }),
@@ -38,7 +41,7 @@ export async function WorkOrderDetail({ context, workOrderId }: { context: Owner
     if (isApiError(error) && error.status === 404) notFound();
     throw error;
   });
-  const [request, members] = await Promise.all([
+  const [request, members, messages] = await Promise.all([
     workOrder.serviceRequestId
       ? unwrap(
           api.GET("/v1/owner/service-requests/{serviceRequestId}", {
@@ -46,7 +49,8 @@ export async function WorkOrderDetail({ context, workOrderId }: { context: Owner
           }),
         ).catch(() => null)
       : Promise.resolve(null),
-    fieldMembers(api, workOrder.buildingId),
+    fieldMembers(api, { permission: "service_request.handle", buildingId: workOrder.buildingId }),
+    section(unwrap(api.GET("/v1/owner/work-orders/{workOrderId}/messages", { params: { path: { workOrderId } } }))),
   ]);
   const canHandle = ownerCan(me, "service_request.handle") && !readOnly(me);
   const building = context.buildings.find((candidate) => candidate.id === workOrder.buildingId);
@@ -108,6 +112,32 @@ export async function WorkOrderDetail({ context, workOrderId }: { context: Owner
                     })
                   : null,
               },
+              ...(request
+                ? [
+                    {
+                      id: "preferredVisit",
+                      term: visit("preferred"),
+                      description: (
+                        <span data-testid="work-order-preferred-visit">
+                          {request.preferredVisit
+                            ? visit(`preference.${request.preferredVisit}`)
+                            : visit("noPreference")}
+                        </span>
+                      ),
+                    },
+                    {
+                      id: "visitConfirmed",
+                      term: visit("confirmed"),
+                      description: request.visitConfirmedAt ? (
+                        <span data-testid="work-order-visit-confirmed">
+                          {visit("confirmedAt", { at: formatDateTime(request.visitConfirmedAt, locale) })}
+                        </span>
+                      ) : workOrder.scheduledAt && !workOrder.completedAt && workOrder.status !== "cancelled" ? (
+                        <span className="text-muted">{visit("notConfirmed")}</span>
+                      ) : null,
+                    },
+                  ]
+                : []),
               {
                 id: "request",
                 term: t("request"),
@@ -177,6 +207,18 @@ export async function WorkOrderDetail({ context, workOrderId }: { context: Owner
           </Card>
         ))}
       </div>
+
+      <Card data-testid="work-order-thread-card">
+        <ServiceThread
+          target={{ surface: "owner", kind: "workOrder", id: workOrder.id }}
+          initial={messages.data?.data ?? null}
+          canWrite={canHandle}
+          ended={
+            workOrder.status === "cancelled" ||
+            (request !== null && (request.status === "closed" || request.status === "cancelled"))
+          }
+        />
+      </Card>
 
       <Card as="section" aria-labelledby="work-order-costs" data-testid="work-order-costs">
         <CardHeader

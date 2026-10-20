@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 import { FormDialog, text } from "@/features/shared/console/FormDialog";
@@ -25,7 +25,7 @@ import { IconQr } from "@/ui/icons/glyphs/qr";
 import { IconRemove } from "@/ui/icons/glyphs/remove";
 import { IconUpload } from "@/ui/icons/glyphs/upload";
 
-import { DEVICE_KINDS, RINGS } from "./constants";
+import { buildingLabel, DEVICE_KINDS, RINGS } from "./constants";
 
 /** `nextActions` of a live gateway → the command it allows (D-131); `set_log_level` goes with them (admin only, D-183). */
 const COMMAND_ACTIONS: Record<string, Schemas["CommandType"]> = {
@@ -36,10 +36,27 @@ const COMMAND_ACTIONS: Record<string, Schemas["CommandType"]> = {
 };
 const LOG_LEVELS = ["debug", "info", "warn", "error"] as const;
 
-export interface BuildingOption {
-  id: string;
-  tenantId: string | null;
-  label: string;
+/**
+ * The buildings of the tenant chosen in the assign dialog (`GET /v1/admin/tenants/{tenantId}/buildings`), read
+ * when the tenant changes; `null` while reading.
+ */
+function useTenantBuildings(tenantId: string, enabled: boolean) {
+  const [state, setState] = useState<{
+    tenantId: string;
+    buildings: Schemas["AdminBuildingDto"][] | null;
+    error: unknown;
+  }>({ tenantId: "", buildings: null, error: null });
+  useEffect(() => {
+    if (!enabled || !tenantId) return;
+    let alive = true;
+    void unwrap(browserApi().GET("/v1/admin/tenants/{tenantId}/buildings", { params: { path: { tenantId } } }))
+      .then((buildings) => alive && setState({ tenantId, buildings, error: null }))
+      .catch((error: unknown) => alive && setState({ tenantId, buildings: [], error }));
+    return () => {
+      alive = false;
+    };
+  }, [enabled, tenantId]);
+  return state.tenantId === tenantId ? state : { tenantId, buildings: null, error: null };
 }
 
 /**
@@ -187,11 +204,9 @@ export function RegisterDevice() {
 export function DeviceActions({
   device,
   tenants,
-  buildings,
 }: {
   device: Schemas["FleetDeviceDto"];
   tenants: { id: string; name: string }[];
-  buildings: BuildingOption[];
 }) {
   const t = useTranslations("admin.fleet.actions");
   const commands = useTranslations("admin.fleet.command");
@@ -225,7 +240,7 @@ export function DeviceActions({
       </Field>
     </>
   );
-  const tenantBuildings = buildings.filter((building) => building.tenantId === tenantId || building.tenantId === null);
+  const tenantBuildings = useTenantBuildings(tenantId, actions.has("assign"));
 
   return (
     <div className="flex flex-col gap-3" data-testid="device-actions">
@@ -246,7 +261,7 @@ export function DeviceActions({
                   ...path,
                   body: {
                     tenantId,
-                    buildingId: text(data, "buildingId") ?? text(data, "buildingIdTyped") ?? "",
+                    buildingId: text(data, "buildingId") ?? "",
                     otaRing: gateway ? ((text(data, "otaRing") ?? "all") as Schemas["OtaRing"]) : undefined,
                   },
                 }),
@@ -264,25 +279,27 @@ export function DeviceActions({
                     data-testid="assign-tenant"
                   />
                 </Field>
-                {tenantBuildings.length > 0 ? (
-                  <Field label={t("building")} required error={errors.buildingId}>
-                    <NativeSelect
-                      name="buildingId"
-                      options={tenantBuildings.map((building) => ({ value: building.id, label: building.label }))}
-                      data-testid="assign-building"
-                    />
-                  </Field>
-                ) : (
-                  <Field label={t("buildingId")} hint={t("buildingIdHint")} required error={errors.buildingId}>
-                    <Input
-                      name="buildingIdTyped"
-                      required
-                      pattern="[0-9a-fA-F-]{36}"
-                      className="font-mono"
-                      data-testid="assign-building-id"
-                    />
-                  </Field>
-                )}
+                <Field
+                  label={t("building")}
+                  required
+                  error={errors.buildingId}
+                  hint={
+                    tenantBuildings.buildings?.length === 0 && !tenantBuildings.error ? t("noBuildings") : undefined
+                  }
+                >
+                  <NativeSelect
+                    name="buildingId"
+                    required
+                    disabled={!tenantBuildings.buildings?.length}
+                    placeholder={tenantBuildings.buildings === null ? t("loadingBuildings") : undefined}
+                    options={(tenantBuildings.buildings ?? []).map((building) => ({
+                      value: building.id,
+                      label: buildingLabel(building),
+                    }))}
+                    data-testid="assign-building"
+                  />
+                </Field>
+                <ProblemNotice error={tenantBuildings.error} />
                 {gateway ? (
                   <Field label={t("ring")} error={errors.otaRing}>
                     <NativeSelect

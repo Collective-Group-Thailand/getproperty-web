@@ -152,6 +152,9 @@
       "anyStatus": "Any status",
       "category": "Category",
       "anyCategory": "Any category",
+      "sla": "SLA",
+      "anySla": "Any SLA",
+      "slaBreached": "Past the SLA",
       "warranty": "Warranty",
       "anyWarranty": "All",
       "inWarranty": "In warranty"
@@ -338,8 +341,26 @@
   "maintenance": {
     "title": "Maintenance",
     "description": "Preventive plans of equipment; the API opens the work order the lead days before each due date.",
-    "lockAsset": "Lock · {name}",
-    "meterAsset": "Meter {code} · {name}",
+    "assetLabel": "{category} · {name}",
+    "assetCategory": {
+      "meter_electric": "Electric meter",
+      "meter_water": "Water meter",
+      "gateway": "Gateway",
+      "lock": "Lock",
+      "breaker": "Breaker",
+      "door_controller": "Door controller",
+      "camera": "Camera",
+      "sensor": "Sensor",
+      "pump": "Water pump",
+      "lift": "Lift",
+      "generator": "Generator",
+      "hvac": "Air conditioning",
+      "fire_safety": "Fire safety",
+      "water_tank": "Water tank",
+      "appliance": "Appliance",
+      "furniture": "Furniture",
+      "other": "Other"
+    },
     "nextDue": "Next due",
     "nextDueHint": "Soonest first.",
     "empty": {

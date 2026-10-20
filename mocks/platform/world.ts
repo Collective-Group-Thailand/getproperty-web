@@ -239,6 +239,7 @@ export interface PlatformWorld {
   dsrs: Schemas["DsrDto"][];
   audit: Schemas["AuditEntryDto"][];
   outbox: Schemas["OutboxMessageDto"][];
+  integrationEvents: Schemas["IntegrationEventDto"][];
   consumptions: Schemas["EventConsumptionDto"][];
   devices: Schemas["FleetDeviceDto"][];
   configs: Record<string, Schemas["GatewayConfigVersionDto"][]>;
@@ -353,6 +354,7 @@ function tariffVersion(
     effectiveTo,
     ceilingPerUnit: ceiling,
     sourceUrl: "https://www.mea.or.th/our-services/tariff-calculation/other/D6AWBBn5I",
+    sourceDocumentId: null,
     notes: null,
     needsCheck: false,
     enteredBy: PLATFORM_USER_IDS.ops,
@@ -1197,6 +1199,19 @@ export function initialPlatformWorld(): PlatformWorld {
         notes: "บัญชีผู้ดูแลอาคาร",
         nextActions: [],
       },
+      {
+        // A login not linked to any tenant asks for its data: Collective is the controller (D-214).
+        id: "9f000000-0000-4000-8000-000000000004",
+        tenantId: null,
+        kind: "access",
+        state: "received",
+        receivedAt: iso(-2),
+        dueAt: iso(28),
+        fulfilledAt: null,
+        exportDocumentId: null,
+        notes: null,
+        nextActions: ["verify", "reject"],
+      },
     ],
     audit: [
       {
@@ -1248,6 +1263,50 @@ export function initialPlatformWorld(): PlatformWorld {
         after: { state: "published" },
         metadata: {},
         supportGrantId: null,
+      },
+    ],
+    integrationEvents: [
+      {
+        id: "a2100000-0000-4000-8000-000000000001",
+        direction: "outbound",
+        system: "getbuild",
+        type: "warranty.claim_requested",
+        contractVersion: "1",
+        aggregateRef: "service_request:SR-2610-0004",
+        tenantId: TENANT_IDS.sample,
+        state: "acked",
+        attempts: 1,
+        lastError: null,
+        occurredAt: iso(-2),
+        ackedAt: iso(-1.9),
+      },
+      {
+        id: "a2100000-0000-4000-8000-000000000002",
+        direction: "inbound",
+        system: "getbuild",
+        type: "warranty.claim_resolved",
+        contractVersion: "1",
+        aggregateRef: "service_request:SR-2610-0004",
+        tenantId: TENANT_IDS.sample,
+        state: "applied",
+        attempts: 1,
+        lastError: null,
+        occurredAt: iso(-1),
+        ackedAt: null,
+      },
+      {
+        id: "a2100000-0000-4000-8000-000000000003",
+        direction: "outbound",
+        system: "getbuild",
+        type: "work_order.completed",
+        contractVersion: "1",
+        aggregateRef: "work_order:9d3c0e1a",
+        tenantId: TENANT_IDS.sample,
+        state: "dead",
+        attempts: 8,
+        lastError: "getbuild bridge 503 Service Unavailable",
+        occurredAt: iso(-0.5),
+        ackedAt: null,
       },
     ],
     outbox: [

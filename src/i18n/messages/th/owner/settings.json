@@ -28,6 +28,7 @@
     "notifications": "การแจ้งเตือน",
     "readings": "การจดมิเตอร์",
     "deposits": "เงินประกัน",
+    "access": "ประตูและการเข้าออก",
     "compliance": "กฎหมายและภาษี",
     "other": "อื่น ๆ"
   },
@@ -51,7 +52,11 @@
     "deposit_max_months_short": "เพดานเงินประกันและค่าเช่าล่วงหน้า",
     "tax_vat": "VAT ในใบแจ้งหนี้",
     "compliance_tariff_cap_severity": "กติกาเพดานค่าน้ำค่าไฟ",
-    "tenant_subject_to_ocpb_2568": "อยู่ภายใต้ประกาศ สคบ. 2568"
+    "tenant_subject_to_ocpb_2568": "อยู่ภายใต้ประกาศ สคบ. 2568",
+    "access_work_order_window_hours": "รหัสประตูสำหรับงานซ่อม",
+    "access_resident_visitor_codes": "ผู้เช่าสร้างรหัสผู้มาเยือนเองได้",
+    "access_resident_visitor_max_hours": "รหัสผู้มาเยือนนานที่สุด",
+    "access_battery_low_pct": "แบตเตอรี่กลอนต่ำ"
   },
   "property": {
     "title": "การตั้งค่าอาคาร",
@@ -78,6 +83,18 @@
     "quietEnd": "ถึง",
     "estimateAllow": "ประมาณค่าได้เมื่อไม่มีค่าจด",
     "estimateBlock": "รอค่าจดจริง"
+  },
+  "history": {
+    "open": "ประวัติ",
+    "title": "ประวัติการตั้งค่า {name}",
+    "description": "ค่าเริ่มต้นของแพลตฟอร์ม ของบริษัท และของอาคาร เรียงจากล่าสุด — ค่าที่ตั้งเวลาไว้ล่วงหน้าจะมีป้ายกำกับ",
+    "loading": "กำลังอ่านประวัติ…",
+    "empty": "ไม่มีประวัติ",
+    "scheduled": "ตั้งเวลาไว้",
+    "until": "ถึง {date}",
+    "openEnded": "ไม่มีวันสิ้นสุด",
+    "created": "บันทึกเมื่อ {date}",
+    "reason": "เหตุผล: {reason}"
   },
   "company": {
     "title": "ข้อมูลบริษัท",

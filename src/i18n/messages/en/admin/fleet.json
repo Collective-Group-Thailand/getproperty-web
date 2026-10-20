@@ -150,8 +150,8 @@
     "assigned": "Device assigned",
     "tenant": "Tenant",
     "building": "Building",
-    "buildingId": "Building id",
-    "buildingIdHint": "No known building for this tenant yet — paste the building id",
+    "noBuildings": "This tenant has no building yet — create one in the tenant's console first.",
+    "loadingBuildings": "Reading the tenant's buildings…",
     "ring": "OTA ring",
     "ringName": {
       "canary": "Canary — first to update",

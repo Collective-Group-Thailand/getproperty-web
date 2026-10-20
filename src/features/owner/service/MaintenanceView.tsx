@@ -27,30 +27,28 @@ export async function MaintenanceView({ context }: { context: OwnerContext }) {
   const t = await getTranslations("owner.service.maintenance");
   const { api, locale, me } = context;
   const building = focusedBuilding(context);
-  const [plans, categories, members, meters, locks, units] = await Promise.all([
+  const [plans, categories, members, items, units] = await Promise.all([
     section(unwrap(api.GET("/v1/owner/maintenance-plans", { params: { query: { buildingId: building?.id } } }))),
     serviceCategories(api),
-    fieldMembers(api, building?.id),
+    fieldMembers(api, { permission: "service_request.handle", buildingId: building?.id }),
     building
       ? unwrap(
-          api.GET("/v1/owner/buildings/{buildingId}/meters", { params: { path: { buildingId: building.id } } }),
-        ).catch(() => [])
-      : Promise.resolve([]),
-    building
-      ? unwrap(api.GET("/v1/owner/locks", { params: { query: { buildingId: building.id } } }))
+          api.GET("/v1/owner/buildings/{buildingId}/asset-items", {
+            params: { path: { buildingId: building.id }, query: { status: "active" } },
+          }),
+        )
           .then((body) => body.data)
           .catch(() => [])
       : Promise.resolve([]),
     building ? buildingUnits(api, building.id) : Promise.resolve([]),
   ]);
   const canManage = ownerCan(me, "maintenance_plan.manage") && !readOnly(me);
-  const assets: AssetChoice[] = [
-    ...locks.map((lock) => ({ id: lock.assetItemId, label: t("lockAsset", { name: lock.name }) })),
-    ...meters.map((meter) => ({
-      id: meter.assetItemId,
-      label: t("meterAsset", { code: meter.code, name: meter.name }),
-    })),
-  ];
+  // Every active asset item of the building, in the API's order; the form narrows them by unit.
+  const assets: AssetChoice[] = items.map((item) => ({
+    id: item.id,
+    unitId: item.unitId,
+    label: t("assetLabel", { category: t(`assetCategory.${item.category}`), name: item.name }),
+  }));
   const today = bangkokToday();
   const list = [...(plans.data?.data ?? [])].sort((a, b) => a.nextDueOn.localeCompare(b.nextDueOn));
   const categoryOptions = categories.map(({ id, nameTh }) => ({ id, nameTh }));

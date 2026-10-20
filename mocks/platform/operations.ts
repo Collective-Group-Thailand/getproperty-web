@@ -10,6 +10,7 @@ import {
   json,
   noContent,
   notFound,
+  paged,
   platform,
   problem,
   query,
@@ -27,6 +28,31 @@ type Schemas = components["schemas"];
  */
 
 const w = () => state.platform;
+
+/** A platform-scoped file (`scopeType: platform`, no tenant, D-214), presigned until uploaded. */
+function platformFile(input: {
+  kind: Schemas["DocumentKind"];
+  title: string | null;
+  mimeType: string;
+  sizeBytes: number;
+}): Schemas["FileDto"] {
+  return {
+    id: crypto.randomUUID(),
+    kind: input.kind,
+    scopeType: "platform",
+    scopeId: null,
+    buildingId: null,
+    title: input.title,
+    mimeType: input.mimeType,
+    sizeBytes: input.sizeBytes,
+    width: null,
+    height: null,
+    retentionClass: input.kind,
+    scanStatus: "pending",
+    uploadState: "presigned",
+    createdAt: new Date().toISOString(),
+  };
+}
 const now = () => new Date().toISOString();
 
 function tariffActions(version: Schemas["TariffVersionDto"]): string[] {
@@ -189,6 +215,7 @@ const tariffHandlers: HttpHandler[] = [
         effectiveTo: null,
         ceilingPerUnit: payload.structure.ceilingPerUnit ?? "0",
         sourceUrl: payload.sourceUrl,
+        sourceDocumentId: payload.sourceDocumentId ?? null,
         notes: payload.notes ?? null,
         needsCheck: (payload.structure.needsCheck ?? []).length > 0,
         enteredBy: ok.userId,
@@ -247,16 +274,16 @@ const tariffHandlers: HttpHandler[] = [
     emit("utility_tariff.published", { versionId: version.id }, "admin");
     return json(version);
   }),
-  // CONTRACT-REQUEST: `GET /v1/admin/utility-tariffs/versions/{versionId}/charge?units=` — the sample
-  // bill at a version that is not in force yet (docs/contract-requests.md). Answers a `TariffChargeDto`.
+  // `GET /v1/admin/utility-tariffs/versions/{versionId}/charge?units=` (admin.utilityTariffs.sampleCharge,
+  // D-214): the sample bill at a version in any state. Answers a `TariffChargeDto`.
   http.get("*/v1/admin/utility-tariffs/versions/:versionId/charge", ({ request, params }) => {
-    const op = "admin.utilityTariffs.list";
+    const op = "admin.utilityTariffs.sampleCharge";
     const ok = platform(request, op, ["admin.utility_tariff.enter", "admin.utility_tariff.verify"]);
     if (ok instanceof Response) return ok;
     const found = findVersion(String(params.versionId));
-    if (!found) return notFound("admin.utilityTariffs.verify");
+    if (!found) return notFound(op);
     const units = Number(query(request).get("units"));
-    if (!(units >= 0 && units <= 100_000)) return validation(op, "units", "0–100000");
+    if (!(units > 0 && units <= 100_000)) return validation(op, "units", "more than 0");
     return json(charge(found.version.structure as Structure, units));
   }),
 ];
@@ -401,6 +428,101 @@ const templateHandlers: HttpHandler[] = [
 ];
 
 const privacyHandlers: HttpHandler[] = [
+  http.post("*/v1/admin/data-subject-requests/:requestId/actions/:action", async ({ request, params }) => {
+    const op = "admin.dataSubjectRequests.transition";
+    const ok = platform(request, op, "admin.dsr.manage");
+    if (ok instanceof Response) return ok;
+    const dsr = w().dsrs.find((candidate) => candidate.id === params.requestId);
+    if (!dsr) return notFound(op);
+    if (dsr.tenantId !== null) return problem(op, "dsr.tenant_controlled");
+    const action = String(params.action) as Schemas["DsrAction"];
+    if (!dsr.nextActions.includes(action)) return problem(op, "workflow.invalid_transition");
+    const input = await body<Schemas["DsrActionDto"]>(request);
+    const notes = input.notes?.trim() || null;
+    if (action === "reject" && !notes) return validation(op, "notes", "the reason");
+    record(op, request, input);
+    const next: Record<Schemas["DsrAction"], { state: Schemas["DsrState"]; actions: string[] }> = {
+      verify: { state: "verifying", actions: ["start", "reject"] },
+      start: { state: "in_progress", actions: ["fulfil", "reject"] },
+      fulfil: { state: "fulfilled", actions: [] },
+      reject: { state: "rejected", actions: [] },
+    };
+    dsr.state = next[action].state;
+    dsr.nextActions = next[action].actions;
+    if (notes) dsr.notes = notes;
+    if (action === "fulfil") {
+      dsr.fulfilledAt = now();
+      if (dsr.kind === "access" || dsr.kind === "portability") {
+        const file: Schemas["FileDto"] = platformFile({
+          kind: "export",
+          title: `dsr-${dsr.id.slice(0, 8)}.json`,
+          mimeType: "application/json",
+          sizeBytes: 2048,
+        });
+        file.scanStatus = "clean";
+        file.uploadState = "verified";
+        state.staff.files.set(file.id, { file, bytes: null });
+        dsr.exportDocumentId = file.id;
+      }
+    }
+    audit(ok, `dsr.${action}`, { type: "privacy.data_subject_request", id: dsr.id });
+    return json(dsr);
+  }),
+  http.post("*/v1/admin/files/presign", async ({ request }) => {
+    const op = "admin.files.presign";
+    const ok = platform(request, op, ["admin.utility_tariff.enter", "admin.tenant.manage", "admin.dsr.manage"]);
+    if (ok instanceof Response) return ok;
+    const input = await body<Partial<Schemas["AdminFilePresignDto"]>>(request);
+    if (!input.kind || !input.fileName || !input.mimeType || !input.sizeBytes || !input.sha256)
+      return validation(op, "body", "kind, fileName, mimeType, sizeBytes and sha256 are required");
+    if (!["tariff_source", "contract", "other"].includes(input.kind)) return validation(op, "kind", "a platform kind");
+    if (!/^(application\/pdf|image\/(jpeg|png|webp))$/.test(input.mimeType))
+      return problem(op, "document.type_not_allowed");
+    const file = platformFile({
+      kind: input.kind,
+      title: input.title ?? input.fileName,
+      mimeType: input.mimeType,
+      sizeBytes: input.sizeBytes,
+    });
+    state.staff.files.set(file.id, { file, bytes: null });
+    return json(
+      {
+        file,
+        uploadUrl: `${new URL(request.url).origin}/__upload/${file.id}`,
+        headers: { "Content-Type": input.mimeType },
+        multipart: null,
+        expiresAt: new Date(Date.now() + 15 * 60_000).toISOString(),
+      } satisfies Schemas["FilePresignedDto"],
+      201,
+    );
+  }),
+  http.post("*/v1/admin/files/:fileId/actions/complete", ({ request, params }) => {
+    const op = "admin.files.complete";
+    const ok = platform(request, op, ["admin.utility_tariff.enter", "admin.tenant.manage", "admin.dsr.manage"]);
+    if (ok instanceof Response) return ok;
+    const stored = state.staff.files.get(String(params.fileId));
+    if (!stored || stored.file.scopeType !== "platform") return notFound(op);
+    if (!stored.bytes) return problem(op, "document.not_uploaded");
+    if (stored.bytes.byteLength !== stored.file.sizeBytes) return problem(op, "document.size_mismatch");
+    stored.file = { ...stored.file, uploadState: "verified", scanStatus: "clean" };
+    return json(stored.file);
+  }),
+  http.get("*/v1/admin/files/:fileId", ({ request, params }) => {
+    const op = "admin.files.get";
+    const ok = platform(request, op, ["admin.tenant.read", "admin.dsr.manage", "admin.utility_tariff.enter"]);
+    if (ok instanceof Response) return ok;
+    const stored = state.staff.files.get(String(params.fileId));
+    // A tenant file is 404 here; a platform file answers once it is clean.
+    if (!stored || stored.file.scopeType !== "platform") return notFound(op);
+    if (stored.file.scanStatus !== "clean") return problem(op, "document.scan_pending");
+    const origin = new URL(request.url).origin;
+    return json({
+      file: stored.file,
+      url: `${origin}/__files/${stored.file.mimeType === "application/pdf" ? `pdf-${stored.file.id}` : stored.file.id}`,
+      thumbnailUrl: null,
+      expiresAt: new Date(Date.now() + 5 * 60_000).toISOString(),
+    } satisfies Schemas["FileDownloadDto"]);
+  }),
   http.get("*/v1/admin/data-subject-requests", ({ request }) => {
     const ok = platform(request, "admin.dataSubjectRequests.list", "admin.dsr.manage");
     if (ok instanceof Response) return ok;
@@ -444,6 +566,20 @@ const privacyHandlers: HttpHandler[] = [
     const next =
       start + limit < rows.length ? Buffer.from(JSON.stringify({ offset: start + limit })).toString("base64url") : null;
     return json({ data: page, meta: { nextCursor: next } });
+  }),
+  http.get("*/v1/admin/integration-events", ({ request }) => {
+    const ok = platform(request, "admin.integrationEvents.list", "admin.integration_event.read");
+    if (ok instanceof Response) return ok;
+    const params = query(request);
+    const q = params.get("q")?.toLowerCase();
+    const list = w()
+      .integrationEvents.filter((event) => !params.get("state") || event.state === params.get("state"))
+      .filter((event) => !params.get("system") || event.system === params.get("system"))
+      .filter((event) => !params.get("direction") || event.direction === params.get("direction"))
+      .filter((event) => !params.get("tenantId") || event.tenantId === params.get("tenantId"))
+      .filter((event) => !q || event.type.toLowerCase().startsWith(q) || event.id === q)
+      .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt));
+    return json(paged(list, request));
   }),
   http.get("*/v1/admin/outbox/messages", ({ request }) => {
     const ok = platform(request, "admin.outbox.messages", "admin.outbox.manage");

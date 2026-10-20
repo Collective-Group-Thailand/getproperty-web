@@ -3,8 +3,17 @@ import { http, type HttpHandler } from "msw";
 import type { components } from "../../src/lib/api/schema";
 import { emit } from "../handlers/realtime";
 import { add, baht, satang } from "../owner/money";
+import { buildingOf, unitOf } from "../staff-world";
 import { state } from "../state";
-import { hours, categoryRef, summaryOf, type MockRequest, type MockWorkOrder } from "./world";
+import {
+  hours,
+  categoryRef,
+  slaBreachedOf,
+  summaryOf,
+  type MockMessage,
+  type MockRequest,
+  type MockWorkOrder,
+} from "./world";
 import {
   idempotent,
   json,
@@ -50,10 +59,9 @@ function srActions(sr: MockRequest): string[] {
 
 function srDto(sr: MockRequest): Schemas["ServiceRequestDto"] {
   const dto = omit(sr, "timeline");
-  const breached = sr.slaDueAt !== null && OPEN.includes(sr.status) && sr.slaDueAt < new Date().toISOString();
   return {
     ...dto,
-    slaBreached: sr.slaBreached || breached,
+    slaBreached: slaBreachedOf(sr),
     nextActions: srActions(sr),
     workOrders: r2()
       .workOrders.filter((wo) => wo.serviceRequestId === sr.id)
@@ -222,6 +230,22 @@ function newWorkOrder(
   return wo;
 }
 
+const MESSAGE_MAX = 2000;
+
+/** The thread a work order writes into: its request's, else its own (D-218). */
+function threadOf(target: { sr: MockRequest } | { wo: MockWorkOrder }): MockMessage[] {
+  if ("sr" in target) return r2().messages.filter((message) => message.serviceRequestId === target.sr.id);
+  const { wo } = target;
+  return wo.serviceRequestId
+    ? r2().messages.filter((message) => message.serviceRequestId === wo.serviceRequestId)
+    : r2().messages.filter((message) => message.workOrderId === wo.id && message.serviceRequestId === null);
+}
+
+const messageDto = (message: MockMessage, ok: R2Ok): Schemas["ServiceMessageDto"] => ({
+  ...omit(message, "serviceRequestId", "workOrderId", "authorUserId"),
+  mine: message.authorUserId === ok.userId,
+});
+
 function serviceHandlers(surface: Surface): HttpHandler[] {
   const base = `*/v1/${surface}`;
   const op = (name: string) => `${surface}.${name}`;
@@ -276,12 +300,84 @@ function serviceHandlers(surface: Surface): HttpHandler[] {
       return json(srDto(sr));
     });
 
+  /** `GET|POST …/messages` of a request or a work order (409 once the request ended / the order was cancelled). */
+  const threadHandlers = (kind: "service-requests" | "work-orders"): HttpHandler[] => {
+    const param = kind === "service-requests" ? "serviceRequestId" : "workOrderId";
+    const opBase = kind === "service-requests" ? "serviceRequests" : "workOrders";
+    const target = (ok: R2Ok, value: unknown): { sr: MockRequest } | { wo: MockWorkOrder } | null => {
+      if (kind === "service-requests") {
+        const sr = findSr(ok, value);
+        return sr ? { sr } : null;
+      }
+      const wo = findWo(ok, value);
+      return wo ? { wo } : null;
+    };
+    return [
+      http.get(`${base}/${kind}/:${param}/messages`, ({ request, params }) => {
+        const id = op(`${opBase}.messages`);
+        const ok = reader(request, id);
+        if (ok instanceof Response) return ok;
+        const found = target(ok, params[param]);
+        if (!found) return notFound(id);
+        const data = threadOf(found)
+          .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+          .map((message) => messageDto(message, ok));
+        return json({ data } satisfies Schemas["ServiceMessagesDto"]);
+      }),
+      http.post(`${base}/${kind}/:${param}/messages`, async ({ request, params }) => {
+        const id = op(`${opBase}.postMessage`);
+        const ok = writer(request, id);
+        if (ok instanceof Response) return ok;
+        const found = target(ok, params[param]);
+        if (!found) return notFound(id);
+        return idempotent(
+          request,
+          id,
+          (payload) => {
+            const body = typeof payload.body === "string" ? payload.body.trim() : "";
+            if (!body || body.length > MESSAGE_MAX)
+              return validation(id, "body", `1–${MESSAGE_MAX} characters`, "length");
+            const sr =
+              "sr" in found
+                ? found.sr
+                : found.wo.serviceRequestId
+                  ? (r2().requests.find((candidate) => candidate.id === found.wo.serviceRequestId) ?? null)
+                  : null;
+            if (sr && (sr.status === "closed" || sr.status === "cancelled"))
+              return problem(id, "service_request.invalid_state");
+            if (!sr && "wo" in found && found.wo.status === "cancelled") return problem(id, "work_order.invalid_state");
+            const message: MockMessage = {
+              id: crypto.randomUUID(),
+              serviceRequestId: sr?.id ?? null,
+              workOrderId: "wo" in found ? found.wo.id : null,
+              author: "office",
+              authorName: ok.persona.user.displayName,
+              authorUserId: ok.userId,
+              body,
+              createdAt: new Date().toISOString(),
+            };
+            r2().messages.push(message);
+            emit("service_request.message", {
+              aggregateType: sr ? "service_request" : "work_order",
+              aggregateId: sr?.id ?? message.workOrderId!,
+              messageId: message.id,
+            });
+            return { status: 201, body: messageDto(message, ok) };
+          },
+          true,
+        );
+      }),
+    ];
+  };
+
   const reasonOf = (id: string, input: Record<string, unknown>) =>
     typeof input.reason === "string" && input.reason.trim()
       ? input.reason.trim()
       : validation(id, "reason", "a reason");
 
   return [
+    ...threadHandlers("service-requests"),
+    ...threadHandlers("work-orders"),
     http.get(`${base}/service-requests`, ({ request }) => {
       const id = op("serviceRequests.list");
       const ok = reader(request, id);
@@ -295,6 +391,7 @@ function serviceHandlers(surface: Surface): HttpHandler[] {
         .filter((sr) => !params.get("status") || sr.status === params.get("status"))
         .filter((sr) => !params.get("categoryId") || sr.category.id === params.get("categoryId"))
         .filter((sr) => params.get("open") !== "true" || OPEN.includes(sr.status))
+        .filter((sr) => !params.has("slaBreached") || slaBreachedOf(sr) === (params.get("slaBreached") === "true"))
         .filter((sr) => params.get("inWarranty") !== "true" || sr.inWarranty)
         .filter(
           (sr) =>
@@ -357,6 +454,8 @@ function serviceHandlers(surface: Surface): HttpHandler[] {
             slaHours: category.slaHours,
             slaDueAt: hours(category.slaHours),
             slaBreached: false,
+            preferredVisit: input.preferredVisit ?? null,
+            visitConfirmedAt: null,
             version: 1,
             nextActions: [],
             workOrders: [],
@@ -765,6 +864,18 @@ const settingsHandlers: HttpHandler[] = [
     record(id, request, input);
     return json(plan, 200, { etag: `"v${plan.version}-${plan.id.slice(-6)}"` });
   }),
+  http.get("*/v1/owner/buildings/:buildingId/asset-items", ({ request, params }) => {
+    const id = "owner.assetItems.listForBuilding";
+    const ok = reader(request, id);
+    if (ok instanceof Response) return ok;
+    if (!ok.own || !state.owner.buildings.some((building) => building.id === params.buildingId)) return notFound(id);
+    const params_ = query(request);
+    const data = buildingAssetItems(String(params.buildingId))
+      .filter((item) => !params_.get("category") || item.category === params_.get("category"))
+      .filter((item) => !params_.get("status") || item.status === params_.get("status"))
+      .filter((item) => !params_.get("unitId") || item.unitId === params_.get("unitId"));
+    return json({ data } satisfies Schemas["BuildingAssetItemsDto"]);
+  }),
   http.get("*/v1/owner/units/:unitId/asset-items", ({ request, params }) => {
     const id = "owner.assetItems.list";
     const ok = reader(request, id);
@@ -774,8 +885,71 @@ const settingsHandlers: HttpHandler[] = [
   }),
 ];
 
-/** An asset item the mock knows: a lock, a meter or a unit amenity. */
+/**
+ * The asset items of a building (`GET /v1/owner/buildings/{id}/asset-items`): its equipment, the locks, the
+ * meters and the units' amenities — what the API lists from `core.asset_item`.
+ */
+function buildingAssetItems(buildingId: string): Schemas["BuildingAssetItemDto"][] {
+  const unitsOf = state.owner.units.filter((unit) => unit.buildingId === buildingId);
+  const floorOf = (unitId: string | null) => unitsOf.find((unit) => unit.id === unitId)?.floorId ?? null;
+  const blank = { manufacturer: null, model: null, serial: null, installDate: null, warrantyUntil: null };
+  const items: Schemas["BuildingAssetItemDto"][] = [
+    ...r2()
+      .equipment.filter((item) => item.buildingId === buildingId)
+      .map((item) => omit(item, "buildingId")),
+    ...r2()
+      .locks.filter((lock) => lock.buildingId === buildingId)
+      .map((lock) => ({
+        ...blank,
+        id: lock.assetItemId,
+        category: "lock" as const,
+        name: lock.name,
+        unitId: lock.unitId,
+        floorId: floorOf(lock.unitId),
+        location: null,
+        serial: lock.serial,
+        status: lock.isActive ? ("active" as const) : ("inactive" as const),
+      })),
+    ...state.staff.meters
+      .filter((meter) => !meter.retired && buildingOf(meter) === buildingId)
+      .map((meter) => {
+        const unit = unitOf(meter);
+        return {
+          ...blank,
+          id: meter.assetItemId,
+          category: meter.utility === "water" ? ("meter_water" as const) : ("meter_electric" as const),
+          name: meter.name,
+          unitId: unit?.id ?? null,
+          floorId: unit?.floor.floorId ?? null,
+          location: null,
+          serial: meter.serial,
+          status: "active" as const,
+        };
+      }),
+    ...r2()
+      .amenities.filter((amenity) => unitsOf.some((unit) => unit.id === amenity.unitId))
+      .map((amenity) => ({
+        id: amenity.id,
+        category: amenity.category,
+        name: amenity.name,
+        unitId: amenity.unitId,
+        floorId: floorOf(amenity.unitId),
+        location: amenity.location,
+        manufacturer: amenity.manufacturer,
+        model: amenity.model,
+        serial: amenity.serial,
+        installDate: amenity.installDate,
+        warrantyUntil: amenity.warrantyUntil,
+        status: amenity.status,
+      })),
+  ];
+  return items;
+}
+
+/** An asset item the mock knows: equipment, a lock, a meter or a unit amenity. */
 function assetName(assetItemId: string): { name: string; buildingId: string } | null {
+  const equipment = r2().equipment.find((candidate) => candidate.id === assetItemId);
+  if (equipment) return { name: equipment.name, buildingId: equipment.buildingId };
   const lock = r2().locks.find((candidate) => candidate.assetItemId === assetItemId);
   if (lock) return { name: lock.name, buildingId: lock.buildingId };
   const meter = state.staff.meters.find((candidate) => candidate.assetItemId === assetItemId);

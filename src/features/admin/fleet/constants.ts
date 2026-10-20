@@ -14,3 +14,8 @@ export const DEVICE_KINDS: Schemas["DeviceKind"][] = [
 
 /** OTA rings, first to last (D-183). */
 export const RINGS: Schemas["OtaRing"][] = ["canary", "pilot", "all"];
+
+/** "อาคาร A · หอพักตัวอย่าง" — a building with its property, as the assign dialog and the device page show it. */
+export function buildingLabel(building: Pick<Schemas["AdminBuildingDto"], "name" | "propertyName">): string {
+  return building.propertyName ? `${building.name} · ${building.propertyName}` : building.name;
+}

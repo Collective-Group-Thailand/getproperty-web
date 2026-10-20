@@ -67,6 +67,15 @@ test("settings: company data saved with If-Match; effective dates shown; tenant 
   expect((await received("owner.settings.update")).at(-1)?.body).toMatchObject({
     effectiveFrom: "2030-01-01T01:00:00.000Z",
   });
+  // …and its history shows the scheduled version above the one in force (GET /settings/{key}/versions).
+  await photo.getByTestId("history-readings.require_photo").click();
+  const history = page.getByRole("dialog");
+  await expect(history.getByTestId("setting-version")).toHaveCount(2);
+  await expect(history.getByTestId("setting-version").first()).toHaveAttribute("data-scheduled", "true");
+  await expect(history.getByTestId("setting-version").first()).toContainText("ช่างอ่านมิเตอร์เองตั้งแต่ปี 2030");
+  await expectAxeClean(page);
+  await page.keyboard.press("Escape");
+  await expect(history).toHaveCount(0);
 
   // Building (property) settings: the cut-off of the second property.
   await gotoOwner(page, `/settings?property=${PROPERTY_BIG}`);

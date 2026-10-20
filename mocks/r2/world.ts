@@ -49,6 +49,7 @@ export const R2 = {
   rule: { v1: id("70100000", 1), v2: id("70100000", 2) },
   contact: { police: id("c0170000", 1), manager: id("c0170000", 2), plumber: id("c0170000", 3) },
   amenity: { airconA201: id("a1200000", 1) },
+  equipment: { pumpA: id("a1300000", 1), tankA: id("a1300000", 2) },
   photo: {
     leak: id("d0c00000", 71),
     before: id("d0c00000", 72),
@@ -77,12 +78,30 @@ export type MockRequest = Schemas["ServiceRequestDto"] & {
   timeline: Schemas["ServiceTimelineEntryDto"][];
 };
 
+const OPEN_REQUEST: Schemas["ServiceRequestStatus"][] = ["new", "triaged", "assigned", "in_progress", "waiting_parts"];
+
+/** The API's `slaBreached` (D-159): flagged by the SLA job, or an open request past its due time. */
+export function slaBreachedOf(sr: Schemas["ServiceRequestDto"]): boolean {
+  if (!OPEN_REQUEST.includes(sr.status)) return false;
+  return sr.slaBreached || (sr.slaDueAt !== null && sr.slaDueAt < new Date().toISOString());
+}
+
 export type MockWorkOrder = Omit<Schemas["WorkOrderDto"], "nextActions"> & {
   /** Codes issued to the assignee for the visit (D-211), revealed by `…/access`. */
   access: Schemas["RevealedCredentialDto"][];
   /** Waiting for parts (the request's `waiting_parts`); `wait-parts` / `resume` toggle it. */
   waitingParts: boolean;
 };
+
+/** A thread message (D-218): a request's thread, or a work order's own when it serves no request. */
+export type MockMessage = Omit<Schemas["ServiceMessageDto"], "mine"> & {
+  serviceRequestId: string | null;
+  workOrderId: string | null;
+  authorUserId: string | null;
+};
+
+/** Building equipment (pumps, lifts, tanks) — asset items of no meter, lock or unit amenity. */
+export type MockEquipment = Schemas["BuildingAssetItemDto"] & { buildingId: string };
 
 export type MockLock = Schemas["LockDto"] & {
   credentials: Schemas["CredentialDto"][];
@@ -105,6 +124,8 @@ export interface R2World {
   acks: Record<string, Schemas["RuleAckDto"][]>;
   contacts: Schemas["ContactDto"][];
   amenities: Schemas["AmenityDto"][];
+  equipment: MockEquipment[];
+  messages: MockMessage[];
   replies: Map<string, { status: number; body: unknown; fingerprint: string }>;
   received: { op: string; idempotencyKey: string | null; body: unknown }[];
 }
@@ -146,6 +167,7 @@ function request(
     inWarranty: false,
     nextActions: [],
     photoIds: [],
+    preferredVisit: null,
     priority: "normal",
     rating: null,
     ratingComment: null,
@@ -159,6 +181,7 @@ function request(
     unitId: null,
     unitNo: null,
     version: 1,
+    visitConfirmedAt: null,
     warrantyResolution: null,
     workOrders: [],
     timeline: [],
@@ -277,6 +300,7 @@ export function initialR2World(): R2World {
       unitNo: unitA201.no,
       requesterName: "สมศักดิ์ ใจดี",
       requesterPartyId: PARTY.somsak,
+      preferredVisit: "morning",
       createdAt: hours(-4),
       slaDueAt: hours(20),
       photoIds: [R2.photo.leak],
@@ -294,6 +318,8 @@ export function initialR2World(): R2World {
       unitNo: unitA202.no,
       requesterName: "มาลี ศรีสุข",
       requesterPartyId: PARTY.malee,
+      preferredVisit: "evening",
+      visitConfirmedAt: hours(-20),
       createdAt: hours(-30),
       triagedAt: hours(-29),
       slaDueAt: hours(-6),
@@ -829,6 +855,60 @@ export function initialR2World(): R2World {
         installDate: day(-700),
         warrantyUntil: day(30),
         status: "active",
+      },
+    ],
+    equipment: [
+      {
+        id: R2.equipment.pumpA,
+        buildingId: BUILDING_A,
+        category: "pump",
+        name: "ปั๊มน้ำอาคาร A",
+        unitId: null,
+        floorId: null,
+        location: "ห้องเครื่องชั้นล่าง",
+        manufacturer: "Grundfos",
+        model: "CM5-4",
+        serial: "GF-A-01",
+        installDate: day(-900),
+        warrantyUntil: null,
+        status: "active",
+      },
+      {
+        id: R2.equipment.tankA,
+        buildingId: BUILDING_A,
+        category: "water_tank",
+        name: "ถังเก็บน้ำบนดาดฟ้า",
+        unitId: null,
+        floorId: null,
+        location: "ดาดฟ้า",
+        manufacturer: null,
+        model: null,
+        serial: null,
+        installDate: day(-1500),
+        warrantyUntil: null,
+        status: "active",
+      },
+    ],
+    messages: [
+      {
+        id: id("3e550000", 1),
+        serviceRequestId: R2.sr.powerA202,
+        workOrderId: null,
+        author: "resident",
+        authorName: "มาลี ศรีสุข",
+        authorUserId: null,
+        body: "สะดวกช่วงเย็นหลัง 6 โมงค่ะ",
+        createdAt: hours(-29),
+      },
+      {
+        id: id("3e550000", 2),
+        serviceRequestId: R2.sr.powerA202,
+        workOrderId: null,
+        author: "office",
+        authorName: OWNER_USER.name,
+        authorUserId: OWNER_USER.id,
+        body: "รับทราบค่ะ ช่างจะเข้าไปดูช่วงเย็นนะคะ",
+        createdAt: hours(-28),
       },
     ],
     replies: new Map(),

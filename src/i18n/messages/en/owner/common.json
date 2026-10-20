@@ -46,7 +46,8 @@
       "tenant": "Your setting",
       "property": "This property"
     },
-    "since": "since {date}"
+    "since": "since {date}",
+    "percent": "{value}%"
   },
   "lineKind": {
     "internet": "Internet",

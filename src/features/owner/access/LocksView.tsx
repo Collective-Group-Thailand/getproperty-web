@@ -40,7 +40,20 @@ export async function LocksView({ context }: { context: OwnerContext }) {
         title={t("title")}
         description={t("description")}
         crumbs={[{ label: t("title") }]}
-        actions={canManage && building ? <RegisterLock buildingId={building.id} units={units} /> : null}
+        actions={
+          <span className="flex flex-wrap items-center gap-2">
+            {me.menu.includes("settings") ? (
+              <a
+                href={ownerPath(locale, "/settings#settings-access")}
+                className="text-primary text-sm underline-offset-4 hover:underline"
+                data-testid="access-settings-link"
+              >
+                {t("settingsLink")}
+              </a>
+            ) : null}
+            {canManage && building ? <RegisterLock buildingId={building.id} units={units} /> : null}
+          </span>
+        }
       />
       <p className="text-muted text-sm" data-testid="access-rule">
         {t("rule")}

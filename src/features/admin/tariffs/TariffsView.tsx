@@ -19,6 +19,7 @@ import { Stepper } from "@/ui/components/Stepper";
 
 import { can, param, section, type AdminContext } from "../shared/server";
 import { EnterVersion } from "./EnterVersion";
+import { PlatformFileButton } from "../shared/PlatformFileButton";
 import { sampleCharge } from "./server";
 import { asStructure, diffStructures } from "./structure";
 import { VersionActions } from "./VersionActions";
@@ -233,14 +234,23 @@ export async function TariffDetail({
               effective: `${formatDate(version.effectiveFrom, locale)}${version.effectiveTo ? ` – ${formatDate(version.effectiveTo, locale)}` : ""}`,
               ceiling: t("perUnit", { price: formatDecimal(version.ceilingPerUnit, locale, 4), unit: unitShort }),
               source: (
-                <a
-                  href={version.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary break-all underline-offset-4 hover:underline"
-                >
-                  {t("sourceLink")}
-                </a>
+                <span className="flex flex-col items-start gap-1">
+                  <a
+                    href={version.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary break-all underline-offset-4 hover:underline"
+                  >
+                    {t("sourceLink")}
+                  </a>
+                  {version.sourceDocumentId ? (
+                    <PlatformFileButton
+                      fileId={version.sourceDocumentId}
+                      label={t("sourceDocumentLink")}
+                      testId={`source-document-${version.id}`}
+                    />
+                  ) : null}
+                </span>
               ),
               people: (
                 <span className="text-xs">

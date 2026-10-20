@@ -79,7 +79,7 @@ export async function AdminHome({ context }: { context: AdminContext }) {
       "surveys",
       "/subscriptions/field-work",
       async () =>
-        (await unwrap(api.GET("/v1/admin/site-surveys"))).filter((survey) => survey.state === "requested").length,
+        (await unwrap(api.GET("/v1/admin/site-surveys", { params: { query: { state: "requested" } } }))).length,
     );
   }
   if (allowed("admin.support_grant.request", "admin.support_grant.approve_incident")) {

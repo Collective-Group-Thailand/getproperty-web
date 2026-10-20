@@ -14,7 +14,9 @@ import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { SimpleTable } from "@/ui/components/SimpleTable";
 
-import { enumParam, section, tenantLabel, tenantNames, type AdminContext } from "../shared/server";
+import { PlatformFileButton } from "../shared/PlatformFileButton";
+import { can, enumParam, section, tenantLabel, tenantNames, type AdminContext } from "../shared/server";
+import { PlatformDsrActions } from "./PrivacyActions";
 
 const OPEN: Schemas["DsrState"][] = ["received", "verifying", "in_progress"];
 
@@ -26,8 +28,9 @@ export function isOverdue(dsr: Schemas["DsrDto"], now = Date.now()): boolean {
 /**
  * DSR console (F5 5.2, PDPA, D-148): every data subject request across tenants with its kind, state and
  * legal due date — overdue ones first. Each tenant is the controller of its residents' data and moves
- * its requests in the owner console (privacy); the platform watches the deadlines here. The contract
- * has no platform-side action on a request, so this console renders none.
+ * its requests in the owner console (privacy); the platform watches their deadlines here. Requests where
+ * Collective is the controller (`tenantId: null`) are moved here (D-214), with the export of an access or
+ * portability request opened through a signed link.
  */
 export async function PrivacyView({
   context,
@@ -37,7 +40,8 @@ export async function PrivacyView({
   searchParams: Record<string, string | string[] | undefined>;
 }) {
   const t = await getTranslations("admin.operations.privacy");
-  const { api, locale } = context;
+  const { api, locale, me } = context;
+  const canAct = can(me, "admin.dsr.manage");
   const state = enumParam(searchParams.state, DSR_VALUES);
   const [dsrs, names] = await Promise.all([
     section(unwrap(api.GET("/v1/admin/data-subject-requests", { params: { query: { state } } }))),
@@ -84,6 +88,7 @@ export async function PrivacyView({
             { key: "state", header: t("col.state") },
             { key: "due", header: t("col.due") },
             { key: "notes", header: t("col.notes") },
+            { key: "actions", header: <span className="sr-only">{t("col.actions")}</span> },
           ]}
           rows={rows.map((dsr) => {
             const late = isOverdue(dsr);
@@ -112,6 +117,19 @@ export async function PrivacyView({
                   </span>
                 ),
                 notes: dsr.notes ?? "—",
+                actions:
+                  dsr.tenantId === null ? (
+                    <span className="flex flex-col items-start gap-2">
+                      {dsr.exportDocumentId ? (
+                        <PlatformFileButton
+                          fileId={dsr.exportDocumentId}
+                          label={t("export")}
+                          testId={`dsr-export-${dsr.id}`}
+                        />
+                      ) : null}
+                      {canAct ? <PlatformDsrActions dsr={dsr} /> : null}
+                    </span>
+                  ) : null,
               },
             };
           })}

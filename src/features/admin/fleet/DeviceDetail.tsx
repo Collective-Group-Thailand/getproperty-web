@@ -18,7 +18,8 @@ import { SimpleTable } from "@/ui/components/SimpleTable";
 
 import { section, tenantLabel, tenantNames, type AdminContext } from "../shared/server";
 import { DeviceActions } from "./DeviceActions";
-import { knownBuildings } from "./server";
+import { buildingLabel } from "./constants";
+import { tenantBuildings } from "./server";
 
 /** The newest config version the platform published for the gateway — "current" — against the one it applied. */
 export function configState(device: Schemas["FleetDeviceDto"], configs: Schemas["GatewayConfigVersionDto"][]) {
@@ -81,7 +82,7 @@ export async function DeviceDetail({ context, deviceId }: { context: AdminContex
       ? section(unwrap(api.GET("/v1/admin/devices/{deviceId}/commands", { params: { path: { deviceId } } })))
       : Promise.resolve(null),
     tenantNames(),
-    knownBuildings(context),
+    tenantBuildings(context, device.tenantId),
   ]);
   const config = configState(device, configs);
   const building = buildings.find((candidate) => candidate.id === device.buildingId);
@@ -96,11 +97,7 @@ export async function DeviceDetail({ context, deviceId }: { context: AdminContex
         description={`${kinds(device.kind)} · ${device.vendor} ${device.model}`}
         status={<StatusBadgeOf map={DEVICE_STATUS} value={device.status} />}
       />
-      <DeviceActions
-        device={device}
-        tenants={[...names.entries()].map(([id, name]) => ({ id, name }))}
-        buildings={buildings}
-      />
+      <DeviceActions device={device} tenants={[...names.entries()].map(([id, name]) => ({ id, name }))} />
       <div className="grid gap-6 lg:grid-cols-2">
         <Card as="section" aria-labelledby="device-facts">
           <CardHeader title={<span id="device-facts">{t("facts")}</span>} />
@@ -111,7 +108,7 @@ export async function DeviceDetail({ context, deviceId }: { context: AdminContex
               {
                 id: "building",
                 term: t("col.building"),
-                description: building?.label ?? device.buildingId?.slice(0, 8) ?? null,
+                description: building ? buildingLabel(building) : (device.buildingId?.slice(0, 8) ?? null),
               },
               { id: "ring", term: t("col.ring"), description: gateway ? t(`ring.${device.otaRing}`) : null },
               { id: "firmware", term: t("col.firmware"), description: device.firmwareVersion },

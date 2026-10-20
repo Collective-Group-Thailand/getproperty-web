@@ -47,6 +47,11 @@ test("dashboard queue and the inbox with SLA clocks, filters and a new request",
   const queue = page.getByTestId("today-queue");
   await expect(queue.getByText("แจ้งซ่อมเกิน SLA 1 รายการ")).toBeVisible();
   await expect(queue.getByText("พัสดุรอรับ 2 ชิ้น")).toBeVisible();
+  // The counts are the API's (`DashboardAttentionDto`); the item opens the inbox filtered on the SLA breach.
+  await queue.getByText("แจ้งซ่อมเกิน SLA 1 รายการ").click();
+  await expect(page).toHaveURL(/sla=breached/);
+  await expect(page.getByTestId("request-row")).toHaveCount(1);
+  await expect(page.getByTestId("request-row")).toHaveAttribute("data-ref", "SR-2610-0002");
 
   await gotoOwner(page, "/service-requests");
   await expect(page.getByTestId("request-row")).toHaveCount(3);
@@ -90,6 +95,33 @@ test("dashboard queue and the inbox with SLA clocks, filters and a new request",
     .at(-1)!;
   expect(created.idempotencyKey).toBeTruthy();
   expect(created.body.photoDocumentIds).toHaveLength(1);
+});
+
+test("the message thread and the resident's preferred visit on a request and its work order", async ({ page }) => {
+  await signInOwner(page);
+  await gotoOwner(page, `/service-requests/${SR.power}`);
+  await expect(page.getByTestId("request-preferred-visit")).toHaveText("ช่วงเย็น");
+  await expect(page.getByTestId("request-visit-confirmed")).toContainText("ผู้เช่ายืนยันนัดแล้ว");
+  const thread = page.getByTestId("service-thread");
+  await expect(thread.getByTestId("thread-message")).toHaveCount(2);
+  await expect(thread.getByTestId("thread-message").first()).toHaveAttribute("data-author", "resident");
+  await expectAxeClean(page);
+  await thread.getByTestId("thread-input").fill("ช่างจะเข้าไปเย็นนี้ 18:30 นะคะ");
+  await thread.getByTestId("thread-send").click();
+  await expect(thread.getByTestId("thread-message")).toHaveCount(3);
+  await expect(thread.getByTestId("thread-message").last()).toHaveAttribute("data-mine", "true");
+  await expect(thread.getByTestId("thread-input")).toHaveValue("");
+  const posted = (
+    await r2State<{ received: { op: string; idempotencyKey: string | null; body: { body?: string } }[] }>()
+  ).received.filter((entry) => entry.op === "owner.serviceRequests.postMessage");
+  expect(posted.at(-1)?.body.body).toBe("ช่างจะเข้าไปเย็นนี้ 18:30 นะคะ");
+  expect(posted.at(-1)?.idempotencyKey).toMatch(/^[0-9a-f-]{36}$/);
+
+  // A request without a preference says so; nothing is confirmed before a visit is planned.
+  await gotoOwner(page, `/service-requests/${SR.auto}`);
+  await expect(page.getByTestId("request-preferred-visit")).toHaveText("ไม่ได้ระบุ");
+  await expect(page.getByTestId("request-visit-unconfirmed")).toHaveCount(0);
+  await expect(page.getByTestId("thread-empty")).toBeVisible();
 });
 
 test("triage, a work order for staff with a visit window, the timeline", async ({ page }) => {
@@ -210,8 +242,18 @@ test("categories & SLA overrides, maintenance plans with the next-due list", asy
 
   await page.getByTestId("plan-add").click();
   const plan = page.getByRole("dialog", { name: "เพิ่มแผนบำรุงรักษา" });
-  await plan.getByTestId("plan-asset").selectOption({ label: "กลอน · กลอนห้อง A-201" });
-  await plan.getByTestId("plan-title").fill("เปลี่ยนแบตเตอรี่กลอน");
+  // The building's own equipment (GET /v1/owner/buildings/{id}/asset-items); a unit narrows to its items.
+  await expect(plan.getByTestId("plan-asset").locator("option", { hasText: "ปั๊มน้ำ · ปั๊มน้ำอาคาร A" })).toHaveCount(
+    1,
+  );
+  await plan.getByTestId("plan-unit").selectOption({ label: "A-201" });
+  await expect(
+    plan.getByTestId("plan-asset").locator("option", { hasText: "เครื่องปรับอากาศ · แอร์ห้อง A-201" }),
+  ).toHaveCount(1);
+  await expect(plan.getByTestId("plan-asset").locator("option", { hasText: "ปั๊มน้ำ" })).toHaveCount(0);
+  await plan.getByTestId("plan-unit").selectOption({ index: 0 });
+  await plan.getByTestId("plan-asset").selectOption({ label: "ปั๊มน้ำ · ปั๊มน้ำอาคาร A" });
+  await plan.getByTestId("plan-title").fill("ล้างปั๊มน้ำ");
   await plan.getByTestId("plan-interval").fill("180");
   await plan.getByTestId("form-submit").click();
   await expect(page.getByTestId("plan-row")).toHaveCount(3);

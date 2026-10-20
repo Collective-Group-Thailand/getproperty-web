@@ -21,6 +21,7 @@ import { IconTimer } from "@/ui/icons/glyphs/timer";
 
 import { ownerPath } from "../shared/links";
 import { fieldMembers } from "../shared/members";
+import { ServiceThread } from "@/features/shared/console/ServiceThread";
 import { PhotoThumb } from "../shared/PhotoThumb";
 import { ownerCan, readOnly, type OwnerContext } from "../shared/server";
 import { RequestActions } from "./RequestActions";
@@ -45,6 +46,7 @@ export async function RequestDetail({
   const kinds = await getTranslations("owner.service.kind");
   const events = await getTranslations("owner.service.timeline");
   const statuses = await getTranslations("status.serviceRequest");
+  const visit = await getTranslations("console.visit");
   const statusLabel = (value: string) => (statuses.has(value) ? statuses(value) : value);
   const { api, locale, me } = context;
   const request = await unwrap(
@@ -53,18 +55,27 @@ export async function RequestDetail({
     if (isApiError(error) && error.status === 404) notFound();
     throw error;
   });
-  const [timeline, categories, members] = await Promise.all([
+  const [timeline, messages, categories, members] = await Promise.all([
     section(
       unwrap(
         api.GET("/v1/owner/service-requests/{serviceRequestId}/timeline", { params: { path: { serviceRequestId } } }),
       ),
     ),
+    section(
+      unwrap(
+        api.GET("/v1/owner/service-requests/{serviceRequestId}/messages", { params: { path: { serviceRequestId } } }),
+      ),
+    ),
     serviceCategories(api),
-    fieldMembers(api, request.buildingId),
+    fieldMembers(api, { permission: "service_request.handle", buildingId: request.buildingId }),
   ]);
   const building = context.buildings.find((candidate) => candidate.id === request.buildingId);
   const canHandle = ownerCan(me, "service_request.handle") && !readOnly(me);
   const now = currentTime();
+  // The planned visit is the work orders' schedule; the resident confirms it in the app (LIFF #24).
+  const plannedVisit = request.workOrders.some(
+    (workOrder) => workOrder.scheduledAt && workOrder.status !== "cancelled" && !workOrder.completedAt,
+  );
 
   return (
     <OwnerPage testId="service-request">
@@ -111,6 +122,28 @@ export async function RequestDetail({
                         reason: request.autoReason ?? "",
                       })
                     : reporter(request.reporterKind, { name: request.requesterName ?? "" }),
+              },
+              {
+                id: "preferredVisit",
+                term: visit("preferred"),
+                description: (
+                  <span data-testid="request-preferred-visit">
+                    {request.preferredVisit ? visit(`preference.${request.preferredVisit}`) : visit("noPreference")}
+                  </span>
+                ),
+              },
+              {
+                id: "visitConfirmed",
+                term: visit("confirmed"),
+                description: request.visitConfirmedAt ? (
+                  <span data-testid="request-visit-confirmed">
+                    {visit("confirmedAt", { at: formatDateTime(request.visitConfirmedAt, locale) })}
+                  </span>
+                ) : plannedVisit ? (
+                  <span className="text-muted" data-testid="request-visit-unconfirmed">
+                    {visit("notConfirmed")}
+                  </span>
+                ) : null,
               },
               { id: "reported", term: t("reportedAt"), description: formatDateTime(request.createdAt, locale) },
               {
@@ -192,6 +225,15 @@ export async function RequestDetail({
         ) : (
           <p className="text-muted text-sm">{t("noWorkOrders")}</p>
         )}
+      </Card>
+
+      <Card data-testid="request-thread-card">
+        <ServiceThread
+          target={{ surface: "owner", kind: "serviceRequest", id: request.id }}
+          initial={messages.data?.data ?? null}
+          canWrite={canHandle}
+          ended={request.status === "closed" || request.status === "cancelled"}
+        />
       </Card>
 
       <Card as="section" aria-labelledby="request-timeline" data-testid="request-timeline">

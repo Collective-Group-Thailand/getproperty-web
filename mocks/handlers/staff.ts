@@ -890,6 +890,28 @@ const fieldHandlers: HttpHandler[] = [
       data: meterPoints(state.staff.meters, state.staff.channels, state.staff.devices, String(params.buildingId)),
     });
   }),
+  http.get("*/v1/staff/buildings/:buildingId/units", ({ request, params }) => {
+    const ok = operator(request, "staff.field.units");
+    if (ok instanceof Response) return ok;
+    if (!inWorld(ok) || !BUILDINGS.some((building) => building.id === params.buildingId)) {
+      return problem("staff.field.units", "http.not_found");
+    }
+    const floors = state.owner.floors;
+    const data: Schemas["StaffUnitDto"][] = state.owner.units
+      .filter((unit) => unit.buildingId === params.buildingId)
+      .map((unit) => ({
+        id: unit.id,
+        unitNo: unit.unitNo,
+        floorId: unit.floorId,
+        floorName: floors.find((floor) => floor.id === unit.floorId)?.name ?? null,
+        floorLevel: unit.floorLevel,
+        status: unit.status,
+        type: unit.type,
+      }))
+      // The API's order: floor level, then unit number.
+      .sort((a, b) => (a.floorLevel ?? 0) - (b.floorLevel ?? 0) || a.unitNo.localeCompare(b.unitNo));
+    return json({ data } satisfies Schemas["StaffUnitsDto"]);
+  }),
   http.get("*/v1/staff/meter-drivers", ({ request }) => {
     const ok = operator(request, "staff.field.meterDrivers");
     if (ok instanceof Response) return ok;

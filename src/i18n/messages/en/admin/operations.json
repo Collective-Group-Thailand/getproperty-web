@@ -96,7 +96,8 @@
       "kind": "Request",
       "state": "State",
       "due": "Due",
-      "notes": "Notes"
+      "notes": "Notes",
+      "actions": "Actions"
     },
     "kind": {
       "access": "Access",
@@ -113,6 +114,34 @@
       "fulfilled": "Fulfilled",
       "rejected": "Rejected",
       "withdrawn": "Withdrawn"
+    },
+    "export": "Open the export",
+    "notes": "Notes",
+    "notesHint": "Kept with the request; required to reject",
+    "done": "Request updated",
+    "action": {
+      "verify": "Verify identity",
+      "start": "Start",
+      "fulfil": "Fulfil",
+      "reject": "Reject"
+    },
+    "confirm": {
+      "verify": {
+        "title": "Verify the person's identity?",
+        "body": "Record that you checked who made this {kind} request (Collective is the controller)."
+      },
+      "start": {
+        "title": "Start working on it?",
+        "body": "The {kind} request moves to in progress."
+      },
+      "fulfil": {
+        "title": "Fulfil the request?",
+        "body": "Access or portability: a JSON export of the login is produced. Erasure: the login's contact data is anonymised and the login disabled — refused while it still works for a tenant. ({kind})"
+      },
+      "reject": {
+        "title": "Reject the request?",
+        "body": "Explain why in the notes — the person is told. ({kind})"
+      }
     }
   },
   "outbox": {
@@ -218,9 +247,36 @@
   },
   "integration": {
     "title": "Integration events",
-    "description": "Events exchanged with other Collective products through the integration bridge (warranty claims, work orders).",
-    "pendingTitle": "Not available yet",
-    "pendingBody": "The API publishes the list of integration events with service requests and work orders (R2). Failed deliveries of these events already appear in the event outbox.",
-    "outbox": "Open the event outbox"
+    "description": "Events exchanged with other Collective products through the integration bridge (warranty claims, work orders). Payloads are never listed.",
+    "filters": "Filter integration events",
+    "apply": "Show",
+    "search": "Search",
+    "searchPlaceholder": "Type prefix, idempotency key or event id",
+    "state": "State",
+    "anyState": "Any state",
+    "system": "System",
+    "anySystem": "Any system",
+    "direction": "Direction",
+    "anyDirection": "Both directions",
+    "directionValue": {
+      "inbound": "Inbound",
+      "outbound": "Outbound"
+    },
+    "empty": "No integration event",
+    "emptyBody": "Nothing matches these filters.",
+    "outboxHint": "Failed deliveries of these events are replayed from the event outbox.",
+    "outbox": "Open the event outbox",
+    "col": {
+      "event": "Event",
+      "system": "System",
+      "tenant": "Tenant",
+      "occurred": "Occurred",
+      "attempts": "Attempts",
+      "error": "Last error",
+      "state": "State"
+    },
+    "platform": "Platform",
+    "acked": "Acknowledged {at}",
+    "subject": "{subject} · contract v{version}"
   }
 }

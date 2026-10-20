@@ -118,7 +118,7 @@ export async function BillingWorkspace({
     unwrap(api.GET("/v1/owner/billing-cycles/{billingCycleId}", { params: { path: { billingCycleId: chosen.id } } })),
     section(unwrap(api.GET("/v1/owner/reading-rounds/current", { params: { query: {} } }))),
     section(unwrap(api.GET("/v1/owner/settings", { params: { query: { propertyId: property.id } } }))),
-    fieldMembers(api),
+    fieldMembers(api, { permission: "reading.capture" }),
   ]);
   const stats = (cycle.stats ?? {}) as Record<string, unknown>;
   const drafts = cycle.invoices.filter((invoice) => invoice.status === "draft");

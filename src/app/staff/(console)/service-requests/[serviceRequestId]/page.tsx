@@ -12,7 +12,7 @@ export async function generateMetadata() {
   return { title: t("title") };
 }
 
-/** One service request: triage and "take it" (F4 4.4). */
+/** One service request: triage, "take it" and the message thread (F4 4.4, D-218). */
 export default async function StaffServiceRequest({ params }: { params: Promise<{ serviceRequestId: string }> }) {
   const { serviceRequestId } = await params;
   const [api, actor] = await Promise.all([
@@ -25,5 +25,18 @@ export default async function StaffServiceRequest({ params }: { params: Promise<
     if (isApiError(error) && (error.status === 404 || error.status === 422)) notFound();
     throw error;
   });
-  return <RequestScreen key={`${request.id}-${request.version}`} request={request} userId={actor.me.user.id} />;
+  const messages = await unwrap(
+    api.GET("/v1/staff/service-requests/{serviceRequestId}/messages", { params: { path: { serviceRequestId } } }),
+  )
+    .then((body) => body.data)
+    .catch(() => null);
+  return (
+    <RequestScreen
+      key={`${request.id}-${request.version}`}
+      request={request}
+      userId={actor.me.user.id}
+      messages={messages}
+      canWrite={actor.me.permissions.includes("service_request.handle") && !(actor.me.subscription?.readOnly ?? false)}
+    />
+  );
 }

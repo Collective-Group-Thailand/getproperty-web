@@ -308,5 +308,16 @@
     "delivered": "ถึงผู้รับแล้ว",
     "failed": "ส่งไม่สำเร็จ",
     "cancelled": "ไม่ได้ส่ง"
+  },
+  "integration": {
+    "received": "รับแล้ว",
+    "validated": "ตรวจแล้ว",
+    "applied": "นำไปใช้แล้ว",
+    "rejected": "ปฏิเสธ",
+    "pending": "รอส่ง",
+    "sent": "ส่งแล้ว",
+    "acked": "ปลายทางรับแล้ว",
+    "failed": "ล้มเหลว",
+    "dead": "ส่งไม่ได้ (dead letter)"
   }
 }

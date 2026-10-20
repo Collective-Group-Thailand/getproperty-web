@@ -40,8 +40,7 @@
     },
     "serviceRequests": {
       "title": "{count, plural, one {# service request} other {# service requests}} past the SLA",
-      "detail": "Of {open} open",
-      "detailMore": "Counted in the first 100 open requests ({open} in all)"
+      "detail": "Past their due time — assign, update or close them"
     },
     "parcels": {
       "title": "{count, plural, one {# parcel} other {# parcels}} waiting",

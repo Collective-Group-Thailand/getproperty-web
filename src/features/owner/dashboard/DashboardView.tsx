@@ -74,20 +74,6 @@ export async function DashboardView({ context }: { context: OwnerContext }) {
       : Promise.resolve({ data: null, error: null }),
     building ? Promise.resolve({ data: null, error: null }) : section(unwrap(api.GET("/v1/owner/units/count"))),
   ]);
-  // CONTRACT-REQUEST (docs/contract-requests.md): `DashboardDto.attention.serviceRequestsOverdue` — until then the
-  // open requests' first 100 are read and their `slaBreached` flags counted (the API's flag, not an SLA computed here).
-  const [serviceRequests, parcels] = await Promise.all([
-    context.me.menu.includes("service_requests")
-      ? section(
-          unwrap(
-            api.GET("/v1/owner/service-requests", { params: { query: { buildingId, open: true, perPage: 100 } } }),
-          ),
-        )
-      : Promise.resolve({ data: null, error: null }),
-    context.me.menu.includes("parcels")
-      ? section(unwrap(api.GET("/v1/owner/parcels", { params: { query: { buildingId, open: true, perPage: 1 } } })))
-      : Promise.resolve({ data: null, error: null }),
-  ]);
   const href = (path: string, query: Record<string, string | undefined> = {}) =>
     ownerPath(locale, withQuery(path, query));
 
@@ -169,28 +155,25 @@ export async function DashboardView({ context }: { context: OwnerContext }) {
       href: href("/invoices", { status: "issued" }),
       icon: IconClock,
     });
-  // R2 (F2 2.7): overdue service requests (the API's `slaBreached`) and parcels waiting at the desk.
-  if (serviceRequests.data) {
-    const overdue = serviceRequests.data.data.filter((request) => request.slaBreached).length;
-    if (overdue > 0)
-      queue.push({
-        kind: "serviceRequests",
-        count: overdue,
-        title: t("queue.serviceRequests.title", { count: overdue }),
-        detail:
-          serviceRequests.data.meta.total > serviceRequests.data.data.length
-            ? t("queue.serviceRequests.detailMore", { open: serviceRequests.data.meta.total })
-            : t("queue.serviceRequests.detail", { open: serviceRequests.data.meta.total }),
-        href: href("/service-requests"),
-        icon: IconStaff,
-        urgent: true,
-      });
-  }
-  if (parcels.data && parcels.data.meta.total > 0)
+  // R2 (F2 2.7): overdue service requests (the API's SLA, D-159) and parcels waiting at the desk — both counted
+  // by the API for the focused building or all (`DashboardAttentionDto`); shown only where the menu has them.
+  const overdueRequests = d?.attention.serviceRequestsOverdue ?? 0;
+  if (overdueRequests > 0 && context.me.menu.includes("service_requests"))
+    queue.push({
+      kind: "serviceRequests",
+      count: overdueRequests,
+      title: t("queue.serviceRequests.title", { count: overdueRequests }),
+      detail: t("queue.serviceRequests.detail"),
+      href: href("/service-requests", { sla: "breached" }),
+      icon: IconStaff,
+      urgent: true,
+    });
+  const parcelsWaiting = d?.attention.parcelsWaiting ?? 0;
+  if (parcelsWaiting > 0 && context.me.menu.includes("parcels"))
     queue.push({
       kind: "parcels",
-      count: parcels.data.meta.total,
-      title: t("queue.parcels.title", { count: parcels.data.meta.total }),
+      count: parcelsWaiting,
+      title: t("queue.parcels.title", { count: parcelsWaiting }),
       detail: t("queue.parcels.detail"),
       href: href("/parcels"),
       icon: IconParcel,

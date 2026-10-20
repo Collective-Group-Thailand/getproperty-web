@@ -16,8 +16,8 @@ const GlobalSearchDialog = lazyOverlay<GlobalSearchDialogProps>(() =>
 
 /**
  * Global search (`/` opens it): menu entries match locally at once; entities come from
- * `GET /v1/owner/search` — a contract request (docs/contract-requests.md), so against an API without
- * it only the menu part answers. The dialog loads on first open (D-179).
+ * `GET /v1/owner/search` (buildings, units, parties, leases, devices, invoices); when it fails only the menu
+ * part answers. The dialog loads on first open (D-179).
  */
 export function GlobalSearch({
   items,

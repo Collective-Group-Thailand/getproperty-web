@@ -2,8 +2,8 @@ import type { IconGlyph } from "@/ui/icons";
 
 /**
  * Next-action helpers (F1 1.3 §3): the API decides which state transitions the actor may perform now
- * and lists them on the resource (`nextActions: string[]`, the names of its `/actions/{name}` routes —
- * requested in docs/contract-requests.md). These helpers only *interpret* that list: they never infer
+ * and lists them on the resource (`nextActions: string[]`, the names of its `/actions/{name}` routes,
+ * contract §3). These helpers only *interpret* that list: they never infer
  * an action from a status, a role or a date.
  */
 export interface ActionPresentation {

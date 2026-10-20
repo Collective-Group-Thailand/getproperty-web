@@ -11,6 +11,7 @@ import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { Field, FormSection } from "@/ui/components/Field";
+import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input, Textarea } from "@/ui/components/Input";
 import { IconButton } from "@/ui/components/IconButton";
 import { LazyDialog } from "@/ui/components/overlays";
@@ -19,6 +20,7 @@ import { toast } from "@/ui/components/Toast";
 import { IconAdd } from "@/ui/icons/glyphs/add";
 import { IconDelete } from "@/ui/icons/glyphs/delete";
 
+import { uploadPlatformFile } from "../shared/files";
 import {
   draftFrom,
   draftProblems,
@@ -54,6 +56,11 @@ export function EnterVersion({
   const [draft, setDraft] = useState<StructureDraft>(() => draftFrom(current));
   const [meta, setMeta] = useState({ effectiveFrom: "", sourceUrl: "", sourcePublishedOn: "", notes: "" });
   const [shown, setShown] = useState(false);
+  // The copy of the utility's notice (`TariffEnterDto.sourceDocumentId`): uploaded as a platform file when
+  // chosen, so the checker can compare against it even if the utility's page changes or disappears.
+  const [sourceFile, setSourceFile] = useState<{ id: string; name: string } | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<unknown>(null);
   const idempotency = useIdempotencyKey();
   const action = useApiAction({ refresh: false });
   const problems = draftProblems(draft);
@@ -81,6 +88,8 @@ export function EnterVersion({
           idempotency.renew();
           setDraft(draftFrom(current));
           setShown(false);
+          setSourceFile(null);
+          setUploadError(null);
           setOpen(true);
         }}
         data-testid="enter-version"
@@ -99,7 +108,13 @@ export function EnterVersion({
             <Button variant="secondary" onClick={() => setOpen(false)} disabled={action.busy}>
               {common("cancel")}
             </Button>
-            <Button type="submit" form={formId} loading={action.busy} data-testid="enter-version-submit">
+            <Button
+              type="submit"
+              form={formId}
+              loading={action.busy}
+              disabled={uploading}
+              data-testid="enter-version-submit"
+            >
               {t("submit")}
             </Button>
           </>
@@ -122,6 +137,7 @@ export function EnterVersion({
                       effectiveFrom: meta.effectiveFrom,
                       sourceUrl: meta.sourceUrl.trim(),
                       sourcePublishedOn: meta.sourcePublishedOn || null,
+                      sourceDocumentId: sourceFile?.id ?? null,
                       notes: meta.notes.trim() || null,
                       structure: structureFrom(draft, unit) as unknown as Record<string, never>,
                     },
@@ -169,6 +185,39 @@ export function EnterVersion({
                 onChange={(event) => setMeta({ ...meta, sourcePublishedOn: event.target.value })}
               />
             </Field>
+            <div className="flex flex-col gap-2 sm:col-span-2" data-testid="tariff-source-document">
+              <FileDropzone
+                label={t("sourceDocument")}
+                hint={t("sourceDocumentHint")}
+                accept="application/pdf,image/jpeg,image/png,image/webp"
+                chooseText={t("sourceDocumentChoose")}
+                disabled={uploading || action.busy}
+                data-testid="tariff-source-file"
+                onFiles={(files) => {
+                  const file = files[0];
+                  if (!file) return;
+                  setUploading(true);
+                  setUploadError(null);
+                  void uploadPlatformFile(file, "tariff_source", file.name)
+                    .then((uploaded) => setSourceFile({ id: uploaded.id, name: file.name }))
+                    .catch((failure: unknown) => {
+                      setSourceFile(null);
+                      setUploadError(failure);
+                    })
+                    .finally(() => setUploading(false));
+                }}
+              />
+              {uploading ? (
+                <p className="text-muted text-sm" role="status">
+                  {t("sourceDocumentUploading")}
+                </p>
+              ) : sourceFile ? (
+                <p className="text-sm" role="status" data-testid="tariff-source-file-name">
+                  {t("sourceDocumentAttached", { name: sourceFile.name })}
+                </p>
+              ) : null}
+              <ProblemNotice error={uploadError} />
+            </div>
           </div>
 
           <FormSection title={t("rates")} description={t("ratesHint", { unit: t(`unit.${unit}`) })}>

@@ -1,6 +1,7 @@
 {
   "title": "Doors & locks",
   "description": "Locks of units, building doors and common areas.",
+  "settingsLink": "Door settings (visitor codes)",
   "metaTitle": "Lock",
   "rule": "A resident's access follows the lease: it starts with the lease and ends with it. Nobody is locked out for arrears (D-024, D-071).",
   "empty": {

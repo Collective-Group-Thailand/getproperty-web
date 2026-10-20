@@ -18,7 +18,7 @@ import {
   record,
   validation,
 } from "./support";
-import { ADMIN_ONLY } from "./world";
+import { ADMIN_ONLY, BUILDINGS, TENANT_IDS } from "./world";
 
 type Schemas = components["schemas"];
 
@@ -217,6 +217,14 @@ const tenantHandlers: HttpHandler[] = [
     if (ok instanceof Response) return ok;
     const tenant = tenantOf(String(params.tenantId));
     return tenant ? json(tenant) : notFound("admin.tenants.get");
+  }),
+  http.get("*/v1/admin/tenants/:tenantId/buildings", ({ request, params }) => {
+    const op = "admin.tenants.buildings";
+    const ok = platform(request, op, "admin.tenant.read");
+    if (ok instanceof Response) return ok;
+    const tenantId = String(params.tenantId);
+    if (!tenantOf(tenantId)) return notFound(op);
+    return json(adminBuildings(tenantId));
   }),
   http.get("*/v1/admin/tenants/:tenantId/health", ({ request, params }) => {
     const ok = platform(request, "admin.tenants.health", "admin.tenant.read");
@@ -1024,6 +1032,42 @@ const flagHandlers: HttpHandler[] = [
     return json(flag);
   }),
 ];
+
+/**
+ * `GET /v1/admin/tenants/{id}/buildings`: the sample tenant's buildings come from the owner world (same ids the
+ * fleet uses); the admin-only tenants each have the one building their install orders name.
+ */
+function adminBuildings(tenantId: string): Schemas["AdminBuildingDto"][] {
+  if (tenantId === TENANT_IDS.sample) {
+    const { buildings, properties, units } = state.owner;
+    return buildings.map((building) => ({
+      id: building.id,
+      code: building.code,
+      name: building.name,
+      propertyId: building.propertyId,
+      propertyName: properties.find((property) => property.id === building.propertyId)?.name ?? "",
+      unitCount: units.filter((unit) => unit.buildingId === building.id).length,
+      roles: ["owner", "operator"],
+    }));
+  }
+  const own: Record<string, { id: string; name: string; units: number }> = {
+    [TENANT_IDS.garden]: { id: BUILDINGS.garden, name: "อาคารบ้านสวน", units: 30 },
+    [TENANT_IDS.riverside]: { id: BUILDINGS.riverside, name: "ริเวอร์ไซด์ อาคาร 1", units: 48 },
+  };
+  const building = own[tenantId];
+  if (!building) return [];
+  return [
+    {
+      id: building.id,
+      code: "1",
+      name: building.name,
+      propertyId: `${building.id.slice(0, 30)}ffffff`,
+      propertyName: building.name,
+      unitCount: building.units,
+      roles: ["owner", "operator"],
+    },
+  ];
+}
 
 export const businessHandlers: HttpHandler[] = [
   ...tenantHandlers,

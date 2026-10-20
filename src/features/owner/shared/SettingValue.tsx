@@ -9,7 +9,16 @@ import type { Schemas } from "@/lib/api/types";
  * value the API says is in force, never a default from the UI (CLAUDE.md: configurable values are read
  * from the API). Unknown shapes are shown as they came.
  */
-export function SettingValue({ setting, locale }: { setting: Schemas["SettingDto"]; locale: Locale }) {
+export function SettingValue({
+  setting,
+  locale,
+  testId,
+}: {
+  setting: Pick<Schemas["SettingDto"], "key" | "value" | "valueType" | "scope" | "effectiveFrom">;
+  locale: Locale;
+  /** Defaults to `setting-<key>` (the value in force); a history row passes its own. */
+  testId?: string;
+}) {
   const t = useTranslations("owner.common.setting");
   const value = setting.value as unknown;
   const record =
@@ -26,7 +35,11 @@ export function SettingValue({ setting, locale }: { setting: Schemas["SettingDto
       case "billing.estimate_policy":
         return value === "allow" ? t("estimateAllow") : t("estimateBlock");
       case "billing.reading_grace_hours":
+      case "access.work_order_window_hours":
+      case "access.resident_visitor_max_hours":
         return t("hours", { count: Number(value) });
+      case "access.battery_low_pct":
+        return t("percent", { value: Number(value) });
       case "billing.default_due_day":
         return t("dueDay", { day: Number(value) });
       case "deposit.refund_days":
@@ -43,7 +56,7 @@ export function SettingValue({ setting, locale }: { setting: Schemas["SettingDto
   })();
   return (
     <span className="flex flex-col">
-      <span data-testid={`setting-${setting.key}`}>{shown}</span>
+      <span data-testid={testId ?? `setting-${setting.key}`}>{shown}</span>
       <span className="text-muted text-xs">
         {t(`scope.${setting.scope}`)} · {t("since", { date: formatDateTime(setting.effectiveFrom, locale) })}
       </span>

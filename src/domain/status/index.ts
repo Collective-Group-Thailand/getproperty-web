@@ -38,6 +38,7 @@ export { TEMPLATE_VERSION_STATUS, TEMPLATE_VERSION_VALUES, type TemplateVersionS
 export { DSR_STATUS, DSR_VALUES, type DsrState } from "./dsr";
 export { OUTBOX_STATUS, OUTBOX_VALUES, type OutboxState } from "./outbox";
 export { CONSUMPTION_STATUS, CONSUMPTION_VALUES, type ConsumptionState } from "./consumption";
+export { INTEGRATION_STATUS, INTEGRATION_VALUES, type IntegrationStatus } from "./integration";
 export { ROLLOUT_STATUS, ROLLOUT_VALUES, type RolloutStatus } from "./rollout";
 export { OTA_DEVICE_STATUS, OTA_DEVICE_VALUES, type OtaDeviceStatus } from "./otaDevice";
 export { TENANT_STATUS, TENANT_VALUES, type TenantStatus } from "./tenant";
@@ -83,6 +84,7 @@ import { TEMPLATE_VERSION_STATUS } from "./templateVersion";
 import { DSR_STATUS } from "./dsr";
 import { OUTBOX_STATUS } from "./outbox";
 import { CONSUMPTION_STATUS } from "./consumption";
+import { INTEGRATION_STATUS } from "./integration";
 import { ROLLOUT_STATUS } from "./rollout";
 import { OTA_DEVICE_STATUS } from "./otaDevice";
 import { TENANT_STATUS } from "./tenant";
@@ -130,6 +132,7 @@ export const STATUS_MAPS = {
   dsr: DSR_STATUS,
   outbox: OUTBOX_STATUS,
   consumption: CONSUMPTION_STATUS,
+  integration: INTEGRATION_STATUS,
   rollout: ROLLOUT_STATUS,
   otaDevice: OTA_DEVICE_STATUS,
   tenant: TENANT_STATUS,

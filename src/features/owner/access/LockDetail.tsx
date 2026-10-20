@@ -55,7 +55,7 @@ export async function LockDetail({
       ),
     ),
     section(unwrap(api.GET("/v1/owner/locks/{lockId}/events", { params: { path: { lockId }, query: { limit: 50 } } }))),
-    fieldMembers(api, lock.buildingId),
+    fieldMembers(api, { buildingId: lock.buildingId }),
   ]);
   const canManage = ownerCan(me, "access.manage") && !readOnly(me);
   const holders = new Map((credentials.data?.data ?? []).map((credential) => [credential.id, credential.holderName]));

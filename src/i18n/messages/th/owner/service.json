@@ -152,6 +152,9 @@
       "anyStatus": "ทุกสถานะ",
       "category": "ประเภท",
       "anyCategory": "ทุกประเภท",
+      "sla": "SLA",
+      "anySla": "ทุกสถานะ SLA",
+      "slaBreached": "เกิน SLA",
       "warranty": "ประกัน",
       "anyWarranty": "ทั้งหมด",
       "inWarranty": "อยู่ในประกัน"
@@ -338,8 +341,26 @@
   "maintenance": {
     "title": "บำรุงรักษาตามรอบ",
     "description": "แผนบำรุงรักษาของอุปกรณ์ ระบบเปิดใบงานให้ล่วงหน้าตามจำนวนวันที่กำหนด",
-    "lockAsset": "กลอน · {name}",
-    "meterAsset": "มิเตอร์ {code} · {name}",
+    "assetLabel": "{category} · {name}",
+    "assetCategory": {
+      "meter_electric": "มิเตอร์ไฟ",
+      "meter_water": "มิเตอร์น้ำ",
+      "gateway": "เกตเวย์",
+      "lock": "กลอน",
+      "breaker": "เบรกเกอร์",
+      "door_controller": "ตัวควบคุมประตู",
+      "camera": "กล้อง",
+      "sensor": "เซนเซอร์",
+      "pump": "ปั๊มน้ำ",
+      "lift": "ลิฟต์",
+      "generator": "เครื่องปั่นไฟ",
+      "hvac": "เครื่องปรับอากาศ",
+      "fire_safety": "อุปกรณ์ดับเพลิง",
+      "water_tank": "ถังเก็บน้ำ",
+      "appliance": "เครื่องใช้ไฟฟ้า",
+      "furniture": "เฟอร์นิเจอร์",
+      "other": "อื่น ๆ"
+    },
     "nextDue": "ครบกำหนดถัดไป",
     "nextDueHint": "เรียงจากที่ใกล้ครบที่สุด",
     "empty": {

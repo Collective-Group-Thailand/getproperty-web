@@ -125,6 +125,17 @@ test("a resident's request → owner assigns staff → staff completes with phot
   const workOrderUrl = page.url();
   const workOrderId = workOrderUrl.split("/").pop()!;
 
+  // The office writes in the request's thread (D-218); the work order shows the same thread.
+  await page.goto(`${INT_HOSTS.owner}/service-requests/${request.id}`);
+  await hydrated(page, "owner");
+  const ownerThread = page.getByTestId("service-thread");
+  await ownerThread.getByTestId("thread-input").fill("ช่างจะเข้าไปพรุ่งนี้ 10 โมงนะคะ");
+  await ownerThread.getByTestId("thread-send").click();
+  await expect(ownerThread.getByTestId("thread-message").last()).toHaveAttribute("data-mine", "true", {
+    timeout: 30_000,
+  });
+  await expect(ownerThread.getByTestId("thread-message").last()).toHaveAttribute("data-author", "office");
+
   // 2. The staff member finishes it on the PWA: check-in, before and after photos, complete.
   const staff = await context.newPage();
   await routeStorage(staff);
@@ -139,6 +150,16 @@ test("a resident's request → owner assigns staff → staff completes with phot
   await hydrated(staff, "staff");
   await expect(staff.getByTestId("staff-work-order")).toHaveAttribute("data-status", "assigned");
   await expect(staff.getByTestId("access-codes")).toHaveCount(0);
+  // The staff member reads the office's message in the work order's (the request's) thread and answers.
+  const staffThread = staff.getByTestId("service-thread");
+  await expect(staffThread.getByTestId("thread-message").filter({ hasText: "พรุ่งนี้ 10 โมง" })).toHaveCount(1);
+  await staffThread.getByTestId("thread-input").fill("รับทราบครับ");
+  await staffThread.getByTestId("thread-send").click();
+  await expect(staffThread.getByTestId("thread-message").filter({ hasText: "รับทราบครับ" })).toHaveAttribute(
+    "data-mine",
+    "true",
+    { timeout: 30_000 },
+  );
   await staff.getByTestId("check-in").click();
   await expect(staff.getByTestId("staff-work-order")).toHaveAttribute("data-status", "in_progress", {
     timeout: 30_000,
@@ -169,6 +190,16 @@ test("a resident's request → owner assigns staff → staff completes with phot
     request.id,
   );
   expect(after.status).toBe("done");
+  const thread = await page.evaluate(
+    async (id) => (await fetch(`/bff/v1/owner/service-requests/${id}/messages`)).json(),
+    request.id,
+  );
+  expect(thread.data.map((message: { body: string; mine: boolean }) => [message.body, message.mine])).toEqual(
+    expect.arrayContaining([
+      ["ช่างจะเข้าไปพรุ่งนี้ 10 โมงนะคะ", true],
+      ["รับทราบครับ", false],
+    ]),
+  );
 
   // 4. A parcel: intake on the PWA, the resident reads the PIN in their app, hand-over with it.
   await staff.goto(`${INT_HOSTS.staff}/parcels`);

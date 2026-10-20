@@ -46,7 +46,8 @@
       "tenant": "ค่าที่คุณตั้ง",
       "property": "เฉพาะโครงการนี้"
     },
-    "since": "ตั้งแต่ {date}"
+    "since": "ตั้งแต่ {date}",
+    "percent": "{value}%"
   },
   "lineKind": {
     "internet": "อินเทอร์เน็ต",

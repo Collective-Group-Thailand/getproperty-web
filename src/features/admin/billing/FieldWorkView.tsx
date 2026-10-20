@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { INSTALL_ORDER_STATUS, INSTALL_ORDER_VALUES } from "@/domain/status/installOrder";
-import { SITE_SURVEY_STATUS } from "@/domain/status/siteSurvey";
+import { SITE_SURVEY_STATUS, SITE_SURVEY_VALUES } from "@/domain/status/siteSurvey";
 import { FilterBar } from "@/features/shared/console/FilterBar";
 import { ListPagination } from "@/features/shared/console/ListPagination";
 import { SectionError } from "@/features/shared/console/SectionError";
@@ -49,6 +49,7 @@ export async function FieldWork({
 }) {
   const t = await getTranslations("admin.billing.field");
   const status = await getTranslations("status.installOrder");
+  const surveyStatus = await getTranslations("status.siteSurvey");
   const { api, locale, me } = context;
   const manage = can(me, "admin.device.manage") || can(me, "admin.subscription.manage");
   const kind = enumParam(searchParams.kind, KINDS);
@@ -68,7 +69,13 @@ export async function FieldWork({
         }),
       ),
     ),
-    section(unwrap(api.GET("/v1/admin/site-surveys", { params: { query: { tenantId } } }))),
+    section(
+      unwrap(
+        api.GET("/v1/admin/site-surveys", {
+          params: { query: { tenantId, state: enumParam(searchParams.surveyState, SITE_SURVEY_VALUES) } },
+        }),
+      ),
+    ),
     manage ? assignees(context) : Promise.resolve([] as Assignee[]),
   ]);
   const nameOf = (id: string | null) => (id ? (people.find((p) => p.id === id)?.name ?? id.slice(0, 8)) : t("nobody"));
@@ -159,6 +166,17 @@ export async function FieldWork({
         <h2 id="site-surveys" className="text-lg font-semibold">
           {t("surveys")}
         </h2>
+        <FilterBar
+          fields={[
+            {
+              name: "surveyState",
+              label: t("state"),
+              type: "select",
+              placeholder: t("allStates"),
+              options: SITE_SURVEY_VALUES.map((value) => ({ value, label: surveyStatus(value) })),
+            },
+          ]}
+        />
         {!surveys.data ? (
           <SectionError error={surveys.error} />
         ) : surveys.data.length === 0 ? (

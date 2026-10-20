@@ -1,13 +1,16 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { PRIORITY_STATUS } from "@/domain/status/priority";
 import { SERVICE_REQUEST_STATUS } from "@/domain/status/serviceRequest";
+import { ServiceThread } from "@/features/shared/console/ServiceThread";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
+import { formatDateTime } from "@/i18n/format";
+import type { Locale } from "@/i18n/routing";
 import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
@@ -28,8 +31,21 @@ const PRIORITIES: Schemas["ServicePriority"][] = ["low", "normal", "high", "urge
  * "take it" — a repair work order assigned to me (`POST …/work-orders`, one Idempotency-Key per attempt),
  * which opens the work order.
  */
-export function RequestScreen({ request, userId }: { request: Schemas["ServiceRequestDto"]; userId: string }) {
+export function RequestScreen({
+  request,
+  userId,
+  messages,
+  canWrite,
+}: {
+  request: Schemas["ServiceRequestDto"];
+  userId: string;
+  /** The request's thread; `null` when it could not be read. */
+  messages: Schemas["ServiceMessageDto"][] | null;
+  canWrite: boolean;
+}) {
   const t = useTranslations("staff.work.request");
+  const visit = useTranslations("console.visit");
+  const locale = useLocale() as Locale;
   const priorities = useTranslations("status.priority");
   const router = useRouter();
   const [priority, setPriority] = useState(request.priority);
@@ -54,6 +70,13 @@ export function RequestScreen({ request, userId }: { request: Schemas["ServiceRe
         </span>
       </header>
       <p className="text-lg whitespace-pre-line">{request.description}</p>
+      <p className="text-base" data-testid="request-visit-preference">
+        {visit("preferred")}:{" "}
+        {request.preferredVisit ? visit(`preference.${request.preferredVisit}`) : visit("noPreference")}
+        {request.visitConfirmedAt
+          ? ` · ${visit("confirmedAt", { at: formatDateTime(request.visitConfirmedAt, locale) })}`
+          : ""}
+      </p>
       {request.photoIds.length ? (
         <ul className="flex flex-wrap gap-2">
           {request.photoIds.map((id, index) => (
@@ -153,6 +176,13 @@ export function RequestScreen({ request, userId }: { request: Schemas["ServiceRe
           </ul>
         </section>
       ) : null}
+      <ServiceThread
+        target={{ surface: "staff", kind: "serviceRequest", id: request.id }}
+        initial={messages}
+        canWrite={canWrite}
+        ended={request.status === "closed" || request.status === "cancelled"}
+        touch
+      />
       {error ? (
         <Callout tone="danger">
           <span role="alert">{problemText(error, t("offline"))}</span>

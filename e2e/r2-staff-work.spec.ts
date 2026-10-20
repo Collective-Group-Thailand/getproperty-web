@@ -68,8 +68,21 @@ test("a work order: door code, check-in, before photos, parts, a cost, after pho
   await expect(page.getByTestId("staff-work-order")).toHaveAttribute("data-status", "assigned");
   await page.getByTestId("access-show").click();
   await expect(page.getByTestId("access-pin")).toHaveText("730215");
+  // The resident's preferred time and confirmation, and the request's thread shared with the office (D-218).
+  await expect(page.getByTestId("work-order-visit-preference")).toContainText("Evening");
+  await expect(page.getByTestId("work-order-visit-preference")).toContainText("The resident confirmed the visit");
+  const thread = page.getByTestId("service-thread");
+  await expect(thread.getByTestId("thread-message")).toHaveCount(2);
   await expectAxeClean(page);
   await expectTargets48(page.locator("main"));
+  await thread.getByTestId("thread-input").fill("At the door now");
+  await thread.getByTestId("thread-send").click();
+  await expect(thread.getByTestId("thread-message")).toHaveCount(3);
+  await expect(thread.getByTestId("thread-message").last()).toHaveAttribute("data-mine", "true");
+  const posted = await r2<{ received: { op: string; body: { body?: string } }[] }>();
+  expect(posted.received.filter((entry) => entry.op === "staff.workOrders.postMessage").at(-1)?.body.body).toBe(
+    "At the door now",
+  );
 
   await page.getByTestId("check-in").click();
   await expect(page.getByTestId("staff-work-order")).toHaveAttribute("data-status", "in_progress");

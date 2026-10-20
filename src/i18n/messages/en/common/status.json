@@ -308,5 +308,16 @@
     "delivered": "Delivered",
     "failed": "Failed",
     "cancelled": "Not sent"
+  },
+  "integration": {
+    "received": "Received",
+    "validated": "Validated",
+    "applied": "Applied",
+    "rejected": "Rejected",
+    "pending": "Pending",
+    "sent": "Sent",
+    "acked": "Acknowledged",
+    "failed": "Failed",
+    "dead": "Dead letter"
   }
 }
