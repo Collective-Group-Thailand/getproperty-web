@@ -135,3 +135,32 @@ before `pnpm lhci` — the analyzer build replaces `.next`.
   280 KB (target 250), staff 280 KB (target 180).
 - **D-179 (2026-10-17)** — budgets re-based (180 / 260 / 200 / 260) and enforced as hard limits after the
   reductions above; every set passes.
+
+## Admin console (F5) and owner F2 2.6 (2026-10-20, `pnpm lhci admin owner`, desktop preset, signed in — admin as a platform admin, owner as the owner persona)
+
+Every URL within the 260 KB hard limit (D-179); accessibility 1.0 on every URL (an error assertion).
+
+| Set | URL | Initial JS (gz) |
+|---|---|---|
+| `admin` | `/` | 184.0 KB |
+| `admin` | `/tenants` | 193.9 KB |
+| `admin` | `/tenants/0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11` | 182.4 KB |
+| `admin` | `/tenants/0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11/subscription` | 219.1 KB |
+| `admin` | `/tenants/0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11/pilot` | 194.2 KB |
+| `admin` | `/subscriptions/invoices/8b000000-0000-4000-8000-000000000001` | 191.1 KB |
+| `admin` | `/tariffs/9b000000-0000-4000-8000-000000000001` | 196.7 KB |
+| `admin` | `/settings` | 188.6 KB |
+| `admin` | `/audit` | 185.3 KB |
+| `admin` | `/outbox` | 194.9 KB |
+| `admin` | `/devices` | 192.1 KB |
+| `admin` | `/devices/2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e03` | 191.6 KB |
+| `admin` | `/ota/rollouts/aa000000-0000-4000-8000-000000000001` | 192.5 KB |
+| `owner` | `/settings` | 199.7 KB |
+| `owner` | `/settings/bank-accounts` | 197.7 KB |
+| `owner` | `/settings/members` | 196.9 KB |
+| `owner` | `/settings/notifications` | 191.5 KB |
+| `owner` | `/settings/privacy` | 194.9 KB |
+| `owner` | `/billing/rate-plans` | 197.2 KB |
+| `owner` | `/subscription` | 189.6 KB |
+| `owner` | `/subscription/invoices/8b000000-0000-4000-8000-000000000001` | 189.6 KB |
+| `owner` | `/reports` | 188.9 KB |
