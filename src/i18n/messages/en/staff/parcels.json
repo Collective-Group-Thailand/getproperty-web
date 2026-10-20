@@ -1,0 +1,36 @@
+{
+  "title": "Parcels",
+  "unavailable": "Cannot be loaded right now. Try again when you have signal.",
+  "waiting": "Waiting",
+  "count": "({count})",
+  "none": "No parcel waiting",
+  "photoAlt": "Parcel for unit {unit}",
+  "unit": "Unit {unit}",
+  "noCarrier": "No carrier noted",
+  "receivedAt": "Received {at}",
+  "intake": {
+    "title": "Receive a parcel",
+    "photo": "Photograph the parcel",
+    "retake": "Retake",
+    "previewAlt": "The parcel photo",
+    "unit": "Unit",
+    "chooseUnit": "Choose a unit",
+    "carrier": "Carrier",
+    "trackingNo": "Tracking no.",
+    "submit": "Save and tell the resident",
+    "saved": "Parcel for {unit} received; the resident was told",
+    "offline": "Not sent: no signal. Try again."
+  },
+  "pickUp": {
+    "action": "Hand over",
+    "return": "Return",
+    "pin": "Pick-up PIN",
+    "pinHint": "6 digits from the resident's app",
+    "withPin": "Hand over with the PIN",
+    "staffConfirmed": "No PIN — I confirm who picks it up",
+    "reason": "Why it goes back",
+    "returnSubmit": "Record the return",
+    "cancel": "Cancel",
+    "offline": "Not sent: no signal. Try again."
+  }
+}

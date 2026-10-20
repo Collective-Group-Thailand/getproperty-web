@@ -12,32 +12,42 @@
     "noFloor": "No floor",
     "none": "No reading round for this building yet"
   },
-  "inspections": {
-    "title": "Inspections",
-    "item": "{unit} · {type, select, move_in {move-in} move_out {move-out} other {inspection}}",
-    "when": "Scheduled {date}",
-    "none": "No units to inspect",
-    "status": {
-      "scheduled": "To do",
-      "in_progress": "In progress",
-      "completed": "Completed",
-      "signed": "Signed"
-    }
-  },
-  "installs": {
-    "title": "Installs",
-    "action": "Install devices",
-    "open": "Devices of the building",
-    "waiting": "Waiting: {gateways} gateways · {meters} meters",
-    "none": "No devices waiting to be installed"
-  },
-  "later": {
-    "title": "Other work",
-    "workOrders": "Work orders",
-    "parcels": "Parcels",
-    "soon": "Coming in a later release"
-  },
   "allDone": "Nothing left for today",
   "allDoneHint": "New work shows up here, and as a notification if you turned them on",
-  "count": "({count})"
+  "count": "({count})",
+  "tasks": {
+    "title": "Today's tasks",
+    "whose": "Whose tasks",
+    "mine": "Mine",
+    "everyone": "Everyone's",
+    "none": "Nothing left for today",
+    "type": {
+      "work_order": "Work orders",
+      "inspection": "Inspections",
+      "reading": "Reading requests",
+      "parcel": "Parcels waiting",
+      "install": "Install orders"
+    },
+    "buildingWide": "Whole building",
+    "subjectUnit": "{subject} · {unit}",
+    "overdue": "Overdue",
+    "due": "Due {at}",
+    "priority": {
+      "high": "High priority",
+      "urgent": "Urgent"
+    },
+    "readOnly": "Done by Collective's field engineers"
+  },
+  "complete": {
+    "finish": "Finish",
+    "handOver": "Hand over",
+    "pin": "Pick-up PIN",
+    "pinHint": "6 digits from the resident's app",
+    "withPin": "Hand over with the PIN",
+    "staffConfirmed": "No PIN — I confirm who picks it up",
+    "note": "What was done",
+    "cancel": "Cancel",
+    "offline": "Not sent: no signal. Try again.",
+    "takeAfterPhoto": "Take the after photo in the work order"
+  }
 }
