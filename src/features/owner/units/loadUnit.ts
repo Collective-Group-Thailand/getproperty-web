@@ -20,7 +20,7 @@ export async function loadUnitPanel(api: ApiClient, unitId: string): Promise<Uni
           params: { query: { unitId, perPage: 10, sort: "startDate", order: "desc" } },
         }),
       ).then((page) => page.data.find((lease) => LIVE.has(lease.status)) ?? null);
-  const [lease, meters, invoices] = await Promise.all([
+  const [lease, meters, invoices, requests] = await Promise.all([
     leaseRead.catch(() => null),
     unwrap(api.GET("/v1/owner/units/{unitId}/meters", { params: { path: { unitId } } }))
       .then((list) =>
@@ -46,6 +46,9 @@ export async function loadUnitPanel(api: ApiClient, unitId: string): Promise<Uni
     )
       .then((page) => page.data.filter((invoice) => OPEN.has(invoice.status)))
       .catch(() => []),
+    unwrap(api.GET("/v1/owner/service-requests", { params: { query: { unitId, open: true, perPage: 10 } } }))
+      .then((page) => page.data)
+      .catch(() => null),
   ]);
-  return { unit, lease, meters, invoices };
+  return { unit, lease, meters, invoices, requests };
 }

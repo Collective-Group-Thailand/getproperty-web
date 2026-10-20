@@ -59,6 +59,7 @@ export function UnitDrawerContent({ unitId, prefix }: { unitId: string; prefix: 
           newLease: `${prefix}/leases/new?unit=${unitId}`,
           invoice: (id) => `${prefix}/invoices/${id}`,
           meter: (id) => `${prefix}/meters/${id}`,
+          request: (id) => `${prefix}/service-requests/${id}`,
         }}
       />
       <Button asChild variant="secondary" iconStart={IconExternal}>

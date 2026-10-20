@@ -172,6 +172,18 @@ export function formatDateTime(input: DateInput, locale: Locale = "th", options:
   return `${formatDate(date, locale, options)} ${time}`;
 }
 
+/** The time of day in Bangkok (`18:00`) — the end of a slot whose date is already on screen. */
+export function formatTime(input: DateInput, locale: Locale = "th"): string {
+  const date = toDate(input);
+  if (!date) return "—";
+  return new Intl.DateTimeFormat(dateTag(locale), {
+    timeZone: TIME_ZONE,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+}
+
 /** ISO 8601 (YYYY-MM-DD) in Bangkok time, for CSV and XLSX exports. Never shown in the UI. */
 export function formatIsoDate(input: DateInput): string {
   const date = toDate(input);

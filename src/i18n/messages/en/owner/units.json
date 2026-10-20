@@ -87,8 +87,9 @@
     "noInvoices": "Nothing open",
     "draft": "Draft",
     "serviceRequests": "Service requests",
-    "serviceRequestsLater": "Arrive with the service module.",
-    "openPage": "Open the unit page"
+    "openPage": "Open the unit page",
+    "serviceRequestsOff": "The service module is not on",
+    "noServiceRequests": "No open service request"
   },
   "status": {
     "change": "Change status",

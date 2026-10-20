@@ -79,5 +79,13 @@
     "download": "Download",
     "downloadRows": "Download ({count, plural, one {# row} other {# rows}})",
     "failed": "The export failed: {error}"
+  },
+  "photos": {
+    "hint": "JPG, PNG or WebP up to 10 MB",
+    "tooLarge": "The file is over 10 MB",
+    "choose": "Choose photos",
+    "uploading": "Uploading…",
+    "failed": "The upload failed; try again",
+    "uploaded": "{count} uploaded: {names}"
   }
 }

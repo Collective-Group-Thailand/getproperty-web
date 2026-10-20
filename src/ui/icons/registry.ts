@@ -107,6 +107,7 @@ import { IconContact } from "./glyphs/contact";
 import { IconPackageCheck } from "./glyphs/package-check";
 import { IconReceipt } from "./glyphs/receipt";
 import { IconCalendarCheck } from "./glyphs/calendar-check";
+import { IconArchive } from "./glyphs/archive";
 import { IconThemeSystem } from "./glyphs/theme-system";
 import { IconThemeLight } from "./glyphs/theme-light";
 import { IconThemeDark } from "./glyphs/theme-dark";
@@ -218,6 +219,7 @@ export const ICONS: { readonly [N in IconName]: IconGlyph<N> } = {
   "package-check": IconPackageCheck,
   receipt: IconReceipt,
   "calendar-check": IconCalendarCheck,
+  archive: IconArchive,
   "theme-system": IconThemeSystem,
   "theme-light": IconThemeLight,
   "theme-dark": IconThemeDark,

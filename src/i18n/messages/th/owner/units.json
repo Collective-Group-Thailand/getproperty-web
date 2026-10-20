@@ -87,8 +87,9 @@
     "noInvoices": "ไม่มีบิลค้าง",
     "draft": "ร่าง",
     "serviceRequests": "แจ้งซ่อม",
-    "serviceRequestsLater": "มาพร้อมโมดูลแจ้งซ่อม",
-    "openPage": "เปิดหน้าห้อง"
+    "openPage": "เปิดหน้าห้อง",
+    "serviceRequestsOff": "ไม่ได้เปิดใช้งานระบบแจ้งซ่อม",
+    "noServiceRequests": "ไม่มีแจ้งซ่อมค้าง"
   },
   "status": {
     "change": "เปลี่ยนสถานะ",

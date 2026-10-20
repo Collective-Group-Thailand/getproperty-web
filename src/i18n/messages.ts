@@ -14,10 +14,12 @@ import type { Locale } from "./routing";
 export const MESSAGE_FILES = {
   common: ["auth", "brand", "common", "console", "errors", "glossary", "notifications", "shell", "status"],
   owner: [
+    "access",
     "arrears",
     "billing",
     "buildings",
     "common",
+    "community",
     "dashboard",
     "deposits",
     "devices",
@@ -32,11 +34,24 @@ export const MESSAGE_FILES = {
     "payments",
     "rates",
     "reports",
+    "service",
     "settings",
     "subscription",
     "units",
   ],
-  staff: ["capture", "devices", "inspections", "lock", "nav", "offline", "readings", "shell", "today"],
+  staff: [
+    "capture",
+    "devices",
+    "inspections",
+    "lock",
+    "nav",
+    "offline",
+    "parcels",
+    "readings",
+    "shell",
+    "today",
+    "work",
+  ],
   admin: ["billing", "fleet", "nav", "operations", "platform", "shell", "support", "tariffs", "tenants"],
 } as const satisfies Record<"common" | Zone, readonly string[]>;
 

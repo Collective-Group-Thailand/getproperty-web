@@ -39,8 +39,13 @@
       "detail": "{amount} still open"
     },
     "serviceRequests": {
-      "title": "New service requests",
-      "detail": "Arrives with the service module"
+      "title": "{count, plural, one {# service request} other {# service requests}} past the SLA",
+      "detail": "Of {open} open",
+      "detailMore": "Counted in the first 100 open requests ({open} in all)"
+    },
+    "parcels": {
+      "title": "{count, plural, one {# parcel} other {# parcels}} waiting",
+      "detail": "Residents were told; they pick up with the PIN in their app"
     }
   },
   "kpi": {

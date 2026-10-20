@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 
+import { SERVICE_REQUEST_STATUS } from "@/domain/status/serviceRequest";
 import { INVOICE_STATUS } from "@/domain/status/invoice";
 import { LEASE_STATUS } from "@/domain/status/lease";
 import { READING_STATUS } from "@/domain/status/reading";
@@ -29,6 +30,8 @@ export interface UnitPanelData {
   lease: Schemas["LeaseDto"] | null;
   meters: UnitMeterView[];
   invoices: Schemas["InvoiceSummaryDto"][];
+  /** Open service requests of the unit (F2 2.7); `null` when the service module is not available. */
+  requests: Schemas["ServiceRequestDto"][] | null;
 }
 
 const meterUnit = (utility: Schemas["Utility"]) => (utility === "water" ? "m3" : "kWh");
@@ -55,6 +58,7 @@ export function UnitPanel({
     newLease: string;
     invoice: (id: string) => string;
     meter: (id: string) => string;
+    request: (id: string) => string;
   };
 }) {
   const t = useTranslations("owner.units.panel");
@@ -209,7 +213,28 @@ export function UnitPanel({
         <h3 id={`requests-${unit.id}`} className="font-semibold">
           {t("serviceRequests")}
         </h3>
-        <p className="text-muted text-sm">{t("serviceRequestsLater")}</p>
+        {data.requests === null ? (
+          <p className="text-muted text-sm">{t("serviceRequestsOff")}</p>
+        ) : data.requests.length === 0 ? (
+          <p className="text-muted text-sm">{t("noServiceRequests")}</p>
+        ) : (
+          <ul className="flex flex-col gap-1 text-sm" data-testid="unit-requests">
+            {data.requests.map((request) => (
+              <li key={request.id}>
+                <a
+                  className="flex flex-wrap items-center justify-between gap-2 underline-offset-4 hover:underline"
+                  href={links.request(request.id)}
+                >
+                  <span className="flex flex-col">
+                    <span className="font-mono">{request.ref}</span>
+                    <span className="text-muted line-clamp-1">{request.description}</span>
+                  </span>
+                  <StatusBadgeOf map={SERVICE_REQUEST_STATUS} value={request.status} size="sm" />
+                </a>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
     </div>
   );

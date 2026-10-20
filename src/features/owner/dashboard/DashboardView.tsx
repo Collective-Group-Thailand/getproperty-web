@@ -28,6 +28,7 @@ import { IconClock } from "@/ui/icons/glyphs/clock";
 import { IconLease } from "@/ui/icons/glyphs/lease";
 import { IconLoss } from "@/ui/icons/glyphs/loss";
 import { IconMeter } from "@/ui/icons/glyphs/meter";
+import { IconParcel } from "@/ui/icons/glyphs/parcel";
 import { IconPayment } from "@/ui/icons/glyphs/payment";
 import { IconResidents } from "@/ui/icons/glyphs/residents";
 import { IconRoom } from "@/ui/icons/glyphs/room";
@@ -72,6 +73,20 @@ export async function DashboardView({ context }: { context: OwnerContext }) {
         )
       : Promise.resolve({ data: null, error: null }),
     building ? Promise.resolve({ data: null, error: null }) : section(unwrap(api.GET("/v1/owner/units/count"))),
+  ]);
+  // CONTRACT-REQUEST (docs/contract-requests.md): `DashboardDto.attention.serviceRequestsOverdue` — until then the
+  // open requests' first 100 are read and their `slaBreached` flags counted (the API's flag, not an SLA computed here).
+  const [serviceRequests, parcels] = await Promise.all([
+    context.me.menu.includes("service_requests")
+      ? section(
+          unwrap(
+            api.GET("/v1/owner/service-requests", { params: { query: { buildingId, open: true, perPage: 100 } } }),
+          ),
+        )
+      : Promise.resolve({ data: null, error: null }),
+    context.me.menu.includes("parcels")
+      ? section(unwrap(api.GET("/v1/owner/parcels", { params: { query: { buildingId, open: true, perPage: 1 } } })))
+      : Promise.resolve({ data: null, error: null }),
   ]);
   const href = (path: string, query: Record<string, string | undefined> = {}) =>
     ownerPath(locale, withQuery(path, query));
@@ -154,15 +169,31 @@ export async function DashboardView({ context }: { context: OwnerContext }) {
       href: href("/invoices", { status: "issued" }),
       icon: IconClock,
     });
-  // R2: service requests reserve their place in the queue; the tile appears once the module is on.
-  if (context.me.menu.includes("service_requests"))
+  // R2 (F2 2.7): overdue service requests (the API's `slaBreached`) and parcels waiting at the desk.
+  if (serviceRequests.data) {
+    const overdue = serviceRequests.data.data.filter((request) => request.slaBreached).length;
+    if (overdue > 0)
+      queue.push({
+        kind: "serviceRequests",
+        count: overdue,
+        title: t("queue.serviceRequests.title", { count: overdue }),
+        detail:
+          serviceRequests.data.meta.total > serviceRequests.data.data.length
+            ? t("queue.serviceRequests.detailMore", { open: serviceRequests.data.meta.total })
+            : t("queue.serviceRequests.detail", { open: serviceRequests.data.meta.total }),
+        href: href("/service-requests"),
+        icon: IconStaff,
+        urgent: true,
+      });
+  }
+  if (parcels.data && parcels.data.meta.total > 0)
     queue.push({
-      kind: "serviceRequests",
-      count: 0,
-      title: t("queue.serviceRequests.title"),
-      detail: t("queue.serviceRequests.detail"),
-      href: href("/service-requests"),
-      icon: IconStaff,
+      kind: "parcels",
+      count: parcels.data.meta.total,
+      title: t("queue.parcels.title", { count: parcels.data.meta.total }),
+      detail: t("queue.parcels.detail"),
+      href: href("/parcels"),
+      icon: IconParcel,
     });
 
   const scope = building

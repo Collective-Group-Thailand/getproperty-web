@@ -3,6 +3,9 @@
 import { useTranslations } from "next-intl";
 
 import { FormDialog, text } from "./FormDialog";
+import { bangkokInstant } from "./time";
+
+export { bangkokInstant };
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { NativeSelect } from "@/ui/components/NativeSelect";
@@ -30,12 +33,6 @@ export function parseSettingValue(type: SettingValueType, raw: string): unknown 
     default:
       return value === "" ? undefined : value;
   }
-}
-
-/** A `datetime-local` value read as Bangkok wall time (operators and staff work in Asia/Bangkok), as an ISO instant. */
-export function bangkokInstant(value: string | undefined): string | undefined {
-  if (!value || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(value)) return undefined;
-  return new Date(`${value.slice(0, 16)}:00+07:00`).toISOString();
 }
 
 /** A setting's current value as the editor shows it. */

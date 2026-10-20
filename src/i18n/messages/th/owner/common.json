@@ -79,5 +79,13 @@
     "download": "ดาวน์โหลด",
     "downloadRows": "ดาวน์โหลด ({count} รายการ)",
     "failed": "ส่งออกไม่สำเร็จ: {error}"
+  },
+  "photos": {
+    "hint": "JPG, PNG หรือ WebP ไม่เกิน 10 MB",
+    "tooLarge": "ไฟล์ใหญ่เกิน 10 MB",
+    "choose": "เลือกรูป",
+    "uploading": "กำลังอัปโหลด…",
+    "failed": "อัปโหลดไม่สำเร็จ ลองอีกครั้ง",
+    "uploaded": "อัปโหลดแล้ว {count} รูป: {names}"
   }
 }

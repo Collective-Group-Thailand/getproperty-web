@@ -1,0 +1,155 @@
+{
+  "title": "Doors & locks",
+  "description": "Locks of units, building doors and common areas.",
+  "metaTitle": "Lock",
+  "rule": "A resident's access follows the lease: it starts with the lease and ends with it. Nobody is locked out for arrears (D-024, D-071).",
+  "empty": {
+    "title": "No lock in this building",
+    "body": "Register unit locks or the building door; residents with a lease get their code automatically."
+  },
+  "col": {
+    "lock": "Lock",
+    "place": "Place",
+    "state": "State",
+    "battery": "Battery"
+  },
+  "unit": "Unit {unit}",
+  "scope": {
+    "unit": "Unit",
+    "building_door": "Building door",
+    "common_area": "Common area"
+  },
+  "vendor": {
+    "ttlock": "TTLock",
+    "tuya": "Tuya",
+    "hikvision": "Hikvision",
+    "zkteco": "ZKTeco",
+    "other": "Other"
+  },
+  "online": "Online",
+  "offline": "Offline",
+  "unknown": "Unknown",
+  "inactive": "Not in use",
+  "battery": "{pct}%",
+  "batteryLow": "Battery low {pct}%",
+  "holder": {
+    "resident": "Resident",
+    "staff": "Staff",
+    "visitor": "Visitor",
+    "owner": "Owner",
+    "technician": "Technician"
+  },
+  "source": {
+    "app": "App",
+    "pin": "PIN",
+    "card": "Card",
+    "remote": "Remote",
+    "vendor_sync": "Vendor sync",
+    "face": "Face",
+    "qr": "QR",
+    "fingerprint": "Fingerprint"
+  },
+  "lock": {
+    "subtitle": "{place} · {building}",
+    "vendor": "Vendor",
+    "serial": "Serial",
+    "connection": "Connection",
+    "battery": "Battery",
+    "logSync": "Log read",
+    "active": "Use",
+    "inUse": "In use",
+    "refresh": "Refresh from vendor",
+    "deactivate": "Stop using",
+    "activate": "Start using",
+    "deactivateTitle": "Stop using {name}?",
+    "activateTitle": "Start using {name}?",
+    "deactivateBody": "No new code is issued on this lock; existing codes keep following the lease.",
+    "activateBody": "Codes can be issued on this lock again.",
+    "saved": "Saved"
+  },
+  "credentials": {
+    "title": "Access",
+    "hint": "Resident codes that follow the lease, staff / technician codes of work orders, visitor codes.",
+    "live": "Live",
+    "all": "All",
+    "holder": "Holder",
+    "window": "Window",
+    "status": "Status",
+    "actions": "Actions",
+    "workOrder": "work order",
+    "lease": "lease",
+    "from": "from {at}",
+    "until": "until {at}",
+    "followsLease": "until the lease ends",
+    "revokedBecause": "Revoked: {reason}",
+    "none": "No access."
+  },
+  "events": {
+    "title": "Unlock log",
+    "hint": "Read from the vendor every hour; viewing it is audited.",
+    "time": "Time",
+    "result": "Result",
+    "source": "How",
+    "holder": "Code of",
+    "otherCode": "another code",
+    "none": "No event yet."
+  },
+  "register": {
+    "action": "Register lock",
+    "title": "Register a lock",
+    "body": "A unit lock gets the resident's code at once when the unit is leased.",
+    "submit": "Register",
+    "done": "Lock registered",
+    "name": "Name",
+    "scope": "Installed at",
+    "scopes": {
+      "unit": "Unit door",
+      "building_door": "Building door",
+      "common_area": "Common area"
+    },
+    "unit": "Unit",
+    "chooseUnit": "Choose a unit",
+    "vendor": "Vendor",
+    "vendors": {
+      "ttlock": "TTLock",
+      "tuya": "Tuya",
+      "hikvision": "Hikvision",
+      "zkteco": "ZKTeco",
+      "other": "Other"
+    },
+    "serial": "Serial",
+    "vendorLockId": "Vendor's lock id",
+    "vendorLockIdHint": "From the vendor's app",
+    "model": "Model"
+  },
+  "revoke": {
+    "action": "Revoke",
+    "title": "Revoke {holder}'s access to {lock}",
+    "body": "The code stops working at once.",
+    "bodyResident": "The resident's code stops working at once and they are told on LINE with the reason. This is the owner's decision, never a collection step.",
+    "reason": "Reason",
+    "reasonHint": "The resident sees this reason",
+    "done": "Access revoked"
+  },
+  "code": {
+    "visitor": "Visitor code",
+    "staff": "Staff code",
+    "visitorTitle": "Code for a visitor",
+    "visitorBody": "Valid in the window only, at most 31 days.",
+    "staffTitle": "Code for a staff member",
+    "staffBody": "Valid in the window only, at most 31 days.",
+    "visitorName": "Visitor's name",
+    "member": "Staff member",
+    "chooseMember": "Choose",
+    "from": "Valid from",
+    "until": "Until",
+    "bangkokTime": "Thailand time",
+    "max": "At most 31 days",
+    "issue": "Issue code",
+    "issued": "Code issued",
+    "issuedTitle": "Code for {holder}",
+    "issuedWindow": "Valid {from} to {until}",
+    "issuedOnce": "Shown once only — pass it on before closing.",
+    "hide": "Close"
+  }
+}

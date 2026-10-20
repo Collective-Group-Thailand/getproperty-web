@@ -68,6 +68,10 @@ const OWNER_MENU_BY_ROLE: Record<Schemas["TenantRole"], string[]> = {
     "payments",
     "reports",
     "utility_loss",
+    "service_requests",
+    "access",
+    "parcels",
+    "announcements",
     "members",
     "bank_accounts",
     "settings",
@@ -90,18 +94,22 @@ const OWNER_MENU_BY_ROLE: Record<Schemas["TenantRole"], string[]> = {
     "payments",
     "reports",
     "utility_loss",
+    "service_requests",
+    "access",
+    "parcels",
+    "announcements",
     "members",
     "settings",
   ],
   accountant: ["dashboard", "invoices", "payments", "deposits", "reports"],
-  staff: ["readings"],
+  staff: ["readings", "service_requests", "parcels"],
 };
 /** Staff PWA menu keys per role (`STAFF_MENU` of the API's `src/core/rbac/menu.ts`, D-180). */
 const STAFF_MENU_BY_ROLE: Record<Schemas["TenantRole"], Schemas["StaffMenuKey"][]> = {
-  owner: ["readings", "reading_rounds", "inspections", "installs"],
-  manager: ["readings", "reading_rounds", "inspections", "installs"],
+  owner: ["readings", "reading_rounds", "inspections", "installs", "service_requests", "parcels"],
+  manager: ["readings", "reading_rounds", "inspections", "installs", "service_requests", "parcels"],
   accountant: [],
-  staff: ["readings", "reading_rounds", "inspections", "installs"],
+  staff: ["readings", "reading_rounds", "inspections", "installs", "service_requests", "parcels"],
 };
 
 export function menuFor(surface: "owner" | "staff", role: Schemas["TenantRole"]): string[] {
@@ -360,7 +368,13 @@ const TENANT_KEYS = [
   "service_request.read",
   "service_request.handle",
   "parcel.manage",
+  "service_category.manage",
+  "maintenance_plan.manage",
+  "access.read",
+  "access.manage",
   "announcement.manage",
+  "community.read",
+  "community.manage",
   "notification.route.manage",
   "privacy.manage",
 ];
@@ -402,6 +416,8 @@ const TENANT_PERMISSIONS: Record<Schemas["TenantRole"], string[]> = {
     "service_request.read",
     "service_request.handle",
     "parcel.manage",
+    "community.read",
+    "staff_task.read",
   ],
   accountant: [
     "tenant.read",

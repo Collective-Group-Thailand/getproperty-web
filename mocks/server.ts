@@ -19,6 +19,8 @@
  *   GET  /__mock/staff/devices      devices, channels, commands and swaps of the staff world
  *   POST /__mock/staff/reset?part=  reset the staff world's readings (building A) | inspections |
  *                                   devices (building B + the devices), or all of it
+ *   POST /__mock/r2/reset           reset the R2 world (service requests, work orders, locks, community)
+ *   GET  /__mock/r2/state           requests, work orders, parcels (+ PINs), locks, announcements, bookings, received
  *   POST /__mock/staff/ocr?mode=    the fake OCR reads (`ok`) or reads nothing (`unreadable`)
  *   POST /__mock/staff/devices/online?serial=  a gateway bootstraps and comes online (realtime events)
  *   POST /__mock/owner/reset?part=  reset the owner world (assets | leases | money | metering), or all of it
@@ -49,6 +51,7 @@ import { OPERATORS, PLATFORM_USERS } from "./fixtures";
 import { handlers } from "./handlers";
 import { providerPays, resetOwnerWorld, residentAnswers, residentSigns } from "./owner";
 import { advanceRollout, resetPlatformWorld } from "./platform";
+import { resetR2World } from "./r2";
 import { emit } from "./handlers/realtime";
 import { gatewayComesOnline, readUpload, storeUpload, UPLOAD_CORS } from "./handlers/staff";
 import { BUILDING_A, BUILDING_B, buildingOf } from "./staff-world";
@@ -166,6 +169,20 @@ async function control(url: URL, req: IncomingMessage, res: ServerResponse) {
       }
       return sendJson(res, 200, { ok: true });
     }
+    case "POST /__mock/r2/reset":
+      resetR2World();
+      return sendJson(res, 200, { ok: true });
+    case "GET /__mock/r2/state":
+      return sendJson(res, 200, {
+        requests: state.r2.requests,
+        workOrders: state.r2.workOrders,
+        parcels: state.r2.parcels,
+        pins: state.r2.pins,
+        locks: state.r2.locks,
+        announcements: state.r2.announcements,
+        bookings: state.r2.bookings,
+        received: state.r2.received,
+      });
     case "POST /__mock/staff/ocr":
       state.staff.ocr = url.searchParams.get("mode") === "unreadable" ? "unreadable" : "ok";
       return sendJson(res, 200, { ocr: state.staff.ocr });

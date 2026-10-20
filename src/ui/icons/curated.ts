@@ -115,6 +115,7 @@ export const CURATED_ICONS = {
   "package-check": "package-check",
   receipt: "receipt-text",
   "calendar-check": "calendar-check",
+  archive: "archive",
   // theme & language
   "theme-system": "monitor",
   "theme-light": "sun",
