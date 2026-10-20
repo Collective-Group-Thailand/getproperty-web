@@ -72,7 +72,7 @@ export default defineConfig({
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
-      testIgnore: ["integration/**", "owner-*.spec.ts", "admin-*.spec.ts"],
+      testIgnore: ["integration/**", "owner-*.spec.ts", "admin-*.spec.ts", "r2-*.spec.ts"],
     },
     {
       // The owner console's and the platform admin's specs share stateful worlds in the mock API
@@ -81,7 +81,8 @@ export default defineConfig({
       // changes what another spec is reading.
       name: "owner",
       use: { ...devices["Desktop Chrome"] },
-      testMatch: ["owner-*.spec.ts", "admin-*.spec.ts"],
+      // R2 (F2 2.7 / F4 4.4): the owner and the staff PWA share one service & community world in the mock.
+      testMatch: ["owner-*.spec.ts", "admin-*.spec.ts", "r2-*.spec.ts"],
       workers: 1,
     },
   ],

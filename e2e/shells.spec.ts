@@ -130,7 +130,8 @@ test.describe("staff shell", () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await signInWithOtp(page, HOSTS.staff, "0810000004");
     const bottom = page.getByRole("navigation", { name: "Quick navigation" });
-    await expect(bottom.getByRole("link")).toHaveText(["Today", "Readings", "Inspect", "Devices"]);
+    // With the service module (R2) work orders take the fourth place; devices move to More.
+    await expect(bottom.getByRole("link")).toHaveText(["Today", "Readings", "Inspect", "Work orders"]);
     await expect(page.getByTestId("sync-badge")).toHaveAttribute("data-pending", "0");
     expect((await axe(page)).violations).toEqual([]);
 

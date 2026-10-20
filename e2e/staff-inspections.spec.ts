@@ -57,7 +57,7 @@ test("move-out beside the move-in, photos, offline checklist kept across a reloa
   await signInStaff(page);
   await page
     .getByTestId("today-inspections")
-    .getByRole("link", { name: /A-201 · move-out/ })
+    .getByRole("link", { name: /Move-out inspection A-201/ })
     .click();
   await expect(page.getByTestId("inspection-checklist")).toBeVisible();
   await openInspection(page, MOVE_OUT_A201);
