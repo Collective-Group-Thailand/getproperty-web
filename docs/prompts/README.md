@@ -12,7 +12,9 @@
 | F0.2 | `Then read docs/prompts/F0-setup.md. Do Session 0.2 only. Plan first.` | R1 |
 | F1.1–1.3 | `Then read docs/prompts/F1-foundation.md. Do Deliverable 1.N only. Plan first.` | R1 |
 | F2.1–2.6 | `Then read docs/prompts/F2-owner-console.md. Do Deliverable 2.N only. Plan first.` | R1 |
+| F2.7 | `Then read docs/prompts/F2-owner-console.md. Do Deliverable 2.7 only. Plan first.` | R2 |
 | F4.1–4.3 | `Then read docs/prompts/F4-staff-pwa.md. Do Deliverable 4.N only. Plan first.` | R1 |
+| F4.4 | `Then read docs/prompts/F4-staff-pwa.md. Do Deliverable 4.4 only. Plan first.` | R2 |
 | F5.1–5.3 | `Then read docs/prompts/F5-admin.md. Do Deliverable 5.N only. Plan first.` | R1 |
 
 ขนานได้: F2, F4, F5 หลัง F1 ใน git worktree แยก (รันกับ MSW จนกว่า backend จะมี) · ต้อง `pnpm gen:api` ทุกครั้งที่ `getproperty-api` tag release ใหม่

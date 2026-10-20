@@ -83,9 +83,9 @@ Next.js 16 (App Router, RSC, `proxy.ts`), React 19, TypeScript strict (5.9 until
 |---|---|---|---|
 | F0 | `F0-setup.md` 0.1 → 0.2 | fresh Next.js 16 app in the target structure, tooling, CI; `src/ui` foundation + brand tokens (done; the resident zone it created was removed by D-154) | nothing |
 | F1 | `F1-foundation.md` 1.1 → 1.3 | three zones, proxy, root layouts, BFF & auth (OTP, TOTP, tenant switcher), contract & mocks, i18n, shells, staff PWA base, observability | B1.1 contract (mocks until then) |
-| F2 | `F2-owner-console.md` 2.1 → 2.6 | owner zone | B2–B4, B6.1 |
+| F2 | `F2-owner-console.md` 2.1 → 2.6 (R2: 2.7) | owner zone | B2–B4, B6.1 (2.7: B5.1–B5.3) |
 | F3 | — moved to `getproperty-liff` (D-154); see `docs/prompts/README.md` | — | — |
-| F4 | `F4-staff-pwa.md` 4.1 → 4.3 | staff PWA (offline-tolerant readings, camera, QR provisioning, work orders R2) | B2.4, B3.1, B3.3 |
+| F4 | `F4-staff-pwa.md` 4.1 → 4.3 (R2: 4.4) | staff PWA (offline-tolerant readings, camera, QR provisioning; R2 tasks, work orders, parcels) | B2.4, B3.1, B3.3 (4.4: B5.1–B5.4) |
 | F5 | `F5-admin.md` 5.1 → 5.3 | platform admin zone | B1.3, B3.1, B6.1, B6.4 |
 F2, F4 and F5 run in parallel in separate git worktrees after F1, against MSW mocks until the backend deliverable exists. The resident app (`getproperty-liff`, L0–L4) runs in parallel in its own repository.
 
