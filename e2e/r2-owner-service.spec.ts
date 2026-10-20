@@ -129,6 +129,8 @@ test("triage, a work order for staff with a visit window, the timeline", async (
 test("work order steps: before photo, parts, cost, complete needs an after photo, verify typed", async ({ page }) => {
   await signInOwner(page);
   await gotoOwner(page, "/work-orders");
+  await expect(page.getByTestId("work-order-row")).toHaveCount(3);
+  await expectAxeClean(page);
   await page.getByRole("link", { name: "เปลี่ยนก๊อกอ่างล้างหน้า A-201" }).click();
   await expect(page.getByTestId("work-order")).toBeVisible();
   await expectAxeClean(page);

@@ -26,6 +26,12 @@
  *      harness enrolled, and a second platform admin (`checker@getproperty.invalid`, temporary password,
  *      enrols at first sign-in) for the two-person tariff workflow; `POST /f5/sweep` runs the hourly
  *      `platform-subscriptions` job now (a trial that ended is invoiced).
+ *   7. The R2 world (`GET /r2`, F2 2.7 / F4 4.4): a fourth tenant with the service and community modules on
+ *      (feature flags per tenant), a building of two rooms with electricity meters, a Staff member who has
+ *      already joined (+66810000042, signs in by OTP) and a resident (+66810000043) whose lease of R-101
+ *      is active (signed in getproperty-liff's way, countersigned by the owner). `POST /r2/resident-request`
+ *      reports a plumbing request as the resident (`POST /v1/resident/service-requests`), `GET
+ *      /r2/resident-parcels` reads the resident's parcels with their pick-up PINs (`GET /v1/resident/parcels`).
  *
  * Nothing here is part of the app: it exists so the suite can run the real sign-in flows once.
  */
@@ -49,6 +55,9 @@ const STAFF_OWNER_PHONE = "+66810000009";
 const STAFF_PHONE = "+66810000010";
 const F2_OWNER_PHONE = "+66810000021";
 const F2_MERCHANT = "010555000000777";
+const R2_OWNER_PHONE = "+66810000041";
+const R2_STAFF_PHONE = "+66810000042";
+const R2_RESIDENT_PHONE = "+66810000043";
 const PNG_BASE64 = Buffer.from(
   "89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000d4944415478da6364f8cf00000301010018dd8db00000000049454e44ae426082",
   "hex",
@@ -601,6 +610,273 @@ async function f2ResidentSigns(
   );
 }
 
+/**
+ * 7. The R2 world (F2 2.7, F4 4.4): a tenant with the service and community modules on, a building of two
+ * rooms with meters, a Staff member who already joined, and a resident with an active lease of R-101 —
+ * signed the way getproperty-liff does it (LINE login, consent, invitation, OTP), countersigned by the owner.
+ * Returns what the controls need: the resident's refresh token (their scopes include the unit once the
+ * lease is active) and the ids.
+ */
+async function setupR2World(apiDir: string, token: string, sms: { lastCodeTo(phone: string): string | undefined }) {
+  const owner = await createTenant(token, "web-integration-r2", "หอพักทดสอบงานซ่อม", R2_OWNER_PHONE);
+  const admin = { authorization: `Bearer ${token}` };
+  for (const key of ["module.service_requests", "module.community"]) {
+    const flag = await call(
+      "PUT",
+      `/v1/admin/feature-flags/${key}`,
+      { tenantId: owner.tenantId, enabled: true, reason: "web integration suite (R2)" },
+      admin,
+    );
+    if (flag.status >= 300) throw new Error(`flag ${key}: ${flag.status} ${JSON.stringify(flag.body)}`);
+  }
+  const challenge = await otpChallenge("/v1/auth/operator/otp/request", { phone: owner.phone });
+  const pair = await call("POST", "/v1/auth/operator/otp/verify", {
+    challengeId: challenge.challengeId,
+    code: sms.lastCodeTo(owner.phone),
+    invitationCode: owner.code,
+  });
+  if (pair.status !== 200) throw new Error(`r2 owner sign-in: ${JSON.stringify(pair.body)}`);
+  const session = new OperatorSession(String(pair.body.accessToken), String(pair.body.refreshToken));
+  const ok = (step: string, result: { status: number; body: unknown }) => {
+    if (result.status >= 300) throw new Error(`r2 ${step}: ${result.status} ${JSON.stringify(result.body)}`);
+    return result.body as Record<string, unknown> & unknown[];
+  };
+  const auth = async (extra: Record<string, string> = {}) => ({ ...(await session.header()), ...extra });
+  const property = ok(
+    "property",
+    await call("POST", "/v1/owner/properties", { code: "R2", name: "หอพักงานซ่อม" }, await auth()),
+  );
+  const building = ok(
+    "building",
+    await call(
+      "POST",
+      "/v1/owner/buildings",
+      { propertyId: property.id, code: "R", name: "อาคาร R", type: "apartment" },
+      await auth(),
+    ),
+  );
+  const buildingId = String(building.id);
+  const floor = ok(
+    "floor",
+    await call("POST", `/v1/owner/buildings/${buildingId}/floors`, { level: 1, name: "ชั้น 1" }, await auth()),
+  );
+  ok(
+    "units",
+    await call(
+      "POST",
+      `/v1/owner/buildings/${buildingId}/units/bulk`,
+      { floorIds: [floor.id], countPerFloor: 2, pattern: "{building}-{floor}{nn}" },
+      await auth(),
+    ),
+  );
+  ok(
+    "meters",
+    await call(
+      "POST",
+      `/v1/owner/buildings/${buildingId}/meters/actions/create-missing`,
+      { utilities: ["electric"] },
+      await auth(),
+    ),
+  );
+  const units = ok(
+    "unit list",
+    await call("GET", `/v1/owner/units?buildingId=${buildingId}&perPage=10`, undefined, await auth()),
+  ).data as unknown as { id: string; unitNo: string }[];
+  const unit = units.find((candidate) => candidate.unitNo.endsWith("101")) ?? units[0]!;
+
+  // The Staff member joins with the invitation (the browser then signs in as a member).
+  const invitation = ok(
+    "staff invitation",
+    await call(
+      "POST",
+      "/v1/owner/invitations",
+      { role: "staff", channel: "sms", phone: R2_STAFF_PHONE, language: "en", buildingIds: [buildingId] },
+      await auth(),
+    ),
+  );
+  const staffChallenge = await otpChallenge("/v1/auth/operator/otp/request", { phone: R2_STAFF_PHONE });
+  ok(
+    "staff joins",
+    await call("POST", "/v1/auth/operator/otp/verify", {
+      challengeId: staffChallenge.challengeId,
+      code: sms.lastCodeTo(R2_STAFF_PHONE),
+      invitationCode: invitation.code,
+    }),
+  );
+
+  // The resident's lease of R-101: created, sent, signed in the resident's app, countersigned.
+  const party = ok(
+    "resident",
+    await call(
+      "POST",
+      "/v1/owner/parties",
+      {
+        type: "person",
+        displayName: "วิภา ทดสอบงานซ่อม",
+        firstName: "วิภา",
+        lastName: "ทดสอบงานซ่อม",
+        phone: R2_RESIDENT_PHONE,
+        idDocumentType: "thai_national_id",
+        idNumber: "1101700207048",
+      },
+      await auth(),
+    ),
+  );
+  // Started yesterday: the API puts `unit:<id>` in the resident's token when the occupancy's `validFrom` is on or
+  // before its UTC date — a Bangkok "today" is still tomorrow in UTC between 00:00 and 07:00.
+  const today = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+  const lease = ok(
+    "lease",
+    await call(
+      "POST",
+      "/v1/owner/leases",
+      {
+        unitId: unit.id,
+        lesseePartyId: party.id,
+        startDate: today,
+        months: 12,
+        rent: "4500.00",
+        utilityBillingMode: "included",
+      },
+      await auth(),
+    ),
+  );
+  const leaseId = String(lease.id);
+  ok(
+    "send",
+    await call(
+      "POST",
+      `/v1/owner/leases/${leaseId}/actions/send-for-signature`,
+      {},
+      await auth({ "idempotency-key": randomUUID() }),
+    ),
+  );
+  const leaseInvitation = ok(
+    "lease invitation",
+    await call("POST", `/v1/owner/leases/${leaseId}/invitations`, { channel: "link", partyId: party.id }, await auth()),
+  );
+  const resident = await residentSignsLease(apiDir, sms, {
+    code: String(leaseInvitation.code),
+    leaseId,
+    phone: R2_RESIDENT_PHONE,
+  });
+  ok(
+    "countersign",
+    await call(
+      "POST",
+      `/v1/owner/leases/${leaseId}/actions/countersign`,
+      { signaturePng: PNG_BASE64 },
+      await auth({ "idempotency-key": randomUUID() }),
+    ),
+  );
+  log(`r2 world: ${owner.tenantName}, building ${String(building.name)}, lease of ${unit.unitNo} active`);
+  return {
+    resident,
+    world: {
+      ownerPhone: R2_OWNER_PHONE,
+      staffPhone: R2_STAFF_PHONE,
+      tenantName: owner.tenantName,
+      buildingId,
+      buildingName: String(building.name),
+      unitId: unit.id,
+      unitNo: unit.unitNo,
+      residentName: "วิภา ทดสอบงานซ่อม",
+    },
+  };
+}
+
+/** A resident's session (refresh token rotated on every use), as getproperty-liff keeps it. */
+class ResidentSession {
+  constructor(private refresh: string) {}
+  async header(): Promise<Record<string, string>> {
+    const renewed = await call("POST", "/v1/auth/refresh", { refreshToken: this.refresh });
+    if (renewed.status !== 200) throw new Error(`resident refresh: ${JSON.stringify(renewed.body)}`);
+    this.refresh = String(renewed.body.refreshToken);
+    return { authorization: `Bearer ${String(renewed.body.accessToken)}` };
+  }
+}
+
+/** getproperty-liff's lease signature (LINE login → consents → invitation → OTP → sign); the session is kept. */
+async function residentSignsLease(
+  apiDir: string,
+  sms: { lastCodeTo(phone: string): string | undefined },
+  input: { code: string; leaseId: string; phone: string },
+): Promise<ResidentSession> {
+  const require = createRequire(join(apiDir, "package.json"));
+  const { fakeLineIdToken } = require(join(apiDir, "dist/src/integrations/line/fake-line-login.js")) as {
+    fakeLineIdToken: (claims: { sub: string; name?: string }) => string;
+  };
+  const step = (name: string, result: { status: number; body: unknown }) => {
+    if (result.status >= 300) throw new Error(`r2 ${name}: ${result.status} ${JSON.stringify(result.body)}`);
+    return result.body as Record<string, unknown> & unknown[];
+  };
+  const login = step(
+    "resident line",
+    await call("POST", "/v1/auth/resident/line", {
+      idToken: fakeLineIdToken({ sub: `U${randomUUID().replace(/-/g, "")}`, name: "วิภา" }),
+    }),
+  );
+  const first = { authorization: `Bearer ${String(login.accessToken)}` };
+  const purposes = step("consents", await call("GET", "/v1/resident/consents", undefined, first)) as unknown as {
+    key: string;
+    version: number;
+    required: boolean;
+  }[];
+  step(
+    "consent",
+    await call(
+      "POST",
+      "/v1/resident/consents",
+      {
+        items: purposes
+          .filter((purpose) => purpose.required)
+          .map((purpose) => ({ purposeKey: purpose.key, version: purpose.version, granted: true })),
+      },
+      first,
+    ),
+  );
+  step("accept", await call("POST", `/v1/resident/invitations/${encodeURIComponent(input.code)}/accept`, {}, first));
+  const session = new ResidentSession(String(login.refreshToken));
+  const auth = await session.header();
+  const contract = step(
+    "contract",
+    await call("GET", `/v1/resident/leases/${input.leaseId}/contract`, undefined, auth),
+  );
+  const otp = await otpChallenge(`/v1/resident/leases/${input.leaseId}/signature/otp`, {}, auth);
+  step(
+    "sign",
+    await call(
+      "POST",
+      `/v1/resident/leases/${input.leaseId}/sign`,
+      {
+        challengeId: otp.challengeId,
+        code: sms.lastCodeTo(input.phone),
+        contractSha256: contract.sha256,
+        signaturePng: PNG_BASE64,
+      },
+      { ...auth, "idempotency-key": randomUUID() },
+    ),
+  );
+  return session;
+}
+
+/** The resident reports a plumbing problem in R-101 from getproperty-liff (`POST /v1/resident/service-requests`). */
+async function r2ResidentRequest(resident: ResidentSession, unitId: string) {
+  const auth = await resident.header();
+  const categories = await call("GET", `/v1/resident/service-categories?unitId=${unitId}`, undefined, auth);
+  const list = (categories.body.data ?? []) as unknown as { id: string; key: string }[];
+  const plumbing = list.find((category) => category.key === "plumbing") ?? list[0];
+  if (!plumbing) throw new Error(`r2 categories: ${categories.status} ${JSON.stringify(categories.body)}`);
+  const created = await call(
+    "POST",
+    "/v1/resident/service-requests",
+    { unitId, categoryId: plumbing.id, description: "ก๊อกน้ำในห้องน้ำรั่ว น้ำหยดทั้งคืน", priority: "normal" },
+    { ...auth, "idempotency-key": randomUUID() },
+  );
+  if (created.status !== 201) throw new Error(`r2 request: ${created.status} ${JSON.stringify(created.body)}`);
+  return created.body;
+}
+
 /** The fake KBank's signed callback for an issued invoice's QR reference (D-042). */
 async function f2ProviderPays(app: NestApp, apiDir: string, session: OperatorSession, number: string) {
   const list = await call(
@@ -702,6 +978,7 @@ async function main() {
   const staffWorld = await setupStaffWorld(token, sms);
   const f2 = await setupF2World(token, sms);
   await setupF5World(token);
+  const r2 = await setupR2World(apiDir, token, sms);
   startDocumentScans(app, apiDir);
   const require = createRequire(join(apiDir, "package.json"));
   const { SubscriptionsService } = require(
@@ -745,6 +1022,13 @@ async function main() {
           tenantName: f2.world.tenantName,
           ownerPhone: f2.world.phone,
         });
+      if (url.pathname === "/r2") return send(200, r2.world);
+      if (url.pathname === "/r2/resident-request" && req.method === "POST")
+        return send(200, await r2ResidentRequest(r2.resident, r2.world.unitId));
+      if (url.pathname === "/r2/resident-parcels") {
+        const parcels = await call("GET", "/v1/resident/parcels", undefined, await r2.resident.header());
+        return send(parcels.status, parcels.body);
+      }
       // The hourly `platform-subscriptions` job (worker), run now: trials that ended get their first invoice.
       if (url.pathname === "/f5/sweep" && req.method === "POST") return send(200, await subscriptions.sweep());
       if (url.pathname === "/f2/pay" && req.method === "POST")
