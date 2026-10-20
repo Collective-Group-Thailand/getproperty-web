@@ -164,3 +164,35 @@ Every URL within the 260 KB hard limit (D-179); accessibility 1.0 on every URL (
 | `owner` | `/subscription` | 189.6 KB |
 | `owner` | `/subscription/invoices/8b000000-0000-4000-8000-000000000001` | 189.6 KB |
 | `owner` | `/reports` | 188.9 KB |
+
+## R2 owner F2 2.7 and staff F4 4.4 (2026-10-21, `pnpm lhci owner staff`, owner desktop / staff mobile preset, signed in)
+
+Every URL within the hard limits (D-179: owner 260 KB, staff 200 KB); accessibility 1.0 on every URL (an error assertion). The R2 screens add no new dependency: forms reuse the console's `FormDialog` / `ConfirmAction`, the staff camera (`PhotoCapture` → `CameraCapture`) is a `lazyWarm` chunk loaded when the photo button is used, not in the initial JS. Measured after the contract re-sync to api `57eef37`; the owner rows from F2 2.1–2.6 that the re-sync touched are re-measured here.
+
+| Set | URL | Initial JS (gz) |
+|---|---|---|
+| `owner` | `/dashboard` | 184.8 KB |
+| `owner` | `/leases/new` (with the compliance preview) | 226.9 KB |
+| `owner` | `/billing` | 201.8 KB |
+| `owner` | `/invoices/1e700000-0000-4000-8000-000000000102` (QR + deliveries) | 204.5 KB |
+| `owner` | `/meters/a1000000-0000-4000-8000-000000000004` | 192.6 KB |
+| `owner` | `/loss` | 221.4 KB |
+| `owner` | `/billing/rate-plans` | 197.3 KB |
+| `owner` | `/service-requests` | 194.4 KB |
+| `owner` | `/service-requests/5e700000-0000-4000-8000-000000000001` | 195.2 KB |
+| `owner` | `/work-orders` | 187.2 KB |
+| `owner` | `/work-orders/70000000-0000-4000-8000-000000000003` | 196.5 KB |
+| `owner` | `/maintenance` | 221.5 KB |
+| `owner` | `/access` | 192.5 KB |
+| `owner` | `/access/10c00000-0000-4000-8000-000000000001` | 192.5 KB |
+| `owner` | `/announcements` | 187.2 KB |
+| `owner` | `/announcements/new` | 197.5 KB |
+| `owner` | `/parcels` | 199.0 KB |
+| `owner` | `/community/facilities` | 196.7 KB |
+| `owner` | `/community/rules` | 217.6 KB |
+| `staff` | `/` (Today from `GET /v1/staff/tasks`) | 193.3 KB |
+| `staff` | `/work-orders` | 191.3 KB |
+| `staff` | `/work-orders/70000000-0000-4000-8000-000000000001` | 197.3 KB |
+| `staff` | `/parcels` | 194.8 KB |
+
+Staff is the tight one: the work order screen sits 2.7 KB under the 200 KB limit. The next staff screen that needs more should move the cost-line form and the "waiting for parts" note behind a `lazyWarm` boundary (both are below the fold and used on a minority of visits) before anything else.
