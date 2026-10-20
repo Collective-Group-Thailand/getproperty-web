@@ -181,8 +181,8 @@ test.describe("admin shell", () => {
 
     await page.keyboard.press("Control+k");
     const palette = page.getByRole("dialog", { name: "Go to…" });
-    await palette.getByRole("combobox").fill("audit");
-    await expect(palette.getByRole("option")).toHaveText(["Audit log"]);
+    await palette.getByRole("combobox").fill("support");
+    await expect(palette.getByRole("option")).toHaveText(["Support grants"]);
     expect((await axe(page)).violations).toEqual([]);
   });
 });

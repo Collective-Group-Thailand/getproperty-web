@@ -22,6 +22,10 @@
  *      what getproperty-liff does), `POST /f2/pay?invoice=<number>` (the fake provider's signed callback for
  *      the invoice's QR reference). The API's worker runs in this process (`WorkerRunner`, ticking every
  *      second) so QR codes, payment confirmations and receipts happen as they do in production.
+ *   6. The F5 world (`GET /f5`): the platform admin's credentials and the authenticator secret the
+ *      harness enrolled, and a second platform admin (`checker@getproperty.invalid`, temporary password,
+ *      enrols at first sign-in) for the two-person tariff workflow; `POST /f5/sweep` runs the hourly
+ *      `platform-subscriptions` job now (a trial that ended is invoiced).
  *
  * Nothing here is part of the app: it exists so the suite can run the real sign-in flows once.
  */
@@ -257,8 +261,8 @@ async function call(
   };
 }
 
-/** 4a. The platform admin's session (password + TOTP enrolment, D-164). */
-async function platformToken(totpAt: (secret: string, at: Date) => string): Promise<string> {
+/** 4a. The platform admin's session (password + TOTP enrolment, D-164) and the authenticator secret it enrolled. */
+async function platformToken(totpAt: (secret: string, at: Date) => string): Promise<{ token: string; secret: string }> {
   const password = "getproperty-dev-only-password";
   const login = await call("POST", "/v1/auth/platform/login", { email: ADMIN_EMAIL, password });
   if (login.body.code !== "auth.totp_enrollment_required")
@@ -270,7 +274,29 @@ async function platformToken(totpAt: (secret: string, at: Date) => string): Prom
     code: totpAt(String(enrol.body.secret), new Date()),
   });
   if (activated.status !== 200) throw new Error(`totp activate: ${JSON.stringify(activated.body)}`);
-  return String(activated.body.accessToken);
+  return { token: String(activated.body.accessToken), secret: String(enrol.body.secret) };
+}
+
+/**
+ * 4e. The F5 world: a second platform admin (the checker of the two-person tariff workflow, D-021a) with
+ * a temporary password — they enrol their authenticator at their first sign-in in the browser.
+ */
+const CHECKER_EMAIL = "checker@getproperty.invalid";
+const CHECKER_PASSWORD = "checker-dev-only-password";
+async function setupF5World(token: string) {
+  const created = await call(
+    "POST",
+    "/v1/admin/platform-users",
+    {
+      displayName: "Checker Two",
+      email: CHECKER_EMAIL,
+      roles: ["platform_admin"],
+      temporaryPassword: CHECKER_PASSWORD,
+    },
+    { authorization: `Bearer ${token}`, "idempotency-key": randomUUID() },
+  );
+  if (created.status !== 201) throw new Error(`checker: ${created.status} ${JSON.stringify(created.body)}`);
+  log(`f5 world: second platform admin ${CHECKER_EMAIL}`);
 }
 
 /** 4b. A tenant whose first Owner (`phone`) is invited (D-145). */
@@ -670,11 +696,20 @@ async function main() {
   process.on("exit", () => database.child.kill("SIGINT"));
 
   const { app, sms, totpAt, storage } = await startApi(apiDir, database.url);
-  const token = await platformToken(totpAt);
+  const platform = await platformToken(totpAt);
+  const token = platform.token;
   const invitation = await createTenant(token, "web-integration", "หอพักทดสอบเว็บ", OWNER_PHONE);
   const staffWorld = await setupStaffWorld(token, sms);
   const f2 = await setupF2World(token, sms);
+  await setupF5World(token);
   startDocumentScans(app, apiDir);
+  const require = createRequire(join(apiDir, "package.json"));
+  const { SubscriptionsService } = require(
+    join(apiDir, "dist/src/modules/platform-subscriptions/subscriptions.service.js"),
+  ) as {
+    SubscriptionsService: unknown;
+  };
+  const subscriptions = app.get<{ sweep(): Promise<{ invoices: number; transitions: number }> }>(SubscriptionsService);
 
   createServer(async (req, res) => {
     const url = new URL(req.url ?? "/", "http://127.0.0.1");
@@ -700,6 +735,18 @@ async function main() {
         });
         return send(200, signed);
       }
+      if (url.pathname === "/f5")
+        return send(200, {
+          adminEmail: ADMIN_EMAIL,
+          adminPassword: "getproperty-dev-only-password",
+          adminSecret: platform.secret,
+          checkerEmail: CHECKER_EMAIL,
+          checkerPassword: CHECKER_PASSWORD,
+          tenantName: f2.world.tenantName,
+          ownerPhone: f2.world.phone,
+        });
+      // The hourly `platform-subscriptions` job (worker), run now: trials that ended get their first invoice.
+      if (url.pathname === "/f5/sweep" && req.method === "POST") return send(200, await subscriptions.sweep());
       if (url.pathname === "/f2/pay" && req.method === "POST")
         return send(200, await f2ProviderPays(app, apiDir, f2.session, url.searchParams.get("invoice") ?? ""));
     } catch (error) {

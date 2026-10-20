@@ -69,13 +69,19 @@ export default defineConfig({
     permissions: ["camera"],
   },
   projects: [
-    { name: "chromium", use: { ...devices["Desktop Chrome"] }, testIgnore: ["integration/**", "owner-*.spec.ts"] },
     {
-      // The owner console's specs share one stateful owner world in the mock API (mocks/owner): one worker,
-      // so a spec that issues the billing cycle never changes the dashboard another spec is reading.
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
+      testIgnore: ["integration/**", "owner-*.spec.ts", "admin-*.spec.ts"],
+    },
+    {
+      // The owner console's and the platform admin's specs share stateful worlds in the mock API
+      // (mocks/owner, mocks/platform — the owner's subscription, support grants and DSRs are the admin's
+      // records): one worker, so a spec that issues the billing cycle or suspends the tenant never
+      // changes what another spec is reading.
       name: "owner",
       use: { ...devices["Desktop Chrome"] },
-      testMatch: "owner-*.spec.ts",
+      testMatch: ["owner-*.spec.ts", "admin-*.spec.ts"],
       workers: 1,
     },
   ],

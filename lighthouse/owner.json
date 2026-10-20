@@ -1,6 +1,6 @@
 {
   "extends": "./shared.json",
-  "$comment": "Owner console (dashboard / board / wizard / workspaces / lists / details): LCP ≤ 2.5 s, CLS ≤ 0.1, initial JS ≤ 260 KB gz (D-179, docs/performance-budgets.md) — a hard limit on every URL, the F2 workspaces included. Measured signed in (scripts/lhci.ts signs the owner persona in on the mock API and sends the session cookies). One run per URL (13 URLs); the JS size does not vary between runs.",
+  "$comment": "Owner console (dashboard / board / wizard / workspaces / lists / details): LCP ≤ 2.5 s, CLS ≤ 0.1, initial JS ≤ 260 KB gz (D-179, docs/performance-budgets.md) — a hard limit on every URL, the F2 workspaces included. Measured signed in (scripts/lhci.ts signs the owner persona in on the mock API and sends the session cookies). F2 2.6 adds settings, bank accounts, rate plans, members, notifications, privacy, subscription, a platform invoice and reports. One run per URL (22 URLs); the JS size does not vary between runs.",
   "ci": {
     "collect": {
       "url": [
@@ -16,7 +16,16 @@
         "http://localhost:3200/payments/slips",
         "http://localhost:3200/arrears",
         "http://localhost:3200/meters/a1000000-0000-4000-8000-000000000004?building=5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
-        "http://localhost:3200/loss"
+        "http://localhost:3200/loss",
+        "http://localhost:3200/settings",
+        "http://localhost:3200/settings/bank-accounts",
+        "http://localhost:3200/settings/members",
+        "http://localhost:3200/settings/notifications",
+        "http://localhost:3200/settings/privacy",
+        "http://localhost:3200/billing/rate-plans",
+        "http://localhost:3200/subscription",
+        "http://localhost:3200/subscription/invoices/8b000000-0000-4000-8000-000000000001",
+        "http://localhost:3200/reports"
       ],
       "numberOfRuns": 1,
       "settings": {

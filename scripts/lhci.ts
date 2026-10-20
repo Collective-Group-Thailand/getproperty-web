@@ -72,7 +72,7 @@ if (configs.length === 0) {
 const SESSIONS: Record<string, () => Promise<string>> = {
   owner: () => operatorSession("+66810000001"),
   staff: () => operatorSession("+66810000004"),
-  admin: () => platformSession("support@example.com"),
+  admin: () => platformSession("ops@example.com"),
 };
 
 async function post(path: string, body: unknown): Promise<Record<string, unknown>> {

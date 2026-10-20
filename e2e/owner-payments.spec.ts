@@ -135,6 +135,8 @@ test("arrears: aging, filters, party ledger, reminder now, export", async ({ pag
   await page.getByRole("alertdialog").getByRole("button", { name: "ส่งแจ้งเตือน" }).click();
   await expect(page.getByRole("alertdialog")).toBeHidden();
   expect((await received("owner.invoices.sendReminder")).at(-1)?.idempotencyKey).toBeTruthy();
+  // Let the confirmation toast mount first, so axe measures it at rest rather than mid fade-in.
+  await expect(page.getByText("ส่งแจ้งเตือนแล้ว")).toBeVisible();
   await expectAxeClean(page);
 });
 

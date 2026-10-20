@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { INT_CONTROL, INT_HOSTS } from "../../playwright.integration.config";
+import { requestOtp } from "./otp";
 
 /**
  * F2 against the real getproperty-api (e2e/integration/harness.ts, the `/f2` world): the owner signs in,
@@ -74,8 +75,7 @@ async function routeStorage(page: Page) {
 async function signIn(page: Page, world: F2World) {
   await page.goto(`${INT_HOSTS.owner}/login`);
   await page.getByLabel("เบอร์มือถือ").fill(`0${world.phone.slice(3)}`);
-  await page.getByRole("button", { name: "ส่งรหัส" }).click();
-  await expect(page.getByRole("textbox", { name: "หลักที่ 1" })).toBeVisible();
+  await requestOtp(page);
   const { code } = await control<{ code: string | null }>(`/sms/last-code?phone=${encodeURIComponent(world.phone)}`);
   await page.getByRole("textbox", { name: "หลักที่ 1" }).fill(code!);
   await expect(page).toHaveURL(`${INT_HOSTS.owner}/dashboard`);
