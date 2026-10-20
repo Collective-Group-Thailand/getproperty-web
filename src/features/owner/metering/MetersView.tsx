@@ -6,7 +6,6 @@ import { ReadingSourceBadge } from "@/features/shared/status/ReadingSourceBadge"
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { formatDateTime } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
-import type { Schemas } from "@/lib/api/types";
 import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { LinkTabs } from "@/ui/components/LinkTabs";
@@ -16,7 +15,7 @@ import { FilterBar } from "@/features/shared/console/FilterBar";
 import { ownerPath, withQuery } from "../shared/links";
 import { ListPagination } from "@/features/shared/console/ListPagination";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
-import { focusedBuilding, pageParam, param, section, type OwnerContext } from "../shared/server";
+import { focusedBuilding, pageParam, param, type OwnerContext } from "../shared/server";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 const PER_PAGE = 25;
@@ -107,10 +106,9 @@ export async function MetersView({ context, searchParams }: { context: OwnerCont
     );
   }
 
-  const [meters, rounds] = await Promise.all([
-    unwrap(api.GET("/v1/owner/buildings/{buildingId}/meters", { params: { path: { buildingId: building.id } } })),
-    section(unwrap(api.GET("/v1/owner/reading-rounds/current", { params: { query: { buildingId: building.id } } }))),
-  ]);
+  const meters = await unwrap(
+    api.GET("/v1/owner/buildings/{buildingId}/meters", { params: { path: { buildingId: building.id } } }),
+  );
   const utility = param(searchParams.utility);
   const purpose = param(searchParams.purpose);
   const q = param(searchParams.q)?.toLowerCase();
@@ -125,20 +123,6 @@ export async function MetersView({ context, searchParams }: { context: OwnerCont
   );
   const page = pageParam(searchParams.page);
   const shown = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
-  const roundItems = new Map<string, Schemas["RoundItemDto"]>();
-  for (const round of rounds.data ?? [])
-    for (const floor of round.floors) for (const item of floor.items) roundItems.set(item.assetItemId, item);
-  const last = await Promise.all(
-    shown.map((meter) =>
-      unwrap(
-        api.GET("/v1/owner/meters/{assetItemId}/readings", {
-          params: { path: { assetItemId: meter.assetItemId }, query: { perPage: 1, sort: "readAt", order: "desc" } },
-        }),
-      )
-        .then((list) => list.data[0] ?? null)
-        .catch(() => null),
-    ),
-  );
   return (
     <OwnerPage testId="meters">
       {header}
@@ -192,9 +176,8 @@ export async function MetersView({ context, searchParams }: { context: OwnerCont
               </tr>
             </thead>
             <tbody>
-              {shown.map((meter, index) => {
-                const reading = last[index];
-                const item = roundItems.get(meter.assetItemId);
+              {shown.map((meter) => {
+                const reading = meter.lastReading;
                 return (
                   <tr
                     key={meter.id}
@@ -226,8 +209,8 @@ export async function MetersView({ context, searchParams }: { context: OwnerCont
                       )}
                     </td>
                     <td className="px-3 py-2">
-                      {item?.health ? (
-                        <StatusBadgeOf map={METER_HEALTH_STATUS} value={item.health} size="sm" />
+                      {meter.health ? (
+                        <StatusBadgeOf map={METER_HEALTH_STATUS} value={meter.health} size="sm" />
                       ) : (
                         <span className="text-muted">{t("healthUnknown")}</span>
                       )}

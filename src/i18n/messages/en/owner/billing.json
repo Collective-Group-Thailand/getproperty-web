@@ -68,7 +68,15 @@
     "close": "Close the cycle",
     "closeTitle": "Close the billing cycle?",
     "closeBody": "{property}, {period}. Nothing more can be issued in this cycle.",
-    "open": "Open this month's cycle"
+    "open": "Open this month's cycle",
+    "requestReadings": "Request readings",
+    "requestTitle": "Ask staff to read the missing meters",
+    "requestBody": "The meters read by hand still missing for {period} ({count}) become a staff task, due at the grace deadline.",
+    "requested": "Reading requests sent",
+    "assignee": "Assign to",
+    "assigneeHint": "Leave empty for any staff member of the building",
+    "anyone": "Any staff member",
+    "note": "Note to staff"
   },
   "review": {
     "caption": "Draft invoices of the cycle",
@@ -96,5 +104,7 @@
     "unitPriceHint": "For example 250.00",
     "quantity": "Quantity",
     "quantityHint": "Empty = 1"
-  }
+  },
+  "requested": "requested",
+  "requestedAnyone": "Requested from staff"
 }

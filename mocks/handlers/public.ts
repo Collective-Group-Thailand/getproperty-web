@@ -25,6 +25,8 @@ const PLANS: Schemas["PublicPlanDto"][] = [
     currency: "THB",
     vatIncluded: false,
     status: "proposed",
+    sold: false,
+    effectiveFrom: null,
     features: ["A1", "A2", "A4", "resident_liff", "promptpay"],
   },
   {
@@ -41,6 +43,8 @@ const PLANS: Schemas["PublicPlanDto"][] = [
     currency: "THB",
     vatIncluded: false,
     status: "proposed",
+    sold: false,
+    effectiveFrom: null,
     features: ["A1", "A2", "A3", "A4", "C2"],
   },
   {
@@ -57,6 +61,8 @@ const PLANS: Schemas["PublicPlanDto"][] = [
     currency: "THB",
     vatIncluded: false,
     status: "proposed",
+    sold: false,
+    effectiveFrom: null,
     features: [],
   },
 ];

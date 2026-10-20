@@ -111,6 +111,8 @@ export function ReadingRound({ round }: { round: Schemas["RoundBuildingDto"] }) 
         iot: false,
         health: null,
         lastReading: null,
+        requested: false,
+        assignee: null,
       }
     );
   };

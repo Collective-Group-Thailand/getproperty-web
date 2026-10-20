@@ -6,7 +6,7 @@ import { useState } from "react";
 import { formatDecimal, formatTHB } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
 import { browserApi } from "@/lib/api/browser";
-import { unwrap } from "@/lib/api/client";
+import { unwrap, unwrapWithETag } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Card } from "@/ui/components/Card";
@@ -201,16 +201,21 @@ export function UnitProfiles({ buildingId, profiles }: { buildingId: string; pro
                       title={t("editTitle", { name: profile.name })}
                       submitLabel={t("save")}
                       successMessage={t("saved")}
-                      onSubmit={(data) =>
-                        unwrap(
+                      onSubmit={async (data) => {
+                        // The list carries no ETag: read the profile with its ETag, then send it as If-Match
+                        // (a change someone made meanwhile answers 412 instead of being overwritten).
+                        const { etag } = await unwrapWithETag(
+                          browserApi().GET("/v1/owner/unit-profiles/{unitProfileId}", {
+                            params: { path: { unitProfileId: profile.id } },
+                          }),
+                        );
+                        return unwrap(
                           browserApi().PATCH("/v1/owner/unit-profiles/{unitProfileId}", {
-                            // CONTRACT-REQUEST: the profile list carries no ETag and there is no GET by id;
-                            // `*` matches any current version until the API publishes one (docs/contract-requests.md).
-                            params: { path: { unitProfileId: profile.id }, header: { "If-Match": "*" } },
+                            params: { path: { unitProfileId: profile.id }, header: { "If-Match": etag ?? "*" } },
                             body: body(data),
                           }),
-                        )
-                      }
+                        );
+                      }}
                     >
                       {(errors) => <ProfileFields profile={profile} errors={errors} />}
                     </FormDialog>

@@ -1,4 +1,4 @@
-import type { ContractEnum } from "@/lib/api/types";
+import type { Schemas } from "@/lib/api/types";
 import { IconCheck } from "@/ui/icons/glyphs/check";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 import { IconClock } from "@/ui/icons/glyphs/clock";
@@ -11,14 +11,10 @@ import { IconXCircle } from "@/ui/icons/glyphs/x-circle";
 import { defineStatuses } from "./define";
 
 /**
- * `ServiceRequestStatus` — schema-design v2 §ops.service_request (`ops.service_request_status`).
- * Typed with `ContractEnum`: the generated component wins as soon as the contract publishes it, and a
- * value the map does not cover fails the build until it has a tone, an icon and a label.
+ * `ServiceRequestStatus` — contract enum, ops.service_request (B5.1, D-072, D-210). A value the contract adds fails the build here until it has a
+ * tone, an icon and a label.
  */
-export type ServiceRequestStatus = ContractEnum<
-  "ServiceRequestStatus",
-  "new" | "triaged" | "assigned" | "in_progress" | "waiting_parts" | "done" | "closed" | "cancelled"
->;
+export type ServiceRequestStatus = Schemas["ServiceRequestStatus"];
 
 export const SERVICE_REQUEST_STATUS = defineStatuses<ServiceRequestStatus>("serviceRequest", {
   new: { tone: "info", icon: IconTicket },

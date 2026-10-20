@@ -16,6 +16,8 @@ const item = (id: string, unitNo: string): Schemas["RoundItemDto"] => ({
   iot: false,
   health: null,
   lastReading: null,
+  requested: false,
+  assignee: null,
 });
 
 const round: Schemas["RoundBuildingDto"] = {

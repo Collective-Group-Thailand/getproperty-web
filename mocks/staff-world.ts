@@ -157,6 +157,23 @@ export function buildingOf(meter: MockMeter): string {
   return unitOf(meter)?.floor.buildingId ?? BUILDING_A;
 }
 
+/** What every meter list carries from `smart.meter_status` (D-208): building, health, last accepted reading. */
+export function meterStatus(meter: MockMeter): Pick<Schemas["MeterDto"], "buildingId" | "health" | "lastReading"> {
+  return {
+    buildingId: buildingOf(meter),
+    health: meter.iot ? meter.iot.health : "no_device",
+    lastReading: meter.last
+      ? {
+          id: meter.last.id,
+          register: meter.last.register,
+          readAt: meter.last.readAt,
+          source: meter.last.source,
+          photoDocumentId: meter.last.photo,
+        }
+      : null,
+  };
+}
+
 /**
  * The billing period of the mock: the round window is open whatever the day the suite runs — the
  * cut-off three days from the mock's start, the window the seven days before it.
@@ -427,6 +444,7 @@ export function meterPoints(
         validFrom: daysAgo(400),
         validTo: null,
         lastRegister: meter.last?.register ?? null,
+        ...meterStatus(meter),
         channel: channel
           ? {
               channelId: channel.id,

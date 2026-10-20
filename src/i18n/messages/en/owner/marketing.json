@@ -66,6 +66,7 @@
     "vat": "Prices exclude VAT",
     "unavailable": "Prices cannot be shown right now. Contact us on LINE for a quote.",
     "choose": "Get started",
+    "perMeterPointMonth": "{price} / meter point / month",
     "perReport": "{price} / report",
     "range": "{from}–{to}",
     "from": "from {price}",

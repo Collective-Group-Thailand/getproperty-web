@@ -264,5 +264,17 @@
     "noInspections": "No inspections yet.",
     "deposit": "Deposit",
     "noDeposit": "No deposit recorded."
+  },
+  "preview": {
+    "title": "Legal checks before the draft",
+    "checking": "Checking the terms with the API…",
+    "unavailable": "The checks cannot run ahead right now; the API checks again when the draft is created.",
+    "noChecks": "No rule applies to this lease.",
+    "outOfScope": "This lease is outside the residential lease notice.",
+    "problem": "The API would refuse it: {code}",
+    "problemHint": "Change the terms in the previous steps and check again.",
+    "deposit": "Deposit the API applies",
+    "advance": "Advance rent the API applies",
+    "endDate": "Lease ends"
   }
 }

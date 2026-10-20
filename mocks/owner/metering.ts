@@ -3,7 +3,7 @@ import { http, type HttpHandler } from "msw";
 import type { components } from "../../src/lib/api/schema";
 import { channelDto } from "../handlers/staff";
 import { state } from "../state";
-import { buildingOf, unitOf, type MockMeter } from "../staff-world";
+import { buildingOf, meterStatus, unitOf, type MockMeter } from "../staff-world";
 import { milli, qty } from "./money";
 import {
   body,
@@ -49,6 +49,7 @@ function meterDto(meter: MockMeter): Schemas["MeterDto"] {
     commonAreaLabel: null,
     validFrom: iso(-400),
     validTo: meter.retired ? iso(-1) : null,
+    ...meterStatus(meter),
   };
 }
 
@@ -68,6 +69,9 @@ const commonMeters: Schemas["MeterDto"][] = [
     commonAreaLabel: "ทางเดินและลิฟต์",
     validFrom: iso(-400),
     validTo: null,
+    buildingId: BUILDING_A,
+    health: "ok",
+    lastReading: null,
   },
 ];
 
@@ -146,6 +150,15 @@ export const meteringHandlers: HttpHandler[] = [
       .filter((meter) => !meter.retired && buildingOf(meter) === params.buildingId)
       .map(meterDto);
     return json([...meters, ...(params.buildingId === BUILDING_A ? commonMeters : [])]);
+  }),
+  http.get("*/v1/owner/meters/:assetItemId", ({ request, params }) => {
+    const op = "owner.meters.get";
+    const ok = owner(request, op);
+    if (ok instanceof Response) return ok;
+    if (!ok.own) return notFound(op);
+    const meter = meterById(String(params.assetItemId));
+    const found = meter ? meterDto(meter) : commonMeters.find((one) => one.assetItemId === params.assetItemId);
+    return found ? json(found) : notFound(op);
   }),
   http.get("*/v1/owner/meters/:assetItemId/readings", ({ request, params }) => {
     const op = "owner.meterReadings.listForMeter";

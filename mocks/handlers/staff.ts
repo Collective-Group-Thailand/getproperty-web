@@ -133,6 +133,8 @@ function roundOf(buildingId: string): Schemas["RoundBuildingDto"] {
           unitId: unitOf(meter)?.id ?? null,
           unitNo: unitOf(meter)?.no ?? null,
           iot: meter.iot !== null,
+          requested: false,
+          assignee: null,
           health: meter.iot?.health ?? null,
           lastReading: meter.last
             ? {

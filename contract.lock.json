@@ -1,7 +1,7 @@
 {
   "$comment": "The getproperty-api contract this frontend is generated from. Change with `pnpm gen:api --adopt`, never by hand.",
   "version": "0.1.0",
-  "sha256": "9637642292f4bc3b500633464967658b6acadd5c2ff56d8ec50f1b437bf6f13a",
+  "sha256": "c014a3e86d543c69f9a12bfe21723f23e72cc60486a1a5f090aaa773c43aeab1",
   "source": "../getproperty-api/contract/openapi.json",
-  "apiCommit": "c73e7ce3747e"
+  "apiCommit": "57eef3775eb7"
 }

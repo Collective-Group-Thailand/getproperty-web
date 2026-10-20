@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { INVOICE_STATUS } from "@/domain/status/invoice";
 import { PAYMENT_STATUS } from "@/domain/status/payment";
+import { INVOICE_DELIVERY_STATUS } from "@/domain/status/invoiceDelivery";
 import { REMINDER_STATUS } from "@/domain/status/reminder";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { formatDate, formatDateTime, formatTHB } from "@/i18n/format";
@@ -12,6 +13,7 @@ import type { Schemas } from "@/lib/api/types";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 
+import { QrImage } from "@/features/shared/console/QrImage";
 import { DocumentButton } from "../shared/DocumentButton";
 import { ownerPath } from "../shared/links";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
@@ -37,7 +39,7 @@ export async function InvoiceDetail({ context, invoiceId }: { context: OwnerCont
     if (isApiError(error) && error.status === 404) notFound();
     throw error;
   }
-  const [photos, payments, reminders] = await Promise.all([
+  const [photos, payments, reminders, deliveries] = await Promise.all([
     segmentPhotos(api, invoice.unitId, invoice.lines),
     invoice.status === "draft"
       ? Promise.resolve({ data: null, error: null })
@@ -45,6 +47,9 @@ export async function InvoiceDetail({ context, invoiceId }: { context: OwnerCont
     invoice.status === "draft"
       ? Promise.resolve({ data: null, error: null })
       : section(unwrap(api.GET("/v1/owner/invoices/{invoiceId}/reminders", { params: { path: { invoiceId } } }))),
+    invoice.status === "draft"
+      ? Promise.resolve({ data: null, error: null })
+      : section(unwrap(api.GET("/v1/owner/invoices/{invoiceId}/deliveries", { params: { path: { invoiceId } } }))),
   ]);
   const title = invoice.number ?? t("draftTitle", { unit: invoice.unitNo ?? "" });
 
@@ -201,13 +206,18 @@ export async function InvoiceDetail({ context, invoiceId }: { context: OwnerCont
                   : []),
               ]}
             />
+            {invoice.qrPayload ? (
+              <div className="mt-3 flex flex-col items-start gap-1" data-testid="invoice-qr">
+                <QrImage payload={invoice.qrPayload} label={t("qrAlt", { number: title })} size={168} />
+              </div>
+            ) : null}
             {invoice.promptpayRef ? <p className="text-muted mt-2 text-xs">{t("qrHint")}</p> : null}
           </Card>
         </div>
       </div>
 
       {invoice.status !== "draft" ? (
-        <div className="grid gap-4 lg:grid-cols-3">
+        <div className="grid gap-4 lg:grid-cols-2">
           <Card as="section" aria-labelledby="invoice-payments" data-testid="invoice-payments">
             <CardHeader title={<span id="invoice-payments">{t("payments")}</span>} />
             {payments.data && payments.data.data.length ? (
@@ -276,6 +286,30 @@ export async function InvoiceDetail({ context, invoiceId }: { context: OwnerCont
                 })}
               </p>
             ) : null}
+          </Card>
+
+          <Card as="section" aria-labelledby="invoice-deliveries" data-testid="invoice-deliveries">
+            <CardHeader
+              title={<span id="invoice-deliveries">{t("deliveries")}</span>}
+              description={t("deliveriesHint")}
+            />
+            {deliveries.data && deliveries.data.data.length ? (
+              <ul className="flex flex-col gap-2 text-sm">
+                {deliveries.data.data.map((delivery) => (
+                  <li key={delivery.id} className="flex flex-wrap items-center gap-2" data-testid="delivery-row">
+                    <StatusBadgeOf map={INVOICE_DELIVERY_STATUS} value={delivery.status} size="sm" />
+                    <span>{t(`deliveryKind.${delivery.kind}`)}</span>
+                    <span className="text-muted">{delivery.channel}</span>
+                    <span className="text-muted">{formatDateTime(delivery.at, locale)}</span>
+                    {delivery.error ? <span className="text-muted w-full text-xs">{delivery.error}</span> : null}
+                  </li>
+                ))}
+              </ul>
+            ) : deliveries.error ? (
+              <p className="text-muted text-sm">{t("deliveriesUnavailable")}</p>
+            ) : (
+              <p className="text-muted text-sm">{t("noDeliveries")}</p>
+            )}
           </Card>
 
           <Card as="section" aria-labelledby="invoice-notes" data-testid="invoice-notes">

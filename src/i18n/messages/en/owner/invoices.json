@@ -161,6 +161,16 @@
     },
     "notes": "Credit and debit notes",
     "notePdf": "PDF",
-    "noNotes": "No notes."
+    "noNotes": "No notes.",
+    "deliveries": "Delivery log",
+    "deliveriesHint": "The invoice's messages on LINE / SMS / email: when issued, resent and reminders.",
+    "noDeliveries": "Nothing sent yet.",
+    "deliveriesUnavailable": "The delivery log cannot be read right now.",
+    "deliveryKind": {
+      "issue": "Issued",
+      "resend": "Resent",
+      "reminder": "Reminder"
+    },
+    "qrAlt": "Thai QR to pay invoice {number}"
   }
 }

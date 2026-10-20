@@ -17,6 +17,7 @@ import {
   paged,
   problem,
   query,
+  record,
   validation,
 } from "./support";
 import { day, iso, type MockInvoice } from "./world";
@@ -261,9 +262,44 @@ export const billingHandlers: HttpHandler[] = [
     cycle.computedAt = iso();
     if (missing && !cycle.readingsRequestedAt) cycle.readingsRequestedAt = iso();
     cycle.version += 1;
-    cycle.nextActions = ["compute", "issue"];
+    cycle.nextActions = missing ? ["compute", "request-readings", "issue"] : ["compute", "issue"];
     w().received.push({ op, idempotencyKey: null, body: {} });
     return json({ ...cycleDetail(cycle), stats: cycleStats(cycle) });
+  }),
+  http.post("*/v1/owner/billing-cycles/:billingCycleId/actions/request-readings", async ({ request, params }) => {
+    const op = "owner.billingCycles.requestReadings";
+    const ok = mutating(request, op);
+    if (ok instanceof Response) return ok;
+    const cycle = ok.own ? w().cycles.find((candidate) => candidate.id === params.billingCycleId) : undefined;
+    if (!cycle) return notFound(op);
+    if (cycle.status !== "readings_pending") return problem(op, "billing_cycle.invalid_state");
+    const input = await body<Schemas["ReadingRequestCreateDto"]>(request);
+    const member = input.assigneeUserId
+      ? (state.platform.members[ok.tenantId] ?? []).find(
+          (candidate) => candidate.userId === input.assigneeUserId && candidate.status === "active",
+        )
+      : undefined;
+    if (input.assigneeUserId && !member) return validation(op, "assigneeUserId", "a member who reads meters");
+    const missing = state.staff.meters.filter(
+      (meter) =>
+        !meter.retired && meter.iot === null && !state.staff.readings.some((r) => r.assetItemId === meter.assetItemId),
+    );
+    const requests = missing.map((meter) => {
+      w().readingRequests[meter.assetItemId] = member
+        ? { userId: member.userId, displayName: member.displayName }
+        : null;
+      return {
+        id: crypto.randomUUID(),
+        meterAssignmentId: meter.assignmentId,
+        assetItemId: meter.assetItemId,
+        code: meter.code,
+        assigneeUserId: member?.userId ?? null,
+        status: "open" as const,
+        dueAt: cycle.graceDeadlineAt,
+      };
+    });
+    record(op, request, input);
+    return json({ billingCycleId: cycle.id, requests } satisfies Schemas["ReadingRequestsDto"]);
   }),
   http.post("*/v1/owner/billing-cycles/:billingCycleId/actions/issue", async ({ request, params }) => {
     const op = "owner.billingCycles.issue";
@@ -489,6 +525,36 @@ export const billingHandlers: HttpHandler[] = [
     const invoice = ok.own ? w().invoices.find((candidate) => candidate.id === params.invoiceId) : undefined;
     if (!invoice) return notFound(op);
     return json({ reminders: invoice.remindersLog, penalty: invoice.penalty } satisfies Schemas["InvoiceRemindersDto"]);
+  }),
+  http.get("*/v1/owner/invoices/:invoiceId/deliveries", ({ request, params }) => {
+    const op = "owner.invoices.deliveries";
+    const ok = owner(request, op);
+    if (ok instanceof Response) return ok;
+    const invoice = ok.own ? w().invoices.find((candidate) => candidate.id === params.invoiceId) : undefined;
+    if (!invoice) return notFound(op);
+    const data: Schemas["InvoiceDeliveryDto"][] = [
+      ...(invoice.issuedAt
+        ? [
+            {
+              id: `${invoice.id.slice(0, -4)}d001`,
+              channel: "line",
+              kind: "issue" as const,
+              status: "delivered" as const,
+              at: invoice.issuedAt,
+              error: null,
+            },
+          ]
+        : []),
+      ...invoice.remindersLog.map((reminder) => ({
+        id: reminder.id,
+        channel: "line",
+        kind: "reminder" as const,
+        status: reminder.status === "sent" ? ("sent" as const) : ("queued" as const),
+        at: reminder.sentAt ?? reminder.scheduledFor,
+        error: null,
+      })),
+    ];
+    return json({ data } satisfies Schemas["InvoiceDeliveriesDto"]);
   }),
   http.get("*/v1/owner/invoices/:invoiceId/document", ({ request, params }) => {
     const op = "owner.invoices.document";

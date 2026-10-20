@@ -49,6 +49,7 @@ const UNIT_KEY: Record<PublicPlan["priceUnit"], string> = {
   building_year: "perBuildingYear",
   month: "perMonth",
   report: "perReport",
+  meter_point_month: "perMeterPointMonth",
 };
 
 /** The price line exactly as the API publishes it: one price, a quoted range, or "ask us". */

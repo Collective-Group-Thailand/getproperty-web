@@ -14,6 +14,7 @@ const EXTENSION: Record<Schemas["ExportKind"], string> = {
   tax_annual_summary: "xlsx",
   tm30: "zip",
   document_archive_zip: "zip",
+  loss_report_csv: "csv",
 };
 
 /** `income_expense-2026-10.xlsx`: kind, the period (or as-of date) the export covers, and its format. */

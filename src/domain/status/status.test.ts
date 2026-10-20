@@ -58,6 +58,12 @@ const CONTRACT_ENUM: Partial<Record<keyof typeof STATUS_MAPS, string>> = {
   invitation: "InvitationState",
   exportJob: "ExportStatus",
   reminder: "ReminderStatus",
+  invoiceDelivery: "InvoiceDeliveryStatus",
+  accessResult: "AccessResult",
+  priority: "ServicePriority",
+  booking: "BookingStatus",
+  credential: "CredentialStatus",
+  parcel: "ParcelStatus",
   invoiceCharge: "InvoiceChargeStatus",
 };
 

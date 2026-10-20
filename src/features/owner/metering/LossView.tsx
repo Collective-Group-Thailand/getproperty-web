@@ -19,7 +19,8 @@ import { ownerPath, withQuery } from "../shared/links";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { PhotoThumb } from "../shared/PhotoThumb";
 import { focusedBuilding, param, section, type OwnerContext } from "../shared/server";
-import { LossCsv, RecomputeLoss, UtilityInvoiceButton } from "./LossActions";
+import { ExportButton } from "../shared/ExportButton";
+import { RecomputeLoss, UtilityInvoiceButton } from "./LossActions";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -161,41 +162,11 @@ export async function LossView({ context, searchParams }: { context: OwnerContex
                 ]}
               />
               <div className="mt-4">
-                <LossCsv
-                  fileName={`loss-${building.name}-${utility}-${report.periodKey}.csv`}
+                <ExportButton
+                  kind="loss_report_csv"
+                  params={{ buildingId: building.id, utility, period: report.periodKey }}
                   label={t("csv")}
-                  rows={[
-                    [
-                      "building",
-                      "utility",
-                      "period",
-                      "invoice_units",
-                      "unit_billed_units",
-                      "common_area_units",
-                      "loss_units",
-                      "loss_thb",
-                      "loss_pct",
-                    ],
-                    [
-                      building.name,
-                      utility,
-                      report.periodKey,
-                      report.invoiceUnits,
-                      report.unitBilledUnits,
-                      report.commonAreaUnits,
-                      report.lossUnits,
-                      report.lossThb,
-                      report.lossPct ?? "",
-                    ],
-                    [],
-                    ["suspect", "score", "unit_id", "asset_item_id"],
-                    ...report.suspects.map((suspect) => [
-                      suspect.kind,
-                      suspect.score,
-                      suspect.unitId ?? "",
-                      suspect.assetItemId ?? "",
-                    ]),
-                  ]}
+                  testId="loss-csv"
                 />
               </div>
             </Card>

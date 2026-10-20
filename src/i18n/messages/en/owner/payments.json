@@ -158,5 +158,11 @@
       "tooLarge": "The file is larger than 10 MB",
       "done": "Refund recorded"
     }
+  },
+  "resendReceipt": {
+    "action": "Resend receipt",
+    "title": "Send the receipt again?",
+    "body": "Receipt {number} is sent to {payer} on LINE again (quiet hours and consent apply).",
+    "done": "Receipt sent again"
   }
 }

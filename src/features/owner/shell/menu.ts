@@ -11,6 +11,7 @@ import { IconGateway } from "@/ui/icons/glyphs/gateway";
 import { IconHistory } from "@/ui/icons/glyphs/history";
 import { IconKey } from "@/ui/icons/glyphs/key";
 import { IconLease } from "@/ui/icons/glyphs/lease";
+import { IconLock } from "@/ui/icons/glyphs/lock";
 import { IconLoss } from "@/ui/icons/glyphs/loss";
 import { IconMegaphone } from "@/ui/icons/glyphs/megaphone";
 import { IconMeter } from "@/ui/icons/glyphs/meter";
@@ -36,6 +37,7 @@ export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
   devices: { href: "/devices", icon: IconGateway, group: "operations" },
   utility_loss: { href: "/loss", icon: IconLoss, group: "operations" },
   service_requests: { href: "/service-requests", icon: IconStaff, group: "operations" },
+  access: { href: "/access", icon: IconLock, group: "operations" },
   parcels: { href: "/parcels", icon: IconParcel, group: "operations" },
   announcements: { href: "/announcements", icon: IconMegaphone, group: "operations" },
   rate_plans: { href: "/billing/rate-plans", icon: IconTag, group: "money" },

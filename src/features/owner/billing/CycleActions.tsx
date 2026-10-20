@@ -13,6 +13,13 @@ import { IconCheck } from "@/ui/icons/glyphs/check";
 import { IconRefresh } from "@/ui/icons/glyphs/refresh";
 
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
+import { FormDialog, text } from "@/features/shared/console/FormDialog";
+import { Field } from "@/ui/components/Field";
+import { Textarea } from "@/ui/components/Input";
+import { NativeSelect } from "@/ui/components/NativeSelect";
+import { IconMeter } from "@/ui/icons/glyphs/meter";
+
+import type { FieldMember } from "../shared/members";
 import { ProblemNotice, useApiAction } from "@/features/shared/console/useApiAction";
 
 interface Skipped {
@@ -32,11 +39,17 @@ export function CycleActions({
   periodLabel,
   draftCount,
   totalLabel,
+  members = [],
+  missing = 0,
 }: {
   cycle: Pick<Schemas["BillingCycleDto"], "id" | "nextActions" | "propertyName" | "periodKey">;
   periodLabel: string;
   draftCount: number;
   totalLabel: string;
+  /** Who may be asked to read (staff of the property's buildings); the API checks `reading.capture`. */
+  members?: FieldMember[];
+  /** Meters read by hand still missing in the round (shown in the dialog). */
+  missing?: number;
 }) {
   const t = useTranslations("owner.billing.actions");
   const reasons = useTranslations("owner.invoices.flag");
@@ -64,6 +77,42 @@ export function CycleActions({
           >
             {t("compute")}
           </Button>
+        ) : null}
+        {can("request-readings") ? (
+          <FormDialog
+            label={t("requestReadings")}
+            icon={IconMeter}
+            variant="secondary"
+            testId="cycle-request-readings"
+            title={t("requestTitle")}
+            description={t("requestBody", { count: missing, period: periodLabel })}
+            submitLabel={t("requestReadings")}
+            successMessage={t("requested")}
+            onSubmit={(data) =>
+              unwrap(
+                browserApi().POST("/v1/owner/billing-cycles/{billingCycleId}/actions/request-readings", {
+                  params: { path },
+                  body: { assigneeUserId: text(data, "assignee") ?? null, note: text(data, "note") },
+                }),
+              )
+            }
+          >
+            {(errors) => (
+              <>
+                <Field label={t("assignee")} hint={t("assigneeHint")} error={errors.assigneeUserId}>
+                  <NativeSelect
+                    name="assignee"
+                    placeholder={t("anyone")}
+                    options={members.map((member) => ({ value: member.userId, label: member.displayName }))}
+                    data-testid="request-assignee"
+                  />
+                </Field>
+                <Field label={t("note")} error={errors.note}>
+                  <Textarea name="note" rows={2} />
+                </Field>
+              </>
+            )}
+          </FormDialog>
         ) : null}
         {can("issue") ? (
           <ConfirmAction

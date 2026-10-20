@@ -43,6 +43,12 @@ export { OTA_DEVICE_STATUS, OTA_DEVICE_VALUES, type OtaDeviceStatus } from "./ot
 export { TENANT_STATUS, TENANT_VALUES, type TenantStatus } from "./tenant";
 export { BANK_ACCOUNT_STATUS, BANK_ACCOUNT_VALUES, type BankAccountState } from "./bankAccount";
 export { MEMBERSHIP_STATUS, MEMBERSHIP_VALUES, type MembershipStatus } from "./membership";
+export { INVOICE_DELIVERY_STATUS, INVOICE_DELIVERY_VALUES, type InvoiceDeliveryStatus } from "./invoiceDelivery";
+export { ACCESS_RESULT_STATUS, ACCESS_RESULT_VALUES, type AccessResult } from "./accessResult";
+export { PRIORITY_STATUS, PRIORITY_VALUES, type ServicePriority } from "./priority";
+export { BOOKING_STATUS, BOOKING_VALUES, type BookingStatus } from "./booking";
+export { CREDENTIAL_STATUS, CREDENTIAL_VALUES, type CredentialStatus } from "./credential";
+export { PARCEL_STATUS, PARCEL_VALUES, type ParcelStatus } from "./parcel";
 
 import { COMMAND_STATUS } from "./command";
 import { DEPOSIT_STATUS } from "./deposit";
@@ -82,6 +88,12 @@ import { OTA_DEVICE_STATUS } from "./otaDevice";
 import { TENANT_STATUS } from "./tenant";
 import { BANK_ACCOUNT_STATUS } from "./bankAccount";
 import { MEMBERSHIP_STATUS } from "./membership";
+import { INVOICE_DELIVERY_STATUS } from "./invoiceDelivery";
+import { ACCESS_RESULT_STATUS } from "./accessResult";
+import { PRIORITY_STATUS } from "./priority";
+import { BOOKING_STATUS } from "./booking";
+import { CREDENTIAL_STATUS } from "./credential";
+import { PARCEL_STATUS } from "./parcel";
 
 /** Every status map by its domain key (the `status.<domain>` namespace of its labels). */
 export const STATUS_MAPS = {
@@ -123,6 +135,12 @@ export const STATUS_MAPS = {
   tenant: TENANT_STATUS,
   bankAccount: BANK_ACCOUNT_STATUS,
   membership: MEMBERSHIP_STATUS,
+  invoiceDelivery: INVOICE_DELIVERY_STATUS,
+  accessResult: ACCESS_RESULT_STATUS,
+  priority: PRIORITY_STATUS,
+  booking: BOOKING_STATUS,
+  credential: CREDENTIAL_STATUS,
+  parcel: PARCEL_STATUS,
 } as const;
 
 export type StatusDomain = keyof typeof STATUS_MAPS;

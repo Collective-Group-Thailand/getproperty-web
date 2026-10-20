@@ -6,6 +6,7 @@ import { Card, CardHeader } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { IconWallet } from "@/ui/icons/glyphs/wallet";
 
+import { ResendReceipt } from "./ResendReceipt";
 import { DocumentButton } from "../shared/DocumentButton";
 import { ownerPath } from "../shared/links";
 import { MoneyNav } from "../shared/MoneyNav";
@@ -78,6 +79,9 @@ export async function CreditsView({ context }: { context: OwnerContext }) {
                     variant="ghost"
                   />
                 ) : null}
+                {receipt.voidedAt ? null : (
+                  <ResendReceipt receiptId={receipt.id} number={receipt.number} payer={receipt.payerName} />
+                )}
               </li>
             ))}
           </ul>

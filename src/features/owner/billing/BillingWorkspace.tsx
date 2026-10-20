@@ -9,6 +9,7 @@ import { formatDateTime, formatNumber, formatPeriodKey, formatTHB } from "@/i18n
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Callout } from "@/ui/components/Callout";
+import { Badge } from "@/ui/components/Badge";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { EmptyState } from "@/ui/components/EmptyState";
@@ -23,6 +24,7 @@ import { MoneyNav } from "../shared/MoneyNav";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { focusedBuilding, param, section, type OwnerContext } from "../shared/server";
 import { SettingValue } from "../shared/SettingValue";
+import { fieldMembers } from "../shared/members";
 import { CycleActions, OpenCycleButton } from "./CycleActions";
 import { DraftReview } from "./DraftReview";
 
@@ -112,10 +114,11 @@ export async function BillingWorkspace({
   const buildingIds = new Set(
     context.buildings.filter((candidate) => candidate.propertyId === property.id).map((candidate) => candidate.id),
   );
-  const [cycle, rounds, settings] = await Promise.all([
+  const [cycle, rounds, settings, members] = await Promise.all([
     unwrap(api.GET("/v1/owner/billing-cycles/{billingCycleId}", { params: { path: { billingCycleId: chosen.id } } })),
     section(unwrap(api.GET("/v1/owner/reading-rounds/current", { params: { query: {} } }))),
     section(unwrap(api.GET("/v1/owner/settings", { params: { query: { propertyId: property.id } } }))),
+    fieldMembers(api),
   ]);
   const stats = (cycle.stats ?? {}) as Record<string, unknown>;
   const drafts = cycle.invoices.filter((invoice) => invoice.status === "draft");
@@ -161,7 +164,14 @@ export async function BillingWorkspace({
             </h2>
             <StatusBadgeOf map={BILLING_CYCLE_STATUS} value={cycle.status} />
           </div>
-          <CycleActions cycle={cycle} periodLabel={periodLabel} draftCount={drafts.length} totalLabel={totalLabel} />
+          <CycleActions
+            cycle={cycle}
+            periodLabel={periodLabel}
+            draftCount={drafts.length}
+            totalLabel={totalLabel}
+            members={members}
+            missing={pending.filter(({ item }) => !item.iot).length}
+          />
         </div>
         {cycle.status !== "cancelled" ? (
           <Stepper
@@ -286,7 +296,24 @@ export async function BillingWorkspace({
                     <td className="py-2">
                       {item.health ? <StatusBadgeOf map={METER_HEALTH_STATUS} value={item.health} size="sm" /> : null}
                     </td>
-                    <td className="text-muted py-2">{item.iot ? t("assignedIot") : t("assignedStaff")}</td>
+                    <td className="py-2" data-testid="pending-assignee">
+                      {item.assignee ? (
+                        <span className="flex flex-wrap items-center gap-2">
+                          <span>{item.assignee.displayName}</span>
+                          {item.requested ? (
+                            <Badge tone="info" size="sm">
+                              {t("requested")}
+                            </Badge>
+                          ) : null}
+                        </span>
+                      ) : item.requested ? (
+                        <Badge tone="info" size="sm">
+                          {t("requestedAnyone")}
+                        </Badge>
+                      ) : (
+                        <span className="text-muted">{item.iot ? t("assignedIot") : t("assignedStaff")}</span>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>

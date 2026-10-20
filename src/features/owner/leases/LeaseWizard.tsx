@@ -32,6 +32,7 @@ import { ownerPath } from "../shared/links";
 import { useDateLabels } from "@/features/shared/console/labels";
 import { ProblemNotice, useApiAction, useIdempotencyKey } from "@/features/shared/console/useApiAction";
 import { NewPartyButton } from "../parties/PartyForm";
+import { LeasePreview } from "./LeasePreview";
 import { ComplianceChecks } from "./ComplianceChecks";
 import { LeaseInviteButton } from "./LeaseInvite";
 
@@ -253,29 +254,22 @@ export function LeaseWizard({
     acknowledgementIds: acknowledgementIds.length ? acknowledgementIds : undefined,
   });
 
+  const createBody = (ackIds: string[]): Schemas["LeaseCreateDto"] => ({
+    ...terms(ackIds),
+    startDate: form.startDate!,
+    months: Number(form.months),
+    rent: form.rent,
+    utilityBillingMode: form.utilityBillingMode,
+    unitId: form.unit!.id,
+    lesseePartyId: form.lessee!.id,
+    coTenantPartyIds: form.others.filter((other) => other.role === "co_tenant").map((other) => other.partyId),
+    occupantPartyIds: form.others.filter((other) => other.role === "occupant").map((other) => other.partyId),
+  });
+
   const createOrUpdate = () =>
     action.run(
       async (ackIds) => {
-        if (!lease)
-          return unwrapWithETag(
-            browserApi().POST("/v1/owner/leases", {
-              body: {
-                ...terms(ackIds),
-                startDate: form.startDate!,
-                months: Number(form.months),
-                rent: form.rent,
-                utilityBillingMode: form.utilityBillingMode,
-                unitId: form.unit!.id,
-                lesseePartyId: form.lessee!.id,
-                coTenantPartyIds: form.others
-                  .filter((other) => other.role === "co_tenant")
-                  .map((other) => other.partyId),
-                occupantPartyIds: form.others
-                  .filter((other) => other.role === "occupant")
-                  .map((other) => other.partyId),
-              },
-            }),
-          );
+        if (!lease) return unwrapWithETag(browserApi().POST("/v1/owner/leases", { body: createBody(ackIds) }));
         return unwrapWithETag(
           browserApi().PATCH("/v1/owner/leases/{leaseId}", {
             params: { path: { leaseId: lease.data.id }, header: { "If-Match": lease.etag ?? "*" } },
@@ -872,6 +866,7 @@ export function LeaseWizard({
               },
             ]}
           />
+          {!lease && form.unit && form.lessee && form.startDate ? <LeasePreview body={createBody([])} /> : null}
           <ProblemNotice error={action.error} onAcknowledge={action.acknowledge} acknowledging={action.acknowledging} />
           {action.error ? <p className="text-muted text-sm">{t("fixHint")}</p> : null}
           <div className="flex justify-between">

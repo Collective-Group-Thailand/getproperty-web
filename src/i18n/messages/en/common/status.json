@@ -270,5 +270,43 @@
     "active": "Active",
     "suspended": "Suspended",
     "removed": "Removed"
+  },
+  "parcel": {
+    "received": "Received",
+    "notified": "Waiting for pick-up",
+    "picked_up": "Picked up",
+    "returned": "Returned"
+  },
+  "credential": {
+    "pending": "Pending",
+    "active": "Active",
+    "revoked": "Revoked",
+    "expired": "Expired",
+    "failed": "Failed"
+  },
+  "booking": {
+    "requested": "Requested",
+    "confirmed": "Confirmed",
+    "cancelled": "Cancelled",
+    "no_show": "No-show"
+  },
+  "priority": {
+    "low": "Low",
+    "normal": "Normal",
+    "high": "High",
+    "urgent": "Urgent"
+  },
+  "accessResult": {
+    "success": "Opened",
+    "denied": "Denied",
+    "error": "Error"
+  },
+  "invoiceDelivery": {
+    "queued": "Queued",
+    "held": "Held",
+    "sent": "Sent",
+    "delivered": "Delivered",
+    "failed": "Failed",
+    "cancelled": "Not sent"
   }
 }

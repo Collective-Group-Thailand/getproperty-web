@@ -2,7 +2,7 @@ import { http, type HttpHandler } from "msw";
 
 import type { components } from "../../src/lib/api/schema";
 import { state } from "../state";
-import { period } from "../staff-world";
+import { meterStatus, period } from "../staff-world";
 import {
   body,
   etagged,
@@ -552,6 +552,7 @@ export const assetHandlers: HttpHandler[] = [
           commonAreaLabel: null,
           validFrom: iso(-400),
           validTo: null,
+          ...meterStatus(meter),
         })),
     );
   }),
@@ -593,6 +594,13 @@ export const assetHandlers: HttpHandler[] = [
     };
     w().profiles.push(profile);
     return etagged(profile, 201);
+  }),
+  http.get("*/v1/owner/unit-profiles/:unitProfileId", ({ request, params }) => {
+    const op = "owner.unitProfiles.get";
+    const ok = owner(request, op);
+    if (ok instanceof Response) return ok;
+    const profile = ok.own ? w().profiles.find((candidate) => candidate.id === params.unitProfileId) : undefined;
+    return profile ? etagged(profile) : notFound(op);
   }),
   http.patch("*/v1/owner/unit-profiles/:unitProfileId", async ({ request, params }) => {
     const op = "owner.unitProfiles.update";
@@ -824,6 +832,8 @@ export const assetHandlers: HttpHandler[] = [
                     unitId: meter.unit ? (unitIdOf(meter.unit) ?? null) : null,
                     unitNo: meter.code.slice(2),
                     iot: meter.iot !== null,
+                    requested: meter.assetItemId in w().readingRequests,
+                    assignee: w().readingRequests[meter.assetItemId] ?? null,
                     health: meter.iot?.health ?? null,
                     lastReading: meter.last
                       ? {

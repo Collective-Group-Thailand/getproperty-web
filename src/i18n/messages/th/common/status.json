@@ -270,5 +270,43 @@
     "active": "ใช้งานอยู่",
     "suspended": "ระงับ",
     "removed": "นำออกแล้ว"
+  },
+  "parcel": {
+    "received": "รับเข้าแล้ว",
+    "notified": "แจ้งผู้รับแล้ว รอรับ",
+    "picked_up": "รับไปแล้ว",
+    "returned": "ส่งคืนแล้ว"
+  },
+  "credential": {
+    "pending": "รอส่งไปที่กลอน",
+    "active": "ใช้งานได้",
+    "revoked": "ยกเลิกแล้ว",
+    "expired": "หมดเวลา",
+    "failed": "ส่งไปที่กลอนไม่สำเร็จ"
+  },
+  "booking": {
+    "requested": "รออนุมัติ",
+    "confirmed": "ยืนยันแล้ว",
+    "cancelled": "ยกเลิก",
+    "no_show": "ไม่มาใช้"
+  },
+  "priority": {
+    "low": "ต่ำ",
+    "normal": "ปกติ",
+    "high": "สูง",
+    "urgent": "ด่วนมาก"
+  },
+  "accessResult": {
+    "success": "เปิดได้",
+    "denied": "ปฏิเสธ",
+    "error": "ผิดพลาด"
+  },
+  "invoiceDelivery": {
+    "queued": "รอส่ง",
+    "held": "พักไว้ (ช่วงเงียบ/รอความยินยอม)",
+    "sent": "ส่งแล้ว",
+    "delivered": "ถึงผู้รับแล้ว",
+    "failed": "ส่งไม่สำเร็จ",
+    "cancelled": "ไม่ได้ส่ง"
   }
 }

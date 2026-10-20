@@ -46,7 +46,7 @@ const PARTS: Record<string, (keyof OwnerWorld)[]> = {
     "acknowledgements",
     "evaluations",
   ],
-  money: ["cycles", "invoices", "charges", "payments", "slips", "receipts", "credits", "exports"],
+  money: ["cycles", "invoices", "charges", "payments", "slips", "receipts", "credits", "exports", "readingRequests"],
   metering: ["reviews", "utilityInvoices", "ownerReadings"],
   settings: [
     "settings",

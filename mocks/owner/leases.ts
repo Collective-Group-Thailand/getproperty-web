@@ -314,6 +314,82 @@ export const leaseHandlers: HttpHandler[] = [
     return etagged(lease, 201);
   }),
 
+  // The dry run of the create (D-208): the same checks, answered as data; nothing is written.
+  http.post("*/v1/owner/leases/compliance-preview", async ({ request }) => {
+    const op = "owner.leases.previewCompliance";
+    const ok = owner(request, op);
+    if (ok instanceof Response) return ok;
+    if (!ok.own) return notFound(op);
+    const input = await body<Schemas["LeaseCreateDto"]>(request);
+    const lease = leaseFromInput(input);
+    if (lease instanceof Response && lease.status === 404) return notFound(op);
+    const refusal =
+      lease instanceof Response
+        ? lease
+        : checkTerms(
+            "owner.leases.create",
+            {
+              rent: lease.rent,
+              depositAmount: lease.depositAmount,
+              advanceRentAmount: lease.advanceRentAmount,
+              lines: input.lines ?? [],
+              addendum: lease.addendum,
+            },
+            input.acknowledgementIds,
+          );
+    const found = refusal
+      ? ((await refusal.json()) as { code: string; status: number; ruleId?: string; legalRef?: string; errors?: [] })
+      : null;
+    const depositBlocked = found?.code === "compliance.deposit_cap";
+    const preview: Schemas["LeaseCompliancePreviewDto"] = {
+      inScope: true,
+      checks: [
+        {
+          ruleId: "compliance.deposit_cap",
+          outcome: depositBlocked ? "block" : "pass",
+          severity: "block",
+          legalRef: LEGAL_REF.depositCap,
+          context: {},
+        },
+        ...(found?.code === "compliance.acknowledgement_required"
+          ? [
+              {
+                ruleId: found.ruleId ?? "compliance.water_minimum",
+                outcome: "warn" as const,
+                severity: "warn" as const,
+                legalRef: found.legalRef ?? LEGAL_REF.tariffCap,
+                context: {},
+              },
+            ]
+          : []),
+      ],
+      problems: found
+        ? [
+            {
+              code: found.code,
+              status: found.status,
+              ruleId: found.ruleId ?? null,
+              legalRef: found.legalRef ?? null,
+              errors: found.errors ?? [],
+            },
+          ]
+        : [],
+      defaults:
+        lease instanceof Response
+          ? null
+          : {
+              rent: lease.rent,
+              depositAmount: lease.depositAmount,
+              advanceRentAmount: lease.advanceRentAmount,
+              billingDay: lease.billingDay,
+              months: input.months ?? 12,
+              endDate: lease.endDate,
+              lines: input.lines ?? [],
+            },
+    };
+    return json(preview);
+  }),
+
   http.get("*/v1/owner/leases/:leaseId", ({ request, params }) => {
     const op = "owner.leases.get";
     const ok = owner(request, op);

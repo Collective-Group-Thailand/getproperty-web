@@ -105,6 +105,16 @@ export const CURATED_ICONS = {
   tag: "tag",
   megaphone: "megaphone",
   device: "smartphone",
+  // R2 service, access & community (F2 2.7, F4 4.4)
+  wrench: "wrench",
+  timer: "timer",
+  unlock: "lock-open",
+  door: "door-open",
+  rules: "book-open-check",
+  contact: "contact-round",
+  "package-check": "package-check",
+  receipt: "receipt-text",
+  "calendar-check": "calendar-check",
   // theme & language
   "theme-system": "monitor",
   "theme-light": "sun",

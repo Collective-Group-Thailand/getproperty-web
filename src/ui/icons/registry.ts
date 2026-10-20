@@ -98,6 +98,15 @@ import { IconCpu } from "./glyphs/cpu";
 import { IconTag } from "./glyphs/tag";
 import { IconMegaphone } from "./glyphs/megaphone";
 import { IconDevice } from "./glyphs/device";
+import { IconWrench } from "./glyphs/wrench";
+import { IconTimer } from "./glyphs/timer";
+import { IconUnlock } from "./glyphs/unlock";
+import { IconDoor } from "./glyphs/door";
+import { IconRules } from "./glyphs/rules";
+import { IconContact } from "./glyphs/contact";
+import { IconPackageCheck } from "./glyphs/package-check";
+import { IconReceipt } from "./glyphs/receipt";
+import { IconCalendarCheck } from "./glyphs/calendar-check";
 import { IconThemeSystem } from "./glyphs/theme-system";
 import { IconThemeLight } from "./glyphs/theme-light";
 import { IconThemeDark } from "./glyphs/theme-dark";
@@ -200,6 +209,15 @@ export const ICONS: { readonly [N in IconName]: IconGlyph<N> } = {
   tag: IconTag,
   megaphone: IconMegaphone,
   device: IconDevice,
+  wrench: IconWrench,
+  timer: IconTimer,
+  unlock: IconUnlock,
+  door: IconDoor,
+  rules: IconRules,
+  contact: IconContact,
+  "package-check": IconPackageCheck,
+  receipt: IconReceipt,
+  "calendar-check": IconCalendarCheck,
   "theme-system": IconThemeSystem,
   "theme-light": IconThemeLight,
   "theme-dark": IconThemeDark,

@@ -111,7 +111,7 @@ test("loss workspace: report, trend with table, suspects, a water bill from its 
   await expect(page.getByTestId("suspect-row").first()).toBeVisible();
   await page.getByTestId("loss-chart").getByText("ดูเป็นตาราง").click();
   await expect(page.getByTestId("loss-chart").locator("table tbody tr")).toHaveCount(6);
-  await expect(page.getByTestId("loss-csv")).toHaveAttribute("download", /\.csv$/);
+  await expect(page.getByTestId("loss-csv")).toBeVisible();
   await expectAxeClean(page);
 
   await page.getByTestId("loss-tab-water").click();

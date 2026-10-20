@@ -922,12 +922,19 @@ function meterLine(
         meterAssignmentId: id("aa000000", 1),
         code: options.code,
         units,
-        from: { readAt: iso(-31), readingId: crypto.randomUUID(), register: from, source: "ocr" },
+        from: {
+          readAt: iso(-31),
+          readingId: crypto.randomUUID(),
+          register: from,
+          source: "ocr",
+          photoDocumentId: null,
+        },
         to: {
           readAt: iso(-1),
           readingId: options.photo ? id("e0000000", 91) : crypto.randomUUID(),
           register: to,
           source: options.source ?? "ocr",
+          photoDocumentId: options.photo ?? null,
         },
       },
     ],
@@ -965,6 +972,7 @@ function invoice(
     periodEnd: day(-1),
     priorBalance: "0.00",
     promptpayRef: null,
+    qrPayload: null,
     replacedByInvoiceId: null,
     replacesInvoiceId: null,
     reviewFlags: [],
@@ -1697,6 +1705,8 @@ export interface OwnerWorld {
   reviews: Schemas["ReadingReviewDto"][];
   /** Owner-side meter readings (history per meter); the staff world's readings are added on top. */
   ownerReadings: Schemas["MeterReadingDto"][];
+  /** Open reading requests (D-208) by asset item: the round shows `requested` + `assignee`. */
+  readingRequests: Record<string, Schemas["RoundAssigneeDto"] | null>;
   replies: Map<string, { status: number; body: unknown; fingerprint: string }>;
   /** What the e2e suite asserts on: requests the owner world received (by operation). */
   received: { op: string; idempotencyKey: string | null; body: unknown }[];
@@ -2048,6 +2058,7 @@ export function initialOwnerWorld(): OwnerWorld {
     utilityInvoices: initialUtilityInvoices(),
     reviews: initialReviews(),
     ownerReadings: [],
+    readingRequests: {},
     replies: new Map(),
     received: [],
     settings: initialSettings(),

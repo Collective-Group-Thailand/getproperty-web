@@ -7,6 +7,7 @@ import { ReadingSourceBadge } from "@/features/shared/status/ReadingSourceBadge"
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { formatDate, formatDateTime, formatUnits } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
+import { isApiError } from "@/lib/api/errors";
 import type { Schemas } from "@/lib/api/types";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { Chart } from "@/ui/charts/Chart";
@@ -48,24 +49,14 @@ export async function MeterDetail({
   const t = await getTranslations("owner.meters.detail");
   const meterT = await getTranslations("owner.meters");
   const { api, locale } = context;
-  const hinted = param(searchParams.building);
-  const order = [
-    ...context.buildings.filter((building) => building.id === hinted),
-    ...context.buildings.filter((building) => building.id !== hinted),
-  ];
-  let meter: Schemas["MeterDto"] | undefined;
-  let building: Schemas["BuildingDto"] | undefined;
-  for (const candidate of order) {
-    const meters = await unwrap(
-      api.GET("/v1/owner/buildings/{buildingId}/meters", { params: { path: { buildingId: candidate.id } } }),
-    ).catch(() => [] as Schemas["MeterDto"][]);
-    meter = meters.find((item) => item.assetItemId === assetItemId);
-    if (meter) {
-      building = candidate;
-      break;
-    }
-  }
-  if (!meter || !building) notFound();
+  const meter = await unwrap(api.GET("/v1/owner/meters/{assetItemId}", { params: { path: { assetItemId } } })).catch(
+    (error: unknown) => {
+      if (isApiError(error) && error.status === 404) notFound();
+      throw error;
+    },
+  );
+  const building = context.buildings.find((candidate) => candidate.id === meter.buildingId);
+  if (!building) notFound();
 
   const bucketParam = param(searchParams.bucket);
   const bucket: Schemas["SeriesBucket"] = BUCKETS.includes(bucketParam as Schemas["SeriesBucket"])
@@ -110,7 +101,7 @@ export async function MeterDetail({
           value: reading.consumption,
         }));
   const tab = (value: Schemas["SeriesBucket"]) =>
-    ownerPath(locale, withQuery(`/meters/${assetItemId}`, { building: building!.id, bucket: value }));
+    ownerPath(locale, withQuery(`/meters/${assetItemId}`, { building: building.id, bucket: value }));
 
   return (
     <OwnerPage testId="meter-detail">

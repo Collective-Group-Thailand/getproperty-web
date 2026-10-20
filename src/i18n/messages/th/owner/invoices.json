@@ -161,6 +161,16 @@
     },
     "notes": "ใบลดหนี้และใบเพิ่มหนี้",
     "notePdf": "PDF",
-    "noNotes": "ไม่มี"
+    "noNotes": "ไม่มี",
+    "deliveries": "การส่งบิล",
+    "deliveriesHint": "การแจ้งบิลทาง LINE / SMS / อีเมล ตอนออกบิล ส่งซ้ำ และเตือน",
+    "noDeliveries": "ยังไม่มีการส่ง",
+    "deliveriesUnavailable": "อ่านประวัติการส่งไม่ได้ในตอนนี้",
+    "deliveryKind": {
+      "issue": "ออกบิล",
+      "resend": "ส่งซ้ำ",
+      "reminder": "เตือนชำระ"
+    },
+    "qrAlt": "Thai QR สำหรับชำระบิล {number}"
   }
 }

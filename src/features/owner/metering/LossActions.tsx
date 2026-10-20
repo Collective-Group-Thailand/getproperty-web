@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
@@ -13,7 +13,6 @@ import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input } from "@/ui/components/Input";
 import { NativeSelect } from "@/ui/components/NativeSelect";
 import { IconAdd } from "@/ui/icons/glyphs/add";
-import { IconDownload } from "@/ui/icons/glyphs/download";
 import { IconRefresh } from "@/ui/icons/glyphs/refresh";
 
 import { DateField } from "@/features/shared/console/DateField";
@@ -60,25 +59,6 @@ export function RecomputeLoss({
       </Button>
       <ProblemNotice error={action.error} />
     </div>
-  );
-}
-
-/**
- * A CSV of the loss report as the API computed it (values copied, nothing calculated), built in the
- * browser until the API offers a loss export kind (contract request).
- */
-export function LossCsv({ rows, fileName, label }: { rows: string[][]; fileName: string; label: string }) {
-  const href = useMemo(() => {
-    const escape = (cell: string) => (/[",\n]/.test(cell) ? `"${cell.replace(/"/g, '""')}"` : cell);
-    const csv = `﻿${rows.map((row) => row.map(escape).join(",")).join("\n")}\n`;
-    return `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`;
-  }, [rows]);
-  return (
-    <Button asChild variant="secondary" iconStart={IconDownload}>
-      <a href={href} download={fileName} data-testid="loss-csv">
-        {label}
-      </a>
-    </Button>
   );
 }
 
