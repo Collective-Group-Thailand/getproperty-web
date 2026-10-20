@@ -1,0 +1,253 @@
+{
+  "tabsLabel": "หน้าการสมัครใช้งาน",
+  "tab": {
+    "subscriptions": "การสมัครใช้งาน",
+    "invoices": "ใบแจ้งหนี้แพลตฟอร์ม",
+    "hardware": "อุปกรณ์เช่า",
+    "field-work": "งานภาคสนาม",
+    "plans": "แพ็กเกจราคา"
+  },
+  "description": {
+    "invoices": "ใบแจ้งหนี้ของคอลเลกทีฟกรุ๊ปถึงลูกค้า พร้อมการชำระเงิน ใบเสร็จ และใบลดหนี้",
+    "hardware": "อุปกรณ์ของแพลตฟอร์มที่ติดตั้งที่ลูกค้า (เช่าอุปกรณ์) พร้อมระยะสัญญาและมูลค่าตามบัญชี",
+    "field-work": "งานติดตั้งและถอดอุปกรณ์ และการสำรวจหน้างานที่เจ้าของขอเพื่ออัปเกรดเป็น Smart",
+    "plans": "แพ็กเกจราคาและเวอร์ชันที่มีวันมีผล เวอร์ชันที่เผยแพร่แล้วแก้ไขไม่ได้"
+  },
+  "subscriptions": {
+    "title": "การสมัครใช้งาน",
+    "description": "การสมัครใช้งานของลูกค้าทุกราย: แพ็กเกจ สถานะ ทดลองใช้ และส่วนลดโครงการนำร่อง",
+    "search": "ค้นหา",
+    "searchPlaceholder": "ลูกค้าหรือแพ็กเกจ",
+    "state": "สถานะ",
+    "allStates": "ทุกสถานะ",
+    "empty": "ไม่พบการสมัครใช้งาน",
+    "col": {
+      "tenant": "ลูกค้า",
+      "plan": "แพ็กเกจ",
+      "state": "สถานะ",
+      "trialEnds": "สิ้นสุดทดลองใช้",
+      "discount": "ส่วนลด"
+    }
+  },
+  "invoices": {
+    "title": "ใบแจ้งหนี้แพลตฟอร์ม",
+    "search": "ค้นหา",
+    "searchPlaceholder": "เลขที่หรือลูกค้า",
+    "state": "สถานะ",
+    "allStates": "ทุกสถานะ",
+    "empty": "ไม่พบใบแจ้งหนี้",
+    "col": {
+      "number": "เลขที่",
+      "tenant": "ลูกค้า",
+      "period": "งวด",
+      "total": "ยอดรวม",
+      "open": "คงค้าง",
+      "due": "ครบกำหนด",
+      "state": "สถานะ"
+    }
+  },
+  "invoice": {
+    "crumb": "ใบแจ้งหนี้แพลตฟอร์ม",
+    "waitingTitle": "มีใบลดหนี้รออนุมัติ {count} ใบ",
+    "waitingBody": "ใบลดหนี้จะออกได้เมื่อคนที่สองอนุมัติเท่านั้น (D-091)",
+    "recordPayment": "บันทึกการชำระเงิน",
+    "recordPaymentTitle": "บันทึกการชำระเงินของ {number}",
+    "recordPaymentBody": "{tenant} ชำระใบแจ้งหนี้ {number} ด้วยการโอนหรือบัตร ยอดคงค้าง {open} ระบบจะตรวจยอดและออกใบเสร็จ",
+    "paymentRecorded": "บันทึกการชำระเงินแล้ว ออกใบเสร็จแล้ว",
+    "amount": "ยอดที่ได้รับ (บาท)",
+    "method": "วิธีชำระ",
+    "methodName": {
+      "bank_transfer": "โอนผ่านธนาคาร",
+      "card": "บัตร"
+    },
+    "reference": "เลขอ้างอิงธนาคาร",
+    "referenceHint": "ตามที่แสดงในรายการเดินบัญชี",
+    "paidAt": "ชำระเมื่อ",
+    "requestCredit": "ขอออกใบลดหนี้",
+    "requestCreditTitle": "ใบลดหนี้ของ {number}",
+    "requestCreditBody": "ยอดรวมใบแจ้งหนี้ {total} ต้องให้อีกคนที่มีสิทธิ์อนุมัติเป็นผู้ออก",
+    "creditAmount": "ยอดที่ลดหนี้ (บาท)",
+    "creditReason": "เหตุผล",
+    "creditRequested": "ส่งคำขอใบลดหนี้แล้ว รออนุมัติ",
+    "approveCredit": "อนุมัติ",
+    "approveCreditTitle": "อนุมัติใบลดหนี้ของ {number} ใช่หรือไม่",
+    "approveCreditBody": "{amount} — {reason} พิมพ์ยอดเพื่อยืนยัน",
+    "creditApproved": "ออกใบลดหนี้แล้ว",
+    "rejectCredit": "ไม่อนุมัติ",
+    "rejectCreditTitle": "ไม่อนุมัติใบลดหนี้ของ {number} ใช่หรือไม่",
+    "rejectCreditBody": "คำขอ {amount} จะถูกปิดโดยไม่ออกใบลดหนี้",
+    "creditRejected": "ไม่อนุมัติใบลดหนี้แล้ว"
+  },
+  "hardware": {
+    "title": "อุปกรณ์เช่า",
+    "search": "ค้นหา",
+    "searchPlaceholder": "หมายเลขเครื่อง",
+    "state": "สถานะ",
+    "allStates": "ทุกสถานะ",
+    "empty": "ยังไม่มีอุปกรณ์เช่า",
+    "emptyHint": "เกตเวย์และมิเตอร์ของแพลตฟอร์มจะแสดงที่นี่เมื่อลงทะเบียนกับลูกค้า",
+    "register": "ลงทะเบียนอุปกรณ์",
+    "registerTitle": "ลงทะเบียนอุปกรณ์เช่า",
+    "registerHint": "อุปกรณ์ของแพลตฟอร์มที่ติดตั้งที่ลูกค้าตามระยะสัญญา (D-081) มูลค่าตามบัญชีคำนวณโดยระบบ",
+    "registered": "ลงทะเบียนแล้ว",
+    "tenant": "ลูกค้า",
+    "device": "อุปกรณ์",
+    "termMonths": "ระยะสัญญา (เดือน)",
+    "acquisitionCost": "ราคาทุน (บาท)",
+    "monthlyValue": "มูลค่ารายเดือน (บาท)",
+    "tenantLink": "ลูกค้า",
+    "termValue": "{months} เดือน",
+    "installed": "ติดตั้ง {date}",
+    "notInstalled": "ยังไม่ติดตั้ง",
+    "until": "ถึง {date}",
+    "col": {
+      "serial": "อุปกรณ์",
+      "state": "สถานะ",
+      "term": "ระยะสัญญา",
+      "cost": "ราคาทุน",
+      "monthly": "รายเดือน",
+      "book": "มูลค่าตามบัญชี",
+      "actions": "การดำเนินการ"
+    },
+    "action": {
+      "install": "ติดตั้งแล้ว",
+      "in-service": "เริ่มใช้งาน",
+      "replace": "เปลี่ยนเครื่อง",
+      "deinstall": "ถอดออก",
+      "write-off": "ตัดจำหน่าย"
+    },
+    "actionTitle": {
+      "install": "บันทึก {serial} ว่าติดตั้งแล้ว",
+      "in-service": "เริ่มใช้งาน {serial}",
+      "replace": "เปลี่ยน {serial}",
+      "deinstall": "ถอด {serial}",
+      "write-off": "ตัดจำหน่าย {serial}"
+    },
+    "actionBody": "การเปลี่ยนสถานะจะบันทึกในประวัติของ {serial} ประวัติแก้ไขไม่ได้",
+    "installedOn": "ติดตั้งเมื่อ",
+    "replacement": "เครื่องใหม่",
+    "chooseDevice": "เลือกอุปกรณ์",
+    "note": "หมายเหตุ",
+    "moved": "อัปเดตทะเบียนแล้ว"
+  },
+  "field": {
+    "orders": "งานติดตั้ง",
+    "surveys": "สำรวจหน้างาน",
+    "state": "สถานะ",
+    "allStates": "ทุกสถานะ",
+    "kind": "ประเภท",
+    "allKinds": "ทุกประเภท",
+    "kindName": {
+      "install": "ติดตั้ง",
+      "deinstall": "ถอดอุปกรณ์",
+      "replace": "เปลี่ยนอุปกรณ์",
+      "site_survey": "สำรวจหน้างาน"
+    },
+    "noOrders": "ไม่มีงานติดตั้ง",
+    "noSurveys": "ไม่มีการสำรวจหน้างาน",
+    "nobody": "ยังไม่มอบหมาย",
+    "tenantLink": "ลูกค้า",
+    "itemsValue": "เสร็จ {done} จาก {total}",
+    "col": {
+      "building": "อาคาร",
+      "kind": "ประเภท",
+      "items": "รายการ",
+      "assignee": "ผู้รับผิดชอบ",
+      "due": "กำหนด",
+      "state": "สถานะ",
+      "actions": "การดำเนินการ",
+      "requested": "ขอเมื่อ",
+      "plan": "อัปเกรดเป็น",
+      "scheduled": "นัดหมาย",
+      "notes": "หมายเหตุ"
+    },
+    "orderAction": {
+      "assign": "มอบหมาย",
+      "start": "เริ่มงาน",
+      "complete-items": "รายการที่เสร็จ",
+      "complete": "ปิดงาน",
+      "cancel": "ยกเลิก"
+    },
+    "orderActionTitle": {
+      "assign": "มอบหมายงานที่ {building}",
+      "start": "เริ่มงานที่ {building}",
+      "complete-items": "รายการที่เสร็จที่ {building}",
+      "complete": "ปิดงานที่ {building}",
+      "cancel": "ยกเลิกงานที่ {building}"
+    },
+    "orderActionBody": "{building} · {count} รายการ",
+    "orderMoved": "อัปเดตงานแล้ว",
+    "assignee": "วิศวกรภาคสนาม",
+    "itemsDone": "รายการที่ติดตั้งแล้ว",
+    "itemLabel": "รายการ {index}: {kind}",
+    "note": "หมายเหตุ",
+    "surveyAction": {
+      "schedule": "นัดหมาย",
+      "complete": "สำรวจเสร็จ",
+      "cancel": "ยกเลิก"
+    },
+    "surveyActionTitle": {
+      "schedule": "นัดสำรวจหน้างาน",
+      "complete": "บันทึกผลสำรวจหน้างาน",
+      "cancel": "ยกเลิกการสำรวจหน้างาน"
+    },
+    "surveyBody": "อัปเกรดเป็น {plan}",
+    "surveyMoved": "อัปเดตการสำรวจแล้ว",
+    "scheduledFor": "วันเวลานัด",
+    "findings": "ผลการสำรวจ",
+    "openInstall": "เปิดงานติดตั้ง"
+  },
+  "plans": {
+    "sold": "เปิดขาย",
+    "notSold": "ยังไม่ขาย",
+    "kind": {
+      "software": "ซอฟต์แวร์",
+      "addon": "ส่วนเสริม",
+      "hardware_rental": "เช่าอุปกรณ์",
+      "hardware_sale": "ขายอุปกรณ์",
+      "service": "บริการ"
+    },
+    "col": {
+      "version": "เวอร์ชัน",
+      "effective": "มีผล",
+      "price": "ราคา",
+      "minimum": "ขั้นต่ำและระยะสัญญา",
+      "setup": "ค่าติดตั้ง",
+      "state": "สถานะ",
+      "actions": "การดำเนินการ"
+    },
+    "perUnit": "{price} {unit}",
+    "range": "{from} – {to} (เสนอราคา)",
+    "tiered": "{count} ขั้น",
+    "minUnitsValue": "ขั้นต่ำ {count} ห้อง",
+    "minMonthlyValue": "ขั้นต่ำ {amount}/เดือน",
+    "termValue": "{months} เดือน",
+    "annualDiscount": "รายปีลด {pct}",
+    "unit": {
+      "per_unit": "ต่อห้อง/เดือน",
+      "per_meter_point": "ต่อจุดมิเตอร์/เดือน",
+      "per_building": "ต่ออาคาร/เดือน",
+      "per_tenant": "ต่อลูกค้า/เดือน",
+      "per_report": "ต่อรายงาน"
+    },
+    "newVersion": "เวอร์ชันใหม่",
+    "newVersionTitle": "เวอร์ชันใหม่ของ {name}",
+    "newVersionHint": "ร่างที่มีผลตั้งแต่วันนี้เป็นต้นไป เผยแพร่เมื่อยืนยันราคาแล้ว หลังจากนั้นแก้ไขไม่ได้",
+    "saveDraft": "บันทึกร่าง",
+    "draftSaved": "บันทึกร่างแล้ว",
+    "effectiveFrom": "มีผลตั้งแต่",
+    "billingUnit": "หน่วยคิดเงิน",
+    "unitPrice": "ราคาต่อหน่วย (บาท)",
+    "unitPriceHint": "ทศนิยมไม่เกิน 4 ตำแหน่ง",
+    "minUnits": "จำนวนห้องขั้นต่ำ",
+    "minMonthly": "ขั้นต่ำต่อเดือน (บาท)",
+    "setupFee": "ค่าติดตั้ง (บาท)",
+    "termMonths": "ระยะสัญญา (เดือน)",
+    "priceFrom": "เสนอราคาตั้งแต่",
+    "priceTo": "ถึง",
+    "publish": "เผยแพร่",
+    "publishTitle": "เผยแพร่ {label} ใช่หรือไม่",
+    "publishBody": "เวอร์ชันนี้มีผลตั้งแต่วันที่กำหนด และแก้ไขไม่ได้อีก",
+    "published": "เผยแพร่เวอร์ชันแล้ว"
+  }
+}

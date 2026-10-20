@@ -10,6 +10,7 @@ import { leaseHandlers, residentSigns } from "./leases";
 import { meteringHandlers } from "./metering";
 import { partyHandlers } from "./parties";
 import { paymentHandlers, providerPays } from "./payments";
+import { settingsHandlers } from "./settings";
 import { initialOwnerWorld, type OwnerWorld } from "./world";
 
 /** The owner surface's stateful handlers (F2); the contract-generated handlers answer what is not here. */
@@ -23,13 +24,15 @@ export const ownerHandlers: HttpHandler[] = [
   ...billingHandlers,
   ...paymentHandlers,
   ...meteringHandlers,
+  ...settingsHandlers,
 ];
 
 /**
  * Parts of the owner world a spec file resets on its own, so parallel spec files do not reset each
  * other: `assets` (properties, buildings, floors, units, profiles, accounts), `leases` (parties, leases,
  * deposits, acknowledgements), `money` (cycles, invoices, charges, payments, slips, receipts, credits,
- * exports), `metering` (reviews, utility invoices), or everything.
+ * exports), `metering` (reviews, utility invoices), `settings` (F2 2.6: settings, bank accounts, rate plans,
+ * invitations, routes, consents, asset grants), or everything.
  */
 const PARTS: Record<string, (keyof OwnerWorld)[]> = {
   assets: ["properties", "buildings", "floors", "units", "profiles", "utilityAccounts", "imports"],
@@ -45,6 +48,19 @@ const PARTS: Record<string, (keyof OwnerWorld)[]> = {
   ],
   money: ["cycles", "invoices", "charges", "payments", "slips", "receipts", "credits", "exports"],
   metering: ["reviews", "utilityInvoices", "ownerReadings"],
+  settings: [
+    "settings",
+    "propertySettings",
+    "bankAccounts",
+    "bankOtps",
+    "ratePlans",
+    "invitations",
+    "routes",
+    "consents",
+    "assetGrants",
+    "acknowledgements",
+    "evaluations",
+  ],
 };
 
 export function resetOwnerWorld(part: string | null): boolean {

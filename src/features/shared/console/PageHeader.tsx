@@ -3,7 +3,7 @@ import type { Crumb } from "@/ui/components/Breadcrumbs";
 import { cn } from "@/ui/lib/cn";
 
 /**
- * The head of an owner page (design-system.md §4 "Status & next action"): one `h1`, what the page is
+ * The head of a console page (owner, admin) (design-system.md §4 "Status & next action"): one `h1`, what the page is
  * about, the status badge(s) of the record and its actions — the API's `nextActions`, never inferred.
  * `crumbs` extend the shell's breadcrumbs (building › unit …).
  */
@@ -41,8 +41,16 @@ export function PageHeader({
   );
 }
 
-/** The page body of an owner console screen: gutters and vertical rhythm shared by every page. */
-export function OwnerPage({ children, testId, wide }: { children: React.ReactNode; testId?: string; wide?: boolean }) {
+/** The page body of a console screen (owner, admin): gutters and vertical rhythm shared by every page. */
+export function ConsolePage({
+  children,
+  testId,
+  wide,
+}: {
+  children: React.ReactNode;
+  testId?: string;
+  wide?: boolean;
+}) {
   return (
     <div
       className={cn("mx-auto flex w-full flex-col gap-6 px-4 py-6 md:px-8", wide ? "max-w-none" : "max-w-7xl")}
@@ -52,3 +60,6 @@ export function OwnerPage({ children, testId, wide }: { children: React.ReactNod
     </div>
   );
 }
+
+/** The owner console's name for `ConsolePage`. */
+export const OwnerPage = ConsolePage;

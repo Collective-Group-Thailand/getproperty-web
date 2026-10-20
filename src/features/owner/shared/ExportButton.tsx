@@ -17,7 +17,8 @@ const MAX_POLLS = 120;
 
 /**
  * An export the API builds in the background (D-202: `POST /v1/owner/exports` → `202` job → poll
- * `GET /v1/owner/exports/{id}` until `done`), then a link to its short-lived download. One
+ * `GET /v1/owner/exports/{id}` until `done`), then a download streamed through this zone's BFF
+ * (`/bff/exports/{id}/download`, the signed URL stays on the server). One
  * Idempotency-Key per request; a failed job shows the API's error.
  */
 export function ExportButton({
@@ -87,9 +88,8 @@ export function ExportButton({
         {job?.status === "done" && job.download ? (
           <a
             className="text-primary inline-flex items-center gap-1 text-sm font-medium underline-offset-4 hover:underline"
-            href={job.download.url}
-            target="_blank"
-            rel="noreferrer"
+            href={`/bff/exports/${job.id}/download`}
+            download
             data-testid="export-download"
           >
             <Icon icon={IconDownload} size={16} />

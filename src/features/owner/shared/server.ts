@@ -55,22 +55,17 @@ export function focusedBuilding(context: OwnerContext): Schemas["BuildingDto"] |
   return context.building ?? (context.buildings.length === 1 ? context.buildings[0]! : null);
 }
 
-/** A page's `searchParams` value as one string (`?a=1&a=2` → the first). */
-export function param(value: string | string[] | undefined): string | undefined {
-  return Array.isArray(value) ? value[0] : value;
+export { pageParam, param, section } from "@/features/shared/console/params";
+
+/**
+ * Tenant permissions (docs/rbac.md, D-090) as `/v1/owner/me` lists them. The console hides what the
+ * member cannot do; the API stays the enforcement point. Prefer an aggregate's `nextActions`.
+ */
+export function ownerCan(me: OwnerMe, permission: string): boolean {
+  return me.permissions.includes(permission);
 }
 
-/** A 1-based page number from the URL, never below 1. */
-export function pageParam(value: string | string[] | undefined): number {
-  const page = Number(param(value));
-  return Number.isInteger(page) && page > 0 ? page : 1;
-}
-
-/** Runs an API read for a section of a page; a failure becomes `{ error }` for the section's error state. */
-export async function section<T>(read: Promise<T>): Promise<{ data: T; error: null } | { data: null; error: unknown }> {
-  try {
-    return { data: await read, error: null };
-  } catch (error) {
-    return { data: null, error };
-  }
+/** Whether the tenant's subscription is read-only (suspended, D-082): mutations are not rendered. */
+export function readOnly(me: OwnerMe): boolean {
+  return me.subscription?.readOnly ?? false;
 }

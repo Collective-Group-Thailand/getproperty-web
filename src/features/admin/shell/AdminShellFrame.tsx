@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
+import { useEffect } from "react";
 
 import { NotificationCentre } from "@/features/shared/notifications/NotificationCentre";
 import { LanguageSwitch } from "@/features/shared/shell/LanguageSwitch";
@@ -34,6 +35,11 @@ export interface AdminShellFrameProps {
 
 /** The admin console frame (F1 1.3 §1): sidebar from `/v1/admin/me` entitlements, command palette, environment badge. */
 export function AdminShellFrame(props: AdminShellFrameProps) {
+  // Marks the document interactive (hydrated): the e2e suite waits for it instead of clicking
+  // server-rendered buttons that do nothing yet (the SSE stream keeps the network busy).
+  useEffect(() => {
+    document.documentElement.dataset.hydrated = "admin";
+  }, []);
   const t = useTranslations();
   const [collapsed, toggleCollapsed] = useSidebarCollapsed("admin");
   const items = props.groups.flatMap((group) => group.items);

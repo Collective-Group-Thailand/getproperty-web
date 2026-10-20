@@ -48,6 +48,7 @@ export { Select, type SelectOption, type SelectProps } from "./Select";
 export { Sheet, type SheetProps } from "./Sheet";
 export { Skeleton, SkeletonText } from "./Skeleton";
 export { Spinner, type SpinnerProps } from "./Spinner";
+export { SimpleTable, type SimpleColumn, type SimpleRow } from "./SimpleTable";
 export { SignaturePad, blobToBase64, type SignaturePadProps } from "./SignaturePad";
 export { Stat, type StatProps } from "./Stat";
 export { Stepper, type StepperProps, type StepperStep } from "./Stepper";

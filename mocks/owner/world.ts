@@ -1701,14 +1701,30 @@ export interface OwnerWorld {
   /** What the e2e suite asserts on: requests the owner world received (by operation). */
   received: { op: string; idempotencyKey: string | null; body: unknown }[];
   settings: Schemas["SettingDto"][];
+  /** Values set for one property (F2 2.6): property id → key → value in force. */
+  propertySettings: Record<string, Record<string, { value: Schemas["SettingDto"]["value"]; effectiveFrom: string }>>;
+  bankAccounts: Schemas["BankAccountDto"][];
+  /** Open OTP challenges of bank account changes: account id → challenge (the fake SMS code is 123456). */
+  bankOtps: Map<string, Schemas["OtpChallengeDto"]>;
+  ratePlans: Schemas["RatePlanDto"][];
+  invitations: Schemas["InvitationDto"][];
+  routes: Schemas["NotificationRouteDto"][];
+  consents: Schemas["ConsentPurposeDto"][];
+  assetGrants: Schemas["AssetGrantDto"][];
 }
+
+type Scope = Schemas["SettingScope"];
+const ALL: Scope[] = ["platform", "tenant", "property"];
+const TENANT_UP: Scope[] = ["platform", "tenant"];
 
 function setting(
   key: string,
   value: Schemas["SettingDto"]["value"],
   valueType: Schemas["SettingValueType"],
   description: string,
-  scope: Schemas["SettingScope"] = "platform",
+  scope: Scope = "platform",
+  scopeAllowed: Scope[] = ALL,
+  editable = true,
 ): Schemas["SettingDto"] {
   return {
     key,
@@ -1716,12 +1732,13 @@ function setting(
     valueType,
     description,
     scope,
-    scopeAllowed: ["platform", "tenant", "property"],
-    editable: true,
+    scopeAllowed,
+    editable,
     effectiveFrom: iso(-90),
   };
 }
 
+/** As getproperty-api `src/core/settings/catalogue.ts` (scopes and who may edit) with the sample tenant's values. */
 function initialSettings(): Schemas["SettingDto"][] {
   return [
     setting(
@@ -1730,22 +1747,54 @@ function initialSettings(): Schemas["SettingDto"][] {
       "json",
       "Billing cut-off (D-031)",
     ),
-    setting("billing.default_due_day", 5, "int", "Rent due day (D-191)"),
+    setting("billing.default_due_day", 5, "int", "Rent due day (D-191)", "platform", TENANT_UP),
     setting("billing.reading_grace_hours", 24, "int", "Staff readings accepted after the cut-off (D-191)"),
     setting("billing.estimate_policy", "allow", "string", "Estimate missing readings (D-031)", "tenant"),
     setting("billing.auto_issue", { enabled: false, afterHours: 24 }, "json", "Issue computed cycles by themselves"),
     setting("readings.require_photo", true, "bool", "Photo required for manual readings (D-035)"),
     setting("readings.round_window_days", 7, "int", "Reading round window (D-187)"),
-    setting("reminders.schedule", [1, 3, 7], "json", "Reminder days after the due date (D-045)"),
-    setting("late_fee.enabled", false, "bool", "Late fee (D-045, O-002)"),
-    setting("late_fee.amount", "0.00", "money", "Late fee per overdue invoice (D-201)"),
-    setting("payments.allow_partial", false, "bool", "Partial payments (D-198)"),
-    setting("payments.allow_slip", true, "bool", "Slip uploads (D-043)"),
-    setting("deposit.refund_days", 7, "int", "Deposit refund deadline in days (D-023)"),
-    setting("deposit.max_months_short", "3", "decimal", "Deposit + advance rent cap in months (D-023)"),
+    setting("reminders.schedule", [1, 3, 7], "json", "Reminder days after the due date (D-045)", "platform", TENANT_UP),
+    setting("late_fee.enabled", false, "bool", "Late fee (D-045, O-002)", "platform", TENANT_UP),
+    setting("late_fee.amount", "0.00", "money", "Late fee per overdue invoice (D-201)", "platform", TENANT_UP),
+    setting("payments.allow_partial", false, "bool", "Partial payments (D-198)", "platform", TENANT_UP),
+    setting("payments.allow_slip", true, "bool", "Slip uploads (D-043)", "platform", TENANT_UP),
+    setting(
+      "notifications.quiet_hours",
+      { start: "21:00", end: "08:00", timezone: "Asia/Bangkok" },
+      "json",
+      "Non-urgent resident messages are held between these local times (D-063)",
+      "platform",
+      TENANT_UP,
+    ),
+    setting("deposit.refund_days", 7, "int", "Deposit refund deadline in days (D-023)", "platform", TENANT_UP),
+    setting(
+      "deposit.max_months_short",
+      "3",
+      "decimal",
+      "Deposit + advance rent cap in months (D-023)",
+      "platform",
+      TENANT_UP,
+    ),
     setting("readings.plausibility_pct", "60", "decimal", "Plausibility band (D-035)"),
-    setting("tax.vat", { rate: "0.07", applicableLineKinds: [] }, "json", "VAT (O-007)"),
-    setting("compliance.tariff_cap.severity", "warn", "string", "Tariff cap severity (D-021a)"),
+    setting("tax.vat", { rate: "0.07", applicableLineKinds: [] }, "json", "VAT (O-007)", "platform", TENANT_UP),
+    setting(
+      "compliance.tariff_cap.severity",
+      "warn",
+      "string",
+      "Tariff cap severity (D-021a)",
+      "platform",
+      ["platform"],
+      false,
+    ),
+    setting(
+      "compliance.tariff_cap.representative_units",
+      { electric: "150", water: "10" },
+      "json",
+      "Consumption a new power/water rate is compared at (D-194)",
+      "platform",
+      ["platform"],
+      false,
+    ),
   ];
 }
 
@@ -2002,7 +2051,177 @@ export function initialOwnerWorld(): OwnerWorld {
     replies: new Map(),
     received: [],
     settings: initialSettings(),
+    propertySettings: {},
+    bankAccounts: initialBankAccounts(),
+    bankOtps: new Map(),
+    ratePlans: initialRatePlans(),
+    invitations: [
+      {
+        id: id("1a7e0000", 1),
+        role: "staff",
+        channel: "sms",
+        phoneMasked: "+66 8x-xxx-0077",
+        email: null,
+        buildingIds: [BUILDING_A],
+        state: "pending",
+        createdAt: iso(-1),
+        expiresAt: iso(6),
+        acceptedAt: null,
+        nextActions: ["revoke"],
+      },
+    ],
+    routes: initialRoutes(),
+    consents: [
+      {
+        key: "operator_terms",
+        title: "ข้อตกลงการใช้บริการ getproperty",
+        bodyMarkdown: "ข้อตกลงการใช้บริการสำหรับผู้ประกอบการ ฉบับที่ 1",
+        version: 1,
+        language: "th",
+        required: true,
+        effectiveFrom: day(-200),
+        granted: true,
+        grantedVersion: 1,
+        capturedAt: iso(-120),
+      },
+      {
+        key: "operator_product_updates",
+        title: "รับข่าวสารผลิตภัณฑ์และกรณีศึกษา",
+        bodyMarkdown: "ยินยอมให้ getproperty ส่งข่าวสารเกี่ยวกับผลิตภัณฑ์ทาง LINE และอีเมล",
+        version: 1,
+        language: "th",
+        required: false,
+        effectiveFrom: day(-200),
+        granted: null,
+        grantedVersion: null,
+        capturedAt: null,
+      },
+    ],
+    assetGrants: [],
   };
+}
+
+function initialBankAccounts(): Schemas["BankAccountDto"][] {
+  return [
+    {
+      id: id("ba000000", 1),
+      bankCode: "004",
+      bankNameTh: "ธนาคารกสิกรไทย",
+      accountNoMasked: "xxx-x-x4567-x",
+      accountName: "บริษัท หอพักตัวอย่าง จำกัด",
+      branch: "สาขาลาดพร้าว",
+      buildingIds: [],
+      isDefault: true,
+      paymentProvider: "kbank",
+      state: "active",
+      confirmedAt: iso(-100),
+      createdAt: iso(-100),
+      nextActions: ["remove"],
+    },
+  ];
+}
+
+function initialRatePlans(): Schemas["RatePlanDto"][] {
+  return [
+    {
+      id: id("7a7e0000", 1),
+      kind: "power",
+      name: "ค่าไฟห้องพัก",
+      buildingId: null,
+      isDefault: true,
+      version: 1,
+      versions: [
+        {
+          id: id("7a7e1000", 1),
+          basis: "per_unit",
+          tiers: { kind: "flat", pricePerUnit: "8.0000", unit: "kwh" },
+          minimumCharge: null,
+          note: null,
+          effectiveFrom: day(-180),
+          effectiveTo: null,
+          inForce: true,
+          aboveCap: true,
+          capCheck: {
+            aboveCap: true,
+            effectiveAverageRate: "4.4217",
+            provider: "mea",
+            representativeUnits: "150.000",
+            tariffCode: "1.1",
+            tenantRate: "8.0000",
+          },
+          complianceAcknowledgementId: id("ac000000", 1),
+        },
+      ],
+    },
+    {
+      id: id("7a7e0000", 2),
+      kind: "water",
+      name: "ค่าน้ำห้องพัก",
+      buildingId: null,
+      isDefault: true,
+      version: 1,
+      versions: [
+        {
+          id: id("7a7e1000", 2),
+          basis: "per_unit",
+          tiers: { kind: "flat", pricePerUnit: "18.0000", unit: "m3" },
+          minimumCharge: "100.00",
+          note: null,
+          effectiveFrom: day(-180),
+          effectiveTo: null,
+          inForce: true,
+          aboveCap: false,
+          capCheck: null,
+          complianceAcknowledgementId: null,
+        },
+      ],
+    },
+    {
+      id: id("7a7e0000", 3),
+      kind: "common_fee",
+      name: "ค่าส่วนกลาง",
+      buildingId: BUILDING_A,
+      isDefault: true,
+      version: 1,
+      versions: [
+        {
+          id: id("7a7e1000", 3),
+          basis: "fixed",
+          tiers: { kind: "fixed", amount: "300.00" },
+          minimumCharge: null,
+          note: null,
+          effectiveFrom: day(-180),
+          effectiveTo: null,
+          inForce: true,
+          aboveCap: false,
+          capCheck: null,
+          complianceAcknowledgementId: null,
+        },
+      ],
+    },
+  ];
+}
+
+function initialRoutes(): Schemas["NotificationRouteDto"][] {
+  const events: [string, boolean][] = [
+    ["invoice.issued", false],
+    ["invoice.reminder", false],
+    ["payment.confirmed", false],
+    ["receipt.issued", false],
+    ["lease.sent_for_signature", true],
+    ["deposit.refunded", false],
+  ];
+  const channels: Schemas["NotificationChannel"][] = ["line", "sms", "email"];
+  return events.flatMap(([eventType, urgent]) =>
+    channels.map((channel) => ({
+      audience: "resident" as const,
+      eventType,
+      channel,
+      enabled: channel === "line" || (urgent && channel === "sms"),
+      urgent,
+      overridden: false,
+    })),
+  );
 }
 
 export const INSPECTION_A201_MOVE_IN = INSPECTION_MOVE_IN_A201;

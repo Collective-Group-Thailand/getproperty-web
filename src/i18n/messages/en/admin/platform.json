@@ -1,0 +1,105 @@
+{
+  "flags": {
+    "title": "Feature flags",
+    "description": "Platform defaults, rollout percentages and per-tenant overrides. Every change needs a reason and is audited.",
+    "tenantTitle": "Feature flags of this tenant",
+    "col": {
+      "key": "Flag",
+      "value": "Value",
+      "source": "Source",
+      "actions": "Actions",
+      "default": "Default",
+      "rollout": "Rollout",
+      "overrides": "Overrides"
+    },
+    "on": "On",
+    "off": "Off",
+    "inherit": "Platform default",
+    "inherited": "Platform default / rollout",
+    "overridden": "Tenant override — {reason}",
+    "override": "Override",
+    "overrideTitle": "Override {key} for this tenant",
+    "value": "Value",
+    "reason": "Reason",
+    "save": "Save",
+    "saved": "Flag saved",
+    "editDefault": "Edit",
+    "defaultTitle": "Default of {key}",
+    "defaultOn": "On by default",
+    "rollout": "Rollout (%)",
+    "rolloutHint": "Share of tenants that get the flag when it is off by default",
+    "overrideCount": "{count, plural, =0 {none} one {# tenant} other {# tenants}}"
+  },
+  "settings": {
+    "title": "Platform settings",
+    "description": "Every setting key with the platform value in force, the scopes that may override it and who may edit it. A change is a new effective-dated version with a reason.",
+    "filter": "Filter",
+    "filterPlaceholder": "Key or description, e.g. billing.",
+    "col": {
+      "key": "Setting",
+      "value": "Platform value",
+      "since": "In force since",
+      "scopes": "Can be set for",
+      "actions": "Actions"
+    },
+    "scope": {
+      "platform": "Platform",
+      "tenant": "Tenant",
+      "property": "Property"
+    }
+  },
+  "templates": {
+    "title": "Message templates",
+    "description": "Templates of every notification by key, channel and audience. Drafts are previewed with sample data, sent to yourself as a test and published as a new version.",
+    "col": {
+      "key": "Template",
+      "channel": "Channel",
+      "audience": "Audience",
+      "published": "Published",
+      "drafts": "Drafts"
+    },
+    "draftCount": "{count, plural, one {# draft} other {# drafts}}",
+    "versionLabel": "Version {version} · {language}",
+    "publishedAt": "Published {date}",
+    "channel": {
+      "line": "LINE",
+      "sms": "SMS",
+      "email": "Email",
+      "in_app": "In the app",
+      "web_push": "Web push"
+    },
+    "audience": {
+      "resident": "Residents",
+      "technician": "Technicians",
+      "owner": "Owners",
+      "manager": "Managers",
+      "staff": "Staff",
+      "accountant": "Accountants",
+      "platform": "Platform staff"
+    },
+    "newVersion": "New draft",
+    "newVersionTitle": "New draft of {key}",
+    "newVersionHint": "Starts from the newest version. The draft changes nothing until it is published.",
+    "saveDraft": "Save draft",
+    "draftSaved": "Draft saved",
+    "language": "Language",
+    "format": "Format",
+    "subject": "Subject",
+    "body": "Body",
+    "bodyHint": "Variables in double braces, e.g. '{{'unitCode'}}'",
+    "sampleData": "Sample data (JSON)",
+    "sampleDataHint": "The variables used for the preview",
+    "preview": "Preview",
+    "previewTitle": "Preview of version {version}",
+    "render": "Render",
+    "invalidJson": "Sample data is not valid JSON",
+    "publish": "Publish",
+    "publishTitle": "Publish version {version} of {key}?",
+    "publishBody": "Every new {language} message of this template uses this version from now on.",
+    "published": "Version published",
+    "testSend": "Send me a test",
+    "testSendTitle": "Send a test of {key}",
+    "testSendBody": "The published version goes to you only, over {channel}, with the sample data.",
+    "testSent": "Test sent"
+  }
+}

@@ -1,0 +1,231 @@
+{
+  "title": "Tenants",
+  "description": "The SaaS customer organisations: type, plan, subscription and status.",
+  "search": "Search",
+  "searchPlaceholder": "Name or slug",
+  "noPlan": "No plan",
+  "noSubscription": "Not subscribed",
+  "vatRegistered": "VAT registered",
+  "tabsLabel": "Tenant pages",
+  "empty": {
+    "title": "No tenant found",
+    "body": "Change the search, or onboard a new tenant."
+  },
+  "col": {
+    "name": "Tenant",
+    "type": "Type",
+    "plan": "Plan",
+    "subscription": "Subscription",
+    "status": "Status"
+  },
+  "tab": {
+    "overview": "Overview",
+    "subscription": "Subscription",
+    "invoices": "Invoices",
+    "hardware": "Rented hardware",
+    "field-work": "Field work",
+    "pilot": "Pilot & KPIs",
+    "ai-usage": "AI usage",
+    "flags": "Feature flags",
+    "support": "Support",
+    "view": "View as tenant"
+  },
+  "onboard": {
+    "open": "Onboard a tenant",
+    "title": "Onboard a tenant",
+    "description": "The first Owner receives an SMS invitation. The tenant starts without a subscription until you subscribe it.",
+    "submit": "Create the tenant",
+    "done": "Tenant created; the Owner's invitation was sent",
+    "type": "Tenant type",
+    "plan": "Planned plan",
+    "planHint": "For reference only; the subscription sets the plan that is billed.",
+    "noPlan": "None yet",
+    "displayName": "Display name",
+    "slug": "Slug",
+    "slugHint": "Lowercase letters, digits and hyphens. It is typed back to confirm a suspension.",
+    "legalName": "Legal name (on documents)",
+    "legalForm": "Legal form",
+    "form": {
+      "company": "Company",
+      "person": "Natural person",
+      "juristic_person": "Juristic person (condominium)"
+    },
+    "taxId": "Tax id",
+    "taxIdHint": "13 digits",
+    "phone": "First Owner's mobile",
+    "phoneHint": "For example 0812345678",
+    "vat": "VAT registered (VAT documents are issued)",
+    "createdTitle": "{name} was created",
+    "createdBody": "The invitation went by SMS to {phone}. If it does not arrive, give the Owner this code:",
+    "openTenant": "Open the tenant"
+  },
+  "overview": {
+    "health": "Health",
+    "subscription": "Subscription",
+    "noSubscription": "Not subscribed",
+    "units": "Units counted today",
+    "unitsHint": "Units whose status is not inactive (D-082)",
+    "buildings": "Buildings",
+    "lastCycle": "Last billing cycle: {period} ({status})",
+    "noCycle": "No billing cycle yet",
+    "gateways": "Gateways online",
+    "gatewaysValue": "{online} of {total}",
+    "gatewaysHint": "Reported in the last 15 minutes",
+    "openInvoices": "Open platform invoices",
+    "overdue": "Overdue to the platform",
+    "trialEnds": "Trial ends",
+    "company": "Company data",
+    "companyHint": "As used on the tenant's documents. The Owner changes it in the owner console.",
+    "legalName": "Legal name",
+    "legalForm": "Legal form",
+    "form": {
+      "company": "Company",
+      "person": "Natural person",
+      "juristic_person": "Juristic person"
+    },
+    "taxId": "Tax id",
+    "vat": "VAT registered",
+    "language": "Language",
+    "address": "Address",
+    "yes": "Yes",
+    "no": "No",
+    "signal": {
+      "past_due": {
+        "title": "Platform invoice overdue",
+        "body": "{amount} is overdue. The subscription is past due and will be suspended if it stays unpaid."
+      },
+      "suspended": {
+        "title": "Suspended — read-only",
+        "body": "The tenant can read and export, residents can still pay issued bills; nothing can be changed until the subscription is reinstated."
+      },
+      "trial_ending": {
+        "title": "Trial ending",
+        "body": "The trial ends on {date}; the first invoice is issued then."
+      },
+      "no_cycle_this_month": {
+        "title": "No billing cycle this month",
+        "body": "No billing cycle was opened this month. Check with the tenant whether billing is stuck."
+      },
+      "gateways_offline": {
+        "title": "Gateways offline",
+        "body": "At least one gateway has not reported in the last 15 minutes."
+      }
+    }
+  },
+  "subscription": {
+    "none": "Not subscribed",
+    "noneHint": "Subscribe the tenant to a published plan of its type. It starts with the trial.",
+    "subscribe": "Subscribe",
+    "subscribeTitle": "Subscribe this tenant",
+    "subscribeHint": "Only published plans of the tenant's type can be sold. The trial starts now.",
+    "subscribed": "Subscribed; the trial has started",
+    "plan": "Plan",
+    "addons": "Add-ons",
+    "noAddons": "None",
+    "billingPeriod": "Billing period",
+    "period": {
+      "monthly": "Monthly",
+      "annual": "Annual"
+    },
+    "planVersion": "{key} · version {version}",
+    "started": "Started",
+    "trialEnds": "Trial ends",
+    "activated": "Active since",
+    "discount": "Discount",
+    "pastDueSince": "Past due since",
+    "suspendedAt": "Suspended",
+    "cancelEffective": "Cancellation effective",
+    "readOnlyTitle": "This tenant is read-only",
+    "readOnlyBody": "Suspended or cancelled: owners and staff can read and export, residents can pay issued bills, nothing is deleted (D-082).",
+    "history": "History",
+    "noHistory": "No events yet",
+    "event": {
+      "subscription.created": "Subscribed",
+      "subscription.plan_changed": "Plan changed",
+      "subscription.state_changed": "State changed"
+    },
+    "reason": "Reason",
+    "changePlan": "Change plan",
+    "changePlanTitle": "Change the plan of {name}",
+    "planChanged": "Plan changed",
+    "suspend": "Suspend",
+    "suspendTitle": "Suspend {name}?",
+    "suspendBody": "{name} becomes read-only at once: no new invoices, settings or changes until reinstated. Residents can still pay issued bills.",
+    "suspended": "Suspended — the tenant is read-only",
+    "reinstate": "Reinstate",
+    "reinstateTitle": "Reinstate {name}?",
+    "reinstateBody": "{name} can work normally again.",
+    "reinstated": "Reinstated",
+    "cancel": "Cancel subscription",
+    "cancelTitle": "Cancel the subscription of {name}?",
+    "cancelBody": "The subscription ends after the current month (or the date you choose); the tenant becomes read-only and a de-install order is opened per building with platform hardware.",
+    "cancelled": "Cancellation recorded",
+    "effectiveDate": "Effective date",
+    "effectiveDateHint": "Empty: the last day of the current month"
+  },
+  "pilot": {
+    "none": "No pilot agreement",
+    "noneHint": "Record the pilot's terms (D-083) to apply its discount and measure its KPIs.",
+    "create": "Record the pilot",
+    "createTitle": "Record the pilot agreement",
+    "edit": "Edit the agreement",
+    "editTitle": "Edit the pilot agreement",
+    "formHint": "A paid pilot: the discount applies to every platform invoice and is never 100 %.",
+    "save": "Save",
+    "saved": "Pilot agreement saved",
+    "terms": "Pilot agreement",
+    "signedOn": "Signed on",
+    "termMonths": "Term (months)",
+    "months": "{count, plural, one {# month} other {# months}}",
+    "discountPct": "Discount (%)",
+    "discountHint": "0 to 99.99",
+    "kpiReviewOn": "KPI review",
+    "kpiReviewHint": "Empty: 90 days after signing",
+    "cadence": "Feedback sessions",
+    "cadenceName": {
+      "weekly": "Weekly",
+      "biweekly": "Every two weeks",
+      "monthly": "Monthly"
+    },
+    "rights": "Rights",
+    "referenceSite": "Reference-site rights",
+    "anonymisedData": "Anonymised data use (PDPA)",
+    "baseline": "Baseline before the pilot",
+    "baselineHint": "The values the KPIs are compared against, as measured before go-live. Leave empty when unknown.",
+    "kpi": {
+      "timeToBillHours": "Time to bill (hours)",
+      "invoiceCorrectionRatePct": "Invoice corrections (%)",
+      "onTimePaymentPct": "On-time payment (%)",
+      "autoReconciledPct": "Auto-reconciled (%)",
+      "lossPct": "Utility loss (%)",
+      "meterUptimePct": "Meter uptime (%)",
+      "csat": "Resident satisfaction (1–5)"
+    },
+    "notes": "Notes",
+    "kpis": "Pilot KPIs"
+  },
+  "ai": {
+    "title": "AI usage",
+    "hint": "Per month and feature: calls, units, the plan's allowance, units beyond it and the cost to the platform at the configured unit costs.",
+    "empty": "No AI usage recorded",
+    "emptyHint": "Meter photo and utility-bill OCR calls appear here once the tenant uses them.",
+    "col": {
+      "month": "Month",
+      "feature": "Feature",
+      "calls": "Calls",
+      "units": "Units",
+      "allowance": "Allowance",
+      "overage": "Over allowance",
+      "cost": "Cost to platform"
+    },
+    "feature": {
+      "meter_ocr": "Meter photo OCR",
+      "invoice_ocr": "Utility-bill OCR",
+      "resident_bot": "Resident assistant",
+      "legal_qa": "Legal Q&A",
+      "stt": "Speech to text",
+      "minutes": "Meeting minutes",
+      "other": "Other"
+    }
+  }
+}

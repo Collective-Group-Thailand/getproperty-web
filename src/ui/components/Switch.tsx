@@ -14,6 +14,8 @@ export interface SwitchProps {
   disabled?: boolean;
   name?: string;
   className?: string;
+  /** Test hook on the switch control itself (the button with `role="switch"`). */
+  "data-testid"?: string;
 }
 
 /** An on/off setting that takes effect at once (a notification toggle). For a form value, use Checkbox. */

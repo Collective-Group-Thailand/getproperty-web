@@ -1,0 +1,79 @@
+{
+  "title": "Reports & exports",
+  "description": "Monthly figures for your accountant and your accounting software, built by getproperty and downloaded here.",
+  "period": "Month",
+  "apply": "Show",
+  "scope": "{period} · {building}",
+  "allBuildings": "all buildings",
+  "noPermission": "Your role cannot export.",
+  "export": "Export",
+  "download": "Download",
+  "group": {
+    "accounting": "Accounting",
+    "operations": "Operations",
+    "tax": "Tax"
+  },
+  "vatOnlyHint": "VAT working figures appear for VAT-registered companies (set in Settings).",
+  "kind": {
+    "income_expense": {
+      "title": "Income and expense summary",
+      "body": "Billed, collected and refunded by category for the month"
+    },
+    "flowaccount_csv": {
+      "title": "FlowAccount",
+      "body": "Invoices and receipts in FlowAccount's import format"
+    },
+    "peak_csv": {
+      "title": "PEAK",
+      "body": "Invoices and receipts in PEAK's import format"
+    },
+    "invoices_xlsx": {
+      "title": "Invoices (Excel)",
+      "body": "Every invoice of the month with its lines"
+    },
+    "payments_xlsx": {
+      "title": "Payments (Excel)",
+      "body": "Every payment with method, reference and allocation"
+    },
+    "arrears_xlsx": {
+      "title": "Arrears (Excel)",
+      "body": "Open balances by resident at the month's end"
+    },
+    "readings_csv": {
+      "title": "Meter readings (CSV)",
+      "body": "Every reading with its source and photo reference"
+    },
+    "document_archive_zip": {
+      "title": "Documents (ZIP)",
+      "body": "Every document generated in the month, with an index"
+    },
+    "vat_pp30": {
+      "title": "VAT working figures (PP 30)",
+      "body": "Output VAT by tax invoice for the monthly return"
+    },
+    "tax_annual_summary": {
+      "title": "Annual tax summary",
+      "body": "Income for the year to date, for the year-end filing"
+    },
+    "units_xlsx": {
+      "title": "Units (Excel)",
+      "body": "Every unit with its status and resident"
+    },
+    "tm30": {
+      "title": "TM30 data",
+      "body": "Foreign residents' notification data"
+    }
+  },
+  "history": "Recent exports",
+  "historyHint": "Download links expire; export again for a fresh file.",
+  "noHistory": "No export yet",
+  "col": {
+    "kind": "Export",
+    "scope": "Period",
+    "requested": "Requested",
+    "status": "File"
+  },
+  "insights": "Insights",
+  "noInsights": "No insights yet",
+  "noInsightsHint": "Pilot KPIs appear here once your pilot agreement is in place and getproperty publishes them."
+}

@@ -70,7 +70,8 @@
       "manual": "Record a payment",
       "credits": "Credits & refunds",
       "arrears": "Arrears",
-      "documents": "Documents"
+      "documents": "Documents",
+      "rates": "Rate plans"
     }
   },
   "export": {

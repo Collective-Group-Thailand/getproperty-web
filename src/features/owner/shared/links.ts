@@ -8,13 +8,4 @@ export function ownerPath(locale: Locale, path: string): string {
   return locale === "th" ? path : `/${locale}${path === "/" ? "" : path}`;
 }
 
-/** A path with search parameters; empty values are left out. */
-export function withQuery(path: string, query: Record<string, string | number | null | undefined>): string {
-  const params = new URLSearchParams();
-  for (const [key, value] of Object.entries(query)) {
-    if (value === undefined || value === null || value === "") continue;
-    params.set(key, String(value));
-  }
-  const text = params.toString();
-  return text ? `${path}?${text}` : path;
-}
+export { withQuery } from "@/features/shared/console/params";

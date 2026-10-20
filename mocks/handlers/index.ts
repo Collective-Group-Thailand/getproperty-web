@@ -5,6 +5,7 @@ import { generatedHandlers } from "./generated";
 import { meHandlers } from "./me";
 import { notificationHandlers } from "./notifications";
 import { ownerHandlers } from "../owner";
+import { platformHandlers } from "../platform";
 import { publicHandlers } from "./public";
 import { realtimeHandlers } from "./realtime";
 import { searchHandlers } from "./search";
@@ -23,6 +24,7 @@ export function handlers(): HttpHandler[] {
     ...telemetryHandlers,
     ...staffHandlers,
     ...ownerHandlers,
+    ...platformHandlers,
     ...generatedHandlers(),
   ];
 }

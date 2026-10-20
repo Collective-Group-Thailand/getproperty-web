@@ -143,9 +143,12 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   // Everything except Next's own assets and static files with an extension, plus the root files
-  // the proxy routes per zone (robots, sitemap, the staff service worker and manifest).
+  // the proxy routes per zone (robots, sitemap, the staff service worker and manifest), plus every BFF
+  // call even with a dot in it (`…/settings/reminders.schedule`, `…/feature-flags/billing.auto_issue`):
+  // without the proxy such a call would reach the owner's `/bff` on the staff or admin host.
   matcher: [
     "/((?!_next/|.*\\..*).*)",
+    "/bff/:path*",
     "/favicon.ico",
     "/icon.svg",
     "/brand/wordmark.svg",

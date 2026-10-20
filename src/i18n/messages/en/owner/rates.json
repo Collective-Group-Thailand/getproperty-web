@@ -1,0 +1,132 @@
+{
+  "title": "Rate plans",
+  "description": "What you charge for electricity, water, common fees and services — version by version. Electricity and water are compared with the utility's own rate (the 2025 dormitory notice).",
+  "create": "New rate plan",
+  "createTitle": "New rate plan",
+  "createHint": "Set its prices with a first version after creating it.",
+  "created": "Rate plan created",
+  "name": "Name",
+  "kind": "Kind",
+  "building": "Building",
+  "buildingHint": "Or every building",
+  "allBuildings": "Every building",
+  "isDefault": "Default plan of this kind",
+  "isDefaultHint": "New leases start with it",
+  "kindName": {
+    "power": "Electricity",
+    "water": "Water",
+    "common_fee": "Common fee",
+    "fund": "Sinking fund",
+    "rent": "Rent",
+    "service": "Services"
+  },
+  "newVersion": "New prices",
+  "newVersionTitle": "New prices for {name}",
+  "newVersionHint": "From today or a later date — never backdated. Leases keep the price agreed at signing if a later version charges more.",
+  "save": "Save",
+  "versionSaved": "Prices saved",
+  "priceMode": "Pricing",
+  "mode": {
+    "flat": "One price per unit",
+    "tiered": "Tiers",
+    "fixed": "Fixed amount"
+  },
+  "basis": "Basis",
+  "basisName": {
+    "per_unit": "Per unit used",
+    "fixed": "Fixed per month",
+    "per_sqm": "Per square metre",
+    "per_ownership_ratio": "By ownership ratio"
+  },
+  "pricePerUnit": "Price per {unit}",
+  "unit": {
+    "kwh": "kWh",
+    "m3": "m³",
+    "unit": "unit"
+  },
+  "amount": "Amount (THB)",
+  "tiers": "Tiers",
+  "tiersHint": "Each tier ends at “up to”; the last one has no end.",
+  "upTo": "Up to (units)",
+  "openEnded": "No end",
+  "tierPrice": "Price per unit",
+  "addTier": "Add a tier",
+  "removeTier": "Remove tier {index}",
+  "effectiveFrom": "From",
+  "effectiveFromHint": "Empty = today",
+  "minimumCharge": "Minimum charge (THB)",
+  "minimumChargeHint": "Water only; not above the utility's minimum",
+  "note": "Note",
+  "tierError": {
+    "price": "Type the price as a number, e.g. 7.0000",
+    "rows": "Each tier needs a price, and every tier but the last an “up to”",
+    "order": "Each tier must end above the previous one",
+    "amount": "Type the amount as a number, e.g. 300.00"
+  },
+  "rename": "Rename",
+  "renameTitle": "Rename {name}",
+  "saved": "Rate plan saved",
+  "delete": "Delete",
+  "deleteTitle": "Delete {name}?",
+  "deleteBody": "Only a plan that no lease or invoice uses can be deleted.",
+  "deleted": "Rate plan deleted",
+  "default": "Default",
+  "capHint": "The utility's effective average rate at {units} {unit} is {rate} THB per {unit} ({name}). A price above it needs your acknowledgement.",
+  "ceilingHint": "The utility's highest rate is {rate} THB per {unit} ({name}).",
+  "aboveCapTitle": "Above the utility's rate",
+  "aboveCapBody": "The price in force is above what the utility charges at the representative consumption. It was acknowledged when it was saved; residents see the comparison on their bill.",
+  "noVersions": "No prices yet",
+  "empty": "No rate plan yet",
+  "emptyHint": "Create the plans your leases charge from.",
+  "flat": "per unit",
+  "fixed": "fixed",
+  "minimum": "minimum {amount}",
+  "capCompared": "{tenant} vs utility {utility} at {units} units",
+  "aboveCap": "Above the cap",
+  "aboveCapAcknowledged": "Above the cap — acknowledged",
+  "withinCap": "Within the cap",
+  "inForce": "In force",
+  "scheduled": "Scheduled",
+  "past": "Past",
+  "col": {
+    "from": "From",
+    "prices": "Prices",
+    "cap": "Utility comparison",
+    "state": "State"
+  },
+  "utility": {
+    "electric": "Electricity",
+    "water": "Water"
+  },
+  "provider": {
+    "mea": "MEA",
+    "pea": "PEA",
+    "mwa": "MWA",
+    "pwa": "PWA"
+  },
+  "cap": {
+    "title": "The utility's rate",
+    "description": "The published tariff in force for each utility of your buildings — the reference your electricity and water prices are compared with.",
+    "noAccounts": "Add the utility accounts of your buildings to see the tariff in force.",
+    "notPublished": "No verified tariff is published yet for this utility.",
+    "since": "since {date}",
+    "average": "Effective average {rate} THB per {unit} at {units} {unit}",
+    "ceiling": "Highest marginal rate {rate} THB per {unit}",
+    "source": "Published source"
+  },
+  "sample": {
+    "title": "Sample bill at the utility's rate",
+    "description": "What the utility itself would charge for a consumption you type — computed by the API from the tariff in force.",
+    "tariff": "Tariff",
+    "units": "Consumption ({unit})",
+    "run": "Calculate",
+    "total": "Total before VAT",
+    "average": "average {rate} THB per {unit}",
+    "col": {
+      "line": "Line",
+      "units": "Units",
+      "price": "Price per unit",
+      "amount": "Amount"
+    }
+  }
+}

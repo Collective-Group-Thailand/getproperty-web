@@ -19,6 +19,8 @@ export interface CheckboxProps {
   name?: string;
   value?: string;
   className?: string;
+  /** Test hook on the checkbox control itself (the button with `role="checkbox"`). */
+  "data-testid"?: string;
 }
 
 /** A checkbox with its label as one 44-px-tall target; `indeterminate` for a "select all" header. */

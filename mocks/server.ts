@@ -27,6 +27,11 @@
  *   POST /__mock/owner/payments/webhook?invoice=<number>  the payment provider pays an invoice's QR
  *   GET  /__mock/owner/received?op=  requests the owner world received (body, Idempotency-Key)
  *   GET  /__mock/owner/state         leases, deposits, invoices, slips, cycles, units (A/B) as held
+ *   POST /__mock/platform/reset      reset the platform admin's world (tenants, billing, tariffs, fleet…)
+ *   POST /__mock/platform/ota/advance?rollout=<id>[&outcome=failed]  the next gateway of a running
+ *                                   rollout moves one step (realtime `ota.rollout_changed`)
+ *   GET  /__mock/platform/received?op=  requests the platform world received (body, Idempotency-Key)
+ *   GET  /__mock/platform/state      subscriptions, invoices, tariffs, grants, flags, test sends as held
  *
  * Object storage stand-in (what presigned URLs point at; CORS like a bucket):
  *   PUT  /__upload/<fileId>         the presigned upload
@@ -43,6 +48,7 @@ import { getResponse } from "msw";
 import { OPERATORS, PLATFORM_USERS } from "./fixtures";
 import { handlers } from "./handlers";
 import { providerPays, resetOwnerWorld, residentAnswers, residentSigns } from "./owner";
+import { advanceRollout, resetPlatformWorld } from "./platform";
 import { emit } from "./handlers/realtime";
 import { gatewayComesOnline, readUpload, storeUpload, UPLOAD_CORS } from "./handlers/staff";
 import { BUILDING_A, BUILDING_B, buildingOf } from "./staff-world";
@@ -66,6 +72,8 @@ function sendJson(res: ServerResponse, status: number, body: unknown) {
 async function control(url: URL, req: IncomingMessage, res: ServerResponse) {
   const owner = ownerControl(url, req);
   if (owner) return sendJson(res, owner.status, owner.body);
+  const platform = platformControl(url, req);
+  if (platform) return sendJson(res, platform.status, platform.body);
   switch (`${req.method} ${url.pathname}`) {
     case "GET /__mock/health":
       return sendJson(res, 200, { ok: true });
@@ -220,6 +228,42 @@ function ownerControl(url: URL, req: IncomingMessage): { status: number; body: u
     };
   }
   return { status: 404, body: { error: "unknown owner control" } };
+}
+
+/** The platform world's controls (F5): reset, OTA progress, what the admin surface received. */
+function platformControl(url: URL, req: IncomingMessage): { status: number; body: unknown } | null {
+  if (!url.pathname.startsWith("/__mock/platform/")) return null;
+  const parts = url.pathname.split("/").slice(3);
+  if (req.method === "POST" && parts[0] === "reset") {
+    resetPlatformWorld();
+    return { status: 200, body: { ok: true } };
+  }
+  if (req.method === "POST" && parts[0] === "ota" && parts[1] === "advance") {
+    const outcome = url.searchParams.get("outcome") === "failed" ? "failed" : "applied";
+    const rollout = advanceRollout(url.searchParams.get("rollout") ?? "", outcome);
+    return rollout ? { status: 200, body: rollout } : { status: 409, body: { error: "rollout not running" } };
+  }
+  if (req.method === "GET" && parts[0] === "received") {
+    const op = url.searchParams.get("op");
+    return { status: 200, body: state.platform.received.filter((entry) => !op || entry.op === op) };
+  }
+  if (req.method === "GET" && parts[0] === "state") {
+    const world = state.platform;
+    return {
+      status: 200,
+      body: {
+        subscriptions: world.subscriptions,
+        invoices: world.invoices,
+        tariffs: world.tariffs,
+        grants: world.grants,
+        flags: world.flags,
+        testSends: world.testSends,
+        rollouts: world.rollouts,
+        devices: world.devices,
+      },
+    };
+  }
+  return { status: 404, body: { error: "unknown platform control" } };
 }
 
 /** The object-storage stand-in: presigned PUTs and signed GETs from the browser (cross-origin). */

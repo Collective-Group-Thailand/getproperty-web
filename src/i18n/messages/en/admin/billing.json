@@ -1,0 +1,253 @@
+{
+  "tabsLabel": "Subscription pages",
+  "tab": {
+    "subscriptions": "Subscriptions",
+    "invoices": "Platform invoices",
+    "hardware": "Rented hardware",
+    "field-work": "Field work",
+    "plans": "Price plans"
+  },
+  "description": {
+    "invoices": "Collective Group's invoices to its tenants, with payments, receipts and credit notes.",
+    "hardware": "Platform-owned devices placed at tenants (hardware as a service) with term and book value.",
+    "field-work": "Install and de-install orders, and the site surveys owners asked for to upgrade to Smart.",
+    "plans": "Price plans and their effective-dated versions. Published versions never change."
+  },
+  "subscriptions": {
+    "title": "Subscriptions",
+    "description": "Every tenant's subscription: plan, state, trial and pilot discount.",
+    "search": "Search",
+    "searchPlaceholder": "Tenant or plan",
+    "state": "State",
+    "allStates": "All states",
+    "empty": "No subscription matches",
+    "col": {
+      "tenant": "Tenant",
+      "plan": "Plan",
+      "state": "State",
+      "trialEnds": "Trial ends",
+      "discount": "Discount"
+    }
+  },
+  "invoices": {
+    "title": "Platform invoices",
+    "search": "Search",
+    "searchPlaceholder": "Number or tenant",
+    "state": "State",
+    "allStates": "All states",
+    "empty": "No platform invoice matches",
+    "col": {
+      "number": "Number",
+      "tenant": "Tenant",
+      "period": "Period",
+      "total": "Total",
+      "open": "Open",
+      "due": "Due",
+      "state": "State"
+    }
+  },
+  "invoice": {
+    "crumb": "Platform invoices",
+    "waitingTitle": "{count, plural, one {A credit note waits for approval} other {# credit notes wait for approval}}",
+    "waitingBody": "A credit note is issued only when a second person approves it (D-091).",
+    "recordPayment": "Record a payment",
+    "recordPaymentTitle": "Record a payment on {number}",
+    "recordPaymentBody": "{tenant} paid invoice {number} by transfer or card. Open amount: {open}. The API checks the amount; a receipt is issued.",
+    "paymentRecorded": "Payment recorded; the receipt is issued",
+    "amount": "Amount received (THB)",
+    "method": "Method",
+    "methodName": {
+      "bank_transfer": "Bank transfer",
+      "card": "Card"
+    },
+    "reference": "Bank reference",
+    "referenceHint": "As shown on the bank statement",
+    "paidAt": "Paid at",
+    "requestCredit": "Request a credit note",
+    "requestCreditTitle": "Credit note on {number}",
+    "requestCreditBody": "Invoice total {total}. A second person with approval rights issues it.",
+    "creditAmount": "Amount to credit (THB)",
+    "creditReason": "Reason",
+    "creditRequested": "Credit note requested; it waits for approval",
+    "approveCredit": "Approve",
+    "approveCreditTitle": "Approve the credit note on {number}?",
+    "approveCreditBody": "{amount} — {reason}. Type the amount to confirm.",
+    "creditApproved": "Credit note issued",
+    "rejectCredit": "Reject",
+    "rejectCreditTitle": "Reject the credit note on {number}?",
+    "rejectCreditBody": "The request for {amount} is closed without a credit note.",
+    "creditRejected": "Credit note rejected"
+  },
+  "hardware": {
+    "title": "Rented hardware",
+    "search": "Search",
+    "searchPlaceholder": "Serial",
+    "state": "State",
+    "allStates": "All states",
+    "empty": "No rented hardware",
+    "emptyHint": "Platform-owned gateways and meters appear here once registered to a tenant.",
+    "register": "Register an asset",
+    "registerTitle": "Register rented hardware",
+    "registerHint": "A platform-owned device placed at a tenant for a term (D-081). The book value is computed by the API.",
+    "registered": "Asset registered",
+    "tenant": "Tenant",
+    "device": "Device",
+    "termMonths": "Term (months)",
+    "acquisitionCost": "Acquisition cost (THB)",
+    "monthlyValue": "Monthly value (THB)",
+    "tenantLink": "Tenant",
+    "termValue": "{months} months",
+    "installed": "installed {date}",
+    "notInstalled": "not installed",
+    "until": "until {date}",
+    "col": {
+      "serial": "Device",
+      "state": "State",
+      "term": "Term",
+      "cost": "Cost",
+      "monthly": "Monthly",
+      "book": "Book value",
+      "actions": "Actions"
+    },
+    "action": {
+      "install": "Installed",
+      "in-service": "In service",
+      "replace": "Replace",
+      "deinstall": "De-install",
+      "write-off": "Write off"
+    },
+    "actionTitle": {
+      "install": "Mark {serial} as installed",
+      "in-service": "Put {serial} in service",
+      "replace": "Replace {serial}",
+      "deinstall": "De-install {serial}",
+      "write-off": "Write off {serial}"
+    },
+    "actionBody": "The move is added to the history of {serial}; history never changes.",
+    "installedOn": "Installed on",
+    "replacement": "Replacement device",
+    "chooseDevice": "Choose a device",
+    "note": "Note",
+    "moved": "Register updated"
+  },
+  "field": {
+    "orders": "Install orders",
+    "surveys": "Site surveys",
+    "state": "State",
+    "allStates": "All states",
+    "kind": "Kind",
+    "allKinds": "All kinds",
+    "kindName": {
+      "install": "Install",
+      "deinstall": "De-install",
+      "replace": "Replace",
+      "site_survey": "Site survey"
+    },
+    "noOrders": "No install orders",
+    "noSurveys": "No site surveys",
+    "nobody": "Unassigned",
+    "tenantLink": "Tenant",
+    "itemsValue": "{done} of {total} done",
+    "col": {
+      "building": "Building",
+      "kind": "Kind",
+      "items": "Items",
+      "assignee": "Assigned to",
+      "due": "Due",
+      "state": "State",
+      "actions": "Actions",
+      "requested": "Requested",
+      "plan": "Upgrade to",
+      "scheduled": "Scheduled",
+      "notes": "Notes"
+    },
+    "orderAction": {
+      "assign": "Assign",
+      "start": "Start",
+      "complete-items": "Items done",
+      "complete": "Complete",
+      "cancel": "Cancel"
+    },
+    "orderActionTitle": {
+      "assign": "Assign the order at {building}",
+      "start": "Start the order at {building}",
+      "complete-items": "Items done at {building}",
+      "complete": "Complete the order at {building}",
+      "cancel": "Cancel the order at {building}"
+    },
+    "orderActionBody": "{building} · {count, plural, one {# item} other {# items}}",
+    "orderMoved": "Order updated",
+    "assignee": "Field engineer",
+    "itemsDone": "Installed items",
+    "itemLabel": "Item {index}: {kind}",
+    "note": "Note",
+    "surveyAction": {
+      "schedule": "Schedule",
+      "complete": "Complete",
+      "cancel": "Cancel"
+    },
+    "surveyActionTitle": {
+      "schedule": "Schedule the site survey",
+      "complete": "Complete the site survey",
+      "cancel": "Cancel the site survey"
+    },
+    "surveyBody": "Upgrade to {plan}",
+    "surveyMoved": "Survey updated",
+    "scheduledFor": "Visit at",
+    "findings": "Findings",
+    "openInstall": "Open the install order"
+  },
+  "plans": {
+    "sold": "Sold",
+    "notSold": "Not sold",
+    "kind": {
+      "software": "Software",
+      "addon": "Add-on",
+      "hardware_rental": "Hardware rental",
+      "hardware_sale": "Hardware sale",
+      "service": "Service"
+    },
+    "col": {
+      "version": "Version",
+      "effective": "Effective",
+      "price": "Price",
+      "minimum": "Minimum & term",
+      "setup": "Setup fee",
+      "state": "State",
+      "actions": "Actions"
+    },
+    "perUnit": "{price} {unit}",
+    "range": "{from} – {to} (quoted)",
+    "tiered": "{count} tiers",
+    "minUnitsValue": "min {count} units",
+    "minMonthlyValue": "min {amount}/month",
+    "termValue": "{months} months",
+    "annualDiscount": "annual −{pct}",
+    "unit": {
+      "per_unit": "per unit/month",
+      "per_meter_point": "per meter point/month",
+      "per_building": "per building/month",
+      "per_tenant": "per tenant/month",
+      "per_report": "per report"
+    },
+    "newVersion": "New version",
+    "newVersionTitle": "New version of {name}",
+    "newVersionHint": "A draft from today or later. Publish it when the price is confirmed; it never changes afterwards.",
+    "saveDraft": "Save draft",
+    "draftSaved": "Draft saved",
+    "effectiveFrom": "Effective from",
+    "billingUnit": "Billing unit",
+    "unitPrice": "Price per unit (THB)",
+    "unitPriceHint": "Up to 4 decimals",
+    "minUnits": "Minimum units",
+    "minMonthly": "Minimum per month (THB)",
+    "setupFee": "Setup fee (THB)",
+    "termMonths": "Term (months)",
+    "priceFrom": "Quoted from",
+    "priceTo": "to",
+    "publish": "Publish",
+    "publishTitle": "Publish {label}?",
+    "publishBody": "The version applies from its date and can no longer be edited.",
+    "published": "Version published"
+  }
+}

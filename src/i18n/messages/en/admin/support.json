@@ -1,0 +1,64 @@
+{
+  "title": "Support grants",
+  "description": "Time-boxed, read-only access into a tenant (D-090): requested by Support, approved by the tenant's Owner in-app or by a platform admin for an incident. Every read is audited.",
+  "empty": "No support grants",
+  "emptyHint": "Ask the tenant's Owner for access from the tenant's Support tab.",
+  "col": {
+    "tenant": "Tenant",
+    "reason": "Reason",
+    "window": "Access window",
+    "state": "State",
+    "actions": "Actions"
+  },
+  "requestedAt": "asked {date}",
+  "via": {
+    "in_app": "approved by the Owner",
+    "platform_admin_incident": "incident approval"
+  },
+  "viewAs": "View as tenant",
+  "request": "Ask for access",
+  "requestTitle": "Ask {name} for support access",
+  "requestHint": "The Owner sees the reason and the ticket and approves for a few hours. The access is read-only.",
+  "requested": "Request sent to the Owner",
+  "reason": "Reason (shown to the Owner)",
+  "ticket": "Ticket",
+  "approveIncident": "Approve for an incident",
+  "approveTitle": "Open {name} to Support for an incident?",
+  "approveBody": "Without the Owner's approval, for: {reason}. Audited as an incident approval; type the ticket to confirm.",
+  "approved": "Access granted",
+  "hours": "Hours",
+  "hoursHint": "Capped by the platform's maximum",
+  "revoke": "Revoke",
+  "revokeTitle": "Revoke Support access to {name}?",
+  "revokeBody": "Support loses access to {name} at once.",
+  "revoked": "Access revoked",
+  "liveHint": "A grant is active: Support can read this tenant until it ends.",
+  "noLiveHint": "No active grant: Support cannot read this tenant's data. Ask the Owner for access.",
+  "bypassHint": "As a platform admin you read without a grant; every read is audited as a bypass.",
+  "view": {
+    "bannerTitle": "Viewing {name} — read only",
+    "bannerBody": "You are reading this tenant's data under a support grant. Nothing can be changed from here, and every read is recorded in the tenant's audit log.",
+    "members": "Members",
+    "reads": "Reads under support access",
+    "readsHint": "Every read by Support or a platform admin, including yours on this page.",
+    "trail": "Recent audit trail",
+    "noRows": "Nothing recorded yet",
+    "col": {
+      "name": "Name",
+      "role": "Role",
+      "contact": "Contact",
+      "joined": "Joined",
+      "status": "Status",
+      "at": "When",
+      "action": "Action",
+      "actor": "By",
+      "outcome": "Outcome",
+      "path": "Read"
+    },
+    "outcome": {
+      "success": "Allowed",
+      "denied": "Refused",
+      "failure": "Failed"
+    }
+  }
+}

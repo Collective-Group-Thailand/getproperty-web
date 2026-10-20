@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { resetServerEnv } from "@/lib/env/server";
 import { DEFAULT_HOSTS, hostname, isReservedPath, resolveZone, zoneHosts } from "@/lib/zones";
 
-import { NOT_FOUND_PATH, proxy, routeRequest } from "./proxy";
+import { config, NOT_FOUND_PATH, proxy, routeRequest } from "./proxy";
 
 const hosts = zoneHosts({});
 
@@ -71,6 +71,10 @@ describe("routeRequest", () => {
     expect(at("staff.localhost:3000", "/today")!.url.pathname).toBe("/staff/today");
     expect(at("staff.localhost:3000", "/bff/v1/staff/me")!.url.pathname).toBe("/staff/bff/v1/staff/me");
     expect(at("admin.localhost:3000", "/bff/v1/admin/me")!.url.pathname).toBe("/admin/bff/v1/admin/me");
+    // Keys with a dot (settings, feature flags) stay on their zone's BFF.
+    expect(at("admin.localhost:3000", "/bff/v1/admin/feature-flags/billing.auto_issue")!.url.pathname).toBe(
+      "/admin/bff/v1/admin/feature-flags/billing.auto_issue",
+    );
     const tenants = at("admin.localhost:3000", "/tenants?page=2")!;
     expect(tenants.url.pathname).toBe("/admin/tenants");
     expect(tenants.url.search).toBe("?page=2");
@@ -156,5 +160,11 @@ describe("proxy", () => {
     const nonce = async () =>
       /'nonce-([^']+)'/.exec((await call("localhost:3000", "/")).headers.get("Content-Security-Policy")!)![1];
     expect(await nonce()).not.toBe(await nonce());
+  });
+});
+
+describe("config.matcher", () => {
+  it("runs the proxy for every BFF call, dots included (the static-file pattern would skip them)", () => {
+    expect(config.matcher).toContain("/bff/:path*");
   });
 });

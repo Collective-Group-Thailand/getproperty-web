@@ -1,6 +1,6 @@
 import { http, type HttpHandler } from "msw";
 
-import { ADMIN_MENU, menuFor, TENANTS } from "../fixtures";
+import { adminMenu, menuFor, platformPermissions, tenantPermissions, TENANTS } from "../fixtures";
 import { tenantContext } from "./context";
 import { authenticate, json, problem } from "./support";
 
@@ -23,7 +23,7 @@ function operatorMe(surface: "owner" | "staff") {
       tenants,
       currentTenant: current ? { ...current.profile, role: context.role!, buildingIds: null } : null,
       roles: context.role ? [context.role] : [],
-      permissions: [],
+      permissions: context.role ? tenantPermissions(context.role) : [],
       menu: context.role ? menuFor(surface, context.role) : [],
       featureFlags: { "channel.web_push": true, "module.service_requests": false },
       subscription: current ? current.subscription : null,
@@ -42,8 +42,8 @@ export const meHandlers: HttpHandler[] = [
     return json({
       user: auth.persona.user,
       roles: auth.persona.roles,
-      permissions: [],
-      menu: auth.persona.roles.includes("platform_admin") ? ADMIN_MENU : ["tenants", "support_grants", "audit_log"],
+      permissions: platformPermissions(auth.persona.roles),
+      menu: adminMenu(auth.persona.roles),
       featureFlags: { "channel.web_push": true },
       totpEnabled: true,
     });

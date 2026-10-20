@@ -778,12 +778,7 @@ export const assetHandlers: HttpHandler[] = [
     return noContent();
   }),
 
-  // Settings (read here; the settings screens are F2 2.6)
-  http.get("*/v1/owner/settings", ({ request }) => {
-    const ok = owner(request, "owner.settings.list");
-    if (ok instanceof Response) return ok;
-    return json(w().settings);
-  }),
+  // Settings: mocks/owner/settings.ts (F2 2.6)
 
   // Owner reading round (the dashboard's "readings before the cut-off")
   http.get("*/v1/owner/reading-rounds/current", ({ request }) => {

@@ -1,0 +1,226 @@
+{
+  "home": {
+    "title": "Platform overview",
+    "description": "What waits for Collective staff this morning — each queue only for those who may act on it.",
+    "clearTitle": "Nothing waiting",
+    "clearBody": "No queue needs anyone right now.",
+    "uncounted": "Could not be counted — open the page",
+    "queue": {
+      "tariffsToVerify": {
+        "title": "Tariff versions to verify",
+        "body": "{count, plural, one {# version waits} other {# versions wait}} for the second person's check"
+      },
+      "tariffsToPublish": {
+        "title": "Tariff versions to publish",
+        "body": "{count, plural, one {# verified version} other {# verified versions}} not published yet"
+      },
+      "overdueInvoices": {
+        "title": "Overdue platform invoices",
+        "body": "{count, plural, one {# invoice} other {# invoices}} past the due date"
+      },
+      "pastDue": {
+        "title": "Subscriptions past due",
+        "body": "{count, plural, one {# tenant} other {# tenants}} heading for suspension"
+      },
+      "surveys": {
+        "title": "Upgrade surveys to schedule",
+        "body": "{count, plural, one {# request} other {# requests}} from owners"
+      },
+      "grantsWaiting": {
+        "title": "Support requests waiting",
+        "body": "{count, plural, one {# request awaits} other {# requests await}} the tenant's approval"
+      },
+      "dsrOverdue": {
+        "title": "PDPA requests past their deadline",
+        "body": "{count, plural, one {# request} other {# requests}} open after the due date"
+      },
+      "outboxDead": {
+        "title": "Events that failed to relay",
+        "body": "{count, plural, one {# dead message} other {# dead messages}} to replay"
+      },
+      "gatewaysOffline": {
+        "title": "Gateways offline",
+        "body": "{count, plural, one {# gateway} other {# gateways}} not reporting"
+      }
+    }
+  },
+  "audit": {
+    "title": "Audit log",
+    "description": "Every audited action on the platform — newest first. Filter by action (a trailing * matches a prefix), actor, subject, tenant and day.",
+    "search": "Search the audit log",
+    "apply": "Search",
+    "action": "Action",
+    "actionPlaceholder": "e.g. support_grant.*",
+    "actor": "Actor id",
+    "subject": "Subject id",
+    "tenant": "Tenant id",
+    "idPlaceholder": "uuid",
+    "from": "From (day)",
+    "to": "To (day)",
+    "empty": "No entries",
+    "emptyHint": "Nothing matches these filters.",
+    "underGrant": "Under a support grant",
+    "details": "Before / after",
+    "pages": "Pages of the audit log",
+    "newest": "Back to the newest",
+    "older": "Older entries",
+    "col": {
+      "at": "When",
+      "action": "Action",
+      "actor": "Actor",
+      "subject": "Subject",
+      "outcome": "Outcome",
+      "change": "Change"
+    },
+    "outcome": {
+      "success": "Done",
+      "denied": "Denied",
+      "failure": "Failed"
+    }
+  },
+  "privacy": {
+    "title": "Data subject requests",
+    "description": "PDPA requests across tenants with their legal deadline. Each tenant handles its own in the owner console; overdue ones are listed first.",
+    "state": "State",
+    "allStates": "All states",
+    "empty": "No requests",
+    "emptyHint": "No data subject request matches.",
+    "overdueTitle": "{count, plural, one {# request is} other {# requests are}} past the deadline",
+    "overdueBody": "Contact the tenant: PDPA gives 30 days to answer a request.",
+    "platformController": "Platform (Collective)",
+    "late": "Overdue",
+    "fulfilled": "Answered {date}",
+    "col": {
+      "received": "Received",
+      "tenant": "Controller",
+      "kind": "Request",
+      "state": "State",
+      "due": "Due",
+      "notes": "Notes"
+    },
+    "kind": {
+      "access": "Access",
+      "rectification": "Correction",
+      "erasure": "Erasure",
+      "portability": "Portability",
+      "objection": "Objection",
+      "restriction": "Restriction"
+    },
+    "stateName": {
+      "received": "Received",
+      "verifying": "Verifying identity",
+      "in_progress": "In progress",
+      "fulfilled": "Fulfilled",
+      "rejected": "Rejected",
+      "withdrawn": "Withdrawn"
+    }
+  },
+  "outbox": {
+    "title": "Event outbox",
+    "description": "Domain events that failed to relay and subscriber deliveries that failed, with their last error. A replay publishes the stored event again; subscribers ignore an event they already processed.",
+    "filters": "Filter the outbox",
+    "apply": "Show",
+    "messageState": "Messages",
+    "deliveryState": "Deliveries",
+    "notRelayed": "Failed and dead (default)",
+    "notDelivered": "Failed and dead (default)",
+    "messages": "Outbox messages",
+    "messagesHint": "Events the relay could not publish.",
+    "deliveries": "Subscriber deliveries",
+    "deliveriesHint": "Events a subscriber could not process.",
+    "noMessages": "No message to look at",
+    "noDeliveries": "No failed delivery",
+    "platform": "Platform",
+    "replay": "Replay",
+    "replayTitle": "Replay {type}?",
+    "replayMessageBody": "The stored {type} event is published again to every subscriber.",
+    "replayConsumptionBody": "The stored {type} event is delivered again to this subscriber only.",
+    "replayed": "Replayed",
+    "replayedAt": "Replayed {date}",
+    "outboxState": {
+      "pending": "Pending",
+      "publishing": "Publishing",
+      "published": "Published",
+      "failed": "Failed",
+      "dead": "Dead"
+    },
+    "consumptionState": {
+      "processed": "Processed",
+      "failed": "Failed",
+      "dead": "Dead"
+    },
+    "col": {
+      "event": "Event",
+      "tenant": "Tenant",
+      "created": "Created",
+      "attempts": "Attempts",
+      "error": "Last error",
+      "state": "State",
+      "subscriber": "Subscriber",
+      "actions": "Actions"
+    }
+  },
+  "users": {
+    "title": "Platform users",
+    "description": "Collective staff with platform roles. Two-factor sign-in is required; temporary roles end on their date.",
+    "create": "Add a person",
+    "createTitle": "Add a platform user",
+    "createHint": "They sign in with this email and the temporary password, then set up two-factor sign-in.",
+    "created": "Platform user added",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "phoneHint": "Optional, in +66 format",
+    "roles": "Roles",
+    "temporaryPassword": "Temporary password",
+    "temporaryPasswordHint": "At least 12 characters; they change it at first sign-in",
+    "grant": "Grant a role",
+    "grantTitle": "Grant a role to {name}",
+    "granted": "Role granted",
+    "role": "Role",
+    "expiresAt": "Until (optional)",
+    "expiresAtHint": "Leave empty for a permanent role",
+    "revoke": "Revoke",
+    "revokeTitle": "Revoke {role} from {name}?",
+    "revokeBody": "They lose the pages and actions of this role at their next request.",
+    "revoked": "Role revoked",
+    "until": "until {date}",
+    "totpOn": "On",
+    "totpOff": "Not set up",
+    "never": "Never",
+    "status": {
+      "active": "Active",
+      "locked": "Locked",
+      "disabled": "Disabled"
+    },
+    "col": {
+      "name": "Person",
+      "roles": "Roles",
+      "totp": "Two-factor",
+      "login": "Last sign-in",
+      "status": "Status",
+      "actions": "Actions"
+    }
+  },
+  "ai": {
+    "title": "AI usage",
+    "description": "The newest month counted for each tenant: units used against the plan's allowance and the platform's cost, per feature.",
+    "none": "No usage yet",
+    "units": "{units} of {allowance}",
+    "unlimited": "no limit",
+    "overage": "+{count} over",
+    "col": {
+      "tenant": "Tenant",
+      "month": "Month",
+      "features": "Units per feature",
+      "cost": "Cost"
+    }
+  },
+  "integration": {
+    "title": "Integration events",
+    "description": "Events exchanged with other Collective products through the integration bridge (warranty claims, work orders).",
+    "pendingTitle": "Not available yet",
+    "pendingBody": "The API publishes the list of integration events with service requests and work orders (R2). Failed deliveries of these events already appear in the event outbox.",
+    "outbox": "Open the event outbox"
+  }
+}
