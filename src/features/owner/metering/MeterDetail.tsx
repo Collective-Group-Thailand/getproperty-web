@@ -15,18 +15,14 @@ import { DescriptionList } from "@/ui/components/DescriptionList";
 import { LinkTabs } from "@/ui/components/LinkTabs";
 
 import { ownerPath, withQuery } from "../shared/links";
+import { SERIES_BUCKETS, SERIES_RANGE_MS, seriesBucketFor } from "./series";
 import { ListPagination } from "@/features/shared/console/ListPagination";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { PhotoThumb } from "../shared/PhotoThumb";
 import { pageParam, param, section, type OwnerContext } from "../shared/server";
 
 type SearchParams = Record<string, string | string[] | undefined>;
-const BUCKETS: Schemas["SeriesBucket"][] = ["15m", "1h", "1d"];
-const RANGE_MS: Record<Schemas["SeriesBucket"], number> = {
-  "15m": 86_400_000,
-  "1h": 7 * 86_400_000,
-  "1d": 30 * 86_400_000,
-};
+const BUCKETS = SERIES_BUCKETS;
 
 function isSource(value: string): value is ReadingSource {
   return (READING_SOURCE_VALUES as string[]).includes(value);
@@ -63,12 +59,17 @@ export async function MeterDetail({
     ? (bucketParam as Schemas["SeriesBucket"])
     : "1h";
   const to = new Date();
-  const from = new Date(to.getTime() - RANGE_MS[bucket]);
+  const from = new Date(to.getTime() - SERIES_RANGE_MS[bucket]);
+  // D-241: 15-minute points come from raw points (24 months); a window beyond that is asked for in a coarser bucket.
+  const asked = seriesBucketFor(bucket, from, to);
   const [series, readings] = await Promise.all([
     section(
       unwrap(
         api.GET("/v1/owner/meters/{assetItemId}/series", {
-          params: { path: { assetItemId }, query: { bucket, from: from.toISOString(), to: to.toISOString() } },
+          params: {
+            path: { assetItemId },
+            query: { bucket: asked, from: from.toISOString(), to: to.toISOString() },
+          },
         }),
       ),
     ),
@@ -87,7 +88,7 @@ export async function MeterDetail({
     ? series.data!.points.map((point) => ({
         key: point.bucket,
         label:
-          bucket === "1d"
+          asked === "1d"
             ? formatDate(point.bucket, locale, { style: "dayMonth" })
             : formatDateTime(point.bucket, locale, { style: "dayMonth" }),
         value: point.usage,
