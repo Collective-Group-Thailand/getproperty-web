@@ -193,12 +193,72 @@ describe("config.matcher", () => {
     expect(runs(url)).toBe(true);
   });
 
-  it.each(["/_next/static/chunks/main.js", "/_next/image?url=x", "/pwa/staff-192.png", "/brand/wordmark.svg"])(
-    "leaves Next internals and the public folders alone: %s",
+  it.each(["/api/healthzX", "/api/healthz/x", "/api/metrics.txt", "/api/other", "/en/api/healthz"])(
+    "runs for %s (only the two exact platform endpoints skip the zones)",
     (url) => {
-      expect(runs(url)).toBe(false);
+      expect(runs(url)).toBe(true);
     },
   );
+
+  it.each([
+    "/_next/static/chunks/main.js",
+    "/_next/image?url=x",
+    "/pwa/staff-192.png",
+    "/brand/wordmark.svg",
+    "/api/healthz",
+    "/api/metrics",
+  ])("leaves Next internals and the public folders alone: %s", (url) => {
+    expect(runs(url)).toBe(false);
+  });
+});
+
+describe("the platform's real hostnames (collective-infra caddy/sites.<env>.yml, D-230)", () => {
+  const saved = { ...process.env };
+  beforeEach(() => {
+    Object.assign(process.env, {
+      OWNER_HOST: "uat-app.getproperty.example",
+      STAFF_HOST: "uat-staff.getproperty.example",
+      ADMIN_HOST: "uat-admin.getproperty.example",
+      ZONES: "",
+    });
+    resetServerEnv();
+  });
+  afterEach(() => {
+    process.env = { ...saved };
+    resetServerEnv();
+  });
+
+  // As Caddy forwards it: TLS ends at Caddy, the Host header is the public one, X-Forwarded-Proto says https, and
+  // Next's standalone server builds the request URL from its own listen address (HOSTNAME=0.0.0.0, PORT=3000).
+  const call = (host: string, path: string) =>
+    proxy(
+      new NextRequest(`https://0.0.0.0:3000${path}`, {
+        headers: { host, "x-forwarded-host": host, "x-forwarded-proto": "https", "x-forwarded-for": "203.0.113.9" },
+      }),
+    );
+
+  it("serves each zone on its host and 404s the container address and the other products' hosts", async () => {
+    expect((await call("uat-app.getproperty.example", "/pricing")).headers.get("x-gp-zone")).toBe("owner");
+    const staff = await call("uat-staff.getproperty.example", "/readings");
+    expect(staff.headers.get("x-middleware-rewrite")).toContain("/staff/readings");
+    const admin = await call("uat-admin.getproperty.example", "/tenants");
+    expect(admin.headers.get("x-middleware-rewrite")).toContain("/admin/tenants");
+    for (const host of ["0.0.0.0:3000", "127.0.0.1:3000", "uat-liff.getproperty.example", "uat.getpack.co"])
+      expect((await call(host, "/")).status, host).toBe(404);
+  });
+
+  it("redirects on the public origin, never the container's listen address", async () => {
+    const response = await call("uat-app.getproperty.example", "/th/pricing");
+    expect(response.status).toBeGreaterThanOrEqual(300);
+    expect(response.status).toBeLessThan(400);
+    expect(response.headers.get("location")).toBe("https://uat-app.getproperty.example/pricing");
+  });
+
+  it("keeps rewrites on the internal origin (a public-origin rewrite would be proxied out of the container)", async () => {
+    const response = await call("uat-app.getproperty.example", "/pricing");
+    expect(response.headers.get("location")).toBeNull();
+    expect(response.headers.get("x-middleware-rewrite")).toBe("https://0.0.0.0:3000/th/pricing");
+  });
 });
 
 describe("dotted paths (review L3)", () => {

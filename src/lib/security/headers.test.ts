@@ -25,11 +25,12 @@ describe("buildCsp", () => {
     const csp = buildCsp({
       ...base,
       zone: "staff",
-      assetOrigin: "https://files.getproperty.co/bucket",
+      assetOrigin: "https://collective-uat-getproperty-assets.s3.ap-southeast-7.amazonaws.com",
       sentryOrigin: sentryOriginFromDsn("https://key@o1.ingest.sentry.io/42"),
     });
-    expect(csp).toMatch(/img-src [^;]*https:\/\/files\.getproperty\.co/);
-    expect(csp).toMatch(/connect-src [^;]*https:\/\/files\.getproperty\.co [^;]*https:\/\/o1\.ingest\.sentry\.io/);
+    const bucket = "https://collective-uat-getproperty-assets\\.s3\\.ap-southeast-7\\.amazonaws\\.com";
+    expect(csp).toMatch(new RegExp(`img-src [^;]*${bucket}`));
+    expect(csp).toMatch(new RegExp(`connect-src [^;]*${bucket} [^;]*https://o1\\.ingest\\.sentry\\.io`));
   });
 
   it("gives only staff a worker and blob media", () => {

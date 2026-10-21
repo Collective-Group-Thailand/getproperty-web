@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { CSRF_HEADER, REQUEST_ID_HEADER, TENANT_HEADER } from "@/lib/api/headers";
 import { serverEnv } from "@/lib/env/server";
 import { clientIpFrom, FORWARDED_FOR_HEADER, requestIdFrom } from "@/lib/http/edge";
+import { timeBffCall } from "@/lib/observability/metrics";
 import type { Zone } from "@/lib/zones";
 
 import {
@@ -323,5 +324,18 @@ export function createBffHandler(zone: Zone, options: BffOptions = {}) {
     return response;
   }
 
-  return { GET: handle, HEAD: handle, POST: handle, PUT: handle, PATCH: handle, DELETE: handle };
+  /** `getproperty_web_bff_request_duration_seconds` (D-230 metrics), until the response headers. */
+  async function timed(request: NextRequest, context: Params): Promise<Response> {
+    const done = timeBffCall(zone, request.method);
+    try {
+      const response = await handle(request, context);
+      done(response.status);
+      return response;
+    } catch (error) {
+      done(500);
+      throw error;
+    }
+  }
+
+  return { GET: timed, HEAD: timed, POST: timed, PUT: timed, PATCH: timed, DELETE: timed };
 }

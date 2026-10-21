@@ -5,7 +5,6 @@ import { entitledMenu } from "@/features/shared/shell/menu";
 import { groupItems } from "@/features/shared/shell/types";
 import { createApiClient, unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
-import { clientEnv } from "@/lib/env/client";
 import { serverEnv } from "@/lib/env/server";
 import { inboundEdgeHeaders } from "@/lib/http/server";
 
@@ -34,7 +33,7 @@ export async function AdminShell({ me, children }: { me: Schemas["AdminMeDto"]; 
   );
   const info = await systemInfo();
   const envBadge =
-    clientEnv().NEXT_PUBLIC_ENV_BADGE ?? (info && info.environment !== "production" ? info.environment : undefined);
+    serverEnv().NEXT_PUBLIC_ENV_BADGE ?? (info && info.environment !== "production" ? info.environment : undefined);
   return (
     <RealtimeProvider zone="admin" tenantId={null}>
       <AdminShellFrame

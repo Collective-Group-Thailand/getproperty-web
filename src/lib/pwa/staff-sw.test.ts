@@ -248,7 +248,7 @@ describe("staff service worker (review H2)", () => {
     ["/work-orders/wo-1?_rsc=abc", { headers: { rsc: "1" } }],
     ["/pwa/staff-192.png", {}],
     ["/manifest.webmanifest", {}],
-    ["https://storage.googleapis.com/bucket/photo.jpg?sig=1", {}],
+    ["https://collective-uat-getproperty-assets.s3.ap-southeast-7.amazonaws.com/t/photo.jpg?X-Amz-Signature=1", {}],
     ["/bff/v1/staff/readings", { method: "POST", body: "{}" }],
   ] as const)("leaves %s to the network untouched", async (url, init) => {
     const sw = await startWorker(staffHost());

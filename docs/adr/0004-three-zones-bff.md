@@ -126,7 +126,7 @@ building staff) and the platform (Collective Group staff).
 - **Edge trust** (H1, L1). Every server-to-API call made for a browser request — the BFFs, the Server Actions
   (sign-in, TOTP, tenant choice, sign-out), the Server Components' `serverApi`, the proxy's token refresh —
   sends the end user's address as the **only** `X-Forwarded-For` value: the entry `TRUSTED_HOPS` from the right
-  of the inbound header (`src/lib/http/edge.ts`; Cloud Run = 1, + external LB = 2; 0 = none). The client's own
+  of the inbound header (`src/lib/http/edge.ts`; on the Collective platform Caddy is the one proxy = 1, D-230; 0 = none). The client's own
   header is never forwarded as is and `X-Real-IP` is never read. This is what getproperty-api's right-most trust
   (D-229, RUNBOOK §11) and its per-IP sign-in throttle, session rows, audit and D-021a acknowledgements need; with
   `TRUSTED_HOPS=0` in production the server logs a warning at boot. An inbound `x-request-id` is kept only when it

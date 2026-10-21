@@ -254,8 +254,8 @@ async function startApi(apiDir: string, databaseUrl: string) {
   };
   const app = await NestFactory.create(ApiWithWorker, { logger: ["error", "warn"], abortOnError: false });
   configureApp(app);
-  // As in production behind Cloud Run's front end (`TRUST_PROXY=1`, the API's main.ts): the web app is the one
-  // trusted hop, so `req.ip` is the end-user address it forwards (review H1, D-229).
+  // As on the Collective platform (`TRUST_PROXY=1`, D-230; the BFF reaches the API over the docker network): the web
+  // app is the one trusted hop, so `req.ip` is the end-user address it forwards (review H1, D-229).
   (app as unknown as { set(name: string, value: unknown): void }).set("trust proxy", 1);
   await app.listen(API_PORT, "127.0.0.1");
   log(`getproperty-api listening on http://127.0.0.1:${API_PORT}`);

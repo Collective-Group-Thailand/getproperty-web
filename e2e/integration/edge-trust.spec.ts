@@ -11,7 +11,8 @@ const control = async <T>(path: string): Promise<T> => (await fetch(`${INT_CONTR
 
 test("the session the API records carries the end user's address, not the web server's", async ({ page }) => {
   const world = await control<{ staffPhone: string }>("/r2");
-  // What Cloud Run's front end would pass on: a client-chosen entry, then the address it saw.
+  // A client-chosen entry, then the address the one proxy saw (Caddy appends the peer for a trusted client and
+  // replaces the header of an untrusted one; this request plays a header that survived): only the right-most counts.
   await page.setExtraHTTPHeaders({ "x-forwarded-for": "198.51.100.7, 203.0.113.9" });
   await page.goto(`${INT_HOSTS.staff}/login`);
   await page.getByLabel(/เบอร์มือถือ|Mobile number/).fill(`0${world.staffPhone.slice(3)}`);

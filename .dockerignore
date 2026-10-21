@@ -1,0 +1,21 @@
+# Build context of the platform image (Dockerfile, D-230). Sources stay in: `next build` type-checks the whole
+# project (tests, mocks and scripts included), and the standalone trace decides what reaches the image.
+.git
+.github
+node_modules
+.next
+out
+coverage
+storybook-static
+playwright-report
+test-results
+.lighthouseci
+lighthouse/.port-*.json
+.integration
+docs
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+*.local
+.DS_Store

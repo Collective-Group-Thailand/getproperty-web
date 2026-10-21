@@ -9,7 +9,7 @@ import { groupItems, type ShellNavItem } from "@/features/shared/shell/types";
 import { unwrap } from "@/lib/api/client";
 import { serverApi } from "@/lib/api/server";
 import type { Schemas } from "@/lib/api/types";
-import { clientEnv } from "@/lib/env/client";
+import { serverEnv } from "@/lib/env/server";
 import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 
@@ -71,7 +71,7 @@ export async function OwnerShell({
           bottomNav={bottomNav}
           buildings={list}
           currentBuildingId={list.some((building) => building.id === focus) ? focus! : null}
-          envBadge={clientEnv().NEXT_PUBLIC_ENV_BADGE}
+          envBadge={serverEnv().NEXT_PUBLIC_ENV_BADGE}
           localePrefix={locale === "th" ? "" : `/${locale}`}
           loginHref={prefix("/login")}
           banner={readOnly ? <ReadOnlyBanner subscriptionHref={subscription?.href} /> : undefined}

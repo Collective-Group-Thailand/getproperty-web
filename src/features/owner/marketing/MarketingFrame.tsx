@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
-import { clientEnv } from "@/lib/env/client";
+import { serverEnv } from "@/lib/env/server";
 import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { Wordmark } from "@/ui/brand";
@@ -13,7 +13,7 @@ export async function MarketingFrame({ locale, children }: { locale: Locale; chi
   const t = await getTranslations("owner.marketing");
   const shell = await getTranslations("shell");
   const href = (path: string) => getPathname({ href: path, locale });
-  const lineOa = clientEnv().NEXT_PUBLIC_LINE_OA_ID;
+  const lineOa = serverEnv().NEXT_PUBLIC_LINE_OA_ID;
   const legal = ["terms", "privacy", "pdpa", "dpa"] as const;
   return (
     <div className="bg-bg flex min-h-dvh flex-col">

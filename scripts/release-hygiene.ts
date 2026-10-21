@@ -2,7 +2,8 @@
  * Release hygiene: fails when a production build ships what only development and the mock
  * API should see — the mock API's own markers, the copy that marks mock rows, `debugger`
  * statements, browser source maps — in the client bundles (`.next/static`) or the prerendered HTML
- * (`.next/server/app`). Run after `pnpm build`, which never sets `API_MOCKS`.
+ * (`.next/server/app`), and environment files or mock / test sources in the standalone server the image ships
+ * (`.next/standalone`, D-230). Run after `pnpm build`, which never sets `API_MOCKS`.
  *
  * Third-party code that merely references `console.debug` is not a finding; a pattern is listed
  * here only when nothing legitimate in a production build can contain it.
@@ -58,6 +59,25 @@ for (const target of TARGETS) {
         );
       }
     }
+  }
+}
+
+// The standalone server is what the platform image ships (D-230, Dockerfile): no environment file (every value
+// comes from the platform at run time) and no mock API or test source may be traced into it.
+const STANDALONE = join(ROOT, ".next/standalone");
+if (existsSync(STANDALONE)) {
+  const walk = (dir: string): string[] =>
+    readdirSync(dir).flatMap((name) => {
+      const path = join(dir, name);
+      if (name === "node_modules") return [];
+      return statSync(path).isDirectory() ? [path, ...walk(path)] : [path];
+    });
+  for (const path of walk(STANDALONE)) {
+    const rel = relative(STANDALONE, path);
+    scanned++;
+    if (/(^|\/)\.env(\.|$)/.test(rel)) findings.push(`.next/standalone/${rel}: environment file in the image`);
+    if (/^(mocks|e2e|\.integration)(\/|$)/.test(rel))
+      findings.push(`.next/standalone/${rel}: test or mock source in the image`);
   }
 }
 

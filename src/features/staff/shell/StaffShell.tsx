@@ -6,7 +6,6 @@ import { entitledMenu } from "@/features/shared/shell/menu";
 import { ReadOnlyBanner } from "@/features/shared/shell/ReadOnlyBanner";
 import { createApiClient, unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
-import { clientEnv } from "@/lib/env/client";
 import { serverEnv } from "@/lib/env/server";
 import { inboundEdgeHeaders } from "@/lib/http/server";
 
@@ -19,7 +18,7 @@ let vapidCache: { key: string | undefined; at: number } | undefined;
 
 /** The VAPID key from the environment, else from the API's public endpoint (cached for an hour). */
 async function vapidPublicKey(): Promise<string | undefined> {
-  const configured = clientEnv().NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+  const configured = serverEnv().NEXT_PUBLIC_VAPID_PUBLIC_KEY;
   if (configured) return configured;
   if (vapidCache && Date.now() - vapidCache.at < 3_600_000) return vapidCache.key;
   try {
@@ -62,7 +61,7 @@ export async function StaffShell({
             roleLabel={t(`glossary.tenantRole.${me.currentTenant.role}`)}
             items={ordered}
             todayLabel={t("staff.nav.today")}
-            envBadge={clientEnv().NEXT_PUBLIC_ENV_BADGE}
+            envBadge={serverEnv().NEXT_PUBLIC_ENV_BADGE}
             vapidPublicKey={await vapidPublicKey()}
             banner={readOnly ? <ReadOnlyBanner /> : undefined}
           >

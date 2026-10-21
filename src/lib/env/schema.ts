@@ -1,3 +1,5 @@
+import { BlockList, isIP } from "node:net";
+
 import { z } from "zod";
 
 import { DEFAULT_HOSTS, ZONES, type Zone } from "@/lib/zones";
@@ -12,6 +14,12 @@ import { DEFAULT_HOSTS, ZONES, type Zone } from "@/lib/zones";
  * on `localhost` or talked to an API on `localhost:4000` would be worse than one that refuses to start.
  *
  * Not here on purpose (D-154): `TENANT_HOST` and `NEXT_PUBLIC_LIFF_ID` belong to `getproperty-liff`.
+ *
+ * **One image for every environment** (D-230): the platform promotes the image that passed UAT to production
+ * without a rebuild (collective-infra `promote.yml`), so nothing environment-specific may be compiled in. The
+ * `NEXT_PUBLIC_*` values keep their names (they are public by definition) but are read **at run time on the
+ * server** — never as literal `process.env` member reads, which Next would inline at build time — and reach the
+ * browser as props or as attributes of the root `<html>` (`ZoneDocument`). `runtime-env.test.ts` guards it.
  */
 
 /** `host[:port]`, no scheme, no path — compared against the request's `Host` header. */
@@ -64,6 +72,56 @@ const sampleRate = z
   .transform((value) => (value ? Number(value) : 0))
   .pipe(z.number().min(0).max(1));
 
+/** Default `METRICS_ALLOWED_CIDRS` (the API's): loopback and the private ranges — the platform's docker network. */
+export const PRIVATE_RANGES = "127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,::1/128,fc00::/7";
+
+/** `10.0.0.0/8, 203.0.113.7, 2001:db8::/32` → a `BlockList`; throws on an invalid entry (getproperty-api's parser). */
+export function parseCidrList(value: string): BlockList {
+  const list = new BlockList();
+  for (const raw of value.split(",")) {
+    const entry = raw.trim();
+    if (!entry) continue;
+    const [address = "", prefix] = entry.split("/");
+    const family = isIP(address);
+    if (family === 0) throw new Error(`invalid IP in CIDR list: ${entry}`);
+    const type = family === 6 ? "ipv6" : "ipv4";
+    if (prefix === undefined) {
+      list.addAddress(address, type);
+      continue;
+    }
+    const bits = Number(prefix);
+    if (!/^\d+$/.test(prefix) || bits > (family === 6 ? 128 : 32))
+      throw new Error(`invalid prefix in CIDR list: ${entry}`);
+    list.addSubnet(address, bits, type);
+  }
+  return list;
+}
+
+/** True when `ip` (IPv4, IPv6 or IPv4-mapped IPv6) is inside the list. */
+export function ipAllowed(list: BlockList, ip: string | undefined): boolean {
+  if (!ip) return false;
+  const mapped = /^::ffff:(\d+\.\d+\.\d+\.\d+)$/i.exec(ip);
+  if (mapped?.[1]) return list.check(mapped[1], "ipv4");
+  const family = isIP(ip);
+  if (family === 0) return false;
+  return list.check(ip, family === 6 ? "ipv6" : "ipv4");
+}
+
+const cidrList = z
+  .string()
+  .trim()
+  .optional()
+  .transform((value, ctx): string => {
+    const list = value || PRIVATE_RANGES;
+    try {
+      parseCidrList(list);
+    } catch (error) {
+      ctx.addIssue({ code: "custom", message: (error as Error).message });
+      return z.NEVER;
+    }
+    return list;
+  });
+
 function serverSchema(production: boolean) {
   const host = (fallback: string) => (production ? hostValue : hostValue.default(fallback));
   return z.object({
@@ -75,10 +133,11 @@ function serverSchema(production: boolean) {
     /** getproperty-api as this server reaches it (never exposed to the browser). */
     API_INTERNAL_URL: production ? urlValue : urlValue.default("http://localhost:4000"),
     /**
-     * Proxies in front of this app that append to `X-Forwarded-For` (Cloud Run's front end = 1; + the external
-     * HTTPS load balancer = 2). The BFFs, Server Actions and Server Components send the API only the entry this many
-     * from the right — the end-user address our own edge saw (review H1, api RUNBOOK §11, D-229). 0 = none is
-     * forwarded (local dev); never more than the real number of hops, or a caller chooses its own address.
+     * Proxies in front of this app that write `X-Forwarded-For` — on the Collective platform (D-230) Caddy alone =
+     * 1 (the platform compose file sets it). The BFFs, Server Actions and Server Components send the API only the
+     * entry this many from the right — the end-user address our own edge saw (review H1, api RUNBOOK §11, D-229).
+     * 0 = none is forwarded (local dev); never more than the real number of hops, or a caller chooses its own
+     * address.
      */
     TRUSTED_HOPS: z.coerce.number().int().min(0).max(5).default(0),
     /** Build-time only (`pnpm gen:api --adopt`); validated so a typo is caught where it is set. */
@@ -88,12 +147,18 @@ function serverSchema(production: boolean) {
     SENTRY_TRACES_SAMPLE_RATE: sampleRate,
     OTEL_EXPORTER_OTLP_ENDPOINT: optionalUrl,
     OTEL_SERVICE_NAME: z.string().trim().default("getproperty-web"),
-    ...clientShape,
+    /**
+     * Who may read `GET /api/metrics` (Prometheus), by client address — the API's rule and default (D-230): loopback
+     * and the private ranges, i.e. Grafana Alloy scraping the container on the platform's docker network. Caddy also
+     * answers 404 for the path on every public host.
+     */
+    METRICS_ALLOWED_CIDRS: cidrList,
+    ...publicShape,
   });
 }
 
-/** The public half: compiled into the browser bundle, so it never holds a secret. */
-const clientShape = {
+/** The public half: read on the server at run time and handed to the browser, so it never holds a secret. */
+const publicShape = {
   /** Object storage / CDN origin of signed file URLs (CSP `img-src`/`connect-src`). */
   NEXT_PUBLIC_ASSET_BASE_URL: optionalUrl,
   /** The LINE Official Account id (`@getproperty`) for the help link — a link only, no LINE SDK (D-154). */
@@ -120,10 +185,10 @@ const clientShape = {
     .transform((value) => (value && value.toLowerCase() !== "production" ? value : undefined)),
 };
 
-export const clientEnvSchema = z.object(clientShape);
+export const publicEnvSchema = z.object(publicShape);
 
 export type ServerEnv = z.output<ReturnType<typeof serverSchema>>;
-export type ClientEnv = z.output<typeof clientEnvSchema>;
+export type PublicEnv = z.output<typeof publicEnvSchema>;
 
 export class EnvError extends Error {
   constructor(readonly issues: string[]) {
@@ -150,8 +215,8 @@ export function parseServerEnv(env: Record<string, string | undefined>): ServerE
   return parsed;
 }
 
-export function parseClientEnv(env: Record<string, string | undefined>): ClientEnv {
-  const result = clientEnvSchema.safeParse(env);
+export function parsePublicEnv(env: Record<string, string | undefined>): PublicEnv {
+  const result = publicEnvSchema.safeParse(env);
   if (!result.success) throw new EnvError(format(result.error));
   return result.data;
 }

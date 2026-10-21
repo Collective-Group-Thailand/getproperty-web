@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
   // Each zone is served by its own `<html>` root layout; nothing here is zone-specific. The
   // host → zone rewrite lives in src/proxy.ts.
   poweredByHeader: false,
+  // The Collective platform runs this app as one container per environment (D-230): `next build` emits a
+  // self-contained server in `.next/standalone` (Dockerfile; `pnpm start` runs the same server).
+  output: "standalone",
+  // Node-only metrics client (`/api/metrics`): loaded from node_modules at run time rather than bundled.
+  serverExternalPackages: ["@prometheus-io/client"],
   // Responses the proxy never sees (public files, Next's static assets) still get the baseline that
   // does not depend on the zone; pages get the full per-zone set from src/proxy.ts.
   async headers() {

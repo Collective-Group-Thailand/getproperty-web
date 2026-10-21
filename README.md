@@ -48,6 +48,16 @@ sign-in flows against the real getproperty-api at the pinned commit (embedded Po
 
 On a machine that cannot download browsers: `PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 PW_CHROMIUM_EXECUTABLE=/path/to/chrome pnpm e2e`.
 
+## Deploy
+
+On Collective's shared AWS platform (D-230, [ADR-0009](docs/adr/0009-collective-platform-deployment.md)): the
+`Dockerfile` builds the standalone server (`linux/arm64` in collective-infra's reusable build), the platform compose
+file runs it as `getproperty-web` behind Caddy, and `.github/workflows/deploy.yml` deploys `main` to UAT and `vX.Y.Z`
+tags to production (`component: web`). Every environment value is read at run time — the image that passed UAT is
+the one promoted. `GET /api/healthz` is the container healthcheck, `GET /api/metrics` the Prometheus scrape
+(`METRICS_ALLOWED_CIDRS`). `pnpm start` runs the same standalone server locally. Infrastructure itself lives in
+collective-infra; what getproperty needs from it is getproperty-api `docs/deployment.md`.
+
 ## Layout
 
 ```

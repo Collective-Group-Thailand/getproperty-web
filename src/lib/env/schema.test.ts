@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { EnvError, parseClientEnv, parseServerEnv } from "./schema";
+import { EnvError, ipAllowed, parseCidrList, parsePublicEnv, parseServerEnv, PRIVATE_RANGES } from "./schema";
 
 describe("parseServerEnv", () => {
   it("defaults the hosts and API URL outside production", () => {
@@ -43,10 +43,53 @@ describe("parseServerEnv", () => {
   });
 });
 
-describe("parseClientEnv", () => {
+describe("the platform's real hostnames (collective-infra caddy/sites.<env>.yml, D-230)", () => {
+  it("accepts the UAT and production hosts as the platform compose file passes them", () => {
+    for (const [owner, staff, admin] of [
+      ["uat-app.getproperty.example", "uat-staff.getproperty.example", "uat-admin.getproperty.example"],
+      ["app.getproperty.co", "staff.getproperty.co", "admin.getproperty.co"],
+    ]) {
+      const env = parseServerEnv({
+        NODE_ENV: "production",
+        OWNER_HOST: owner,
+        STAFF_HOST: staff,
+        ADMIN_HOST: admin,
+        API_INTERNAL_URL: "http://getproperty-api:3000",
+        TRUSTED_HOPS: "1",
+      });
+      expect([env.OWNER_HOST, env.STAFF_HOST, env.ADMIN_HOST]).toEqual([owner, staff, admin]);
+      expect(env.API_INTERNAL_URL).toBe("http://getproperty-api:3000");
+      expect(env.TRUSTED_HOPS).toBe(1);
+    }
+  });
+});
+
+describe("METRICS_ALLOWED_CIDRS", () => {
+  it("defaults to loopback and the private ranges (the docker network) like the API", () => {
+    const env = parseServerEnv({});
+    expect(env.METRICS_ALLOWED_CIDRS).toBe(PRIVATE_RANGES);
+    const list = parseCidrList(env.METRICS_ALLOWED_CIDRS);
+    for (const ip of ["127.0.0.1", "172.30.4.7", "10.1.2.3", "192.168.1.9", "::1", "::ffff:172.30.0.5", "fd00::1"])
+      expect(ipAllowed(list, ip), ip).toBe(true);
+    for (const ip of ["203.0.113.9", "8.8.8.8", "2001:db8::1", "::ffff:203.0.113.9", "not-an-ip", undefined])
+      expect(ipAllowed(list, ip), String(ip)).toBe(false);
+  });
+
+  it("takes the platform's value and refuses an invalid entry", () => {
+    const list = parseCidrList(
+      parseServerEnv({ METRICS_ALLOWED_CIDRS: "172.30.0.0/16, 127.0.0.0/8" }).METRICS_ALLOWED_CIDRS,
+    );
+    expect(ipAllowed(list, "172.30.9.9")).toBe(true);
+    expect(ipAllowed(list, "10.0.0.1")).toBe(false);
+    expect(() => parseServerEnv({ METRICS_ALLOWED_CIDRS: "172.30.0.0/40" })).toThrow(/METRICS_ALLOWED_CIDRS/);
+    expect(() => parseServerEnv({ METRICS_ALLOWED_CIDRS: "everyone" })).toThrow(/METRICS_ALLOWED_CIDRS/);
+  });
+});
+
+describe("parsePublicEnv", () => {
   it("hides the badge in production and keeps it elsewhere", () => {
-    expect(parseClientEnv({ NEXT_PUBLIC_ENV_BADGE: "production" }).NEXT_PUBLIC_ENV_BADGE).toBeUndefined();
-    expect(parseClientEnv({ NEXT_PUBLIC_ENV_BADGE: "uat" }).NEXT_PUBLIC_ENV_BADGE).toBe("uat");
-    expect(parseClientEnv({ NEXT_PUBLIC_LINE_OA_ID: "" }).NEXT_PUBLIC_LINE_OA_ID).toBeUndefined();
+    expect(parsePublicEnv({ NEXT_PUBLIC_ENV_BADGE: "production" }).NEXT_PUBLIC_ENV_BADGE).toBeUndefined();
+    expect(parsePublicEnv({ NEXT_PUBLIC_ENV_BADGE: "uat" }).NEXT_PUBLIC_ENV_BADGE).toBe("uat");
+    expect(parsePublicEnv({ NEXT_PUBLIC_LINE_OA_ID: "" }).NEXT_PUBLIC_LINE_OA_ID).toBeUndefined();
   });
 });

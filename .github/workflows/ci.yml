@@ -110,6 +110,48 @@ jobs:
           path: storybook-static
           retention-days: 14
 
+  # The platform image (Dockerfile, D-230): it builds, boots with the platform's real hostnames, answers the compose
+  # healthcheck and the metrics scrape, and routes each zone by host. The arm64 build that ships runs in
+  # collective-infra's reusable-build-push.yml (deploy.yml); this one is the runner's architecture.
+  image:
+    name: image (docker build + smoke)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-buildx-action@v3
+      - name: docker build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: getproperty/web:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Smoke (healthz, metrics, zones by host, TZ)
+        run: |
+          docker run -d --name web -p 3000:3000 \
+            -e OWNER_HOST=uat-app.getproperty.example -e STAFF_HOST=uat-staff.getproperty.example \
+            -e ADMIN_HOST=uat-admin.getproperty.example -e API_INTERNAL_URL=http://getproperty-api:3000 \
+            -e TRUSTED_HOPS=1 getproperty/web:ci
+          for i in $(seq 1 30); do
+            [ "$(docker inspect -f '{{.State.Health.Status}}' web)" = healthy ] && break; sleep 2
+          done
+          docker inspect -f '{{.State.Health.Status}}' web | grep -qx healthy
+          docker exec web wget -qO- http://127.0.0.1:3000/api/metrics | grep -q 'nodejs_heap_size_used_bytes{service="getproperty-web"}'
+          docker exec web node -e 'console.log(Intl.DateTimeFormat().resolvedOptions().timeZone)' | grep -qx Asia/Bangkok
+          # No API here: pages may fail to render, but each host must reach its own zone (and an unknown one none).
+          zone() { curl -s -o /dev/null -D - -H "Host: $1" -H 'X-Forwarded-Proto: https' "http://127.0.0.1:3000/login" \
+            | tr -d '\r' | sed -n 's/^x-gp-zone: //Ip'; }
+          [ "$(zone uat-app.getproperty.example)" = owner ]
+          [ "$(zone uat-staff.getproperty.example)" = staff ]
+          [ "$(zone uat-admin.getproperty.example)" = admin ]
+          [ "$(curl -s -o /dev/null -w '%{http_code}' -H 'Host: uat-liff.getproperty.example' http://127.0.0.1:3000/)" = 404 ]
+          curl -s -o /dev/null -D - -H 'Host: uat-app.getproperty.example' -H 'X-Forwarded-Proto: https' \
+            http://127.0.0.1:3000/th/pricing | grep -i '^location: https://uat-app.getproperty.example/pricing'
+      - if: failure()
+        run: docker logs web || true
+
   lighthouse:
     name: lighthouse (budgets per zone)
     runs-on: ubuntu-latest

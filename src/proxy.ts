@@ -86,6 +86,44 @@ function isRootFile(pathname: string): boolean {
   return pathname === "/robots.txt" || pathname === "/sitemap.xml";
 }
 
+/**
+ * The URL the browser asked for. Behind the platform's Caddy (D-230) TLS ends at Caddy and Next's standalone server
+ * builds `request.url` from its own listen address (`https://0.0.0.0:3000/…`), so a redirect built from it (next-intl's
+ * `/th/x` → `/x`) would send the browser to the container (`publicRedirect`). The `Host` header is the public one (Caddy keeps it; it
+ * already chose this zone) and `X-Forwarded-Proto` is set by Caddy for every request; without either the URL is used
+ * as it is (local dev, tests).
+ */
+export function publicUrl(request: Pick<NextRequest, "headers" | "nextUrl">): URL {
+  const url = new URL(request.nextUrl.href);
+  const host = request.headers.get("host");
+  if (!host || !/^[a-z0-9.-]+(:\d{1,5})?$/i.test(host)) return url;
+  const proto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim().toLowerCase();
+  const scheme = proto === "https" || proto === "http" ? proto : url.protocol.replace(/:$/, "");
+  return new URL(`${scheme}://${host}${url.pathname}${url.search}`);
+}
+
+/**
+ * A redirect next-intl built from `request.url` (the container's listen address behind Caddy) moved onto the public
+ * origin. Only redirects: a rewrite must keep the internal origin, or Next would proxy it to the public host.
+ */
+export function publicRedirect(
+  response: NextResponse,
+  request: Pick<NextRequest, "headers" | "nextUrl">,
+): NextResponse {
+  const location = response.headers.get("location");
+  if (!location || response.status < 300 || response.status >= 400) return response;
+  let target: URL;
+  try {
+    target = new URL(location, request.nextUrl.href);
+  } catch {
+    return response;
+  }
+  if (target.origin !== request.nextUrl.origin) return response;
+  const origin = publicUrl(request);
+  response.headers.set("location", `${origin.origin}${target.pathname}${target.search}${target.hash}`);
+  return response;
+}
+
 function notFoundResponse(): NextResponse {
   return new NextResponse("Not Found", {
     status: 404,
@@ -134,7 +172,7 @@ export async function proxy(request: NextRequest) {
 
   let response: NextResponse;
   if (route.kind === "intl") {
-    response = intl(new NextRequest(request, { headers: requestHeaders }));
+    response = publicRedirect(intl(new NextRequest(request, { headers: requestHeaders })), request);
   } else if (route.kind === "asset") {
     response = NextResponse.next({ request: { headers: requestHeaders } });
   } else {
@@ -154,6 +192,8 @@ export const config = {
   // public folders (`/pwa/*` icons, `/brand/*`), which are the same on every host. Paths with a dot are *not*
   // skipped (review L3): `/admin/bff/v1/admin/x.y`, `/staff/a.b` or `/work-orders/a.b` must meet the reserved-segment
   // 404, the host → zone rewrite, and the CSP / `X-Frame-Options` like any other page. The proxy itself sends the
-  // root files (robots, sitemap, `/sw.js`, the manifest, the favicon) to their zone.
-  matcher: ["/((?!_next/|pwa/|brand/|__nextjs).*)"],
+  // root files (robots, sitemap, `/sw.js`, the manifest, the favicon) to their zone. The platform's container
+  // endpoints (D-230) `/api/healthz` and `/api/metrics` are outside every zone: the compose healthcheck and Alloy
+  // reach the container by its address (`Host: 127.0.0.1:3000`, `172.30.x.y:3000`), which is no zone's host.
+  matcher: ["/((?!_next/|pwa/|brand/|__nextjs|api/healthz$|api/metrics$).*)"],
 };

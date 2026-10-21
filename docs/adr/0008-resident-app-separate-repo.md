@@ -27,7 +27,8 @@ the bundle light", and the founder decided (D-154) that it is a separate reposit
   warns. This repo remains the source of truth for those files.
 
 ## Consequences
-- Two deployments (Cloud Run, D-160) and two CI pipelines; the resident bundle no longer pays for
+- Two deployments (two containers on the Collective platform, D-230 — `getproperty-web` and `getproperty-liff`
+  behind the same Caddy) and two CI pipelines; the resident bundle no longer pays for
   owner/admin code paths and its CSP is the only one that allows LINE domains.
 - Design drift is possible between the copies; it is made visible (manifest + `shared:check`) rather
   than prevented, and ends when `collective-shared` replaces the copies.

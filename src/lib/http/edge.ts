@@ -27,10 +27,11 @@ function isIpAddress(value: string): boolean {
 }
 
 /**
- * The end user's address as **our** edge saw it (review H1): Google's front ends (Cloud Run, the external HTTPS
- * load balancer) *append* the address they received the request from to `X-Forwarded-For`, so everything left of
- * the entries they added is whatever the client sent. With `trustedHops` such proxies in front of this app, the
- * client is the entry `trustedHops` from the right. 0 (no trusted proxy, local dev), a header with fewer entries or
+ * The end user's address as **our** edge saw it (review H1). On the Collective platform (D-230) Caddy is the one
+ * proxy in front of this container: for an internet client it *replaces* `X-Forwarded-For` with the address it
+ * received the request from, and for a client inside its `trusted_proxies` it appends that address — either way the
+ * right-most entry is the one Caddy vouches for, and anything left of it is whatever the client sent. With
+ * `trustedHops` such proxies in front of this app (Caddy: 1), the client is the entry `trustedHops` from the right. 0 (no trusted proxy, local dev), a header with fewer entries or
  * a value that is not an IP address → unknown: nothing is forwarded. `X-Real-IP` is never read (any client can send
  * it).
  */
