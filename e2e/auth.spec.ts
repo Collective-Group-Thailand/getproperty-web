@@ -226,3 +226,44 @@ test.describe("admin sign-in", () => {
     await expect(page.getByTestId("platform-user")).toHaveText("Support Test");
   });
 });
+
+/**
+ * Review H3: a crafted `?next=` must never take a freshly signed-in user off the site. `/%09/evil.example` decodes
+ * to `/\t/evil.example`, which the WHATWG URL parser turns into `//evil.example`; `/\evil` and `//evil` likewise.
+ */
+test.describe("no open redirect after sign-in (review H3)", () => {
+  const ATTACKS = ["/%09/evil.example/login", "/%5Cevil.example", "//evil.example", "/%2509/evil.example"];
+
+  for (const attack of ATTACKS) {
+    test(`owner and staff OTP sign-in ignore next=${attack}`, async ({ page }) => {
+      for (const [host, phone] of [
+        [HOSTS.owner, "0810000001"],
+        [HOSTS.staff, "0810000004"],
+      ] as const) {
+        await page.context().clearCookies();
+        await page.goto(`${host}/login?next=${attack}`);
+        await page.getByLabel(/เบอร์มือถือ|Mobile number/).fill(phone);
+        await page.getByRole("button", { name: /ส่งรหัส|Send code/ }).click();
+        await page.getByRole("textbox", { name: /หลักที่ 1|Digit 1/ }).fill(CODE);
+        await page.waitForURL((url) => !url.pathname.endsWith("/login"));
+        expect(new URL(page.url()).origin).toBe(host);
+      }
+    });
+  }
+
+  test("the platform sign-in (password + TOTP) ignores a crafted next", async ({ page }) => {
+    await page.goto(`${HOSTS.admin}/login?next=/%09/evil.example/login`);
+    await page.getByLabel(/อีเมล|Email/).fill("support@example.com");
+    await page.getByRole("textbox", { name: /^(รหัสผ่าน|Password)$/ }).fill(PASSWORD);
+    await page.getByRole("button", { name: /เข้าสู่ระบบ|Sign in/ }).click();
+    await page.getByLabel(/รหัสจากแอปยืนยันตัวตน|Authenticator code/).fill(CODE);
+    await page.getByRole("button", { name: /เข้าสู่ระบบ|Sign in/ }).click();
+    await expect(page).toHaveURL(`${HOSTS.admin}/`);
+  });
+
+  test("an already signed-in user is not redirected off the site either", async ({ page }) => {
+    await signInWithOtp(page, HOSTS.owner, "0810000001");
+    await page.goto(`${HOSTS.owner}/login?next=/%09/evil.example/login`);
+    expect(new URL(page.url()).origin).toBe(HOSTS.owner);
+  });
+});
