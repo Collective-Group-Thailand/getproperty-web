@@ -20,5 +20,14 @@
   "sent": "Sent",
   "recentTitle": "Sent today",
   "sentAt": "Sent {time}",
-  "waitingTitle": "Waiting"
+  "waitingTitle": "Waiting",
+  "signOutUnsentTitle": "Sign out and delete what is not sent?",
+  "signOutUnsent": "{count, plural, one {# item has} other {# items have}} not been sent yet (readings, photos or inspection drafts). Signing out deletes {count, plural, one {it} other {them}} from this phone.",
+  "heldTenant": "Queued while you were signed in to another organisation: switch to it to send.",
+  "heldOther": "{count, plural, one {# item} other {# items}} queued by someone else {count, plural, one {is} other {are}} kept on this phone and will not be sent with your sign-in.",
+  "discardHeld": "Remove them",
+  "held": "Held",
+  "offlinePageTitle": "No connection",
+  "offlinePageBody": "This page needs a connection. What you saved while offline stays on this phone and is sent when the signal is back.",
+  "offlinePageRetry": "Try again"
 }

@@ -116,6 +116,29 @@ export function SyncCenter() {
             </ul>
           </section>
         ) : null}
+        {queue.otherTenant.length > 0 ? (
+          <section className="mt-4 flex flex-col gap-2" data-testid="sync-other-tenant">
+            <Callout tone="info">{t("heldTenant")}</Callout>
+            <ul className="divide-border divide-y">
+              {queue.otherTenant.map((entry) => (
+                <li key={entry.id} className="flex min-h-12 items-center justify-between gap-2 py-2">
+                  <span className="font-semibold">{entry.label}</span>
+                  <Badge tone="neutral" size="sm">
+                    {t("held")}
+                  </Badge>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+        {queue.othersHeld > 0 ? (
+          <section className="mt-4 flex flex-col gap-2" data-testid="sync-others-held">
+            <Callout tone="warning">{t("heldOther", { count: queue.othersHeld })}</Callout>
+            <Button size="md" variant="destructive" onClick={() => void queue.discardOthers()}>
+              {t("discardHeld")}
+            </Button>
+          </section>
+        ) : null}
         {queue.pending > 0 && online ? (
           <Button block size="lg" className="mt-3" onClick={() => void queue.replayNow()}>
             {t("sendNow")}

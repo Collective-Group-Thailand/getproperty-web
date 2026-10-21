@@ -66,7 +66,17 @@ test("a work order: door code, check-in, before photos, parts, a cost, after pho
   await page.getByTestId("today-work-orders").getByRole("link", { name: /A-202/ }).click();
   await hydrated(page);
   await expect(page.getByTestId("staff-work-order")).toHaveAttribute("data-status", "assigned");
+  // The door code is not in the rendered page (HTML or RSC payload): it is fetched on tap (review H2).
+  // The document as the server renders it, with the inline RSC payload (`self.__next_f`) — what a cache would keep.
+  const rendered = await page.evaluate(() => fetch(location.href).then((response) => response.text()));
+  expect(rendered).toContain("__next_f");
+  expect(rendered).toContain("staff-work-order");
+  expect(rendered).not.toContain("730215");
+  expect(await page.content()).not.toContain("730215");
+  await expect(page.getByTestId("access-pin")).toHaveCount(0);
+  const reveal = page.waitForResponse((response) => response.url().includes("/access") && response.ok());
   await page.getByTestId("access-show").click();
+  await reveal;
   await expect(page.getByTestId("access-pin")).toHaveText("730215");
   // The resident's preferred time and confirmation, and the request's thread shared with the office (D-218).
   await expect(page.getByTestId("work-order-visit-preference")).toContainText("Evening");

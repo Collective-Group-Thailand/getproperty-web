@@ -32,11 +32,14 @@ export function UserMenu({
   loginHref,
   extraItems = [],
   size = "md",
+  onSignOut,
 }: {
   displayName: string;
   roleLabel?: string;
   loginHref: string;
   extraItems?: MenuItem[];
+  /** The zone's own sign-out (the staff PWA cleans the device first, review H2/M4); default: the session only. */
+  onSignOut?: () => void;
   /** `lg` (48 px) in the staff PWA (design-system.md §5). */
   size?: "md" | "lg";
 }) {
@@ -70,10 +73,12 @@ export function UserMenu({
       icon: IconLogOut,
       separatorBefore: true,
       onSelect: () =>
-        startTransition(async () => {
-          await signOut();
-          window.location.assign(loginHref);
-        }),
+        onSignOut
+          ? onSignOut()
+          : startTransition(async () => {
+              await signOut();
+              window.location.assign(loginHref);
+            }),
     },
   ];
 

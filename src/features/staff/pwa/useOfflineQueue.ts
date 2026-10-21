@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import {
   discard,
   listQueue,
+  ownership,
   QUEUE_EVENT,
   replayQueue,
   retry,
@@ -34,8 +35,9 @@ export function useOnlineStatus(): boolean {
 }
 
 /**
- * The queue's entries as React state, kept fresh on every queue change (`QUEUE_EVENT`) — without
- * replaying anything (the shell's `SyncCenter` owns the replay timer).
+ * The signed-in staff member's own entries (this tenant) as React state, kept fresh on every queue change
+ * (`QUEUE_EVENT`, also fired when the identity changes) — without replaying anything (the shell's `SyncCenter` owns
+ * the replay timer). Entries of anybody else are never shown on a screen (review M3).
  */
 export function useQueueEntries(): QueueEntry[] {
   const [entries, setEntries] = useState<QueueEntry[]>([]);
@@ -43,7 +45,7 @@ export function useQueueEntries(): QueueEntry[] {
     let alive = true;
     const refresh = () => {
       listQueue().then(
-        (list) => alive && setEntries(list),
+        (list) => alive && setEntries(list.filter((entry) => ownership(entry) === "mine")),
         () => alive && setEntries([]),
       );
     };
@@ -64,17 +66,27 @@ const REPLAY_EVERY_MS = 30_000;
  * start, when the browser comes back online, every 30 s while something waits, and on demand.
  */
 export function useOfflineQueue(): {
+  /** This person's entries in this tenant. */
   entries: QueueEntry[];
+  /** Waiting entries this person queued in another tenant (sent after switching back). */
+  otherTenant: QueueEntry[];
+  /** How many waiting entries somebody else queued on this device (never listed, never sent as this person). */
+  othersHeld: number;
   pending: number;
   conflicts: number;
   lastResult: ReplayResult | null;
   replayNow: () => Promise<void>;
   retry: (id: string) => Promise<void>;
   discard: (id: string) => Promise<void>;
+  /** Removes what somebody else left unsent on this device. */
+  discardOthers: () => Promise<void>;
 } {
-  const [entries, setEntries] = useState<QueueEntry[]>([]);
+  const [all, setEntries] = useState<QueueEntry[]>([]);
   const [lastResult, setLastResult] = useState<ReplayResult | null>(null);
   const online = useOnlineStatus();
+  const entries = all.filter((entry) => ownership(entry) === "mine");
+  const otherTenant = all.filter((entry) => entry.state !== "sent" && ownership(entry) === "other-tenant");
+  const othersHeld = all.filter((entry) => entry.state !== "sent" && ownership(entry) === "someone-else").length;
 
   const refresh = useCallback(() => {
     listQueue().then(setEntries, () => setEntries([]));
@@ -111,6 +123,8 @@ export function useOfflineQueue(): {
 
   return {
     entries,
+    otherTenant,
+    othersHeld,
     pending,
     conflicts,
     lastResult,
@@ -120,5 +134,8 @@ export function useOfflineQueue(): {
       await replayNow();
     },
     discard,
+    discardOthers: async () => {
+      for (const entry of all) if (ownership(entry) === "someone-else") await discard(entry.id);
+    },
   };
 }

@@ -149,7 +149,9 @@ test("a resident's request → owner assigns staff → staff completes with phot
     .click();
   await hydrated(staff, "staff");
   await expect(staff.getByTestId("staff-work-order")).toHaveAttribute("data-status", "assigned");
-  await expect(staff.getByTestId("access-codes")).toHaveCount(0);
+  // Door codes are fetched on tap (review H2); this building has no smart lock, so the API has none for the visit.
+  await staff.getByTestId("access-show").click();
+  await expect(staff.getByTestId("access-none")).toBeVisible();
   // The staff member reads the office's message in the work order's (the request's) thread and answers.
   const staffThread = staff.getByTestId("service-thread");
   await expect(staffThread.getByTestId("thread-message").filter({ hasText: "พรุ่งนี้ 10 โมง" })).toHaveCount(1);

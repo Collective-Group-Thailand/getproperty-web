@@ -3,14 +3,14 @@
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 
-import { signOut } from "@/lib/auth/actions";
 import { Button } from "@/ui/components/Button";
 // eslint-disable-next-line no-restricted-imports -- this module is itself loaded on first open (DeviceLock, D-179)
 import { Dialog } from "@/ui/components/Dialog";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 
-import { clearPin, LOCK_AFTER_MINUTES, MAX_PIN_ATTEMPTS, PIN_PATTERN, recordActivity, setPin, verifyPin } from "./pin";
+import { LOCK_AFTER_MINUTES, MAX_PIN_ATTEMPTS, PIN_PATTERN, recordActivity, setPin, verifyPin } from "./pin";
+import { signOutStaff } from "../pwa/leaveDevice";
 import { lockStore } from "./store";
 
 export interface DeviceLockDialogsProps {
@@ -70,9 +70,7 @@ export function DeviceLockDialogs({ setupOpen, onSetupOpenChange, locked, loginH
       setAttempts(used);
       setPinValue("");
       if (used >= MAX_PIN_ATTEMPTS) {
-        clearPin();
-        await signOut();
-        window.location.assign(loginHref);
+        await signOutStaff(loginHref); // also clears the PIN, the queue, caches and push (review H2, M4)
         return;
       }
       setError(t("wrongPin", { count: MAX_PIN_ATTEMPTS - used }));
@@ -144,9 +142,7 @@ export function DeviceLockDialogs({ setupOpen, onSetupOpenChange, locked, loginH
             size="md"
             onClick={() =>
               startTransition(async () => {
-                clearPin();
-                await signOut();
-                window.location.assign(loginHref);
+                await signOutStaff(loginHref);
               })
             }
           >

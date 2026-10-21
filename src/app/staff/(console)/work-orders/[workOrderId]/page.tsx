@@ -13,9 +13,9 @@ export async function generateMetadata() {
 }
 
 /**
- * One work order (F4 4.4): its steps, photos and costs; the request it serves; the access codes issued to me
- * for the visit (`GET …/access`, only the assignee's own codes are revealed, D-211); the message thread with the
- * resident and the office (D-218).
+ * One work order (F4 4.4): its steps, photos and costs; the request it serves; the message thread with the
+ * resident and the office (D-218). The door codes issued to me for the visit (`GET …/access`, D-211) are **not**
+ * read here: the screen fetches them when tapped, so no PIN is ever in the rendered HTML/RSC payload (review H2).
  */
 export default async function StaffWorkOrder({ params }: { params: Promise<{ workOrderId: string }> }) {
   const { workOrderId } = await params;
@@ -29,7 +29,7 @@ export default async function StaffWorkOrder({ params }: { params: Promise<{ wor
     if (isApiError(error) && (error.status === 404 || error.status === 422)) notFound();
     throw error;
   });
-  const [request, access, messages] = await Promise.all([
+  const [request, messages] = await Promise.all([
     workOrder.serviceRequestId
       ? unwrap(
           api.GET("/v1/staff/service-requests/{serviceRequestId}", {
@@ -37,9 +37,6 @@ export default async function StaffWorkOrder({ params }: { params: Promise<{ wor
           }),
         ).catch(() => null)
       : Promise.resolve(null),
-    unwrap(api.GET("/v1/staff/work-orders/{workOrderId}/access", { params: { path: { workOrderId } } }))
-      .then((body) => body.data)
-      .catch(() => null),
     unwrap(api.GET("/v1/staff/work-orders/{workOrderId}/messages", { params: { path: { workOrderId } } }))
       .then((body) => body.data)
       .catch(() => null),
@@ -49,7 +46,6 @@ export default async function StaffWorkOrder({ params }: { params: Promise<{ wor
       key={`${workOrder.id}-${workOrder.version}`}
       workOrder={workOrder}
       request={request}
-      access={access}
       messages={messages}
       canWrite={actor.me.permissions.includes("service_request.handle") && !(actor.me.subscription?.readOnly ?? false)}
     />

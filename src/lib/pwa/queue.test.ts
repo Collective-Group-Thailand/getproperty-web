@@ -4,7 +4,19 @@ import "fake-indexeddb/auto";
 import { IDBFactory } from "fake-indexeddb";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { discard, enqueue, getEntry, listQueue, replayQueue, resetQueueDb, retry, SENT_TTL_MS } from "./queue";
+import {
+  clearQueue,
+  discard,
+  enqueue,
+  getEntry,
+  listQueue,
+  NoQueueIdentityError,
+  replayQueue,
+  resetQueueDb,
+  retry,
+  SENT_TTL_MS,
+  setQueueIdentity,
+} from "./queue";
 
 type Call = { url: string; method: string; headers: Headers; body: unknown };
 
@@ -30,9 +42,12 @@ const reading = {
   label: "A-201 ไฟ",
 };
 
+const ALICE = { userId: "u-alice", tenantId: "t-1" };
+
 beforeEach(() => {
   globalThis.indexedDB = new IDBFactory();
   resetQueueDb();
+  setQueueIdentity(ALICE);
 });
 
 describe("offline queue (ADR-0007)", () => {
@@ -193,6 +208,134 @@ describe("offline queue (ADR-0007)", () => {
   it("discards on request", async () => {
     const entry = await enqueue(reading);
     await discard(entry.id);
+    expect(await listQueue()).toEqual([]);
+  });
+});
+
+const photoEntry = () => ({
+  ...reading,
+  photo: {
+    blob: new Blob([new Uint8Array([1, 2, 3])], { type: "image/jpeg" }),
+    fileName: "a201.jpg",
+    kind: "meter_photo" as const,
+    scopeType: "unit" as const,
+    scopeId: null,
+    bodyField: "photoDocumentId",
+  },
+});
+
+/**
+ * An API stub with the real idempotency rule (contract §3): the first body per key is stored and its answer
+ * replayed for the same body; another body with that key is `422 idempotency.key_reused`. Each presign gets a new
+ * file id, like the API.
+ */
+function idempotentApi(delayMs = 20) {
+  const seen = new Map<string, string>();
+  let files = 0;
+  return api(async (call) => {
+    if (call.url.endsWith("/presign")) {
+      files += 1;
+      return Response.json({ file: { id: `file-${files}` }, uploadUrl: "https://storage.test/put", headers: {} });
+    }
+    if (call.url === "https://storage.test/put") return new Response(null, { status: 200 });
+    if (call.url.endsWith("/actions/complete")) return Response.json({});
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+    const key = call.headers.get("idempotency-key")!;
+    const body = JSON.stringify(call.body);
+    const previous = seen.get(key);
+    if (previous !== undefined && previous !== body) {
+      return Response.json({ code: "idempotency.key_reused", detail: "" }, { status: 422 });
+    }
+    seen.set(key, body);
+    return Response.json({ id: "r1", reviewState: "accepted" }, { status: 201 });
+  });
+}
+
+describe("one replayer per device (review M3)", () => {
+  it("two tabs replaying at once send the reading once and it ends sent, not conflict", async () => {
+    const entry = await enqueue(photoEntry());
+    // Two windows of the PWA: two instances of this module over the same IndexedDB.
+    vi.resetModules();
+    const tabB = await import("./queue");
+    tabB.setQueueIdentity(ALICE);
+    const { calls, fetchImpl } = idempotentApi();
+    const [a, b] = await Promise.all([replayQueue(fetchImpl), tabB.replayQueue(fetchImpl)]);
+    expect(a.sent + b.sent).toBe(1);
+    expect(a.conflicts + b.conflicts).toBe(0);
+    expect(calls.filter((call) => call.url.endsWith("/presign"))).toHaveLength(1);
+    expect(calls.filter((call) => call.url === "/bff/v1/staff/meter-readings")).toHaveLength(1);
+    expect(await getEntry(entry.id)).toMatchObject({ state: "sent" });
+  });
+
+  it("without the Web Locks API, an IndexedDB lease serialises the tabs", async () => {
+    const locks = Object.getOwnPropertyDescriptor(globalThis.navigator, "locks");
+    Object.defineProperty(globalThis.navigator, "locks", { value: undefined, configurable: true });
+    try {
+      const entry = await enqueue(photoEntry());
+      vi.resetModules();
+      const tabB = await import("./queue");
+      tabB.setQueueIdentity(ALICE);
+      const { calls, fetchImpl } = idempotentApi();
+      const [a, b] = await Promise.all([replayQueue(fetchImpl), tabB.replayQueue(fetchImpl)]);
+      expect(a.sent + b.sent).toBe(1);
+      expect(calls.filter((call) => call.url === "/bff/v1/staff/meter-readings")).toHaveLength(1);
+      expect(await getEntry(entry.id)).toMatchObject({ state: "sent" });
+    } finally {
+      if (locks) Object.defineProperty(globalThis.navigator, "locks", locks);
+      else delete (globalThis.navigator as { locks?: unknown }).locks;
+    }
+  });
+
+  it("never turns a sent entry back into a conflict from a stale copy", async () => {
+    const entry = await enqueue(reading);
+    vi.resetModules();
+    const tabB = await import("./queue");
+    tabB.setQueueIdentity(ALICE);
+    await replayQueue(api(() => Response.json({ id: "r1" }, { status: 201 })).fetchImpl);
+    // A late refusal in another tab (it read the entry before it was sent) changes nothing.
+    await tabB.retry(entry.id);
+    expect(await getEntry(entry.id)).toMatchObject({ state: "sent", result: { id: "r1" } });
+  });
+});
+
+describe("entries belong to who queued them (review M3)", () => {
+  it("cannot queue without a signed-in identity", async () => {
+    setQueueIdentity(null);
+    await expect(enqueue(reading)).rejects.toBeInstanceOf(NoQueueIdentityError);
+  });
+
+  it("holds another staff member's entries and sends them only when that person is back", async () => {
+    const entry = await enqueue(reading);
+    expect(entry.owner).toEqual(ALICE);
+    setQueueIdentity({ userId: "u-bob", tenantId: "t-1" });
+    const { calls, fetchImpl } = api(() => Response.json({}, { status: 201 }));
+    expect(await replayQueue(fetchImpl)).toMatchObject({ sent: 0, held: 1 });
+    expect(calls).toHaveLength(0);
+    setQueueIdentity(ALICE);
+    expect(await replayQueue(fetchImpl)).toMatchObject({ sent: 1, held: 0 });
+  });
+
+  it("holds the entries of another tenant of the same staff member until they switch back", async () => {
+    await enqueue(reading);
+    setQueueIdentity({ ...ALICE, tenantId: "t-2" });
+    const { calls, fetchImpl } = api(() => Response.json({}, { status: 201 }));
+    expect(await replayQueue(fetchImpl)).toMatchObject({ sent: 0, held: 1 });
+    expect(calls).toHaveLength(0);
+  });
+
+  it("holds entries queued before entries had an owner", async () => {
+    const entry = await enqueue(reading);
+    const { openDB } = await import("idb");
+    const database = await openDB("gp-staff-queue", 2);
+    await database.put("entries", { ...(await database.get("entries", entry.id)), owner: undefined });
+    database.close();
+    expect(await replayQueue(api(() => Response.json({}, { status: 201 })).fetchImpl)).toMatchObject({ held: 1 });
+  });
+
+  it("sign-out clears the queue", async () => {
+    await enqueue(reading);
+    await enqueue(photoEntry());
+    await clearQueue();
     expect(await listQueue()).toEqual([]);
   });
 });

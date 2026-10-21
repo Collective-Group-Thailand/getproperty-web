@@ -3,13 +3,13 @@
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
-import { pushSupported, subscribeToPush } from "@/lib/pwa/push";
+import { hasStoredPushSubscription, pushSupported, subscribeToPush } from "@/lib/pwa/push";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 
 /** Set by a meaningful action (the first submission that reached the API) — never asked on page load. */
 export const PUSH_PROMPT_KEY = "gp_push_prompt";
-const DISMISSED_KEY = "gp_push_prompt_dismissed";
+export const PUSH_PROMPT_DISMISSED_KEY = "gp_push_prompt_dismissed";
 
 export function markMeaningfulAction(): void {
   try {
@@ -21,8 +21,10 @@ export function markMeaningfulAction(): void {
 }
 
 /**
- * Asks for web push after a meaningful action (F1 1.3 §5): only when the browser can, permission is
- * still undecided, a VAPID key exists, and the staff member has not said "later".
+ * Asks for web push after a meaningful action (F1 1.3 §5): only when the browser can, a VAPID key exists, the staff
+ * member has not said "later", and this sign-in has no subscription yet — permission still undecided, or already
+ * granted to the browser by a previous person on a shared phone (their subscription was removed at sign-out,
+ * review M4, so this person is asked for their own).
  */
 export function PushPrompt({ vapidPublicKey }: { vapidPublicKey?: string }) {
   const t = useTranslations("staff.offline");
@@ -35,9 +37,10 @@ export function PushPrompt({ vapidPublicKey }: { vapidPublicKey?: string }) {
         setVisible(
           Boolean(vapidPublicKey) &&
             pushSupported() &&
-            Notification.permission === "default" &&
+            (Notification.permission === "default" ||
+              (Notification.permission === "granted" && !hasStoredPushSubscription())) &&
             window.localStorage.getItem(PUSH_PROMPT_KEY) === "1" &&
-            window.localStorage.getItem(DISMISSED_KEY) !== "1",
+            window.localStorage.getItem(PUSH_PROMPT_DISMISSED_KEY) !== "1",
         );
       } catch {
         setVisible(false);
@@ -71,7 +74,7 @@ export function PushPrompt({ vapidPublicKey }: { vapidPublicKey?: string }) {
               variant="ghost"
               onClick={() => {
                 try {
-                  window.localStorage.setItem(DISMISSED_KEY, "1");
+                  window.localStorage.setItem(PUSH_PROMPT_DISMISSED_KEY, "1");
                 } catch {
                   // ignore
                 }

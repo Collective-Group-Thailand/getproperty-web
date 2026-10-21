@@ -22,12 +22,12 @@ import { NativeSelect } from "@/ui/components/NativeSelect";
 import { IconCamera } from "@/ui/icons/glyphs/camera";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 import { IconDelete } from "@/ui/icons/glyphs/delete";
-import { IconKey } from "@/ui/icons/glyphs/key";
 import { IconParcel } from "@/ui/icons/glyphs/parcel";
 import { IconPlay } from "@/ui/icons/glyphs/play";
 import { lazyWarm } from "@/ui/lib/lazy";
 
 import { PhotoThumb } from "../shared/PhotoThumb";
+import { DoorCodes } from "./DoorCodes";
 import { problemText } from "../shared/problem";
 
 const PhotoCapture = lazyWarm(() => import("./PhotoCapture").then((module) => module.PhotoCapture));
@@ -37,19 +37,20 @@ const MONEY = /^\d{1,9}(\.\d{1,2})?$/;
 const QTY = /^\d{1,6}(\.\d{1,3})?$/;
 const PHOTO_STEPS = new Set<Schemas["WorkOrderStatus"]>(["assigned", "accepted", "in_progress", "done"]);
 const COST_STEPS = new Set<Schemas["WorkOrderStatus"]>(["assigned", "accepted", "in_progress", "done"]);
+/** While a visit can still happen, the assignee may ask for the door codes (fetched on tap, review H2). */
+const DOOR_CODE_STEPS = new Set<Schemas["WorkOrderStatus"]>(["assigned", "accepted", "in_progress"]);
 
 type Role = Schemas["WorkOrderPhotoRole"];
 
 /**
  * A work order on the phone (F4 4.4, D-072, D-210), one-handed and big: what was reported, the access codes
- * for the visit, then the steps the API offers (`nextActions`): check in (checking in accepts — the staff
+ * for the visit (fetched on tap, never in the rendered page — review H2), then the steps the API offers (`nextActions`): check in (checking in accepts — the staff
  * surface has no separate accept), before photos, waiting for parts → resume, after photos, parts and
  * costs, complete with a note (the API refuses without an after photo). Verification is the owner's.
  */
 export function WorkOrderScreen({
   workOrder,
   request,
-  access,
   messages,
   canWrite,
 }: {
@@ -58,7 +59,6 @@ export function WorkOrderScreen({
     Schemas["ServiceRequestDto"],
     "ref" | "description" | "photoIds" | "status" | "preferredVisit" | "visitConfirmedAt"
   > | null;
-  access: Schemas["RevealedCredentialDto"][] | null;
   /** The thread (the request's, or the work order's own); `null` when it could not be read. */
   messages: Schemas["ServiceMessageDto"][] | null;
   canWrite: boolean;
@@ -72,7 +72,6 @@ export function WorkOrderScreen({
   const [camera, setCamera] = useState<Role | null>(null);
   const [partsNote, setPartsNote] = useState("");
   const [note, setNote] = useState("");
-  const [shown, setShown] = useState<Set<string>>(new Set());
   const [cost, setCost] = useState({
     description: "",
     kind: "part" as Schemas["WorkOrderCostKind"],
@@ -209,48 +208,7 @@ export function WorkOrderScreen({
         </section>
       ) : null}
 
-      {access && access.length ? (
-        <section aria-labelledby="access" className="flex flex-col gap-2" data-testid="access-codes">
-          <h2 id="access" className="text-lg font-semibold">
-            {t("access.title")}
-          </h2>
-          <ul className="flex flex-col gap-2">
-            {access.map((code) => (
-              <li
-                key={code.id}
-                className="border-border rounded-card flex flex-col gap-2 border p-3"
-                data-testid="access-code"
-              >
-                <span className="font-medium">{code.lockName}</span>
-                <span className="text-muted text-sm">
-                  {t("access.window", {
-                    from: formatDateTime(code.validFrom, locale),
-                    until: code.validTo ? formatDateTime(code.validTo, locale) : "—",
-                  })}
-                </span>
-                {code.status !== "active" ? (
-                  <span className="text-muted text-sm">{t("access.notActive")}</span>
-                ) : shown.has(code.id) ? (
-                  <span className="font-mono text-3xl tracking-widest" data-testid="access-pin">
-                    {code.pin ?? t("access.app")}
-                  </span>
-                ) : (
-                  <Button
-                    variant="secondary"
-                    size="xl"
-                    block
-                    iconStart={IconKey}
-                    onClick={() => setShown((current) => new Set(current).add(code.id))}
-                    data-testid="access-show"
-                  >
-                    {t("access.show")}
-                  </Button>
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
+      {DOOR_CODE_STEPS.has(workOrder.status) ? <DoorCodes workOrderId={workOrder.id} /> : null}
 
       <section aria-labelledby="steps" className="flex flex-col gap-3" data-testid="work-steps">
         <h2 id="steps" className="sr-only">

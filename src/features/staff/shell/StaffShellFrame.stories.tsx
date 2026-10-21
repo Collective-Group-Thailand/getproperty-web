@@ -24,6 +24,7 @@ const meta: Meta<typeof StaffShellFrame> = {
     ),
   ],
   args: {
+    userId: "3b241101-e2bb-4255-8caf-4136c566a962",
     tenants: [TENANTS[0]!],
     currentTenant: { ...CURRENT_TENANT, role: "staff" },
     userName: "สมศักดิ์ ช่างประจำ",

@@ -8,6 +8,7 @@ import { createApiClient, unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { clientEnv } from "@/lib/env/client";
 import { serverEnv } from "@/lib/env/server";
+import { inboundEdgeHeaders } from "@/lib/http/server";
 
 import { DeviceLock } from "../lock/DeviceLock";
 import { ServiceWorkerRegistrar } from "../pwa/ServiceWorkerRegistrar";
@@ -22,7 +23,8 @@ async function vapidPublicKey(): Promise<string | undefined> {
   if (configured) return configured;
   if (vapidCache && Date.now() - vapidCache.at < 3_600_000) return vapidCache.key;
   try {
-    const api = createApiClient({ baseUrl: serverEnv().API_INTERNAL_URL });
+    const edge = await inboundEdgeHeaders();
+    const api = createApiClient({ baseUrl: serverEnv().API_INTERNAL_URL, headers: () => edge });
     const { publicKey } = await unwrap(api.GET("/v1/auth/web-push/public-key"));
     vapidCache = { key: publicKey, at: Date.now() };
   } catch {
@@ -53,6 +55,7 @@ export async function StaffShell({
         <DeviceLock loginHref="/login">
           <ServiceWorkerRegistrar enabled={process.env.NODE_ENV === "production"} />
           <StaffShellFrame
+            userId={me.user.id}
             tenants={me.tenants}
             currentTenant={me.currentTenant}
             userName={me.user.displayName}

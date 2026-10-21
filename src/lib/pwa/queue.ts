@@ -19,6 +19,15 @@ import type { Schemas } from "@/lib/api/types";
  *
  * The photo goes to object storage by presign (never through the BFF body): presign → PUT → complete,
  * once; the resulting `fileId` is stored on the entry so a retry does not upload twice.
+ *
+ * One replayer per device (review M3): every window of the PWA shares this IndexedDB, and the service worker asks
+ * all of them to replay, so a replay runs under the cross-tab lock `gp-offline-queue` (Web Locks API; an IndexedDB
+ * lease where it is missing). Each entry is re-read before it is sent and every write re-reads it inside its
+ * transaction, so a `sent` entry is never sent again or overwritten by a stale copy.
+ *
+ * Every entry belongs to the staff member and tenant that queued it (`owner`): it is replayed only while that same
+ * identity is signed in (`setQueueIdentity`, set by the staff shell), and held — never sent as somebody else, never
+ * into another tenant — otherwise. Sign-out clears the queue (`clearQueue`, ADR-0007).
  */
 
 export type QueueState = "pending" | "conflict" | "sent";
@@ -50,8 +59,16 @@ export interface QueuedPhoto {
   fileId?: string;
 }
 
+/** Who queued an entry: replayed only while the same staff member is signed in to the same tenant. */
+export interface QueueOwner {
+  userId: string;
+  tenantId: string;
+}
+
 export interface QueueEntry {
   id: string;
+  /** Absent only on entries queued before review M3 — those are held like another person's. */
+  owner?: QueueOwner;
   /** Fixed at enqueue time and sent on every replay (contract §3 idempotency). */
   idempotencyKey: string;
   method: "POST" | "PUT" | "PATCH";
@@ -72,8 +89,16 @@ export interface QueueEntry {
   sentAt?: number;
 }
 
+interface QueueLease {
+  name: string;
+  holder: string;
+  expiresAt: number;
+}
+
 interface QueueDb extends DBSchema {
   entries: { key: string; value: QueueEntry; indexes: { byCreated: number } };
+  /** The cross-tab replay lease where the Web Locks API is missing. */
+  leases: { key: string; value: QueueLease };
 }
 
 const DB_NAME = "gp-staff-queue";
@@ -82,13 +107,25 @@ const BACKOFF_MS = [5_000, 15_000, 60_000, 5 * 60_000, 15 * 60_000];
 export const SENT_TTL_MS = 24 * 3600_000;
 export const QUEUE_EVENT = "gp:offline-queue";
 
+export const QUEUE_LOCK = "gp-offline-queue";
+/** How long a fallback lease lives without renewal (a tab that died while replaying frees it after this). */
+const LEASE_MS = 60_000;
+
 let dbPromise: Promise<IDBPDatabase<QueueDb>> | undefined;
 
 function db(): Promise<IDBPDatabase<QueueDb>> {
-  dbPromise ??= openDB<QueueDb>(DB_NAME, 1, {
-    upgrade(database) {
-      const store = database.createObjectStore("entries", { keyPath: "id" });
-      store.createIndex("byCreated", "createdAt");
+  dbPromise ??= openDB<QueueDb>(DB_NAME, 2, {
+    upgrade(database, oldVersion) {
+      if (oldVersion < 1) {
+        const store = database.createObjectStore("entries", { keyPath: "id" });
+        store.createIndex("byCreated", "createdAt");
+      }
+      if (oldVersion < 2) database.createObjectStore("leases", { keyPath: "name" });
+    },
+    blocking() {
+      // A newer version (another tab after an update) wants the database: let it.
+      void dbPromise?.then((open) => open.close());
+      dbPromise = undefined;
     },
   });
   return dbPromise;
@@ -97,18 +134,51 @@ function db(): Promise<IDBPDatabase<QueueDb>> {
 /** Test hook: forget the open connection (fake-indexeddb is reset between tests). */
 export function resetQueueDb(): void {
   dbPromise = undefined;
+  identity = null;
+}
+
+let identity: QueueOwner | null = null;
+
+/**
+ * The signed-in staff member and tenant (the staff shell sets it on every render; `null` when signed out). Entries
+ * of anybody else are held, and a change of identity asks the queue to replay what is now this person's.
+ */
+export function setQueueIdentity(owner: QueueOwner | null): void {
+  const changed = identity?.userId !== owner?.userId || identity?.tenantId !== owner?.tenantId;
+  identity = owner ? { userId: owner.userId, tenantId: owner.tenantId } : null;
+  if (changed) notify();
+}
+
+export function queueIdentity(): QueueOwner | null {
+  return identity;
+}
+
+/** Whose an entry is, from the signed-in identity's point of view. */
+export function ownership(entry: Pick<QueueEntry, "owner">, current: QueueOwner | null = identity) {
+  if (!current || !entry.owner || entry.owner.userId !== current.userId) return "someone-else" as const;
+  return entry.owner.tenantId === current.tenantId ? ("mine" as const) : ("other-tenant" as const);
 }
 
 function notify(): void {
   if (typeof window !== "undefined") window.dispatchEvent(new Event(QUEUE_EVENT));
 }
 
+/** Queuing needs a signed-in identity: an entry nobody owns could be replayed as anybody (review M3). */
+export class NoQueueIdentityError extends Error {
+  constructor() {
+    super("no signed-in staff identity for the offline queue");
+    this.name = "NoQueueIdentityError";
+  }
+}
+
 export async function enqueue(
   entry: Pick<QueueEntry, "method" | "path" | "body" | "label" | "photo" | "meta"> & { idempotencyKey?: string },
 ): Promise<QueueEntry> {
+  if (!identity) throw new NoQueueIdentityError();
   const now = Date.now();
   const stored: QueueEntry = {
     id: crypto.randomUUID(),
+    owner: { ...identity },
     idempotencyKey: entry.idempotencyKey ?? crypto.randomUUID(),
     method: entry.method,
     path: entry.path,
@@ -146,11 +216,42 @@ export async function discard(id: string): Promise<void> {
 
 /** Puts a conflict back in line (after the staff member fixed what the API refused, e.g. re-signed in). */
 export async function retry(id: string): Promise<void> {
-  const database = await db();
-  const entry = await database.get("entries", id);
-  if (!entry) return;
-  await database.put("entries", { ...entry, state: "pending", problem: undefined, nextAttemptAt: Date.now() });
+  await updateEntry(id, (entry) =>
+    entry.state === "conflict" ? { ...entry, state: "pending", problem: undefined, nextAttemptAt: Date.now() } : null,
+  );
   notify();
+}
+
+/**
+ * Deletes every entry and lease (sign-out, the device lock's forced sign-out — ADR-0007, review H2): what was not
+ * sent is gone with the session that queued it.
+ */
+export async function clearQueue(): Promise<void> {
+  const database = await db();
+  const tx = database.transaction(["entries", "leases"], "readwrite");
+  await Promise.all([tx.objectStore("entries").clear(), tx.objectStore("leases").clear(), tx.done]);
+  notify();
+}
+
+/**
+ * Read-modify-write of one entry inside a single transaction (review M3): the change is computed from the entry as
+ * it is *now*, never from a stale copy; a `sent` entry is final and never overwritten; `null` writes nothing.
+ */
+async function updateEntry(
+  id: string,
+  change: (entry: QueueEntry) => QueueEntry | null,
+): Promise<QueueEntry | undefined> {
+  const database = await db();
+  const tx = database.transaction("entries", "readwrite");
+  const current = await tx.store.get(id);
+  if (!current || current.state === "sent") {
+    await tx.done;
+    return current;
+  }
+  const next = change(current);
+  if (next) await tx.store.put(next);
+  await tx.done;
+  return next ?? current;
 }
 
 async function sha256Hex(blob: Blob): Promise<string> {
@@ -245,23 +346,78 @@ export interface ReplayResult {
   sent: number;
   conflicts: number;
   remaining: number;
+  /** Entries of another staff member or tenant, kept but not sent (review M3). */
+  held: number;
   stopped: "signed-out" | null;
 }
 
 let replaying: Promise<ReplayResult> | undefined;
 
-/** Sends what is due, oldest first (sent entries are skipped); one replay at a time per tab. */
+/**
+ * Sends what is due, oldest first (sent entries are skipped): one replay at a time per tab, and one per device
+ * under the cross-tab lock — a second tab waits for the first and then finds its entries already sent.
+ */
 export function replayQueue(fetchImpl: typeof fetch = fetch, now = Date.now): Promise<ReplayResult> {
-  replaying ??= run(fetchImpl, now).finally(() => {
+  replaying ??= withQueueLock(() => run(fetchImpl, now)).finally(() => {
     replaying = undefined;
   });
   return replaying;
 }
 
+type LockManagerLike = {
+  request<T>(name: string, options: { mode: "exclusive" }, callback: () => Promise<T>): Promise<T>;
+};
+
+/** Runs `task` while holding the device-wide replay lock (Web Locks API, else an IndexedDB lease). */
+export async function withQueueLock<T>(task: () => Promise<T>): Promise<T> {
+  const locks = (globalThis.navigator as (Navigator & { locks?: LockManagerLike }) | undefined)?.locks;
+  if (locks?.request) return locks.request(QUEUE_LOCK, { mode: "exclusive" }, task);
+  return withLease(task);
+}
+
+/**
+ * The fallback lock: a lease record taken in a read-write transaction (IndexedDB serialises overlapping read-write
+ * transactions across tabs, so check-and-take is atomic), renewed while the task runs and released after it. A
+ * lease left by a tab that died expires after `LEASE_MS`.
+ */
+async function withLease<T>(task: () => Promise<T>): Promise<T> {
+  const holder = crypto.randomUUID();
+  const take = async (): Promise<boolean> => {
+    const database = await db();
+    const tx = database.transaction("leases", "readwrite");
+    const lease = await tx.store.get(QUEUE_LOCK);
+    const free = !lease || lease.holder === holder || lease.expiresAt <= Date.now();
+    if (free) await tx.store.put({ name: QUEUE_LOCK, holder, expiresAt: Date.now() + LEASE_MS });
+    await tx.done;
+    return free;
+  };
+  for (let wait = 50; !(await take()); wait = Math.min(wait * 2, 1_000)) {
+    await new Promise((resolve) => setTimeout(resolve, wait));
+  }
+  const renew = setInterval(() => void take(), LEASE_MS / 3);
+  try {
+    return await task();
+  } finally {
+    clearInterval(renew);
+    const database = await db();
+    const tx = database.transaction("leases", "readwrite");
+    const lease = await tx.store.get(QUEUE_LOCK);
+    if (lease?.holder === holder) await tx.store.delete(QUEUE_LOCK);
+    await tx.done;
+  }
+}
+
 async function run(fetchImpl: typeof fetch, now: () => number): Promise<ReplayResult> {
   const database = await db();
-  const result: ReplayResult = { sent: 0, conflicts: 0, remaining: 0, stopped: null };
-  for (const entry of await database.getAllFromIndex("entries", "byCreated")) {
+  const result: ReplayResult = { sent: 0, conflicts: 0, remaining: 0, held: 0, stopped: null };
+  for (const listed of await database.getAllFromIndex("entries", "byCreated")) {
+    // Another tab may have sent or changed it since the list was read.
+    const entry = await database.get("entries", listed.id);
+    if (!entry) continue;
+    if (entry.state === "pending" && ownership(entry) !== "mine") {
+      result.held += 1;
+      continue;
+    }
     if (entry.state !== "pending" || entry.nextAttemptAt > now()) {
       if (entry.state === "pending") result.remaining += 1;
       continue;
@@ -270,8 +426,11 @@ async function run(fetchImpl: typeof fetch, now: () => number): Promise<ReplayRe
       const body = { ...entry.body };
       if (entry.photo) {
         if (!entry.photo.fileId) {
-          entry.photo.fileId = await upload(entry.photo, fetchImpl);
-          await database.put("entries", entry);
+          const fileId = await upload(entry.photo, fetchImpl);
+          entry.photo = { ...entry.photo, fileId };
+          await updateEntry(entry.id, (fresh) =>
+            fresh.photo ? { ...fresh, photo: { ...fresh.photo, fileId: fresh.photo.fileId ?? fileId } } : null,
+          );
         }
         body[entry.photo.bodyField] = entry.photo.fileId;
       }
@@ -282,14 +441,14 @@ async function run(fetchImpl: typeof fetch, now: () => number): Promise<ReplayRe
       });
       if (!response.ok) await classify(response);
       const answer: unknown = await response.json().catch(() => null);
-      await database.put("entries", {
-        ...entry,
+      await updateEntry(entry.id, (fresh) => ({
+        ...fresh,
         state: "sent",
         result: answer,
         sentAt: now(),
         problem: undefined,
-        photo: entry.photo ? { ...entry.photo, blob: undefined } : undefined,
-      });
+        photo: fresh.photo ? { ...fresh.photo, blob: undefined } : undefined,
+      }));
       result.sent += 1;
     } catch (error) {
       if (error instanceof ReplayStop) {
@@ -298,16 +457,24 @@ async function run(fetchImpl: typeof fetch, now: () => number): Promise<ReplayRe
         break;
       }
       if (error instanceof Refused) {
-        await database.put("entries", { ...entry, state: "conflict", problem: error.problem });
-        result.conflicts += 1;
+        // `idempotency.key_reused`: probably sent elsewhere with this key — if so the entry is `sent` by now and
+        // `updateEntry` leaves it alone; otherwise it is shown as a conflict like any refusal.
+        const stored = await updateEntry(entry.id, (fresh) => ({
+          ...fresh,
+          state: "conflict",
+          problem: error.problem,
+        }));
+        if (stored?.state === "conflict") result.conflicts += 1;
         continue;
       }
       // Offline, a transient answer, or an upload interrupted: try again later.
-      const attempts = entry.attempts + 1;
-      await database.put("entries", {
-        ...entry,
-        attempts,
-        nextAttemptAt: now() + BACKOFF_MS[Math.min(attempts - 1, BACKOFF_MS.length - 1)]!,
+      await updateEntry(entry.id, (fresh) => {
+        const attempts = fresh.attempts + 1;
+        return {
+          ...fresh,
+          attempts,
+          nextAttemptAt: now() + BACKOFF_MS[Math.min(attempts - 1, BACKOFF_MS.length - 1)]!,
+        };
       });
       result.remaining += 1;
     }

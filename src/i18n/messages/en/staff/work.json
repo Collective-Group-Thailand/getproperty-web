@@ -20,8 +20,11 @@
     "title": "Door codes",
     "window": "Valid {from} to {until}",
     "notActive": "This code no longer works",
-    "show": "Show code",
-    "app": "Opens with the app"
+    "app": "Opens with the app",
+    "reveal": "Show my door codes",
+    "hint": "Fetched when you tap and never kept on this phone. Every reveal is recorded.",
+    "none": "No door code was issued to you for this visit.",
+    "offline": "Could not fetch the codes: no signal. Try again."
   },
   "steps": "Steps",
   "checkIn": "Check in",

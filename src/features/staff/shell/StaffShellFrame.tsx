@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 import { NotificationCentre } from "@/features/shared/notifications/NotificationCentre";
 import { LanguageSwitch } from "@/features/shared/shell/LanguageSwitch";
@@ -11,6 +11,7 @@ import { TenantSwitcher } from "@/features/shared/shell/TenantSwitcher";
 import type { ShellNavItem } from "@/features/shared/shell/types";
 import { UserMenu } from "@/features/shared/shell/UserMenu";
 import type { Schemas } from "@/lib/api/types";
+import { setQueueIdentity } from "@/lib/pwa/queue";
 import { Mark } from "@/ui/brand";
 import { AppShell, BottomNav, TopBar, type NavItem } from "@/ui/components/AppShell";
 import { EnvBadge } from "@/ui/components/EnvBadge";
@@ -19,13 +20,16 @@ import { IconClose } from "@/ui/icons/glyphs/close";
 import { IconHome } from "@/ui/icons/glyphs/home";
 import { IconLock } from "@/ui/icons/glyphs/lock";
 import { IconMore } from "@/ui/icons/glyphs/more";
-import { LazySheet } from "@/ui/components/overlays";
+import { LazyAlertDialog, LazySheet } from "@/ui/components/overlays";
 
 import { useDeviceLock } from "../lock/DeviceLock";
+import { signOutStaff, unsentOnDevice } from "../pwa/leaveDevice";
 import { PushPrompt } from "../pwa/PushPrompt";
 import { SyncCenter } from "../pwa/SyncCenter";
 
 export interface StaffShellFrameProps {
+  /** The signed-in staff member: the offline queue binds what it holds to them and the tenant (review M3). */
+  userId: string;
   tenants: Schemas["OperatorTenantDto"][];
   currentTenant: Schemas["CurrentTenantDto"];
   userName: string;
@@ -49,6 +53,19 @@ export function StaffShellFrame(props: StaffShellFrameProps) {
   const pathname = usePathname();
   const lock = useDeviceLock();
   const [moreOpen, setMoreOpen] = useState(false);
+  const [unsent, setUnsent] = useState<number | null>(null);
+  const [leaving, startLeaving] = useTransition();
+  // Set during render (not in an effect) so it is in place before any child's mount effect replays the queue;
+  // browser only — module state on the server would be shared between requests.
+  if (typeof window !== "undefined") setQueueIdentity({ userId: props.userId, tenantId: props.currentTenant.id });
+  const leave = () => startLeaving(() => signOutStaff("/login"));
+  /** Sign-out deletes what is unsent on this phone (review H2): say so first when there is something. */
+  const requestSignOut = () =>
+    startLeaving(async () => {
+      const count = await unsentOnDevice();
+      if (count > 0) setUnsent(count);
+      else await signOutStaff("/login");
+    });
   // Marks the document interactive (hydrated): field automation and the e2e suite wait for it instead
   // of tapping server-rendered buttons that do nothing yet.
   useEffect(() => {
@@ -96,6 +113,7 @@ export function StaffShellFrame(props: StaffShellFrameProps) {
               roleLabel={props.roleLabel}
               loginHref="/login"
               size="lg"
+              onSignOut={requestSignOut}
               extraItems={[
                 {
                   id: "pin",
@@ -124,6 +142,17 @@ export function StaffShellFrame(props: StaffShellFrameProps) {
       {props.banner}
       <PushPrompt vapidPublicKey={props.vapidPublicKey} />
       {props.children}
+      <LazyAlertDialog
+        open={unsent !== null}
+        onOpenChange={(next) => !next && !leaving && setUnsent(null)}
+        title={t("staff.offline.signOutUnsentTitle")}
+        description={t("staff.offline.signOutUnsent", { count: unsent ?? 0 })}
+        confirmLabel={t("auth.signOut")}
+        cancelLabel={t("common.cancel")}
+        tone="destructive"
+        loading={leaving}
+        onConfirm={leave}
+      />
       <LazySheet open={moreOpen} onOpenChange={setMoreOpen} title={t("shell.moreMenu")} closeLabel={t("common.close")}>
         <ul className="flex flex-col gap-1">
           {rest.map((item) => (

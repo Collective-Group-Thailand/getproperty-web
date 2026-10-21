@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { HOSTS, MOCK_API } from "../playwright.config";
-import { expectAxeClean, expectTargets48, hydrated, mock, signInStaff } from "./support/staff";
+import { expectAxeClean, expectTargets48, hydrated, mock, sendThrough, signInStaff } from "./support/staff";
 
 /**
  * F4 4.2 on the mock API: the move-out checklist beside the move-in, multi-shot photos compressed on
@@ -50,7 +50,7 @@ async function inspection(id: string): Promise<MockInspection> {
   return (await mock<MockInspection[]>("/__mock/staff/inspections")).find((candidate) => candidate.id === id)!;
 }
 
-test("move-out beside the move-in, photos, offline checklist kept across a reload, synced when online", async ({
+test("move-out beside the move-in, photos, offline checklist kept on the device across a reload, synced when online", async ({
   page,
   context,
 }) => {
@@ -106,16 +106,22 @@ test("move-out beside the move-in, photos, offline checklist kept across a reloa
   await item(page, "meter:electric").getByRole("button", { name: "Save the register" }).click();
   await expect(page.getByTestId("sync-line")).toContainText("No signal");
 
+  expect((await inspection(MOVE_OUT_A201)).items.find((line) => line.itemKey === "floor")!.condition).toBeNull();
+
+  // A reload without signal gets the worker's static offline page: no rendered page is ever cached (review H2).
+  await page.reload().catch(() => undefined);
+  await expect(page.getByRole("heading", { name: "ไม่มีการเชื่อมต่อ" })).toBeVisible();
+  await expect(page.getByTestId("inspection-checklist")).toHaveCount(0);
+
+  // Back online: the page opens with what was typed offline (kept in IndexedDB), and the draft is sent with
+  // If-Match until the API has every line.
+  await context.setOffline(false);
   await page.reload();
   await expect(page.getByTestId("inspection-checklist")).toBeVisible();
   await hydrated(page);
   await expect(item(page, "floor").getByLabel("Note")).toHaveValue("รอยขีดข่วนหน้าตู้");
   await expect(item(page, "floor").getByRole("radio", { name: "Fair" })).toBeChecked();
   await expect(item(page, "meter:electric").getByTestId("register-button")).toContainText("9,850.5 kWh");
-  expect((await inspection(MOVE_OUT_A201)).items.find((line) => line.itemKey === "floor")!.condition).toBeNull();
-
-  // Back online: the draft is sent with If-Match and the API has every line.
-  await context.setOffline(false);
   await expect(page.getByTestId("inspection-checklist")).toHaveAttribute("data-sync", "saved", { timeout: 20_000 });
   const saved = await inspection(MOVE_OUT_A201);
   expect(saved.status).toBe("in_progress");
@@ -203,6 +209,17 @@ test("completes with the inspector's and the resident's signatures drawn on the 
   await panel.getByLabel("Report notes").fill("คืนกุญแจครบ 2 ดอก");
   await expectAxeClean(page, "[data-testid=complete-panel]");
   await expectTargets48(panel);
+  // The API records the completion but the answer is lost (review M1): pressing again sends the same key with
+  // the same body and gets the recorded completion back.
+  let lost = false;
+  await page.route("**/bff/v1/staff/inspections/*/actions/complete", async (route) => {
+    if (lost) return route.continue();
+    lost = true;
+    await sendThrough(route);
+    await route.abort("connectionreset");
+  });
+  await page.getByTestId("complete-submit").click();
+  await expect(panel.getByText("You need signal to complete the inspection.")).toBeVisible();
   await page.getByTestId("complete-submit").click();
 
   await expect(page.getByText("Inspection completed")).toBeVisible();
