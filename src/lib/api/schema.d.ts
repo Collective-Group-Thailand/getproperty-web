@@ -9371,9 +9371,9 @@ export interface paths {
         put?: never;
         /**
          * Book a facility
-         * @description For a unit I occupy, in whole slots inside the opening hours and the weekly quota of my unit (422 `facility.quota_exceeded`); confirmed at once or waiting for approval; a slot someone already holds is 409 `facility.slot_taken`.
+         * @description For a unit I occupy, in whole slots inside the opening hours and the weekly quota of my unit (422 `facility.quota_exceeded`); confirmed at once or waiting for approval; a slot someone already holds is 409 `facility.slot_taken`. Send an `Idempotency-Key`: a retry with the same key and body answers the booking made instead of 409 for my own slot (D-229).
          *
-         *     Implements: D-073.
+         *     Implements: D-073, D-229.
          */
         post: operations["resident.community.book"];
         delete?: never;
@@ -9523,9 +9523,9 @@ export interface paths {
         };
         /**
          * Pay an invoice: Thai QR and account
-         * @description What is due now (this invoice and earlier unpaid ones, oldest paid first, D-193), the Thai QR for it (Tag 30, created when missing, expired or for another amount — the money goes to the landlord’s own account, D-042), the account for a plain transfer (in full with its bank code while something is due — the reveal is audited, D-209), and whether slips and partial payments are accepted.
+         * @description What is due now (this invoice and earlier unpaid ones, oldest paid first, D-193), the Thai QR for it (Tag 30, created when missing, expired or for another amount — the money goes to the landlord’s own account, D-042), the account for a plain transfer (in full with its bank code while something is due — the reveal is audited, D-209), and whether slips and partial payments are accepted. `checking` tells me a transfer of mine for this invoice is held for the office (D-220, D-228) — never its amount, reason or the payment it may repeat.
          *
-         *     Implements: D-042, D-043, D-154, D-209.
+         *     Implements: D-042, D-043, D-154, D-209, D-228.
          */
         get: operations["resident.invoices.payment"];
         put?: never;
@@ -9663,9 +9663,9 @@ export interface paths {
         put?: never;
         /**
          * Give my 30-day notice
-         * @description The lessee ends the lease with written notice of at least 30 days (ข้อ 4 (11), `compliance.notice_period`); shorter periods are refused here — talk to the office (D-020).
+         * @description The lessee ends the lease with written notice of at least 30 days (ข้อ 4 (11), `compliance.notice_period`); shorter periods are refused here — talk to the office (D-020). The notice is legally significant and irreversible: `Idempotency-Key` is required, and a retry with the same key and body answers the recorded notice (`Idempotent-Replayed: true`) instead of 409 (D-229).
          *
-         *     Implements: D-020, D-063.
+         *     Implements: D-020, D-063, D-229.
          */
         post: operations["resident.leases.giveNotice"];
         delete?: never;
@@ -11785,9 +11785,9 @@ export interface paths {
         };
         /**
          * Who I am in the technician app
-         * @description The technician and the work orders their token covers (`work_order:<uuid>`, B5.1); details in `GET /v1/technician/work-orders`.
+         * @description The technician and the work orders their token covers (`work_order:<uuid>`, B5.1); details in `GET /v1/technician/work-orders`. `linkRequestsPending` counts the SMS-matched parties still waiting for the office to confirm me (D-226).
          *
-         *     Implements: D-072, D-154.
+         *     Implements: D-072, D-154, D-226.
          */
         get: operations["technician.me.get"];
         put?: never;
@@ -11985,9 +11985,9 @@ export interface paths {
         put?: never;
         /**
          * Complete the job
-         * @description With at least one after photo uploaded (`POST …/photos`, role `after`; 422 `work_order.photo_required`) and an optional note.
+         * @description With at least one after photo uploaded (`POST …/photos`, role `after`; 422 `work_order.photo_required`) and an optional note. Irreversible: send an `Idempotency-Key` so a retry after a lost answer replays it instead of 409 (D-229).
          *
-         *     Implements: D-072.
+         *     Implements: D-072, D-229.
          */
         post: operations["technician.workOrders.complete"];
         delete?: never;
@@ -12051,9 +12051,9 @@ export interface paths {
         put?: never;
         /**
          * Record parts / labour
-         * @description THB decimal strings; the owner verifies them with the work order.
+         * @description THB decimal strings; the owner verifies them with the work order. Send an `Idempotency-Key`: a retry with the same key and body replays the answer instead of adding the line twice (D-229).
          *
-         *     Implements: D-072, D-046.
+         *     Implements: D-072, D-046, D-229.
          */
         post: operations["technician.workOrders.addCost"];
         delete?: never;
@@ -23085,6 +23085,19 @@ export interface components {
         ResidentParcelsDto: {
             data: components["schemas"]["ResidentParcelDto"][];
         };
+        ResidentPaymentCheckingDto: {
+            /**
+             * @description How many of my payments for this invoice are held for the office.
+             * @example 1
+             */
+            count: number;
+            /**
+             * Format: date-time
+             * @description When the oldest of them was received.
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            since: string;
+        };
         ResidentPaymentDto: {
             /** @description For a plain transfer (then upload the slip). */
             account: components["schemas"]["ResidentAccountDto"] | null;
@@ -23092,6 +23105,8 @@ export interface components {
             allowPartial: boolean;
             /** @example true */
             allowSlip: boolean;
+            /** @description A QR / bank-settlement payment of mine for this invoice that looks like a transfer already booked is held for the office to check (D-220, D-228): the pay sheet says “a transfer is being checked by the office”. The bill (`due`, the invoice status) stays what decides; null when nothing of mine is held. */
+            checking: components["schemas"]["ResidentPaymentCheckingDto"] | null;
             /**
              * @description Due now (this invoice and earlier unpaid ones, oldest paid first). Unit: THB, decimal string (D-046).
              * @example 5344.00
@@ -25634,6 +25649,11 @@ export interface components {
         /** @enum {string} */
         TariffVersionState: "draft" | "entered" | "verified" | "published" | "superseded";
         TechnicianMeDto: {
+            /**
+             * @description Parties matched by my SMS-verified phone that wait for their landlord’s confirmation before their work orders reach me (D-226, LIFF #29): with no work orders and a count above 0 show “waiting for the office to confirm you”, not “no work assigned yet”.
+             * @example 0
+             */
+            linkRequestsPending: number;
             /** @example [] */
             scopes: string[];
             user: components["schemas"]["MeUserDto"];
@@ -89581,6 +89601,8 @@ export interface operations {
             header?: {
                 /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
                 "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Recommended client-generated uuid. When sent, a replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. Without it the request is not deduplicated. */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
             };
             path?: never;
             cookie?: never;
@@ -89594,6 +89616,7 @@ export interface operations {
             /** @description Booked */
             201: {
                 headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
                     "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
                     "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
                     "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
@@ -89618,7 +89641,7 @@ export interface operations {
                     "application/json": components["schemas"]["BookingDto"];
                 };
             };
-            /** @description Problem: `http.bad_request` */
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid` */
             400: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -89658,7 +89681,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `facility.slot_taken`, `facility.unavailable` */
+            /** @description Problem: `facility.slot_taken`, `facility.unavailable`, `idempotency.in_progress` */
             409: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -89668,7 +89691,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `facility.quota_exceeded`, `validation.failed` */
+            /** @description Problem: `facility.quota_exceeded`, `idempotency.key_reused`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -90504,6 +90527,7 @@ export interface operations {
                      *       },
                      *       "allowPartial": false,
                      *       "allowSlip": true,
+                     *       "checking": null,
                      *       "due": "5344.00",
                      *       "invoiceId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "number": "INV-2026-00042",
@@ -91334,9 +91358,11 @@ export interface operations {
     "resident.leases.giveNotice": {
         parameters: {
             query?: never;
-            header?: {
+            header: {
                 /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
                 "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
             };
             path: {
                 leaseId: string;
@@ -91352,6 +91378,7 @@ export interface operations {
             /** @description Notice recorded */
             200: {
                 headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
                     "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
                     "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
                     "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
@@ -91409,7 +91436,7 @@ export interface operations {
                     "application/json": components["schemas"]["ResidentLeaseDto"];
                 };
             };
-            /** @description Problem: `http.bad_request` */
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required` */
             400: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -91449,7 +91476,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `lease.invalid_state` */
+            /** @description Problem: `idempotency.in_progress`, `lease.invalid_state` */
             409: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -91459,7 +91486,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `compliance.notice_period`, `validation.failed` */
+            /** @description Problem: `compliance.notice_period`, `idempotency.key_reused`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -105731,6 +105758,7 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "linkRequestsPending": 0,
                      *       "scopes": [],
                      *       "user": {
                      *         "displayName": "Somchai Test",
@@ -106884,6 +106912,8 @@ export interface operations {
             header?: {
                 /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
                 "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Recommended client-generated uuid. When sent, a replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. Without it the request is not deduplicated. */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
             };
             path: {
                 workOrderId: string;
@@ -106899,6 +106929,7 @@ export interface operations {
             /** @description Done */
             200: {
                 headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
                     "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
                     "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
                     "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
@@ -106976,7 +107007,7 @@ export interface operations {
                     "application/json": components["schemas"]["TechnicianWorkOrderDto"];
                 };
             };
-            /** @description Problem: `http.bad_request` */
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid` */
             400: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -107016,7 +107047,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `work_order.invalid_state` */
+            /** @description Problem: `idempotency.in_progress`, `work_order.invalid_state` */
             409: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -107036,7 +107067,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `validation.failed`, `work_order.photo_required` */
+            /** @description Problem: `idempotency.key_reused`, `validation.failed`, `work_order.photo_required` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -107451,6 +107482,8 @@ export interface operations {
             header?: {
                 /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
                 "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Recommended client-generated uuid. When sent, a replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. Without it the request is not deduplicated. */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
             };
             path: {
                 workOrderId: string;
@@ -107466,6 +107499,7 @@ export interface operations {
             /** @description Added */
             201: {
                 headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
                     "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
                     "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
                     "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
@@ -107547,7 +107581,7 @@ export interface operations {
                     "application/json": components["schemas"]["TechnicianWorkOrderDto"];
                 };
             };
-            /** @description Problem: `http.bad_request` */
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid` */
             400: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -107587,7 +107621,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `work_order.invalid_state` */
+            /** @description Problem: `idempotency.in_progress`, `work_order.invalid_state` */
             409: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -107607,7 +107641,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `validation.failed` */
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
