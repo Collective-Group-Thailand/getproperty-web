@@ -33,6 +33,8 @@ export interface RefreshGrant {
   family: string;
   used: boolean;
   revoked: boolean;
+  /** Set when rotated: the successor's refresh token and when it was issued (D-229 rotation grace). */
+  successor?: { refreshToken: string; at: number };
 }
 
 export interface LoggedRequest {

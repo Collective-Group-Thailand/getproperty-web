@@ -7,6 +7,8 @@ import { issueTokens, json, problem } from "./support";
 /** Stateful `/v1/auth/*` (contract §4): OTP challenges, password + TOTP, enrolment, rotation, logout. */
 
 const MAX_ATTEMPTS = 5;
+/** getproperty-api's default `REFRESH_REUSE_GRACE_SECONDS` (D-229). */
+const REFRESH_REUSE_GRACE_MS = 30_000;
 
 function subject(audience: "operator" | "platform", key: string) {
   if (audience === "operator") {
@@ -122,16 +124,34 @@ export const authHandlers: HttpHandler[] = [
     const body = (await request.json().catch(() => ({}))) as { refreshToken?: string };
     const grant = body.refreshToken ? state.refresh.get(body.refreshToken) : undefined;
     if (!grant || grant.revoked) return problem("auth.sessions.refresh", "auth.refresh_invalid");
+    const successor = grant.successor && state.refresh.get(grant.successor.refreshToken);
+    if (
+      grant.used &&
+      grant.successor &&
+      successor &&
+      !successor.used &&
+      !successor.revoked &&
+      Date.now() - grant.successor.at <= REFRESH_REUSE_GRACE_MS
+    ) {
+      // D-229 rotation grace: the previous token again, within the window and before its successor was used, answers
+      // the same successor refresh token with a fresh access token (a page load whose requests raced the rotation).
+      const fresh = issueTokens(grant.audience, grant.userKey, grant.family);
+      state.refresh.delete(fresh.refreshToken);
+      return json({
+        ...fresh,
+        refreshToken: grant.successor.refreshToken,
+        subject: subject(grant.audience, grant.userKey),
+      });
+    }
     if (grant.used) {
       // Reuse of a rotated token ends the whole sign-in (D-163).
       for (const other of state.refresh.values()) if (other.family === grant.family) other.revoked = true;
       return problem("auth.sessions.refresh", "auth.refresh_reused");
     }
     grant.used = true;
-    return json({
-      ...issueTokens(grant.audience, grant.userKey, grant.family),
-      subject: subject(grant.audience, grant.userKey),
-    });
+    const pair = issueTokens(grant.audience, grant.userKey, grant.family);
+    grant.successor = { refreshToken: pair.refreshToken, at: Date.now() };
+    return json({ ...pair, subject: subject(grant.audience, grant.userKey) });
   }),
 
   http.post("*/v1/auth/logout", async ({ request }) => {

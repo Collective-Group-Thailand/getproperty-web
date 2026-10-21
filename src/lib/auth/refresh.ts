@@ -22,7 +22,15 @@ interface Entry {
   settledAt?: number;
 }
 
-const inflight = new Map<string, Entry>();
+/**
+ * Kept on `globalThis`: Next bundles the proxy and every route handler separately, so a module-level map would exist
+ * once per bundle and the proxy's refresh and a BFF call of the same page load would exchange the same token twice
+ * (the API's rotation grace, D-229, answers the second with the same successor, but only within its window).
+ */
+const INFLIGHT_KEY = Symbol.for("getproperty-web.refresh-inflight");
+const inflight: Map<string, Entry> = ((globalThis as typeof globalThis & { [INFLIGHT_KEY]?: Map<string, Entry> })[
+  INFLIGHT_KEY
+] ??= new Map<string, Entry>());
 
 async function digest(token: string): Promise<string> {
   const bytes = new TextEncoder().encode(token);
