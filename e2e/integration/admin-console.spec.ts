@@ -9,7 +9,9 @@ import { requestOtp } from "./otp";
  * and publishes it (the maker is never offered `verify`); the admin sets the trial length to zero in the
  * platform settings and subscribes the console tenant to Apartment Starter; the hourly subscription job
  * (run by the harness) issues the first platform invoice; the tenant's owner sees it on the subscription
- * page with its Thai QR.
+ * page with its Thai QR. F11: the admin allows a new gateway's MQTT WebSocket fallback (typed, with the
+ * accepted risks of D-239) and sets, then revokes, the console tenant's e-Tax credential — values write-only
+ * (D-240).
  */
 test.describe.configure({ mode: "serial" });
 test.setTimeout(240_000);
@@ -180,4 +182,74 @@ test("the admin subscribes the console tenant; the hourly job issues the invoice
     await expect(owner.getByTestId("qr-image")).toBeVisible({ timeout: 2_000 });
   }).toPass({ timeout: 60_000 });
   await owner.close();
+});
+
+test("F11: a gateway's WebSocket fallback (D-239) and a tenant's write-only provider credential (D-240)", async ({
+  browser,
+}) => {
+  const admin = await browser.newPage();
+  if (Math.floor(Date.now() / 30_000) === lastAdminStep) await admin.waitForTimeout(30_500 - (Date.now() % 30_000));
+  await signInPlatform(admin, world.adminEmail, world.adminPassword, world.adminSecret);
+
+  // A gateway in the stock: the API offers `set-mqtt-transport` for every gateway that is not retired.
+  const serial = `GW-INT-${Date.now().toString(36).toUpperCase()}`;
+  await gotoAdmin(admin, "/devices");
+  await admin.getByTestId("register-device").click();
+  const register = admin.getByRole("dialog");
+  await register.getByTestId("device-serial").fill(serial);
+  await register.locator('input[name="vendor"]').fill("Collective");
+  await register.locator('input[name="model"]').fill("GP-GW1");
+  await register.getByTestId("form-submit").click();
+  await expect(register).toHaveCount(0);
+  await gotoAdmin(admin, `/devices?q=${serial}`);
+  await admin.getByTestId("device-row").first().getByRole("link").click();
+  await expect(admin.getByTestId("device-title")).toHaveText(serial);
+  await hydrated(admin, "admin");
+  await expect(admin.getByTestId("mqtt-transport")).toHaveAttribute("data-ws-fallback", "false");
+  await admin.getByTestId("set-mqtt-transport").click();
+  const enable = admin.getByRole("alertdialog");
+  await expect(enable.getByTestId("transport-risks")).toContainText("ADR-0015");
+  await enable.getByTestId("transport-reason").fill("web integration: building blocks 8883");
+  await typePhrase(enable);
+  await enable.getByRole("button", { name: /^(อนุญาต|Allow fallback)$/ }).click();
+  await expect(enable).toHaveCount(0);
+  await expect(admin.getByTestId("mqtt-transport")).toHaveAttribute("data-ws-fallback", "true");
+  await gotoAdmin(admin, `/devices?q=${serial}`);
+  await expect(admin.getByTestId("device-row").first()).toHaveAttribute("data-ws-fallback", "true");
+
+  // The console tenant's e-Tax account: values typed once, never shown; revoke typed with the fingerprint.
+  const secret = `inet-secret-${Date.now()}`;
+  await gotoAdmin(admin, "/tenants?q=web-integration-f2");
+  await admin.getByTestId("tenant-row").first().getByRole("link").click();
+  await expect(admin.getByTestId("tenant-title")).toHaveText(world.tenantName);
+  await admin.getByTestId("tenant-tab-credentials").click();
+  await expect(admin.getByTestId("tenant-credentials")).toBeVisible();
+  await hydrated(admin, "admin");
+  await admin.getByTestId("set-credential").click();
+  const set = admin.getByRole("dialog");
+  await set.getByTestId("credential-kind").selectOption("etax");
+  await expect(set.getByTestId("credential-key")).toHaveCount(3);
+  for (const [index, value] of [`${secret}-a`, "U-0001", `${secret}-b`].entries())
+    await set.getByTestId("credential-value").nth(index).fill(value);
+  await set.getByTestId("credential-reason").fill("web integration: INET test account");
+  await set.getByTestId("form-submit").click();
+  await expect(set).toHaveCount(0);
+  const row = admin.locator('[data-testid="credential-row"][data-provider="inet"][data-live="true"]');
+  await expect(row).toHaveCount(1);
+  await expect(row).toContainText("accessKey");
+  await expect(row.locator("code").last()).toHaveText(/^[0-9a-f]{6,}$/);
+  await expect(admin.locator("body")).not.toContainText(secret);
+
+  await row.getByTestId("revoke-credential").click();
+  const revoke = admin.getByRole("alertdialog");
+  await revoke.getByTestId("revoke-reason").fill("web integration: revoke the test account");
+  await typePhrase(revoke);
+  await revoke.getByRole("button", { name: /^(เพิกถอน|Revoke)$/ }).click();
+  await expect(revoke).toHaveCount(0);
+  await expect(admin.locator('[data-testid="credential-row"][data-provider="inet"]')).toHaveCount(0);
+  await admin.getByTestId("filter-state").selectOption("all");
+  await expect(admin.locator('[data-testid="credential-row"][data-provider="inet"]')).toContainText(
+    "web integration: revoke the test account",
+  );
+  await admin.close();
 });

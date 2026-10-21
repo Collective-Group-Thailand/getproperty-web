@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import Link from "next/link";
 
 import { ConsolePage, PageHeader } from "@/features/shared/console/PageHeader";
 import { SectionError } from "@/features/shared/console/SectionError";
@@ -7,6 +8,8 @@ import type { SettingValueType } from "@/features/shared/console/SettingEditor";
 import { formatDateTime } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import { Badge } from "@/ui/components/Badge";
+import { Button } from "@/ui/components/Button";
+import { IconKey } from "@/ui/icons/glyphs/key";
 import { Input } from "@/ui/components/Input";
 
 import { can, param, section, type AdminContext } from "../shared/server";
@@ -38,7 +41,19 @@ export async function SettingsView({
   const permissions = new Set(me.permissions);
   return (
     <ConsolePage testId="platform-settings">
-      <PageHeader title={t("title")} description={t("description")} />
+      <PageHeader
+        title={t("title")}
+        description={t("description")}
+        actions={
+          can(me, "admin.provider_credential.manage") ? (
+            <Button asChild variant="secondary" iconStart={IconKey}>
+              <Link href="/provider-credentials" data-testid="provider-credentials-link">
+                {t("credentialsLink")}
+              </Link>
+            </Button>
+          ) : null
+        }
+      />
       <form method="get" className="flex flex-wrap items-end gap-2" role="search">
         <label className="flex flex-col gap-1 text-sm">
           {t("filter")}

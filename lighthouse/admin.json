@@ -1,6 +1,6 @@
 {
   "extends": "./shared.json",
-  "$comment": "Platform admin console: LCP ≤ 2.5 s, CLS ≤ 0.1, initial JS ≤ 260 KB gz (D-179, docs/performance-budgets.md) — a hard limit on every URL. Measured signed in as a platform admin (scripts/lhci.ts). F5: home queues, tenants list/detail/subscription/pilot, a platform invoice, the tariff manager, settings, audit, outbox, fleet list/gateway and a live OTA rollout. One run per URL; the JS size does not vary between runs.",
+  "$comment": "Platform admin console: LCP ≤ 2.5 s, CLS ≤ 0.1, initial JS ≤ 260 KB gz (D-179, docs/performance-budgets.md) — a hard limit on every URL. Measured signed in as a platform admin (scripts/lhci.ts). F5: home queues, tenants list/detail/subscription/pilot, a platform invoice, the tariff manager, settings, audit, outbox, fleet list/gateway and a live OTA rollout; F11: a tenant's provider credentials and the platform credentials page. One run per URL; the JS size does not vary between runs.",
   "ci": {
     "collect": {
       "url": [
@@ -9,6 +9,8 @@
         "http://admin.localhost:3200/tenants/0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11",
         "http://admin.localhost:3200/tenants/0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11/subscription",
         "http://admin.localhost:3200/tenants/0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11/pilot",
+        "http://admin.localhost:3200/tenants/0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11/credentials",
+        "http://admin.localhost:3200/provider-credentials",
         "http://admin.localhost:3200/subscriptions/invoices/8b000000-0000-4000-8000-000000000001",
         "http://admin.localhost:3200/tariffs/9b000000-0000-4000-8000-000000000001",
         "http://admin.localhost:3200/settings",

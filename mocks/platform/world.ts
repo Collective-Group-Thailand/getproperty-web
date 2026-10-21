@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 import type { components } from "../../src/lib/api/schema";
 import { TENANTS } from "../fixtures";
 
@@ -251,6 +253,8 @@ export interface PlatformWorld {
   rollouts: Schemas["OtaRolloutDto"][];
   ingestDeadLetters: Schemas["DeadLetterDto"][];
   platformUsers: Schemas["PlatformUserDto"][];
+  /** Provider credentials (D-240): the API's metadata row and the hash of a payment's merchant reference — never values. */
+  providerCredentials: { row: Schemas["ProviderCredentialDto"]; accountRefHash: string | null }[];
   replies: Map<string, { status: number; body: unknown; fingerprint: string }>;
   received: { op: string; idempotencyKey: string | null; body: unknown }[];
 }
@@ -414,6 +418,7 @@ function gateway(
       status === "online" ? iso(-0.002) : status === "offline" ? iso(-0.4) : status === "degraded" ? iso(-0.01) : null,
     meters: status === "inventory" ? 0 : 12,
     otaRing: ring,
+    mqttWsFallback: false,
     health:
       status === "inventory" || status === "assigned"
         ? null
@@ -434,6 +439,11 @@ function gateway(
 }
 
 /** A device's admin `nextActions` as getproperty-api computes them (`deviceNextActions(d, "admin")`, smart.mappers.ts). */
+/** The hash a payment credential is matched by (getproperty-api keeps only the hash of the merchant reference). */
+export function merchantRefHash(merchantRef: string): string {
+  return createHash("sha256").update(merchantRef.trim()).digest("hex");
+}
+
 export function deviceNextActions(device: Schemas["FleetDeviceDto"]): string[] {
   const out: string[] = [];
   const live =
@@ -444,6 +454,7 @@ export function deviceNextActions(device: Schemas["FleetDeviceDto"]): string[] {
   if (live) out.push("read-now", "restart", "identify", "upload-logs");
   if (device.status !== "retired" && !device.assetItemId) out.push("assign");
   if (device.kind === "gateway") out.push("set-ring");
+  if (device.kind === "gateway" && device.status !== "retired") out.push("set-mqtt-transport");
   if (device.kind === "gateway" && device.status !== "retired") out.push("revoke-certificates");
   if (device.status !== "retired" && device.meters === 0 && !device.assetItemId) out.push("retire");
   return out;
@@ -1388,7 +1399,10 @@ export function initialPlatformWorld(): PlatformWorld {
     ],
     devices: [
       gateway(DEVICE_IDS.gwSampleA, "GW-0001", "online", TENANT_IDS.sample, BUILDINGS.sampleA, "pilot"),
-      gateway(DEVICE_IDS.gwSampleB, "GW-0002", "offline", TENANT_IDS.sample, BUILDINGS.sampleB, "canary"),
+      // A building whose network blocks outbound 8883: the platform admin allowed the WebSocket fallback (D-239).
+      gateway(DEVICE_IDS.gwSampleB, "GW-0002", "offline", TENANT_IDS.sample, BUILDINGS.sampleB, "canary", {
+        mqttWsFallback: true,
+      }),
       gateway(DEVICE_IDS.gwGarden, "GW-0003", "degraded", TENANT_IDS.garden, BUILDINGS.garden, "canary", {
         configAppliedVersion: 3,
       }),
@@ -1456,9 +1470,18 @@ export function initialPlatformWorld(): PlatformWorld {
     deviceEvents: {
       [DEVICE_IDS.gwGarden]: [
         {
+          // T-13 (D-241): the per-meter change a heartbeat reports, instead of the whole meters[] array.
+          id: "a6000000-0000-4000-8000-000000000003",
+          deviceId: "2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e91",
+          type: "meter_status_changed",
+          severity: "warning",
+          message: "meter 2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e91 ok → stale",
+          occurredAt: iso(-0.01),
+        },
+        {
           id: "a6000000-0000-4000-8000-000000000001",
           deviceId: DEVICE_IDS.gwGarden,
-          type: "meter.not_responding",
+          type: "meter_offline",
           severity: "warning",
           message: "Modbus address 7 timed out 3 times",
           occurredAt: iso(-0.02),
@@ -1466,7 +1489,7 @@ export function initialPlatformWorld(): PlatformWorld {
         {
           id: "a6000000-0000-4000-8000-000000000002",
           deviceId: DEVICE_IDS.gwGarden,
-          type: "agent.started",
+          type: "restart",
           severity: "info",
           message: "agent 0.3.0 started",
           occurredAt: iso(-1),
@@ -1643,6 +1666,72 @@ export function initialPlatformWorld(): PlatformWorld {
         status: "active",
         totpEnabled: true,
         lastLoginAt: iso(-4),
+      },
+    ],
+    providerCredentials: [
+      {
+        row: {
+          id: "ac000000-0000-4000-8000-000000000001",
+          tenantId: TENANT_IDS.sample,
+          kind: "payment",
+          provider: "kbank",
+          accountRefHint: "0042",
+          keyNames: ["consumerId", "consumerSecret", "merchantId", "partnerId", "partnerSecret", "webhookSecret"],
+          fingerprint: "9a1f03c2b7de",
+          source: "import",
+          createdAt: iso(-30),
+          revokedAt: null,
+          revokeReason: null,
+        },
+        accountRefHash: merchantRefHash("KB-M-000042"),
+      },
+      {
+        row: {
+          id: "ac000000-0000-4000-8000-000000000002",
+          tenantId: TENANT_IDS.sample,
+          kind: "lock",
+          provider: "ttlock",
+          accountRefHint: null,
+          keyNames: ["clientId", "clientSecret", "password", "username"],
+          fingerprint: "4c7e19a0d2f3",
+          source: "admin",
+          createdAt: iso(-12),
+          revokedAt: null,
+          revokeReason: null,
+        },
+        accountRefHash: null,
+      },
+      {
+        row: {
+          id: "ac000000-0000-4000-8000-000000000003",
+          tenantId: TENANT_IDS.sample,
+          kind: "lock",
+          provider: "ttlock",
+          accountRefHint: null,
+          keyNames: ["clientId", "clientSecret", "password", "username"],
+          fingerprint: "0b3d5e7f9a1c",
+          source: "import",
+          createdAt: iso(-40),
+          revokedAt: iso(-12),
+          revokeReason: "replaced: new TTLock developer account (ticket OPS-2026-118)",
+        },
+        accountRefHash: null,
+      },
+      {
+        row: {
+          id: "ac000000-0000-4000-8000-000000000004",
+          tenantId: null,
+          kind: "payment",
+          provider: "scb",
+          accountRefHint: "7781",
+          keyNames: ["apiKey", "apiSecret", "billerId", "webhookSecret"],
+          fingerprint: "e21c6a8b0f44",
+          source: "import",
+          createdAt: iso(-30),
+          revokedAt: null,
+          revokeReason: null,
+        },
+        accountRefHash: merchantRefHash("SCB-BILLER-7781"),
       },
     ],
     replies: new Map(),

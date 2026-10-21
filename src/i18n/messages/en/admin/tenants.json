@@ -28,7 +28,8 @@
     "ai-usage": "AI usage",
     "flags": "Feature flags",
     "support": "Support",
-    "view": "View as tenant"
+    "view": "View as tenant",
+    "credentials": "Credentials"
   },
   "onboard": {
     "open": "Onboard a tenant",

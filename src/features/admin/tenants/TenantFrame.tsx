@@ -23,6 +23,7 @@ export type TenantTab =
   | "pilot"
   | "ai-usage"
   | "flags"
+  | "credentials"
   | "support"
   | "view";
 
@@ -35,6 +36,7 @@ function tabsFor(me: AdminMe): TenantTab[] {
   if (business) tabs.push("pilot");
   if (can(me, "admin.ai_usage.read")) tabs.push("ai-usage");
   tabs.push("flags");
+  if (can(me, "admin.provider_credential.manage")) tabs.push("credentials");
   if (can(me, "admin.support_grant.request") || can(me, "admin.support_grant.approve_incident")) tabs.push("support");
   tabs.push("view");
   return tabs;
@@ -53,7 +55,7 @@ export async function loadTenant(context: AdminContext, tenantId: string): Promi
 /**
  * A tenant's pages (F5 5.1): the tenant's name, type and status, and its tabs — overview & health,
  * subscription, platform invoices, rented hardware, install orders & surveys, pilot & KPIs, AI usage,
- * feature flags, support grants and the read-only "view as tenant".
+ * feature flags, provider credentials (D-240), support grants and the read-only "view as tenant".
  */
 export async function TenantFrame({
   context,

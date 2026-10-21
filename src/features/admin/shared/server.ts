@@ -46,6 +46,7 @@ export type AdminPermission =
   | "admin.audit.read"
   | "admin.dsr.manage"
   | "admin.device.manage"
+  | "admin.provider_credential.manage"
   | "admin.subscription.manage"
   | "admin.platform_invoice.issue"
   | "admin.platform_credit_note.approve"

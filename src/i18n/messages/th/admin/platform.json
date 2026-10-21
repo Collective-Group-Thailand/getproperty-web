@@ -46,7 +46,8 @@
       "platform": "แพลตฟอร์ม",
       "tenant": "ลูกค้า",
       "property": "โครงการ"
-    }
+    },
+    "credentialsLink": "ข้อมูลรับรองผู้ให้บริการ"
   },
   "templates": {
     "title": "แม่แบบข้อความ",

@@ -46,7 +46,8 @@
       "platform": "Platform",
       "tenant": "Tenant",
       "property": "Property"
-    }
+    },
+    "credentialsLink": "Provider credentials"
   },
   "templates": {
     "title": "Message templates",
