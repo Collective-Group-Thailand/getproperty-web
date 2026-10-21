@@ -6,7 +6,7 @@ with `pnpm shared:check`. This file lists, newest first, the changes here that t
 over; the liff session re-copies them (from a `git archive` of the commit named, never from a working tree),
 updates its manifest rows and runs `pnpm shared:check --strict`, `pnpm tokens`, `pnpm test`.
 
-## 2026-10-21 — the founder's logo (commit in `docs/PROGRESS.md`, entry "Brand: the founder's logo")
+## 2026-10-21 — the founder's logo (getproperty-web `79541bc`)
 
 The placeholder mark (D-100) and the teal palette are gone; the logo is the founder's artwork (`docs/brand`),
 the `primary` tokens are the logo's blues. Liff's `Mark.tsx` / `Wordmark.tsx` copies still draw the old
