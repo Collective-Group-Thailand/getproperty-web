@@ -116,7 +116,10 @@ function series(
   const span = bucket === "15m" ? 900_000 : bucket === "1h" ? 3_600_000 : 86_400_000;
   const points: Schemas["SeriesPointDto"][] = [];
   let register = milli(meter.last?.register ?? "1000.000");
-  const start = Math.floor(from / span) * span;
+  // D-241 (T-14): 15-minute points are computed from raw points (kept 24 months); hourly / daily rollups 5 years.
+  const oldest = new Date(to);
+  oldest.setUTCMonth(oldest.getUTCMonth() - (bucket === "15m" ? 24 : 60));
+  const start = Math.floor(Math.max(from, oldest.getTime()) / span) * span;
   for (let at = start; at < to && points.length < 3000; at += span) {
     const hour = new Date(at + 7 * 3_600_000).getUTCHours();
     const daily = meter.utility === "electric" ? 6_200 : 210;
@@ -345,9 +348,18 @@ export const meteringHandlers: HttpHandler[] = [
       device.status === "online"
         ? [
             {
+              // T-13 (D-241): one event per meter whose status a heartbeat reports as changed.
+              id: id("e7e00000", 3),
+              deviceId: device.id,
+              type: "meter_status_changed",
+              severity: "info",
+              message: "meter stale → ok",
+              occurredAt: iso(-1),
+            },
+            {
               id: id("e7e00000", 1),
               deviceId: device.id,
-              type: "device.online",
+              type: "gateway_online",
               severity: "info",
               message: null,
               occurredAt: iso(-2),
@@ -355,7 +367,7 @@ export const meteringHandlers: HttpHandler[] = [
             {
               id: id("e7e00000", 2),
               deviceId: device.id,
-              type: "config.applied",
+              type: "config_applied",
               severity: "info",
               message: "version 4",
               occurredAt: iso(-3),

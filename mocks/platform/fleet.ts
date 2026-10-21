@@ -181,6 +181,7 @@ const deviceHandlers: HttpHandler[] = [
         lastSeenAt: null,
         meters: 0,
         otaRing: "all",
+        mqttWsFallback: false,
         health: null,
         nextActions: [],
         version: 1,
@@ -240,6 +241,7 @@ const deviceHandlers: HttpHandler[] = [
           lastSeenAt: null,
           meters: 0,
           otaRing: "all",
+          mqttWsFallback: false,
           health: null,
           nextActions: [],
           version: 1,
@@ -333,6 +335,7 @@ const deviceHandlers: HttpHandler[] = [
       retire: "admin.devices.retire",
       "revoke-certificates": "admin.devices.revokeCertificates",
       "set-ring": "admin.devices.setRing",
+      "set-mqtt-transport": "admin.devices.setMqttTransport",
     };
     const op = ops[action];
     if (!op) return notFound("admin.devices.get");
@@ -356,6 +359,29 @@ const deviceHandlers: HttpHandler[] = [
           if (device.kind !== "gateway") return problem(op, "device.not_gateway");
           device.otaRing = input.otaRing as Schemas["OtaRing"];
           break;
+        case "set-mqtt-transport": {
+          // D-239: gateways only, never retired ones; reason 3–500 characters; the same value is a no-op.
+          if (device.kind !== "gateway") return problem(op, "device.not_gateway");
+          if (device.status === "retired") return problem(op, "device.invalid_state");
+          if (typeof input.wsFallback !== "boolean") return validation(op, "wsFallback", "must be a boolean value");
+          const reason = String(input.reason ?? "").trim();
+          if (reason.length < 3 || reason.length > 500)
+            return validation(op, "reason", "reason must be longer than or equal to 3 characters");
+          if (device.mqttWsFallback === input.wsFallback) return { status: 200, body: device };
+          // The API audits the switch with the value before and after, the reason in the metadata.
+          audit(
+            ok,
+            "device.mqtt_transport_changed",
+            { type: "smart.device", id: device.id },
+            {
+              tenantId: device.tenantId,
+              before: { mqttWsFallback: device.mqttWsFallback },
+              after: { mqttWsFallback: input.wsFallback, reason },
+            },
+          );
+          device.mqttWsFallback = input.wsFallback;
+          break;
+        }
         case "revoke-certificates":
           if (device.kind !== "gateway") return problem(op, "device.not_gateway");
           if (!String(input.reason ?? "").trim()) return validation(op, "reason", "required");
@@ -372,20 +398,25 @@ const deviceHandlers: HttpHandler[] = [
       }
       device.version += 1;
       device.nextActions = deviceNextActions(device);
-      audit(
-        ok,
-        `device.${action.replace("-", "_")}`,
-        { type: "smart.device", id: device.id },
-        { tenantId: device.tenantId, after: input },
-      );
-      emit(
-        `device.${action === "assign" ? "assigned" : action === "retire" ? "retired" : action === "revoke-certificates" ? "certificate_revoked" : "ring_changed"}`,
-        { deviceId: device.id },
-        "admin",
-      );
+      if (action !== "set-mqtt-transport")
+        audit(
+          ok,
+          `device.${action.replace("-", "_")}`,
+          { type: "smart.device", id: device.id },
+          { tenantId: device.tenantId, after: input },
+        );
+      const eventType: Record<string, string> = {
+        assign: "device.assigned",
+        retire: "device.retired",
+        "revoke-certificates": "device.certificate_revoked",
+        "set-ring": "device.ring_changed",
+        "set-mqtt-transport": "device.mqtt_transport_changed",
+      };
+      emit(eventType[action]!, { deviceId: device.id }, "admin");
       return { status: 200, body: device };
     };
-    if (action === "retire" || action === "revoke-certificates") return idempotent(request, op, apply);
+    if (action === "retire" || action === "revoke-certificates" || action === "set-mqtt-transport")
+      return idempotent(request, op, apply);
     const input = await body<Record<string, unknown>>(request);
     record(op, request, input);
     const answer = apply(input);

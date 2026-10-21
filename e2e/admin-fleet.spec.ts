@@ -29,7 +29,8 @@ const MANIFEST = {
 /**
  * F5 5.3 on the mock API: the fleet (online / degraded / offline per building, stock, filters), CSV
  * inventory import refused then accepted, a gateway's config applied against the version published,
- * commands and the log upload, ring, assignment and certificate revocation (typed), OTA releases and a
+ * commands and the log upload, ring, the MQTT WebSocket fallback (typed, with the accepted risks of D-239),
+ * device event labels, assignment and certificate revocation (typed), OTA releases and a
  * ring rollout whose progress arrives over SSE (no reload) with pause / resume / abort, and ingest
  * dead-letter replay; axe on each screen.
  */
@@ -104,6 +105,62 @@ test("gateway: config applied vs published, commands with the log file, ring, re
   await expect
     .poll(async () => (await platformReceived("admin.devices.revokeCertificates")).at(-1)?.idempotencyKey)
     .toMatch(/^[0-9a-f-]{36}$/);
+});
+
+test("fleet: the gateway with the MQTT WebSocket fallback (D-239) is flagged; device events are labelled", async ({
+  page,
+}) => {
+  await signInPlatform(page, "engineer");
+  // The fleet list flags the gateway whose fallback is on.
+  await gotoAdmin(page, "/devices");
+  await expect(page.locator('[data-testid="device-row"][data-ws-fallback="true"]')).toHaveCount(1);
+  await expect(
+    page.locator('[data-testid="device-row"][data-ws-fallback="true"]').getByTestId("mqtt-transport"),
+  ).toBeVisible();
+
+  await gotoAdmin(page, `/devices/${P.gwSampleB}`);
+  await expect(page.getByTestId("mqtt-transport")).toHaveAttribute("data-ws-fallback", "true");
+  // meter_status_changed and the other device events carry their label, with the code for support.
+  await gotoAdmin(page, `/devices/${P.gwGarden}`);
+  await expect(page.locator('[data-testid="event-row"][data-type="meter_status_changed"]')).toContainText(
+    "Meter status changed",
+  );
+});
+
+test("gateway: the WebSocket fallback is allowed and turned off again, typed with a reason", async ({ page }) => {
+  await signInPlatform(page, "engineer");
+  await gotoAdmin(page, `/devices/${P.gwSampleA}`);
+  await page.getByTestId("set-mqtt-transport").click();
+  const enable = page.getByRole("alertdialog");
+  await expect(enable.getByTestId("transport-risks")).toContainText("ADR-0015");
+  await expect(enable.getByTestId("transport-risks").getByRole("listitem")).toHaveCount(4);
+  await expectAxeClean(page);
+  const confirm = enable.getByRole("button", { name: "Allow fallback" });
+  await enable.getByTestId("transport-reason").fill("ok");
+  await typePhrase(enable);
+  // A reason of fewer than 3 characters keeps the action locked (DeviceMqttTransportDto).
+  await expect(confirm).toBeDisabled();
+  await enable.getByTestId("transport-reason").fill("Building firewall blocks outbound 8883 (INC-2026-021)");
+  await confirm.click();
+  await expect(enable).toHaveCount(0);
+  await expect(page.getByTestId("mqtt-transport")).toHaveAttribute("data-ws-fallback", "true");
+  const sent = (await platformReceived("admin.devices.setMqttTransport")).at(-1);
+  expect(sent?.idempotencyKey).toMatch(/^[0-9a-f-]{36}$/);
+  expect(sent?.body).toEqual({ wsFallback: true, reason: "Building firewall blocks outbound 8883 (INC-2026-021)" });
+
+  // Off again: no risk list, the consequence instead.
+  await page.getByTestId("set-mqtt-transport").click();
+  const disable = page.getByRole("alertdialog");
+  await expect(disable.getByTestId("transport-risks")).toHaveCount(0);
+  await expect(disable).toContainText("8883");
+  await disable.getByTestId("transport-reason").fill("8883 opened at the building");
+  await typePhrase(disable);
+  await disable.getByRole("button", { name: "Turn off" }).click();
+  await expect(disable).toHaveCount(0);
+  await expect(page.getByTestId("mqtt-transport")).toHaveAttribute("data-ws-fallback", "false");
+  expect((await platformReceived("admin.devices.setMqttTransport")).at(-1)?.body).toMatchObject({
+    wsFallback: false,
+  });
 });
 
 test("inventory gateway: assign to a tenant's building", async ({ page }) => {

@@ -302,5 +302,27 @@
       "payload": "Payload",
       "replay": "Replay"
     }
+  },
+  "transport": {
+    "enable": "Allow WebSocket fallback",
+    "disable": "Turn WebSocket fallback off",
+    "enableTitle": "Allow the WebSocket fallback for {serial}?",
+    "enableBody": "For a building whose network blocks outbound port 8883 only. The gateway may then connect over WebSocket (wss://…/mqtt) with its device JWT alone — no client certificate on that path. Its next bootstrap answer carries the WebSocket address; the change is audited with your reason.",
+    "disableTitle": "Turn the WebSocket fallback off for {serial}?",
+    "disableBody": "The gateway's next WebSocket connect is refused; it must reach the broker on 8883 with its certificate. Open 8883 at the building first, or the gateway stays offline. Audited with your reason.",
+    "enableConfirm": "Allow fallback",
+    "disableConfirm": "Turn off",
+    "enabled": "WebSocket fallback allowed",
+    "disabled": "WebSocket fallback turned off",
+    "risksTitle": "Accepted risks of this path",
+    "risk": {
+      "jwtAlone": "No client certificate: whoever holds a valid device JWT of this gateway can connect as it until the JWT expires (at most 1 hour). Getting one needs the gateway's private key or code running on the gateway.",
+      "noBinding": "No channel binding: TLS ends at the platform's proxy, so a JWT replayed from elsewhere looks the same.",
+      "blastRadius": "Limit: the broker still confines the connection to this one gateway's topics — at worst fake telemetry or health of this gateway for up to 1 hour; billing stays protected by reading review and cumulative registers.",
+      "mitigation": "Off by default and per gateway; turning it off refuses the next connect; every refusal is audited. Prefer opening 8883 at the building."
+    },
+    "risksRef": "getproperty-api ADR-0015 · decision D-239",
+    "reason": "Reason",
+    "reasonHint": "3–500 characters, e.g. the building's firewall ticket. Stored in the audit log."
   }
 }

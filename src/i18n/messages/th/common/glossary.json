@@ -40,5 +40,32 @@
     "workOrder": "ใบงาน",
     "deposit": "เงินประกัน",
     "utilityLoss": "ค่าน้ำไฟรั่วไหล"
+  },
+  "deviceEvent": {
+    "meter_offline": "มิเตอร์ออฟไลน์",
+    "meter_status_changed": "มิเตอร์เปลี่ยนสถานะ",
+    "pulse_overflow": "ตัวนับพัลส์เต็ม",
+    "config_applied": "ใช้การตั้งค่าแล้ว",
+    "config_rejected": "การตั้งค่าถูกปฏิเสธ",
+    "config_drift": "การตั้งค่าไม่ตรงกัน",
+    "ota_started": "เริ่มอัปเดต",
+    "ota_applied": "อัปเดตแล้ว",
+    "ota_rolled_back": "ย้อนการอัปเดต",
+    "ota_failed": "อัปเดตไม่สำเร็จ",
+    "tamper": "แจ้งเตือนการงัดแงะ",
+    "power_loss": "ไฟดับ",
+    "restart": "รีสตาร์ต",
+    "seq_gap": "ค่าอ่านขาดช่วง",
+    "invalid_payload": "ปฏิเสธข้อมูลไม่ถูกต้อง",
+    "batch_too_large": "ชุดข้อมูลใหญ่เกินกำหนด",
+    "unbound_meter": "ค่าอ่านจากมิเตอร์ที่ยังไม่ผูก",
+    "battery_low": "แบตเตอรี่ใกล้หมด",
+    "gateway_online": "เกตเวย์ออนไลน์",
+    "gateway_offline": "เกตเวย์ออฟไลน์"
+  },
+  "mqttTransport": {
+    "term": "การเชื่อมต่อโบรกเกอร์",
+    "wsFallback": "เปิดสำรองผ่าน WebSocket (ใช้ device JWT อย่างเดียว)",
+    "mtlsOnly": "MQTT ผ่าน TLS พร้อมใบรับรอง (8883)"
   }
 }

@@ -40,5 +40,32 @@
     "workOrder": "Work order",
     "deposit": "Deposit",
     "utilityLoss": "Utility loss"
+  },
+  "deviceEvent": {
+    "meter_offline": "Meter offline",
+    "meter_status_changed": "Meter status changed",
+    "pulse_overflow": "Pulse counter overflow",
+    "config_applied": "Configuration applied",
+    "config_rejected": "Configuration rejected",
+    "config_drift": "Configuration drift",
+    "ota_started": "Update started",
+    "ota_applied": "Update applied",
+    "ota_rolled_back": "Update rolled back",
+    "ota_failed": "Update failed",
+    "tamper": "Tamper alarm",
+    "power_loss": "Power loss",
+    "restart": "Restarted",
+    "seq_gap": "Readings missing (sequence gap)",
+    "invalid_payload": "Invalid data refused",
+    "batch_too_large": "Batch too large",
+    "unbound_meter": "Reading from an unbound meter",
+    "battery_low": "Battery low",
+    "gateway_online": "Gateway online",
+    "gateway_offline": "Gateway offline"
+  },
+  "mqttTransport": {
+    "term": "Broker connection",
+    "wsFallback": "WebSocket fallback on (device JWT only)",
+    "mtlsOnly": "MQTT over TLS with certificate (8883)"
   }
 }

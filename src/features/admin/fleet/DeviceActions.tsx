@@ -26,6 +26,7 @@ import { IconRemove } from "@/ui/icons/glyphs/remove";
 import { IconUpload } from "@/ui/icons/glyphs/upload";
 
 import { buildingLabel, DEVICE_KINDS, RINGS } from "./constants";
+import { MqttTransportAction } from "./MqttTransportAction";
 
 /** `nextActions` of a live gateway → the command it allows (D-131); `set_log_level` goes with them (admin only, D-183). */
 const COMMAND_ACTIONS: Record<string, Schemas["CommandType"]> = {
@@ -198,8 +199,9 @@ export function RegisterDevice() {
 
 /**
  * What the API offers on one device (`nextActions`): assign to a tenant's building (inventory only),
- * OTA ring, a provisioning code for the installer, a command, revoke the gateway's certificates and
- * retire — the last two irreversible, typed with the serial and a reason (D-131).
+ * OTA ring, a provisioning code for the installer, a command, the gateway's MQTT WebSocket fallback (D-239,
+ * typed, with the accepted risks), revoke the gateway's certificates and retire — the last two irreversible,
+ * typed with the serial and a reason (D-131).
  */
 export function DeviceActions({
   device,
@@ -399,6 +401,7 @@ export function DeviceActions({
             {t("provisioningCode")}
           </Button>
         ) : null}
+        {actions.has("set-mqtt-transport") ? <MqttTransportAction device={device} /> : null}
         {actions.has("revoke-certificates") ? (
           <ConfirmAction
             label={t("revoke")}

@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 
 import { COMMAND_STATUS } from "@/domain/status/command";
 import { DEVICE_STATUS, DEVICE_VALUES } from "@/domain/status/device";
+import { DeviceEventName } from "@/features/shared/devices/DeviceEventName";
+import { MqttTransportBadge } from "@/features/shared/devices/MqttTransportBadge";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { formatDate, formatDateTime, formatNumber } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
@@ -155,6 +157,7 @@ export async function DeviceDetail({ context, deviceId }: { context: OwnerContex
     throw error;
   }
   const { device } = detail;
+  const transportT = await getTranslations("glossary.mqttTransport");
   const commands =
     device.kind === "gateway"
       ? await section(unwrap(api.GET("/v1/owner/devices/{deviceId}/commands", { params: { path: { deviceId } } })))
@@ -196,6 +199,11 @@ export async function DeviceDetail({ context, deviceId }: { context: OwnerContex
                 id: "meters",
                 term: t("meters"),
                 description: device.kind === "gateway" ? formatNumber(device.meters, locale) : null,
+              },
+              {
+                id: "transport",
+                term: transportT("term"),
+                description: device.kind === "gateway" ? <MqttTransportBadge enabled={device.mqttWsFallback} /> : null,
               },
               ...(health
                 ? [
@@ -292,8 +300,8 @@ export async function DeviceDetail({ context, deviceId }: { context: OwnerContex
                 </li>
               ))}
               {detail.events.map((event) => (
-                <li key={event.id} className="flex flex-wrap gap-2">
-                  <span className="font-mono text-xs">{event.type}</span>
+                <li key={event.id} className="flex flex-wrap gap-2" data-testid="event-row">
+                  <DeviceEventName type={event.type} />
                   {event.message ? <span>{event.message}</span> : null}
                   <span className="text-muted">{formatDateTime(event.occurredAt, locale)}</span>
                 </li>

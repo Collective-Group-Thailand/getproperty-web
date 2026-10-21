@@ -51,6 +51,11 @@ test("a smart meter's series: bucket tabs, line chart with its data table; histo
   await expect(page).toHaveURL(/bucket=1d/);
   await hydrated(page);
   await expect(page.getByTestId("meter-chart").locator("svg[role=img]")).toBeVisible();
+  // 15-minute points, computed from raw points since D-241: same shape, same chart.
+  await page.getByTestId("bucket-15m").click();
+  await expect(page).toHaveURL(/bucket=15m/);
+  await hydrated(page);
+  await expect(page.getByTestId("meter-chart").locator("svg[role=img]")).toBeVisible();
   await expectAxeClean(page);
 
   await gotoOwner(page, `/meters/${METER_E_A201}?building=${W.buildingA}`);
@@ -98,6 +103,11 @@ test("devices: rented / owned badges, gateway detail with channels and the ident
   await gotoOwner(page, `/devices/${GATEWAY}`);
   await expect(page.getByTestId("device-title")).toHaveText("GP-GW-000123");
   await expect(page.getByTestId("channel-row").first()).toBeVisible();
+  // The broker connection (D-239) and labelled device events (meter_status_changed, T-13).
+  await expect(page.getByTestId("mqtt-transport")).toHaveAttribute("data-ws-fallback", "false");
+  await expect(page.locator('[data-testid="event-row"]:has([data-event-type="meter_status_changed"])')).toContainText(
+    "มิเตอร์เปลี่ยนสถานะ",
+  );
   await page.getByTestId("command-identify").click();
   await expect(page.getByTestId("command-row").first()).toBeVisible();
   await expectAxeClean(page);

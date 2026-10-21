@@ -2,6 +2,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { DEVICE_STATUS } from "@/domain/status/device";
 import Link from "next/link";
 
+import { DeviceEventName } from "@/features/shared/devices/DeviceEventName";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { formatDateTime, formatRelativeTime } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
@@ -128,8 +129,8 @@ export async function DeviceDetail({ detail }: { detail: Schemas["DeviceDetailDt
           </h2>
           <ul className="flex flex-col gap-2 text-sm">
             {detail.events.slice(0, 10).map((event) => (
-              <li key={event.id}>
-                <span className="font-mono">{event.type}</span> · {formatRelativeTime(event.occurredAt, locale)}
+              <li key={event.id} data-testid="event-row">
+                <DeviceEventName type={event.type} /> · {formatRelativeTime(event.occurredAt, locale)}
                 {event.message ? <span className="text-muted block">{event.message}</span> : null}
               </li>
             ))}

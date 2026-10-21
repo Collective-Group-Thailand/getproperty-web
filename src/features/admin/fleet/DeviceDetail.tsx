@@ -2,9 +2,12 @@ import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { COMMAND_STATUS } from "@/domain/status/command";
+import { deviceEventTone } from "@/domain/deviceEvents";
 import { DEVICE_STATUS } from "@/domain/status/device";
 import { ConsolePage, PageHeader } from "@/features/shared/console/PageHeader";
 import { SectionError } from "@/features/shared/console/SectionError";
+import { DeviceEventName } from "@/features/shared/devices/DeviceEventName";
+import { MqttTransportBadge } from "@/features/shared/devices/MqttTransportBadge";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { formatDateTime, formatNumber, formatRelativeTime } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
@@ -67,6 +70,7 @@ export async function DeviceDetail({ context, deviceId }: { context: AdminContex
   const t = await getTranslations("admin.fleet");
   const kinds = await getTranslations("admin.fleet.kind");
   const commandNames = await getTranslations("admin.fleet.command");
+  const transportT = await getTranslations("glossary.mqttTransport");
   const { api, locale } = context;
   let detail: Schemas["DeviceDetailDto"];
   try {
@@ -111,6 +115,11 @@ export async function DeviceDetail({ context, deviceId }: { context: AdminContex
                 description: building ? buildingLabel(building) : (device.buildingId?.slice(0, 8) ?? null),
               },
               { id: "ring", term: t("col.ring"), description: gateway ? t(`ring.${device.otaRing}`) : null },
+              {
+                id: "transport",
+                term: transportT("term"),
+                description: gateway ? <MqttTransportBadge enabled={device.mqttWsFallback} /> : null,
+              },
               { id: "firmware", term: t("col.firmware"), description: device.firmwareVersion },
               { id: "arch", term: t("arch"), description: device.arch },
               { id: "driver", term: t("driver"), description: device.driver },
@@ -307,15 +316,12 @@ export async function DeviceDetail({ context, deviceId }: { context: AdminContex
             ]}
             rows={events.map((event) => ({
               key: event.id,
-              tone:
-                event.severity === "error" || event.severity === "critical"
-                  ? "danger"
-                  : event.severity === "warning"
-                    ? "warning"
-                    : "default",
+              testId: "event-row",
+              data: { type: event.type },
+              tone: deviceEventTone(event.severity),
               cells: {
                 at: formatDateTime(event.occurredAt, locale),
-                type: <span className="font-mono text-xs">{event.type}</span>,
+                type: <DeviceEventName type={event.type} showCode />,
                 message: event.message ?? "—",
               },
             }))}

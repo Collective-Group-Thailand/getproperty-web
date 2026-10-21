@@ -6,6 +6,7 @@ import { FilterBar } from "@/features/shared/console/FilterBar";
 import { ListPagination } from "@/features/shared/console/ListPagination";
 import { ConsolePage, PageHeader } from "@/features/shared/console/PageHeader";
 import { SectionError } from "@/features/shared/console/SectionError";
+import { MqttTransportBadge } from "@/features/shared/devices/MqttTransportBadge";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { formatDateTime, formatNumber, formatRelativeTime } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
@@ -245,7 +246,7 @@ export async function FleetView({ context, searchParams }: { context: AdminConte
             rows={devices.data.data.map((device) => ({
               key: device.id,
               testId: "device-row",
-              data: { serial: device.serial, status: device.status },
+              data: { serial: device.serial, status: device.status, "ws-fallback": String(device.mqttWsFallback) },
               cells: {
                 serial: (
                   <a href={`/devices/${device.id}`} className="flex flex-col hover:underline">
@@ -253,6 +254,11 @@ export async function FleetView({ context, searchParams }: { context: AdminConte
                     <span className="text-muted text-xs">
                       {device.vendor} {device.model}
                     </span>
+                    {device.kind === "gateway" && device.mqttWsFallback ? (
+                      <span className="mt-1">
+                        <MqttTransportBadge enabled size="sm" />
+                      </span>
+                    ) : null}
                   </a>
                 ),
                 kind: (
