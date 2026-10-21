@@ -311,6 +311,7 @@ function device(
     firmwareVersion: null,
     arch: null,
     otaRing: "all",
+    mqttWsFallback: false,
     lastSeenAt: null,
     configAppliedVersion: null,
     meters: 0,

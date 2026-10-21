@@ -8678,6 +8678,24 @@
         ],
         "type": "object"
       },
+      "DeviceMqttTransportDto": {
+        "properties": {
+          "reason": {
+            "example": "building firewall blocks outbound 8883 (ticket INC-2026-021)",
+            "type": "string"
+          },
+          "wsFallback": {
+            "description": "true = the gateway may use the WebSocket fallback with its device JWT only (D-239).",
+            "example": true,
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "wsFallback",
+          "reason"
+        ],
+        "type": "object"
+      },
       "DeviceOwnership": {
         "enum": [
           "platform_haas",
@@ -10538,6 +10556,11 @@
             "example": "rpi-cm4",
             "type": "string"
           },
+          "mqttWsFallback": {
+            "description": "Gateways: the WebSocket fallback (EMQX ws behind Caddy, device JWT only, no client certificate) is enabled for this gateway (D-239). Off by default.",
+            "example": false,
+            "type": "boolean"
+          },
           "nextActions": {
             "example": [
               "read-now",
@@ -10611,6 +10634,7 @@
           "firmwareVersion",
           "arch",
           "otaRing",
+          "mqttWsFallback",
           "lastSeenAt",
           "configAppliedVersion",
           "meters",
@@ -12496,6 +12520,38 @@
           "ackedAt"
         ],
         "type": "object"
+      },
+      "IntegrationReceiptDto": {
+        "properties": {
+          "id": {
+            "example": "0199f1c2-7a00-7000-8000-0000000000aa",
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/IntegrationReceiptStatus"
+              }
+            ],
+            "description": "`applied` (stored and applied), `rejected` (stored; the contract or the consumer refused it — do not resend), `duplicate` (this idempotency key was received before).",
+            "example": "applied"
+          }
+        },
+        "required": [
+          "id",
+          "status"
+        ],
+        "type": "object"
+      },
+      "IntegrationReceiptStatus": {
+        "description": "`applied` (stored and applied), `rejected` (stored; the contract or the consumer refused it — do not resend), `duplicate` (this idempotency key was received before).",
+        "enum": [
+          "applied",
+          "rejected",
+          "duplicate"
+        ],
+        "type": "string"
       },
       "IntegrationStatus": {
         "enum": [
@@ -18079,7 +18135,7 @@
             "example": "publish"
           },
           "topic": {
-            "example": "gp/v1/2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e5f/+",
+            "example": "gp/v1/2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e5f/telemetry",
             "type": "string"
           }
         },
@@ -18101,17 +18157,26 @@
             "example": "gw-2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e5f",
             "type": "string"
           },
+          "password": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MqttPasswordMode"
+              }
+            ],
+            "description": "Device protocol 1.2 (D-235): the MQTT password is a fresh device JWT (`POST /v1/device/token`, ≤ 1 h) fetched before every (re)connect. Required on the WebSocket fallback; on 8883 required while the platform setting `mqtt.authn.require_device_jwt` is on (default), otherwise the certificate alone is accepted.",
+            "example": "device_jwt"
+          },
           "url": {
             "example": "mqtts://mqtt.getproperty.invalid:8883",
             "type": "string"
           },
           "username": {
-            "description": "Broker username = certificate CN (EMQX ACL key).",
+            "description": "Broker username = client id = certificate CN (`gw-<gatewayId>`).",
             "example": "gw-2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e5f",
             "type": "string"
           },
           "wsUrl": {
-            "description": "WebSocket fallback for networks that block 8883 (device protocol §1). **Omitted** unless the platform enables it (`MQTT_PUBLIC_WS_URL`): while O-012 is open the Collective platform has no WSS endpoint that verifies the gateway certificate (D-231, edge CR-013).",
+            "description": "WebSocket fallback for buildings whose network blocks 8883 (device protocol §1, D-239 — O-012 resolved): EMQX ws 8083 behind Caddy, authenticated by the device JWT **alone** (no client certificate on that path). **Omitted** unless the platform admin enabled the fallback for this gateway (`POST /v1/admin/devices/{deviceId}/actions/set-mqtt-transport`) and the platform publishes it (`MQTT_PUBLIC_WS_URL`); off by default (D-231, edge CR-013).",
             "example": "wss://mqtt.getproperty.invalid/mqtt",
             "type": "string"
           }
@@ -18120,9 +18185,17 @@
           "url",
           "clientId",
           "username",
+          "password",
           "acl"
         ],
         "type": "object"
+      },
+      "MqttPasswordMode": {
+        "description": "Device protocol 1.2 (D-235): the MQTT password is a fresh device JWT (`POST /v1/device/token`, ≤ 1 h) fetched before every (re)connect. Required on the WebSocket fallback; on 8883 required while the platform setting `mqtt.authn.require_device_jwt` is on (default), otherwise the certificate alone is accepted.",
+        "enum": [
+          "device_jwt"
+        ],
+        "type": "string"
       },
       "MultipartPartDto": {
         "properties": {
@@ -22828,6 +22901,172 @@
           }
         },
         "type": "object"
+      },
+      "ProviderCredentialDto": {
+        "properties": {
+          "accountRefHint": {
+            "description": "Last 4 characters of the merchant reference (payments); never the full reference.",
+            "example": "0042",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "createdAt": {
+            "example": "2026-11-01T00:15:00+07:00",
+            "format": "date-time",
+            "type": "string"
+          },
+          "fingerprint": {
+            "description": "Changes whenever the values change; reveals nothing.",
+            "example": "9a1f03c2b7de",
+            "type": "string"
+          },
+          "id": {
+            "example": "3b241101-e2bb-4255-8caf-4136c566a962",
+            "format": "uuid",
+            "type": "string"
+          },
+          "keyNames": {
+            "example": [
+              "apiKey",
+              "apiSecret",
+              "webhookSecret"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "kind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProviderCredentialKind"
+              }
+            ],
+            "example": "payment"
+          },
+          "provider": {
+            "description": "payment: kbank | scb | opn · lock: ttlock | tuya · etax: inet",
+            "example": "kbank",
+            "type": "string"
+          },
+          "revokeReason": {
+            "example": null,
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "revokedAt": {
+            "example": null,
+            "format": "date-time",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "source": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProviderCredentialSource"
+              }
+            ],
+            "example": "admin"
+          },
+          "tenantId": {
+            "description": "null = the platform’s own merchant (platform invoices, payments only).",
+            "example": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11",
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "tenantId",
+          "kind",
+          "provider",
+          "accountRefHint",
+          "keyNames",
+          "fingerprint",
+          "source",
+          "createdAt",
+          "revokedAt",
+          "revokeReason"
+        ],
+        "type": "object"
+      },
+      "ProviderCredentialKind": {
+        "enum": [
+          "payment",
+          "lock",
+          "etax"
+        ],
+        "type": "string"
+      },
+      "ProviderCredentialSetDto": {
+        "properties": {
+          "kind": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProviderCredentialKind"
+              }
+            ],
+            "example": "payment"
+          },
+          "merchantRef": {
+            "description": "payments: the merchant reference at the provider (the tenant bank account’s provider reference).",
+            "example": "KB-M-000042",
+            "type": "string"
+          },
+          "provider": {
+            "example": "kbank",
+            "type": "string"
+          },
+          "reason": {
+            "example": "new API key from the bank portal (ticket FIN-2026-031)",
+            "type": "string"
+          },
+          "tenantId": {
+            "description": "The tenant whose merchant / vendor / e-Tax account this is; null = the platform merchant.",
+            "example": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11",
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "values": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Write-only: 1–20 string values, sealed with the tenant data key and never returned (D-240).",
+            "example": {
+              "apiKey": "k_live_…",
+              "apiSecret": "…",
+              "webhookSecret": "…"
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "tenantId",
+          "kind",
+          "provider",
+          "values",
+          "reason"
+        ],
+        "type": "object"
+      },
+      "ProviderCredentialSource": {
+        "enum": [
+          "admin",
+          "import"
+        ],
+        "type": "string"
       },
       "ProvisionGatewayDto": {
         "properties": {
@@ -37062,9 +37301,11 @@
                       "lastSeenAt": null,
                       "meters": 0,
                       "model": "rpi-cm4",
+                      "mqttWsFallback": false,
                       "nextActions": [
                         "assign",
                         "set-ring",
+                        "set-mqtt-transport",
                         "revoke-certificates",
                         "retire"
                       ],
@@ -37954,9 +38195,11 @@
                     "lastSeenAt": null,
                     "meters": 0,
                     "model": "rpi-cm4",
+                    "mqttWsFallback": false,
                     "nextActions": [
                       "assign",
                       "set-ring",
+                      "set-mqtt-transport",
                       "revoke-certificates",
                       "retire"
                     ],
@@ -38188,9 +38431,11 @@
                   "lastSeenAt": null,
                   "meters": 0,
                   "model": "rpi-cm4",
+                  "mqttWsFallback": false,
                   "nextActions": [
                     "assign",
                     "set-ring",
+                    "set-mqtt-transport",
                     "revoke-certificates",
                     "retire"
                   ],
@@ -38461,6 +38706,7 @@
                   "lastSeenAt": null,
                   "meters": 0,
                   "model": "rpi-cm4",
+                  "mqttWsFallback": false,
                   "nextActions": [
                     "set-ring"
                   ],
@@ -38746,9 +38992,11 @@
                   "lastSeenAt": null,
                   "meters": 0,
                   "model": "rpi-cm4",
+                  "mqttWsFallback": false,
                   "nextActions": [
                     "assign",
                     "set-ring",
+                    "set-mqtt-transport",
                     "revoke-certificates",
                     "retire"
                   ],
@@ -38975,6 +39223,300 @@
         "x-surface": "admin"
       }
     },
+    "/v1/admin/devices/{deviceId}/actions/set-mqtt-transport": {
+      "post": {
+        "description": "For a building whose network blocks outbound 8883 (D-239, O-012 resolved): `wsFallback: true` lets the gateway connect over EMQX ws 8083 behind Caddy authenticated by its device JWT **alone** — no client certificate on that path, so a stolen JWT (≤ 1 h, issued only over mTLS to a non-retired gateway) is enough to connect for its lifetime. Off by default; the bootstrap answer carries `mqtt.wsUrl` only for such a gateway. Only gateways, never retired ones; audited with the reason; the next WebSocket connect is decided by the new value.\n\nImplements: D-235, D-239.",
+        "operationId": "admin.devices.setMqttTransport",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "deviceId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "default": {
+                  "summary": "Example",
+                  "value": {
+                    "reason": "building firewall blocks outbound 8883 (ticket INC-2026-021)",
+                    "wsFallback": true
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/DeviceMqttTransportDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "arch": "arm64",
+                  "assetItemId": null,
+                  "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                  "configAppliedVersion": null,
+                  "driver": null,
+                  "firmwareVersion": null,
+                  "gatewayDeviceId": null,
+                  "health": null,
+                  "id": "2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e5f",
+                  "kind": "gateway",
+                  "lastSeenAt": null,
+                  "meters": 0,
+                  "model": "rpi-cm4",
+                  "mqttWsFallback": true,
+                  "nextActions": [
+                    "assign",
+                    "set-ring",
+                    "set-mqtt-transport",
+                    "revoke-certificates",
+                    "retire"
+                  ],
+                  "otaRing": "canary",
+                  "ownership": "platform_haas",
+                  "serial": "GP-GW-000123",
+                  "status": "assigned",
+                  "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11",
+                  "vendor": "Raspberry Pi",
+                  "version": 2
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/FleetDeviceDto"
+                }
+              }
+            },
+            "description": "Updated",
+            "headers": {
+              "Idempotent-Replayed": {
+                "$ref": "#/components/headers/IdempotentReplayed"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/RateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/RateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/RateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.bad_request": {
+                    "$ref": "#/components/examples/problem.http.bad_request"
+                  },
+                  "idempotency.key_invalid": {
+                    "$ref": "#/components/examples/problem.idempotency.key_invalid"
+                  },
+                  "idempotency.key_required": {
+                    "$ref": "#/components/examples/problem.idempotency.key_required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.unauthenticated": {
+                    "$ref": "#/components/examples/problem.auth.unauthenticated"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.unauthenticated`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.forbidden": {
+                    "$ref": "#/components/examples/problem.auth.forbidden"
+                  },
+                  "auth.wrong_audience": {
+                    "$ref": "#/components/examples/problem.auth.wrong_audience"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.forbidden`, `auth.wrong_audience`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.not_found": {
+                    "$ref": "#/components/examples/problem.http.not_found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.not_found`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "device.invalid_state": {
+                    "$ref": "#/components/examples/problem.device.invalid_state"
+                  },
+                  "device.not_gateway": {
+                    "$ref": "#/components/examples/problem.device.not_gateway"
+                  },
+                  "idempotency.in_progress": {
+                    "$ref": "#/components/examples/problem.idempotency.in_progress"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `device.invalid_state`, `device.not_gateway`, `idempotency.in_progress`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "idempotency.key_reused": {
+                    "$ref": "#/components/examples/problem.idempotency.key_reused"
+                  },
+                  "validation.failed": {
+                    "$ref": "#/components/examples/problem.validation.failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `idempotency.key_reused`, `validation.failed`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.too_many_requests": {
+                    "$ref": "#/components/examples/problem.http.too_many_requests"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.too_many_requests`",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal.unexpected": {
+                    "$ref": "#/components/examples/problem.internal.unexpected"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `internal.unexpected`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "platformBearer": []
+          }
+        ],
+        "summary": "Switch a gateway’s MQTT WebSocket fallback",
+        "tags": [
+          "admin.devices"
+        ],
+        "x-required-permissions": [
+          "admin.device.manage"
+        ],
+        "x-surface": "admin"
+      }
+    },
     "/v1/admin/devices/{deviceId}/actions/set-ring": {
       "post": {
         "description": "`canary` → `pilot` → `all` (D-131). Audited.\n\nImplements: D-131.",
@@ -39028,9 +39570,11 @@
                   "lastSeenAt": null,
                   "meters": 0,
                   "model": "rpi-cm4",
+                  "mqttWsFallback": false,
                   "nextActions": [
                     "assign",
                     "set-ring",
+                    "set-mqtt-transport",
                     "revoke-certificates",
                     "retire"
                   ],
@@ -52496,6 +53040,757 @@
         "x-surface": "admin"
       }
     },
+    "/v1/admin/provider-credentials": {
+      "get": {
+        "description": "Live credentials per tenant (or the platform merchant) with key names, a fingerprint and the last 4 characters of the merchant reference; values are never returned (D-240).\n\nImplements: D-240, D-233.",
+        "operationId": "admin.providerCredentials.list",
+        "parameters": [
+          {
+            "description": "A tenant id, or `platform` for the platform merchant; omitted = all.",
+            "in": "query",
+            "name": "tenantId",
+            "required": false,
+            "schema": {
+              "example": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "kind",
+            "required": false,
+            "schema": {
+              "$ref": "#/components/schemas/ProviderCredentialKind"
+            }
+          },
+          {
+            "description": "Also list revoked and replaced credentials.",
+            "in": "query",
+            "name": "includeRevoked",
+            "required": false,
+            "schema": {
+              "example": false,
+              "type": "boolean"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": [
+                  {
+                    "accountRefHint": "0042",
+                    "createdAt": "2026-11-01T00:15:00+07:00",
+                    "fingerprint": "9a1f03c2b7de",
+                    "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                    "keyNames": [
+                      "apiKey",
+                      "apiSecret",
+                      "webhookSecret"
+                    ],
+                    "kind": "payment",
+                    "provider": "kbank",
+                    "revokeReason": null,
+                    "revokedAt": null,
+                    "source": "admin",
+                    "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11"
+                  }
+                ],
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProviderCredentialDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Credentials",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/RateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/RateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/RateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.unauthenticated": {
+                    "$ref": "#/components/examples/problem.auth.unauthenticated"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.unauthenticated`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.forbidden": {
+                    "$ref": "#/components/examples/problem.auth.forbidden"
+                  },
+                  "auth.wrong_audience": {
+                    "$ref": "#/components/examples/problem.auth.wrong_audience"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.forbidden`, `auth.wrong_audience`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "validation.failed": {
+                    "$ref": "#/components/examples/problem.validation.failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `validation.failed`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.too_many_requests": {
+                    "$ref": "#/components/examples/problem.http.too_many_requests"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.too_many_requests`",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal.unexpected": {
+                    "$ref": "#/components/examples/problem.internal.unexpected"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `internal.unexpected`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "platformBearer": []
+          }
+        ],
+        "summary": "Provider credentials (metadata only)",
+        "tags": [
+          "admin.providerCredentials"
+        ],
+        "x-required-permissions": [
+          "admin.provider_credential.manage"
+        ],
+        "x-surface": "admin"
+      },
+      "post": {
+        "description": "Seals the values with the tenant’s data key (the platform field key for the platform merchant) and replaces the live credential of the same tenant, kind, provider (and merchant reference for payments) — the previous one is revoked. Audited with key names and fingerprint, never values; outbox event `provider_credential.changed` (D-240).\n\nImplements: D-240, D-148.",
+        "operationId": "admin.providerCredentials.set",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "default": {
+                  "summary": "Example",
+                  "value": {
+                    "kind": "payment",
+                    "merchantRef": "KB-M-000042",
+                    "provider": "kbank",
+                    "reason": "new API key from the bank portal (ticket FIN-2026-031)",
+                    "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11",
+                    "values": {
+                      "apiKey": "k_live_…",
+                      "apiSecret": "…",
+                      "webhookSecret": "…"
+                    }
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/ProviderCredentialSetDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "accountRefHint": "0042",
+                  "createdAt": "2026-11-01T00:15:00+07:00",
+                  "fingerprint": "9a1f03c2b7de",
+                  "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                  "keyNames": [
+                    "apiKey",
+                    "apiSecret",
+                    "webhookSecret"
+                  ],
+                  "kind": "payment",
+                  "provider": "kbank",
+                  "revokeReason": null,
+                  "revokedAt": null,
+                  "source": "admin",
+                  "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderCredentialDto"
+                }
+              }
+            },
+            "description": "Stored",
+            "headers": {
+              "Idempotent-Replayed": {
+                "$ref": "#/components/headers/IdempotentReplayed"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/RateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/RateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/RateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.bad_request": {
+                    "$ref": "#/components/examples/problem.http.bad_request"
+                  },
+                  "idempotency.key_invalid": {
+                    "$ref": "#/components/examples/problem.idempotency.key_invalid"
+                  },
+                  "idempotency.key_required": {
+                    "$ref": "#/components/examples/problem.idempotency.key_required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.unauthenticated": {
+                    "$ref": "#/components/examples/problem.auth.unauthenticated"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.unauthenticated`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.forbidden": {
+                    "$ref": "#/components/examples/problem.auth.forbidden"
+                  },
+                  "auth.wrong_audience": {
+                    "$ref": "#/components/examples/problem.auth.wrong_audience"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.forbidden`, `auth.wrong_audience`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.not_found": {
+                    "$ref": "#/components/examples/problem.http.not_found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.not_found`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "idempotency.in_progress": {
+                    "$ref": "#/components/examples/problem.idempotency.in_progress"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `idempotency.in_progress`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "idempotency.key_reused": {
+                    "$ref": "#/components/examples/problem.idempotency.key_reused"
+                  },
+                  "validation.failed": {
+                    "$ref": "#/components/examples/problem.validation.failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `idempotency.key_reused`, `validation.failed`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.too_many_requests": {
+                    "$ref": "#/components/examples/problem.http.too_many_requests"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.too_many_requests`",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal.unexpected": {
+                    "$ref": "#/components/examples/problem.internal.unexpected"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `internal.unexpected`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "platformBearer": []
+          }
+        ],
+        "summary": "Set or replace a provider credential",
+        "tags": [
+          "admin.providerCredentials"
+        ],
+        "x-required-permissions": [
+          "admin.provider_credential.manage"
+        ],
+        "x-surface": "admin"
+      }
+    },
+    "/v1/admin/provider-credentials/{credentialId}/actions/revoke": {
+      "post": {
+        "description": "The adapter has no credential afterwards (QR codes, lock syncs or e-Tax submissions of that account fail until a new one is set). Audited; outbox event (D-240).\n\nImplements: D-240.",
+        "operationId": "admin.providerCredentials.revoke",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "credentialId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/IdempotencyKey"
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "default": {
+                  "summary": "Example",
+                  "value": {
+                    "incidentRef": "INC-2026-031",
+                    "reason": "key leaked in a support e-mail"
+                  }
+                }
+              },
+              "schema": {
+                "$ref": "#/components/schemas/DeviceReasonDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "accountRefHint": "0042",
+                  "createdAt": "2026-11-01T00:15:00+07:00",
+                  "fingerprint": "9a1f03c2b7de",
+                  "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                  "keyNames": [
+                    "apiKey",
+                    "apiSecret",
+                    "webhookSecret"
+                  ],
+                  "kind": "payment",
+                  "provider": "kbank",
+                  "revokeReason": "key leaked in a support e-mail",
+                  "revokedAt": "2026-11-01T00:15:00+07:00",
+                  "source": "admin",
+                  "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProviderCredentialDto"
+                }
+              }
+            },
+            "description": "Revoked",
+            "headers": {
+              "Idempotent-Replayed": {
+                "$ref": "#/components/headers/IdempotentReplayed"
+              },
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/RateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/RateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/RateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "idempotency.key_invalid": {
+                    "$ref": "#/components/examples/problem.idempotency.key_invalid"
+                  },
+                  "idempotency.key_required": {
+                    "$ref": "#/components/examples/problem.idempotency.key_required"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `idempotency.key_invalid`, `idempotency.key_required`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.unauthenticated": {
+                    "$ref": "#/components/examples/problem.auth.unauthenticated"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.unauthenticated`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "auth.forbidden": {
+                    "$ref": "#/components/examples/problem.auth.forbidden"
+                  },
+                  "auth.wrong_audience": {
+                    "$ref": "#/components/examples/problem.auth.wrong_audience"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `auth.forbidden`, `auth.wrong_audience`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.not_found": {
+                    "$ref": "#/components/examples/problem.http.not_found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.not_found`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "idempotency.in_progress": {
+                    "$ref": "#/components/examples/problem.idempotency.in_progress"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `idempotency.in_progress`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "idempotency.key_reused": {
+                    "$ref": "#/components/examples/problem.idempotency.key_reused"
+                  },
+                  "validation.failed": {
+                    "$ref": "#/components/examples/problem.validation.failed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `idempotency.key_reused`, `validation.failed`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.too_many_requests": {
+                    "$ref": "#/components/examples/problem.http.too_many_requests"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.too_many_requests`",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal.unexpected": {
+                    "$ref": "#/components/examples/problem.internal.unexpected"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `internal.unexpected`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "platformBearer": []
+          }
+        ],
+        "summary": "Revoke a provider credential",
+        "tags": [
+          "admin.providerCredentials"
+        ],
+        "x-required-permissions": [
+          "admin.provider_credential.manage"
+        ],
+        "x-surface": "admin"
+      }
+    },
     "/v1/admin/push-subscriptions": {
       "post": {
         "description": "Stores the browser PushSubscription of the signed-in user (endpoint + keys) for web push notifications; re-registering an endpoint updates it; an `Idempotency-Key` replays the first answer. Get the VAPID key from `auth.webPush.publicKey` (residents: the LIFF build carries it).\n\nImplements: D-063, ADR-0003.",
@@ -65066,7 +66361,7 @@
     },
     "/v1/device/bootstrap": {
       "post": {
-        "description": "The gateway sends the one-time provisioning code from its QR (the serial is optional), a CSR (`CN=gw-provisioning` — the CA sets `CN=gw-<gatewayId>`), its agent version and hardware; the platform CA signs a client certificate (12 months, clientAuth), the EMQX ACL rows are written (publish `gp/v1/<id>/+` and `…/cmd/ack`, subscribe `…/config` and `…/cmd`), and a device session starts (JWT `aud=device` + refresh token, also as `deviceToken`). A second bootstrap of the same gateway revokes the previous certificate, ACL and sessions. Not idempotent by key: the code is single-use (second use → 401 `device.provisioning_code_invalid`); a lost response needs a new code (D-130, D-165, device protocol §1).\n\nImplements: D-033, D-130, ADR-0003.",
+        "description": "The gateway sends the one-time provisioning code from its QR (the serial is optional), a CSR (`CN=gw-provisioning` — the CA sets `CN=gw-<gatewayId>`), its agent version and hardware; the platform CA signs a client certificate (12 months, clientAuth), the broker ACL rows are written (publish only `gp/v1/<id>/telemetry`, `…/health`, `…/events`, `…/cmd/ack`; subscribe `…/config` and `…/cmd` — answered by the API’s EMQX HTTP authz, D-235), the MQTT password is the device JWT (protocol 1.2), `mqtt.wsUrl` appears only for a gateway whose WebSocket fallback the platform admin enabled (D-239), and a device session starts (JWT `aud=device` + refresh token, also as `deviceToken`). A second bootstrap of the same gateway revokes the previous certificate, ACL and sessions. Not idempotent by key: the code is single-use (second use → 401 `device.provisioning_code_invalid`); a lost response needs a new code (D-130, D-165, device protocol §1).\n\nImplements: D-033, D-130, D-235, D-239, ADR-0003.",
         "operationId": "device.bootstrap.create",
         "parameters": [
           {
@@ -65121,7 +66416,15 @@
                     "acl": [
                       {
                         "action": "publish",
-                        "topic": "gp/v1/2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e5f/+"
+                        "topic": "gp/v1/2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e5f/telemetry"
+                      },
+                      {
+                        "action": "publish",
+                        "topic": "gp/v1/2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e5f/health"
+                      },
+                      {
+                        "action": "publish",
+                        "topic": "gp/v1/2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e5f/events"
                       },
                       {
                         "action": "publish",
@@ -65137,6 +66440,7 @@
                       }
                     ],
                     "clientId": "gw-2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e5f",
+                    "password": "device_jwt",
                     "url": "mqtts://mqtt.getproperty.invalid:8883",
                     "username": "gw-2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e5f"
                   },
@@ -90260,6 +91564,7 @@
                       "lastSeenAt": "2026-11-01T00:15:00+07:00",
                       "meters": 2,
                       "model": "rpi-cm4",
+                      "mqttWsFallback": false,
                       "nextActions": [
                         "read-now",
                         "restart",
@@ -90544,6 +91849,7 @@
                     "lastSeenAt": "2026-11-01T00:15:00+07:00",
                     "meters": 2,
                     "model": "rpi-cm4",
+                    "mqttWsFallback": false,
                     "nextActions": [
                       "read-now",
                       "restart",
@@ -91733,6 +93039,7 @@
                     "lastSeenAt": "2026-11-01T00:15:00+07:00",
                     "meters": 2,
                     "model": "rpi-cm4",
+                    "mqttWsFallback": false,
                     "nextActions": [
                       "read-now",
                       "restart",
@@ -168571,6 +169878,7 @@
                       "lastSeenAt": "2026-11-01T00:15:00+07:00",
                       "meters": 2,
                       "model": "rpi-cm4",
+                      "mqttWsFallback": false,
                       "nextActions": [
                         "read-now",
                         "restart",
@@ -168855,6 +170163,7 @@
                     "lastSeenAt": "2026-11-01T00:15:00+07:00",
                     "meters": 2,
                     "model": "rpi-cm4",
+                    "mqttWsFallback": false,
                     "nextActions": [
                       "read-now",
                       "restart",
@@ -170044,6 +171353,7 @@
                     "lastSeenAt": "2026-11-01T00:15:00+07:00",
                     "meters": 2,
                     "model": "rpi-cm4",
+                    "mqttWsFallback": false,
                     "nextActions": [
                       "read-now",
                       "restart",
@@ -191661,6 +192971,248 @@
         "x-surface": "technician"
       }
     },
+    "/webhooks/integration/{platform}": {
+      "post": {
+        "description": "Cross-product events (D-238, D-153): HMAC-signed over the raw body (401 `webhook.signature_invalid`), stored once per idempotency key, validated against the `@collective/asset-core` contract and applied by its consumer — `warranty.defect.closed` today (B5.1). Answers 200 once stored, including refused and duplicate events. Senders call it over the box’s docker network; only correctly signed requests are accepted wherever it is reached from.\n\nImplements: D-238, D-153.",
+        "operationId": "webhooks.integration.receive",
+        "parameters": [
+          {
+            "description": "The sending product.",
+            "in": "path",
+            "name": "platform",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/IntegrationSystem"
+            }
+          },
+          {
+            "description": "`v1=<hex HMAC-SHA256(key, \"<timestamp>.<raw body>\")>`, several during a key rotation.",
+            "in": "header",
+            "name": "X-Collective-Signature",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Unix seconds of the signature (± 300 s).",
+            "in": "header",
+            "name": "X-Collective-Timestamp",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "The sending product (= `platform`).",
+            "in": "header",
+            "name": "X-Collective-Source",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "The envelope’s idempotency key.",
+            "in": "header",
+            "name": "X-Collective-Event-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "$ref": "#/components/parameters/AcceptLanguage"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "examples": {
+                "closed": {
+                  "summary": "A warranty defect closed by getbuild",
+                  "value": {
+                    "eventId": "0199f1c2-7a00-7000-8000-000000000004",
+                    "idempotencyKey": "getbuild:defect:D-0042:closed",
+                    "occurredAt": "2026-11-04T09:00:00+07:00",
+                    "payload": {},
+                    "sourcePlatform": "getbuild",
+                    "tenantId": null,
+                    "type": "warranty.defect.closed",
+                    "version": 1
+                  }
+                }
+              },
+              "schema": {
+                "additionalProperties": true,
+                "type": "object"
+              }
+            }
+          },
+          "description": "An integration event envelope of `@collective/asset-core/contracts`.",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "example": {
+                  "id": "0199f1c2-7a00-7000-8000-0000000000aa",
+                  "status": "applied"
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationReceiptDto"
+                }
+              }
+            },
+            "description": "Stored",
+            "headers": {
+              "X-RateLimit-Limit": {
+                "$ref": "#/components/headers/RateLimitLimit"
+              },
+              "X-RateLimit-Remaining": {
+                "$ref": "#/components/headers/RateLimitRemaining"
+              },
+              "X-RateLimit-Reset": {
+                "$ref": "#/components/headers/RateLimitReset"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.malformed_json": {
+                    "$ref": "#/components/examples/problem.http.malformed_json"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.malformed_json`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "webhook.signature_invalid": {
+                    "$ref": "#/components/examples/problem.webhook.signature_invalid"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `webhook.signature_invalid`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.not_found": {
+                    "$ref": "#/components/examples/problem.http.not_found"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.not_found`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "webhook.malformed": {
+                    "$ref": "#/components/examples/problem.webhook.malformed"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `webhook.malformed`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "429": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "http.too_many_requests": {
+                    "$ref": "#/components/examples/problem.http.too_many_requests"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `http.too_many_requests`",
+            "headers": {
+              "Retry-After": {
+                "$ref": "#/components/headers/RetryAfter"
+              },
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "examples": {
+                  "internal.unexpected": {
+                    "$ref": "#/components/examples/problem.internal.unexpected"
+                  }
+                },
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              }
+            },
+            "description": "Problem: `internal.unexpected`",
+            "headers": {
+              "X-Request-Id": {
+                "$ref": "#/components/headers/XRequestId"
+              }
+            }
+          }
+        },
+        "security": [],
+        "summary": "Integration event from another Collective product",
+        "tags": [
+          "webhooks.integration"
+        ],
+        "x-surface": "webhooks"
+      }
+    },
     "/webhooks/payments/{provider}": {
       "post": {
         "description": "KBank / SCB / Opn (O-001) POST a signed payment confirmation for a merchant. The API finds the merchant, verifies the signature with its secret (401 `webhook.signature_invalid` otherwise), stores the callback once per provider event id and answers 200 at once; the worker confirms each paid reference whose QR was issued for that same merchant account, idempotently on the provider transaction reference (D-042).\n\nImplements: D-042, ADR-0008.",
@@ -192310,6 +193862,10 @@
       "name": "admin.pricePlans"
     },
     {
+      "description": "Per-merchant provider credentials (payments, locks, e-Tax) sealed with the tenant data key; values write-only, decrypts audited (D-240).",
+      "name": "admin.providerCredentials"
+    },
+    {
       "description": "Web push (VAPID) subscriptions of the admin browser.",
       "name": "admin.pushSubscriptions"
     },
@@ -192838,6 +194394,10 @@
       "name": "technician.workOrders"
     },
     {
+      "description": "Integration events from other Collective products (getbuild / getpop, getpack) over the box network, HMAC-signed (D-238).",
+      "name": "webhooks.integration"
+    },
+    {
       "description": "Signed payment confirmations from KBank, SCB and Opn (O-001) for each landlord’s own merchant account (D-042, ADR-0008).",
       "name": "webhooks.payments"
     },
@@ -192847,6 +194407,9 @@
     }
   ],
   "webhooks": {
+    "integration.receive": {
+      "$ref": "#/paths/~1webhooks~1integration~1%7Bplatform%7D"
+    },
     "payments.callback": {
       "$ref": "#/paths/~1webhooks~1payments~1%7Bprovider%7D"
     },

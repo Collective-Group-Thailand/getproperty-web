@@ -248,6 +248,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/devices/{deviceId}/actions/set-mqtt-transport": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Switch a gateway’s MQTT WebSocket fallback
+         * @description For a building whose network blocks outbound 8883 (D-239, O-012 resolved): `wsFallback: true` lets the gateway connect over EMQX ws 8083 behind Caddy authenticated by its device JWT **alone** — no client certificate on that path, so a stolen JWT (≤ 1 h, issued only over mTLS to a non-retired gateway) is enough to connect for its lifetime. Off by default; the bootstrap answer carries `mqtt.wsUrl` only for such a gateway. Only gateways, never retired ones; audited with the reason; the next WebSocket connect is decided by the new value.
+         *
+         *     Implements: D-235, D-239.
+         */
+        post: operations["admin.devices.setMqttTransport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/devices/{deviceId}/actions/set-ring": {
         parameters: {
             query?: never;
@@ -1460,6 +1482,56 @@ export interface paths {
          *     Implements: D-156, ADR-0004.
          */
         post: operations["admin.pricePlans.publish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/provider-credentials": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Provider credentials (metadata only)
+         * @description Live credentials per tenant (or the platform merchant) with key names, a fingerprint and the last 4 characters of the merchant reference; values are never returned (D-240).
+         *
+         *     Implements: D-240, D-233.
+         */
+        get: operations["admin.providerCredentials.list"];
+        put?: never;
+        /**
+         * Set or replace a provider credential
+         * @description Seals the values with the tenant’s data key (the platform field key for the platform merchant) and replaces the live credential of the same tenant, kind, provider (and merchant reference for payments) — the previous one is revoked. Audited with key names and fingerprint, never values; outbox event `provider_credential.changed` (D-240).
+         *
+         *     Implements: D-240, D-148.
+         */
+        post: operations["admin.providerCredentials.set"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/provider-credentials/{credentialId}/actions/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Revoke a provider credential
+         * @description The adapter has no credential afterwards (QR codes, lock syncs or e-Tax submissions of that account fail until a new one is set). Audited; outbox event (D-240).
+         *
+         *     Implements: D-240.
+         */
+        post: operations["admin.providerCredentials.revoke"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2705,9 +2777,9 @@ export interface paths {
         put?: never;
         /**
          * Bootstrap a gateway: certificate, device JWT and broker ACL
-         * @description The gateway sends the one-time provisioning code from its QR (the serial is optional), a CSR (`CN=gw-provisioning` — the CA sets `CN=gw-<gatewayId>`), its agent version and hardware; the platform CA signs a client certificate (12 months, clientAuth), the EMQX ACL rows are written (publish `gp/v1/<id>/+` and `…/cmd/ack`, subscribe `…/config` and `…/cmd`), and a device session starts (JWT `aud=device` + refresh token, also as `deviceToken`). A second bootstrap of the same gateway revokes the previous certificate, ACL and sessions. Not idempotent by key: the code is single-use (second use → 401 `device.provisioning_code_invalid`); a lost response needs a new code (D-130, D-165, device protocol §1).
+         * @description The gateway sends the one-time provisioning code from its QR (the serial is optional), a CSR (`CN=gw-provisioning` — the CA sets `CN=gw-<gatewayId>`), its agent version and hardware; the platform CA signs a client certificate (12 months, clientAuth), the broker ACL rows are written (publish only `gp/v1/<id>/telemetry`, `…/health`, `…/events`, `…/cmd/ack`; subscribe `…/config` and `…/cmd` — answered by the API’s EMQX HTTP authz, D-235), the MQTT password is the device JWT (protocol 1.2), `mqtt.wsUrl` appears only for a gateway whose WebSocket fallback the platform admin enabled (D-239), and a device session starts (JWT `aud=device` + refresh token, also as `deviceToken`). A second bootstrap of the same gateway revokes the previous certificate, ACL and sessions. Not idempotent by key: the code is single-use (second use → 401 `device.provisioning_code_invalid`); a lost response needs a new code (D-130, D-165, device protocol §1).
          *
-         *     Implements: D-033, D-130, ADR-0003.
+         *     Implements: D-033, D-130, D-235, D-239, ADR-0003.
          */
         post: operations["device.bootstrap.create"];
         delete?: never;
@@ -12134,6 +12206,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/webhooks/integration/{platform}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Integration event from another Collective product
+         * @description Cross-product events (D-238, D-153): HMAC-signed over the raw body (401 `webhook.signature_invalid`), stored once per idempotency key, validated against the `@collective/asset-core` contract and applied by its consumer — `warranty.defect.closed` today (B5.1). Answers 200 once stored, including refused and duplicate events. Senders call it over the box’s docker network; only correctly signed requests are accepted wherever it is reached from.
+         *
+         *     Implements: D-238, D-153.
+         */
+        post: operations["webhooks.integration.receive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/webhooks/payments/{provider}": {
         parameters: {
             query?: never;
@@ -12202,6 +12296,22 @@ export interface paths {
     };
 }
 export interface webhooks {
+    "integration.receive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "payments.callback": {
         parameters: {
             query?: never;
@@ -15266,6 +15376,15 @@ export interface components {
             /** @example https://storage.example.com/getproperty/t/…/log_bundle/…?X-Amz-Signature=abc */
             uploadUrl: string;
         };
+        DeviceMqttTransportDto: {
+            /** @example building firewall blocks outbound 8883 (ticket INC-2026-021) */
+            reason: string;
+            /**
+             * @description true = the gateway may use the WebSocket fallback with its device JWT only (D-239).
+             * @example true
+             */
+            wsFallback: boolean;
+        };
         /** @enum {string} */
         DeviceOwnership: "platform_haas" | "tenant_owned";
         DeviceReasonDto: {
@@ -16071,6 +16190,11 @@ export interface components {
             meters: number;
             /** @example rpi-cm4 */
             model: string;
+            /**
+             * @description Gateways: the WebSocket fallback (EMQX ws behind Caddy, device JWT only, no client certificate) is enabled for this gateway (D-239). Off by default.
+             * @example false
+             */
+            mqttWsFallback: boolean;
             /**
              * @example [
              *       "read-now",
@@ -16949,6 +17073,23 @@ export interface components {
             /** @example warranty.defect.reported */
             type: string;
         };
+        IntegrationReceiptDto: {
+            /**
+             * Format: uuid
+             * @example 0199f1c2-7a00-7000-8000-0000000000aa
+             */
+            id: string;
+            /**
+             * @description `applied` (stored and applied), `rejected` (stored; the contract or the consumer refused it — do not resend), `duplicate` (this idempotency key was received before).
+             * @example applied
+             */
+            status: components["schemas"]["IntegrationReceiptStatus"];
+        };
+        /**
+         * @description `applied` (stored and applied), `rejected` (stored; the contract or the consumer refused it — do not resend), `duplicate` (this idempotency key was received before).
+         * @enum {string}
+         */
+        IntegrationReceiptStatus: "applied" | "rejected" | "duplicate";
         /** @enum {string} */
         IntegrationStatus: "received" | "validated" | "applied" | "rejected" | "pending" | "sent" | "acked" | "failed" | "dead";
         /** @enum {string} */
@@ -19558,26 +19699,36 @@ export interface components {
         MqttAclEntryDto: {
             /** @example publish */
             action: components["schemas"]["MqttAclAction"];
-            /** @example gp/v1/2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e5f/+ */
+            /** @example gp/v1/2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e5f/telemetry */
             topic: string;
         };
         MqttConnectionDto: {
             acl: components["schemas"]["MqttAclEntryDto"][];
             /** @example gw-2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e5f */
             clientId: string;
+            /**
+             * @description Device protocol 1.2 (D-235): the MQTT password is a fresh device JWT (`POST /v1/device/token`, ≤ 1 h) fetched before every (re)connect. Required on the WebSocket fallback; on 8883 required while the platform setting `mqtt.authn.require_device_jwt` is on (default), otherwise the certificate alone is accepted.
+             * @example device_jwt
+             */
+            password: components["schemas"]["MqttPasswordMode"];
             /** @example mqtts://mqtt.getproperty.invalid:8883 */
             url: string;
             /**
-             * @description Broker username = certificate CN (EMQX ACL key).
+             * @description Broker username = client id = certificate CN (`gw-<gatewayId>`).
              * @example gw-2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e5f
              */
             username: string;
             /**
-             * @description WebSocket fallback for networks that block 8883 (device protocol §1). **Omitted** unless the platform enables it (`MQTT_PUBLIC_WS_URL`): while O-012 is open the Collective platform has no WSS endpoint that verifies the gateway certificate (D-231, edge CR-013).
+             * @description WebSocket fallback for buildings whose network blocks 8883 (device protocol §1, D-239 — O-012 resolved): EMQX ws 8083 behind Caddy, authenticated by the device JWT **alone** (no client certificate on that path). **Omitted** unless the platform admin enabled the fallback for this gateway (`POST /v1/admin/devices/{deviceId}/actions/set-mqtt-transport`) and the platform publishes it (`MQTT_PUBLIC_WS_URL`); off by default (D-231, edge CR-013).
              * @example wss://mqtt.getproperty.invalid/mqtt
              */
             wsUrl?: string;
         };
+        /**
+         * @description Device protocol 1.2 (D-235): the MQTT password is a fresh device JWT (`POST /v1/device/token`, ≤ 1 h) fetched before every (re)connect. Required on the WebSocket fallback; on 8883 required while the platform setting `mqtt.authn.require_device_jwt` is on (default), otherwise the certificate alone is accepted.
+         * @enum {string}
+         */
+        MqttPasswordMode: "device_jwt";
         MultipartPartDto: {
             /** @example 1 */
             partNumber: number;
@@ -21634,6 +21785,92 @@ export interface components {
              */
             utilitiesFinal?: string;
         };
+        ProviderCredentialDto: {
+            /**
+             * @description Last 4 characters of the merchant reference (payments); never the full reference.
+             * @example 0042
+             */
+            accountRefHint: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            createdAt: string;
+            /**
+             * @description Changes whenever the values change; reveals nothing.
+             * @example 9a1f03c2b7de
+             */
+            fingerprint: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /**
+             * @example [
+             *       "apiKey",
+             *       "apiSecret",
+             *       "webhookSecret"
+             *     ]
+             */
+            keyNames: string[];
+            /** @example payment */
+            kind: components["schemas"]["ProviderCredentialKind"];
+            /**
+             * @description payment: kbank | scb | opn · lock: ttlock | tuya · etax: inet
+             * @example kbank
+             */
+            provider: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            revokedAt: string | null;
+            /** @example null */
+            revokeReason: string | null;
+            /** @example admin */
+            source: components["schemas"]["ProviderCredentialSource"];
+            /**
+             * Format: uuid
+             * @description null = the platform’s own merchant (platform invoices, payments only).
+             * @example 0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11
+             */
+            tenantId: string | null;
+        };
+        /** @enum {string} */
+        ProviderCredentialKind: "payment" | "lock" | "etax";
+        ProviderCredentialSetDto: {
+            /** @example payment */
+            kind: components["schemas"]["ProviderCredentialKind"];
+            /**
+             * @description payments: the merchant reference at the provider (the tenant bank account’s provider reference).
+             * @example KB-M-000042
+             */
+            merchantRef?: string;
+            /** @example kbank */
+            provider: string;
+            /** @example new API key from the bank portal (ticket FIN-2026-031) */
+            reason: string;
+            /**
+             * Format: uuid
+             * @description The tenant whose merchant / vendor / e-Tax account this is; null = the platform merchant.
+             * @example 0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11
+             */
+            tenantId: string | null;
+            /**
+             * @description Write-only: 1–20 string values, sealed with the tenant data key and never returned (D-240).
+             * @example {
+             *       "apiKey": "k_live_…",
+             *       "apiSecret": "…",
+             *       "webhookSecret": "…"
+             *     }
+             */
+            values: {
+                [key: string]: string;
+            };
+        };
+        /** @enum {string} */
+        ProviderCredentialSource: "admin" | "import";
         ProvisionGatewayDto: {
             /**
              * Format: uuid
@@ -28314,9 +28551,11 @@ export interface operations {
                      *           "lastSeenAt": null,
                      *           "meters": 0,
                      *           "model": "rpi-cm4",
+                     *           "mqttWsFallback": false,
                      *           "nextActions": [
                      *             "assign",
                      *             "set-ring",
+                     *             "set-mqtt-transport",
                      *             "revoke-certificates",
                      *             "retire"
                      *           ],
@@ -28564,9 +28803,11 @@ export interface operations {
                      *         "lastSeenAt": null,
                      *         "meters": 0,
                      *         "model": "rpi-cm4",
+                     *         "mqttWsFallback": false,
                      *         "nextActions": [
                      *           "assign",
                      *           "set-ring",
+                     *           "set-mqtt-transport",
                      *           "revoke-certificates",
                      *           "retire"
                      *         ],
@@ -28690,9 +28931,11 @@ export interface operations {
                      *       "lastSeenAt": null,
                      *       "meters": 0,
                      *       "model": "rpi-cm4",
+                     *       "mqttWsFallback": false,
                      *       "nextActions": [
                      *         "assign",
                      *         "set-ring",
+                     *         "set-mqtt-transport",
                      *         "revoke-certificates",
                      *         "retire"
                      *       ],
@@ -28837,6 +29080,7 @@ export interface operations {
                      *       "lastSeenAt": null,
                      *       "meters": 0,
                      *       "model": "rpi-cm4",
+                     *       "mqttWsFallback": false,
                      *       "nextActions": [
                      *         "set-ring"
                      *       ],
@@ -28981,9 +29225,11 @@ export interface operations {
                      *       "lastSeenAt": null,
                      *       "meters": 0,
                      *       "model": "rpi-cm4",
+                     *       "mqttWsFallback": false,
                      *       "nextActions": [
                      *         "assign",
                      *         "set-ring",
+                     *         "set-mqtt-transport",
                      *         "revoke-certificates",
                      *         "retire"
                      *       ],
@@ -29082,6 +29328,155 @@ export interface operations {
             };
         };
     };
+    "admin.devices.setMqttTransport": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                deviceId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeviceMqttTransportDto"];
+            };
+        };
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "arch": "arm64",
+                     *       "assetItemId": null,
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "configAppliedVersion": null,
+                     *       "driver": null,
+                     *       "firmwareVersion": null,
+                     *       "gatewayDeviceId": null,
+                     *       "health": null,
+                     *       "id": "2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e5f",
+                     *       "kind": "gateway",
+                     *       "lastSeenAt": null,
+                     *       "meters": 0,
+                     *       "model": "rpi-cm4",
+                     *       "mqttWsFallback": true,
+                     *       "nextActions": [
+                     *         "assign",
+                     *         "set-ring",
+                     *         "set-mqtt-transport",
+                     *         "revoke-certificates",
+                     *         "retire"
+                     *       ],
+                     *       "otaRing": "canary",
+                     *       "ownership": "platform_haas",
+                     *       "serial": "GP-GW-000123",
+                     *       "status": "assigned",
+                     *       "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11",
+                     *       "vendor": "Raspberry Pi",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["FleetDeviceDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `device.invalid_state`, `device.not_gateway`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "admin.devices.setRing": {
         parameters: {
             query?: never;
@@ -29125,9 +29520,11 @@ export interface operations {
                      *       "lastSeenAt": null,
                      *       "meters": 0,
                      *       "model": "rpi-cm4",
+                     *       "mqttWsFallback": false,
                      *       "nextActions": [
                      *         "assign",
                      *         "set-ring",
+                     *         "set-mqtt-transport",
                      *         "revoke-certificates",
                      *         "retire"
                      *       ],
@@ -36311,6 +36708,381 @@ export interface operations {
             };
         };
     };
+    "admin.providerCredentials.list": {
+        parameters: {
+            query?: {
+                /** @description Also list revoked and replaced credentials. */
+                includeRevoked?: boolean;
+                kind?: components["schemas"]["ProviderCredentialKind"];
+                /** @description A tenant id, or `platform` for the platform merchant; omitted = all. */
+                tenantId?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Credentials */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "accountRefHint": "0042",
+                     *         "createdAt": "2026-11-01T00:15:00+07:00",
+                     *         "fingerprint": "9a1f03c2b7de",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "keyNames": [
+                     *           "apiKey",
+                     *           "apiSecret",
+                     *           "webhookSecret"
+                     *         ],
+                     *         "kind": "payment",
+                     *         "provider": "kbank",
+                     *         "revokeReason": null,
+                     *         "revokedAt": null,
+                     *         "source": "admin",
+                     *         "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["ProviderCredentialDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.providerCredentials.set": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ProviderCredentialSetDto"];
+            };
+        };
+        responses: {
+            /** @description Stored */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "accountRefHint": "0042",
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "fingerprint": "9a1f03c2b7de",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "keyNames": [
+                     *         "apiKey",
+                     *         "apiSecret",
+                     *         "webhookSecret"
+                     *       ],
+                     *       "kind": "payment",
+                     *       "provider": "kbank",
+                     *       "revokeReason": null,
+                     *       "revokedAt": null,
+                     *       "source": "admin",
+                     *       "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ProviderCredentialDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.providerCredentials.revoke": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                credentialId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeviceReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Revoked */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "accountRefHint": "0042",
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "fingerprint": "9a1f03c2b7de",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "keyNames": [
+                     *         "apiKey",
+                     *         "apiSecret",
+                     *         "webhookSecret"
+                     *       ],
+                     *       "kind": "payment",
+                     *       "provider": "kbank",
+                     *       "revokeReason": "key leaked in a support e-mail",
+                     *       "revokedAt": "2026-11-01T00:15:00+07:00",
+                     *       "source": "admin",
+                     *       "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ProviderCredentialDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "admin.pushSubscriptions.create": {
         parameters: {
             query?: never;
@@ -42887,7 +43659,15 @@ export interface operations {
                      *         "acl": [
                      *           {
                      *             "action": "publish",
-                     *             "topic": "gp/v1/2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e5f/+"
+                     *             "topic": "gp/v1/2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e5f/telemetry"
+                     *           },
+                     *           {
+                     *             "action": "publish",
+                     *             "topic": "gp/v1/2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e5f/health"
+                     *           },
+                     *           {
+                     *             "action": "publish",
+                     *             "topic": "gp/v1/2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e5f/events"
                      *           },
                      *           {
                      *             "action": "publish",
@@ -42903,6 +43683,7 @@ export interface operations {
                      *           }
                      *         ],
                      *         "clientId": "gw-2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e5f",
+                     *         "password": "device_jwt",
                      *         "url": "mqtts://mqtt.getproperty.invalid:8883",
                      *         "username": "gw-2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e5f"
                      *       },
@@ -55600,6 +56381,7 @@ export interface operations {
                      *           "lastSeenAt": "2026-11-01T00:15:00+07:00",
                      *           "meters": 2,
                      *           "model": "rpi-cm4",
+                     *           "mqttWsFallback": false,
                      *           "nextActions": [
                      *             "read-now",
                      *             "restart",
@@ -55744,6 +56526,7 @@ export interface operations {
                      *         "lastSeenAt": "2026-11-01T00:15:00+07:00",
                      *         "meters": 2,
                      *         "model": "rpi-cm4",
+                     *         "mqttWsFallback": false,
                      *         "nextActions": [
                      *           "read-now",
                      *           "restart",
@@ -56144,6 +56927,7 @@ export interface operations {
                      *         "lastSeenAt": "2026-11-01T00:15:00+07:00",
                      *         "meters": 2,
                      *         "model": "rpi-cm4",
+                     *         "mqttWsFallback": false,
                      *         "nextActions": [
                      *           "read-now",
                      *           "restart",
@@ -96130,6 +96914,7 @@ export interface operations {
                      *           "lastSeenAt": "2026-11-01T00:15:00+07:00",
                      *           "meters": 2,
                      *           "model": "rpi-cm4",
+                     *           "mqttWsFallback": false,
                      *           "nextActions": [
                      *             "read-now",
                      *             "restart",
@@ -96274,6 +97059,7 @@ export interface operations {
                      *         "lastSeenAt": "2026-11-01T00:15:00+07:00",
                      *         "meters": 2,
                      *         "model": "rpi-cm4",
+                     *         "mqttWsFallback": false,
                      *         "nextActions": [
                      *           "read-now",
                      *           "restart",
@@ -96674,6 +97460,7 @@ export interface operations {
                      *         "lastSeenAt": "2026-11-01T00:15:00+07:00",
                      *         "meters": 2,
                      *         "model": "rpi-cm4",
+                     *         "mqttWsFallback": false,
                      *         "nextActions": [
                      *           "read-now",
                      *           "restart",
@@ -108117,6 +108904,118 @@ export interface operations {
                 };
             };
             /** @description Problem: `document.type_not_allowed`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "webhooks.integration.receive": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description The envelope’s idempotency key. */
+                "X-Collective-Event-Id": string;
+                /** @description `v1=<hex HMAC-SHA256(key, "<timestamp>.<raw body>")>`, several during a key rotation. */
+                "X-Collective-Signature": string;
+                /** @description The sending product (= `platform`). */
+                "X-Collective-Source": string;
+                /** @description Unix seconds of the signature (± 300 s). */
+                "X-Collective-Timestamp": string;
+            };
+            path: {
+                /** @description The sending product. */
+                platform: components["schemas"]["IntegrationSystem"];
+            };
+            cookie?: never;
+        };
+        /** @description An integration event envelope of `@collective/asset-core/contracts`. */
+        requestBody: {
+            content: {
+                "application/json": {
+                    [key: string]: unknown;
+                };
+            };
+        };
+        responses: {
+            /** @description Stored */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "id": "0199f1c2-7a00-7000-8000-0000000000aa",
+                     *       "status": "applied"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["IntegrationReceiptDto"];
+                };
+            };
+            /** @description Problem: `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `webhook.signature_invalid` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `webhook.malformed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
