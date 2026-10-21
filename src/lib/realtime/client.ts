@@ -28,20 +28,47 @@ export interface RealtimeOptions {
 export function connectRealtime({ zone, onEvent, onStatus, fetch: fetchImpl = fetch }: RealtimeOptions): () => void {
   let stopped = false;
   let attempt = 0;
+  /**
+   * Generation of the current connection (review M2). Every `run()` captures it; `online`, a reconnect and `stop()`
+   * bump it and abort the previous controller, so a superseded run neither schedules another one nor keeps a
+   * stream open — there is never more than one stream, and none after `stop()`.
+   */
+  let generation = 0;
   let controller: AbortController | undefined;
   let timer: ReturnType<typeof setTimeout> | undefined;
 
-  const setStatus = (status: RealtimeStatus) => onStatus?.(status);
+  const setStatus = (status: RealtimeStatus) => {
+    if (!stopped) onStatus?.(status);
+  };
 
-  const schedule = () => {
-    if (stopped) return;
+  const clearTimer = () => {
+    if (timer !== undefined) clearTimeout(timer);
+    timer = undefined;
+  };
+
+  /** Ends whatever connection is in flight and starts a new generation. */
+  const supersede = (): number => {
+    clearTimer();
+    controller?.abort();
+    controller = undefined;
+    generation += 1;
+    return generation;
+  };
+
+  const schedule = (gen: number) => {
+    if (stopped || gen !== generation) return;
     setStatus("closed");
     const delay = BACKOFF_MS[Math.min(attempt, BACKOFF_MS.length - 1)]!;
     attempt += 1;
-    timer = setTimeout(run, delay);
+    clearTimer();
+    timer = setTimeout(() => {
+      timer = undefined;
+      start();
+    }, delay);
   };
 
-  const dispatch = (message: ServerSentEvent) => {
+  const dispatch = (gen: number, message: ServerSentEvent) => {
+    if (gen !== generation) return;
     if (message.event === "ready") {
       attempt = 0;
       setStatus("open");
@@ -56,58 +83,79 @@ export function connectRealtime({ zone, onEvent, onStatus, fetch: fetchImpl = fe
     }
   };
 
-  async function run() {
-    if (stopped) return;
+  async function run(gen: number, own: AbortController) {
+    const current = () => !stopped && gen === generation;
     setStatus("connecting");
-    controller = new AbortController();
     try {
       const auth = await fetchImpl(`/bff/v1/${zone}/realtime/auth`, {
         method: "POST",
         headers: { [CSRF_HEADER]: "1", accept: "application/json" },
-        signal: controller.signal,
+        signal: own.signal,
       });
-      if (auth.status === 401 || auth.status === 403) {
-        // Signed out or not entitled: stay closed until the page reloads.
-        stopped = true;
-        setStatus("closed");
+      if (!current()) {
+        await auth.body?.cancel().catch(() => undefined);
         return;
       }
-      if (!auth.ok) return schedule();
+      if (auth.status === 401 || auth.status === 403) {
+        // Signed out or not entitled: stay closed until the page reloads.
+        setStatus("closed");
+        stopped = true;
+        supersede();
+        return;
+      }
+      if (!auth.ok) return schedule(gen);
+      // The token itself stays in the BFF's httpOnly cookie (review L6); the URL carries none.
       const { streamUrl } = (await auth.json()) as { streamUrl: string };
+      if (!current()) return;
       const stream = await fetchImpl(`/bff${streamUrl}`, {
         headers: { accept: "text/event-stream" },
-        signal: controller.signal,
+        signal: own.signal,
       });
-      if (!stream.ok || !stream.body) return schedule();
+      if (!current()) {
+        await stream.body?.cancel().catch(() => undefined);
+        return;
+      }
+      if (!stream.ok || !stream.body) return schedule(gen);
       const reader = stream.body.pipeThrough(new TextDecoderStream()).getReader();
       const parser = new SseParser();
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        for (const message of parser.push(value)) dispatch(message);
+      try {
+        for (;;) {
+          const { done, value } = await reader.read();
+          if (done || !current()) break;
+          for (const message of parser.push(value)) dispatch(gen, message);
+        }
+      } finally {
+        await reader.cancel().catch(() => undefined);
       }
-      schedule();
+      schedule(gen);
     } catch {
-      if (!stopped) schedule();
+      // An abort from `online`/`stop()` belongs to a superseded generation: nothing to schedule.
+      schedule(gen);
     }
+  }
+
+  function start() {
+    if (stopped) return;
+    const gen = supersede();
+    const own = new AbortController();
+    controller = own;
+    void run(gen, own);
   }
 
   const online = () => {
     if (stopped) return;
-    if (timer) clearTimeout(timer);
     attempt = 0;
-    controller?.abort();
-    void run();
+    start();
   };
   if (typeof window !== "undefined") window.addEventListener("online", online);
-  void run();
+  start();
 
   return () => {
+    if (stopped) return;
+    onStatus?.("closed");
     stopped = true;
-    if (timer) clearTimeout(timer);
-    controller?.abort();
+    supersede();
     if (typeof window !== "undefined") window.removeEventListener("online", online);
-    setStatus("closed");
   };
 }
 
