@@ -196,3 +196,77 @@ Every URL within the hard limits (D-179: owner 260 KB, staff 200 KB); accessibil
 | `staff` | `/parcels` | 194.8 KB |
 
 Staff is the tight one: the work order screen sits 2.7 KB under the 200 KB limit. The next staff screen that needs more should move the cost-line form and the "waiting for parts" note behind a `lazyWarm` boundary (both are below the fold and used on a minority of visits) before anything else.
+
+## Full pass after the api `18b160e` adoption (2026-10-21, `pnpm lhci`, every URL of every set, signed in)
+
+All 62 URLs within the hard limits (D-179: marketing 180 KB, owner / admin 260 KB, staff 200 KB); accessibility 1.0 on
+every URL (an error assertion). New in the sets: admin `/integration-events` and `/privacy`, staff
+`/service-requests/[id]` (the message thread). The first full pass found staff `/readings` at **201.8 KB** (over the
+limit; it had last been measured at 195.8 KB in F4 4.1): `ReadingSourceBadge` imported the `@/domain/status` barrel,
+which ships every status map (≈ 5 KB gz). It now imports `@/domain/status/readingSource` alone — every staff page
+dropped ≈ 2 KB and `/readings` to 195.0 KB. Client code must import status maps from their own file, never the barrel.
+
+| Set | URL | Initial JS (gz) |
+|---|---|---|
+| `owner-marketing` | `/` | 170.7 KB |
+| `owner-marketing` | `/en` | 170.7 KB |
+| `owner-marketing` | `/pricing` | 168.6 KB |
+| `owner` | `/dashboard` | 184.8 KB |
+| `owner` | `/units?building=5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c` | 216.8 KB |
+| `owner` | `/units?building=5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b8e` | 216.8 KB |
+| `owner` | `/leases/new` | 225.9 KB |
+| `owner` | `/leases/1ea50000-0000-4000-8000-000000000002` | 221.6 KB |
+| `owner` | `/deposits/de900000-0000-4000-8000-000000000303` | 194.7 KB |
+| `owner` | `/billing` | 196.7 KB |
+| `owner` | `/invoices` | 187.3 KB |
+| `owner` | `/invoices/1e700000-0000-4000-8000-000000000102` | 199.4 KB |
+| `owner` | `/payments/slips` | 191.7 KB |
+| `owner` | `/arrears` | 189.8 KB |
+| `owner` | `/meters/a1000000-0000-4000-8000-000000000004?building=5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c` | 187.5 KB |
+| `owner` | `/loss` | 220.7 KB |
+| `owner` | `/settings` | 202.1 KB |
+| `owner` | `/settings/bank-accounts` | 197.9 KB |
+| `owner` | `/settings/members` | 197.1 KB |
+| `owner` | `/settings/notifications` | 191.7 KB |
+| `owner` | `/settings/privacy` | 195.2 KB |
+| `owner` | `/billing/rate-plans` | 197.4 KB |
+| `owner` | `/subscription` | 189.8 KB |
+| `owner` | `/subscription/invoices/8b000000-0000-4000-8000-000000000001` | 189.8 KB |
+| `owner` | `/reports` | 189.1 KB |
+| `owner` | `/service-requests` | 194.5 KB |
+| `owner` | `/service-requests/5e700000-0000-4000-8000-000000000001` | 197.5 KB |
+| `owner` | `/work-orders` | 187.3 KB |
+| `owner` | `/work-orders/70000000-0000-4000-8000-000000000003` | 197.9 KB |
+| `owner` | `/maintenance` | 221.5 KB |
+| `owner` | `/access` | 192.6 KB |
+| `owner` | `/access/10c00000-0000-4000-8000-000000000001` | 192.6 KB |
+| `owner` | `/announcements` | 187.3 KB |
+| `owner` | `/announcements/new` | 197.6 KB |
+| `owner` | `/parcels` | 199.1 KB |
+| `owner` | `/community/facilities` | 196.8 KB |
+| `owner` | `/community/rules` | 217.7 KB |
+| `staff` | `/` | 191.5 KB |
+| `staff` | `/readings` | 195.0 KB |
+| `staff` | `/inspections` | 188.3 KB |
+| `staff` | `/inspections/15e00000-0000-4000-8000-000000000002` | 197.0 KB |
+| `staff` | `/devices` | 189.5 KB |
+| `staff` | `/devices/install` | 195.1 KB |
+| `staff` | `/work-orders` | 189.5 KB |
+| `staff` | `/work-orders/70000000-0000-4000-8000-000000000001` | 196.8 KB |
+| `staff` | `/parcels` | 193.0 KB |
+| `staff` | `/service-requests/5e700000-0000-4000-8000-000000000001` | 195.1 KB |
+| `admin` | `/` | 188.2 KB |
+| `admin` | `/tenants` | 194.3 KB |
+| `admin` | `/tenants/0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11` | 181.6 KB |
+| `admin` | `/tenants/0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11/subscription` | 216.7 KB |
+| `admin` | `/tenants/0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11/pilot` | 193.4 KB |
+| `admin` | `/subscriptions/invoices/8b000000-0000-4000-8000-000000000001` | 190.4 KB |
+| `admin` | `/tariffs/9b000000-0000-4000-8000-000000000001` | 197.3 KB |
+| `admin` | `/settings` | 187.9 KB |
+| `admin` | `/audit` | 184.5 KB |
+| `admin` | `/outbox` | 194.1 KB |
+| `admin` | `/devices` | 192.3 KB |
+| `admin` | `/devices/2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e03` | 190.9 KB |
+| `admin` | `/ota/rollouts/aa000000-0000-4000-8000-000000000001` | 191.7 KB |
+| `admin` | `/integration-events` | 184.5 KB |
+| `admin` | `/privacy` | 188.2 KB |

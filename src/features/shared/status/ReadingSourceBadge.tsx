@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 
-import { READING_SOURCE, type ReadingSource } from "@/domain/status";
+import { READING_SOURCE, type ReadingSource } from "@/domain/status/readingSource";
 import { StatusBadge } from "@/ui/components/Badge";
 
 /** Where a meter reading came from (D-012): smart meter, photo (OCR), typed in, or estimated. */

@@ -50,12 +50,21 @@ async function portTaken(): Promise<boolean> {
   }
 }
 
+async function mockUp(): Promise<boolean> {
+  try {
+    return (await fetch(`${MOCK_API}/__mock/health`, { headers: { connection: "close" } })).ok;
+  } catch {
+    return false;
+  }
+}
+
+/** The app server and the mock API: a set's session is signed in on the mock before Lighthouse starts. */
 async function waitForServer(): Promise<void> {
-  for (let attempt = 0; attempt < 60; attempt += 1) {
-    if (await portTaken()) return;
+  for (let attempt = 0; attempt < 90; attempt += 1) {
+    if ((await portTaken()) && (await mockUp())) return;
     await new Promise((resolve) => setTimeout(resolve, 1000));
   }
-  throw new Error(`The server did not come up on port ${PORT}.`);
+  throw new Error(`The server on port ${PORT} or the mock API on ${MOCK_PORT} did not come up.`);
 }
 
 const configs = readdirSync(join(ROOT, "lighthouse"))
