@@ -302,3 +302,16 @@ cache purge) and the queue's IndexedDB-lease fallback load on first use. The lar
 (199.4 KB, door codes now fetched on tap by a small client component): **0.6 KB of headroom** — the next staff
 feature has to come with a reduction (candidates: the work-order step forms on demand, the sync sheet's list).
 
+
+## F11 adoption — api `74bdcdc` (2026-10-22, `pnpm lhci admin owner`, signed in)
+
+Both sets met their budgets with accessibility 1.0. New admin URLs:
+
+| Set | URL | Initial JS | Budget | Headroom |
+|---|---|---|---|---|
+| `admin` | `/tenants/[id]/credentials` (provider credentials tab) | 190.4 KB | 260 KB | 69.6 KB |
+| `admin` | `/provider-credentials` (all tenants + platform merchant) | 190.4 KB | 260 KB | 69.6 KB |
+
+`admin` 182.0–217.2 KB over 17 URLs (the gateway page with the WebSocket-fallback dialog 191.7 KB, the fleet list
+193.2 KB); `owner` 41 URLs up to 226.3 KB (the meter page with the 15-minute series 187.7 KB). The credentials form
+and the transport dialog load with the console's lazy dialogs; nothing new in the shell.
