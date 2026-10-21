@@ -47,3 +47,15 @@ export async function uploadPlatformFile(
 export function platformFileLink(fileId: string): Promise<Schemas["FileDownloadDto"]> {
   return unwrap(browserApi().GET("/v1/admin/files/{fileId}", { params: { path: { fileId } } }));
 }
+
+/** A blank new tab with no way back to this one (`opener` cut), or null when popups are blocked. */
+export function openDetachedTab(): Window | null {
+  const opened = window.open("about:blank", "_blank");
+  if (!opened) return null;
+  try {
+    opened.opener = null;
+  } catch {
+    // Some browsers make it read-only once cut; it is null either way.
+  }
+  return opened;
+}

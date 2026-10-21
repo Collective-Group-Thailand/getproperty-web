@@ -5,7 +5,7 @@ import { useState } from "react";
 import { ProblemNotice } from "@/features/shared/console/useApiAction";
 import { Button, type ButtonProps } from "@/ui/components/Button";
 
-import { platformFileLink } from "./files";
+import { openDetachedTab, platformFileLink } from "./files";
 
 /**
  * Opens a platform file (a tariff notice, a DSR export) in a new tab through a 5-minute signed link the API
@@ -36,12 +36,14 @@ export function PlatformFileButton({
         onClick={async () => {
           setBusy(true);
           setError(null);
-          // Opened before the await so the browser keeps it as the click's own window (no popup block).
-          const opened = window.open("", "_blank", "noopener");
+          // Opened before the await so the browser keeps it as the click's own window (no popup block). Not with
+          // the "noopener" feature — `window.open` then returns null by spec and this tab would navigate away
+          // (review L5) — but the new tab's `opener` is cut by hand before it loads anything.
+          const opened = openDetachedTab();
           try {
             const link = await platformFileLink(fileId);
-            if (opened) opened.location.href = link.url;
-            else window.location.assign(link.url);
+            if (opened) opened.location.replace(link.url);
+            else window.location.assign(link.url); // popups blocked: the file opens here instead
           } catch (failure) {
             opened?.close();
             setError(failure);

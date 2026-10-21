@@ -97,11 +97,21 @@ test("TM30: deadline on the dashboard, missing data per person, file per buildin
   const row = page.locator(`[data-testid="tm30-row"][data-id="${TM30_B101}"]`);
   await expect(row).toHaveAttribute("data-status", "generated");
   expect((await received("owner.tm30.generate")).at(-1)?.idempotencyKey).toBeTruthy();
-  const download = await page.request.get(`${HOSTS.owner}/bff/tm30-exports/${TM30_B101}/download`);
+  // The download is a same-origin POST (review L4): the button submits a form and the browser saves the file.
+  const [saved] = await Promise.all([page.waitForEvent("download"), row.getByTestId("tm30-download").click()]);
+  expect(saved.suggestedFilename()).toContain("tm30-B-");
+  const sameSite = { headers: { origin: HOSTS.owner, "sec-fetch-site": "same-origin" } };
+  const download = await page.request.post(`${HOSTS.owner}/bff/tm30-exports/${TM30_B101}/download`, sameSite);
   expect(download.status()).toBe(200);
   expect(download.headers()["content-disposition"]).toContain("tm30-B-");
   expect(download.headers()["cache-control"]).toBe("no-store");
-  expect((await page.request.get(`${HOSTS.owner}/bff/tm30-exports/not-a-uuid/download`)).status()).toBe(404);
+  expect((await page.request.post(`${HOSTS.owner}/bff/tm30-exports/not-a-uuid/download`, sameSite)).status()).toBe(404);
+  // A cross-site link or form cannot trigger it: GET is 405, a POST from another origin 403.
+  expect((await page.request.get(`${HOSTS.owner}/bff/tm30-exports/${TM30_B101}/download`)).status()).toBe(405);
+  const crossSite = await page.request.post(`${HOSTS.owner}/bff/tm30-exports/${TM30_B101}/download`, {
+    headers: { origin: "https://evil.example", "sec-fetch-site": "cross-site" },
+  });
+  expect(crossSite.status()).toBe(403);
 
   await gotoOwner(page, "/tm30");
   await expect(row).toHaveAttribute("data-status", "downloaded");

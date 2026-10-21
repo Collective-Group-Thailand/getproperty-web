@@ -214,15 +214,17 @@ export async function Tm30View({ context, searchParams }: { context: OwnerContex
                 actions: (
                   <span className="flex flex-wrap items-center gap-2">
                     {row.fileDocumentId ? (
-                      <a
-                        href={`/bff/tm30-exports/${row.id}/download`}
-                        download
-                        className="text-primary inline-flex items-center gap-1 text-sm font-medium hover:underline"
-                        data-testid="tm30-download"
-                      >
-                        <Icon icon={IconDownload} />
-                        {t("download")}
-                      </a>
+                      // A same-origin POST (review L4): the download is audited and marks the notifications.
+                      <form method="post" action={`/bff/tm30-exports/${row.id}/download`} className="contents">
+                        <button
+                          type="submit"
+                          className="text-primary inline-flex items-center gap-1 text-sm font-medium hover:underline"
+                          data-testid="tm30-download"
+                        >
+                          <Icon icon={IconDownload} />
+                          {t("download")}
+                        </button>
+                      </form>
                     ) : null}
                     {canAct ? <Tm30RowActions row={row} /> : null}
                   </span>
