@@ -291,3 +291,14 @@ Insights draws its charts with the server-rendered SVG `Chart` (no chart library
 shown, the other six sit in a native `<details>` — nothing to download until opened, and no JS either way. The rest of the
 sets moved by ≤ 1.5 KB against the `18b160e` pass (largest: `/dashboard` 184.9 KB with the new queue items, `/settings`
 202.3 KB, `/leases/new` 226.0 KB, `/loss` 220.8 KB; staff 188.4–197.1 KB of 200 KB; admin 181.7–216.8 KB).
+
+## Pre-release review fixes (2026-10-21, `pnpm lhci`, every URL of every set, signed in)
+
+Every set met its budget with accessibility 1.0: `owner-marketing` 168.9–171.0 KB (180), `owner` 185.4–226.6 KB
+(260), `admin` 182.2–217.4 KB (260), **`staff` 190.1–199.4 KB (200)**. The staff pages grew by about 2 KB with the
+review fixes that must live in the shell (the offline queue's cross-tab lock and owner binding, the held items in the
+sync sheet, the sign-out warning); the sign-out clean-up itself (`leaveStaffDevice`: push removal, queue / draft /
+cache purge) and the queue's IndexedDB-lease fallback load on first use. The largest staff page is the work order
+(199.4 KB, door codes now fetched on tap by a small client component): **0.6 KB of headroom** — the next staff
+feature has to come with a reduction (candidates: the work-order step forms on demand, the sync sheet's list).
+

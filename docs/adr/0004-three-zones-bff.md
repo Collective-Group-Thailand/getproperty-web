@@ -121,3 +121,27 @@ building staff) and the platform (Collective Group staff).
   dynamically imported), tagged with the zone, events scrubbed of cookies, headers, bodies and secret
   query values; `onRequestError` logs Next's digest with the API request id; Web Vitals through the
   zone BFF (`POST /v1/{zone}/telemetry/web-vitals`, contract request).
+
+### Amendment — pre-release review of 2026-10-21 (`REVIEW-web.md` H1, H3, L1, L3, L4, L6)
+- **Edge trust** (H1, L1). Every server-to-API call made for a browser request — the BFFs, the Server Actions
+  (sign-in, TOTP, tenant choice, sign-out), the Server Components' `serverApi`, the proxy's token refresh —
+  sends the end user's address as the **only** `X-Forwarded-For` value: the entry `TRUSTED_HOPS` from the right
+  of the inbound header (`src/lib/http/edge.ts`; Cloud Run = 1, + external LB = 2; 0 = none). The client's own
+  header is never forwarded as is and `X-Real-IP` is never read. This is what getproperty-api's right-most trust
+  (D-229, RUNBOOK §11) and its per-IP sign-in throttle, session rows, audit and D-021a acknowledgements need; with
+  `TRUSTED_HOPS=0` in production the server logs a warning at boot. An inbound `x-request-id` is kept only when it
+  is a UUID; the proxy stamps a fresh one otherwise.
+- **`?next=`** (H3) is parsed with `new URL(next, origin)` and must stay on that origin; control characters,
+  whitespace and backslashes (raw or percent-encoded in the path) and protocol-relative paths are refused
+  (`src/domain/forms/safe-next.ts`), on all three zones.
+- **Proxy coverage** (L3): the matcher runs on every path except `/_next/*`, `/pwa/*` and `/brand/*` — dotted
+  paths included — so the reserved-segment 404, the zone rewrite and the CSP / `X-Frame-Options` apply everywhere;
+  `next.config.ts` adds `X-Frame-Options: DENY` to the files the proxy never sees.
+- **Downloads that change state** (L4): the TM30 file is downloaded with a same-origin `POST` (a plain form; the
+  route checks `Origin` / `Sec-Fetch-Site`, `GET` is 405), because the API audits it and marks the notifications.
+- **Realtime stream token** (L6): `realtime/auth` answers through the BFF with the token in the httpOnly
+  `__Host-gp_sst` cookie (≤ 60 s) and a `streamUrl` without it; the stream request gets it back into the API's
+  query string in the BFF and the cookie is cleared as the stream opens. The token is in no browser-visible URL
+  and no log of this app; the API still takes it only in the query (contract request: a header).
+- **Realtime client** (M2): one stream per page — a generation counter makes `online` and reconnects supersede the
+  previous connection, and `stop()` closes everything.

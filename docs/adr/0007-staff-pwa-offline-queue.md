@@ -43,3 +43,29 @@ affecting the owner or admin hosts.
   generic (method, path, body, optional photo) so F4 only adds the capture screen.
 - iOS Safari has no Background Sync: replays happen while the PWA is open (the page timers), which is
   when staff use it.
+
+## Amendment — pre-release review of 2026-10-21 (`REVIEW-web.md` H2, M1, M3, M4)
+- **The worker caches nothing personal** (H2). It no longer caches navigations: a rendered page is per user and a
+  cached work order once carried its door PIN to the next person holding a shared phone, served offline or after a
+  4-second timeout. Now: navigations go to the network and only a network failure shows the static,
+  unauthenticated `/offline` page (precached without credentials; Thai and English, no script); `/_next/static/*`
+  is cache-first and stored only when the response is a same-origin 200 without `no-store`/`private`; `/bff/*`,
+  RSC payloads, images and cross-origin requests are never touched. Activation deletes every other `gp-staff-*`
+  cache (the page caches of earlier workers). Workbox is gone (plain fetch handler, 2.6 KB); the worker is unit
+  tested against a fake `ServiceWorkerGlobalScope` (`src/lib/pwa/staff-sw.test.ts`).
+- **Door codes are fetched on tap** (H2): the work-order page no longer reads `GET …/access` on the server, so no
+  PIN is in its HTML or RSC payload; `DoorCodes` asks through the BFF when tapped and keeps them in memory.
+- **Sign-out leaves the device clean** (H2, M3, M4): before the session ends, the staff zone deletes the push
+  subscription at the API (`DELETE /v1/staff/push-subscriptions/{id}`, id kept from the `POST` answer) and
+  unsubscribes the browser, clears the offline queue and the inspection drafts, purges the personal caches, the
+  push-prompt flags and the device PIN. When something unsent would be deleted the staff member is told first.
+  The device lock's forced sign-out does the same without asking. The push prompt is offered again when the
+  browser already has permission but this sign-in has no subscription.
+- **One replayer per device, entries bound to their owner** (M3): a replay runs under the cross-tab lock
+  `gp-offline-queue` (Web Locks API; an IndexedDB lease with expiry where it is missing); entries are re-read
+  before sending and every write is a read-modify-write inside one transaction that never overwrites `sent`. Each
+  entry records the staff member and tenant that queued it and is replayed only while they are signed in — held
+  (shown in the sync sheet: the same person's other-tenant items by label, anybody else's only as a count) otherwise.
+- **One key, one body** (M1): the install and swap wizards upload each photo once and freeze `installedAt` /
+  `swappedAt` with the key (`FrozenSubmission`); a changed submission gets a new key. The inspection completion's
+  key is stored with the SHA-256 of its body and renewed only when notes or signatures change.
