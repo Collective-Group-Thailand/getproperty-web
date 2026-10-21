@@ -5,13 +5,14 @@ import { useTranslations } from "next-intl";
 import { useEffect } from "react";
 
 import { NotificationCentre } from "@/features/shared/notifications/NotificationCentre";
+import type { ShellBrand } from "@/features/shared/shell/brand";
+import { BrandSlot } from "@/features/shared/shell/BrandSlot";
 import { LanguageSwitch } from "@/features/shared/shell/LanguageSwitch";
 import { ShellBreadcrumbs } from "@/features/shared/shell/ShellBreadcrumbs";
 import type { ShellNavGroup } from "@/features/shared/shell/types";
 import { UserMenu } from "@/features/shared/shell/UserMenu";
 import { useSidebarCollapsed } from "@/features/shared/shell/useSidebarCollapsed";
 import { ZoneSidebar } from "@/features/shared/shell/ZoneSidebar";
-import { Wordmark } from "@/ui/brand";
 import { AppShell, TopBar } from "@/ui/components/AppShell";
 import { Badge } from "@/ui/components/Badge";
 import { EnvBadge } from "@/ui/components/EnvBadge";
@@ -30,6 +31,8 @@ export interface AdminShellFrameProps {
   /** From `GET /v1/admin/system/info`: the API runs with in-memory fakes. */
   apiFakes: boolean;
   fakesLabel: string;
+  /** The logo, rendered by the server shell (`shellBrand()`). */
+  brand: ShellBrand;
   children: React.ReactNode;
 }
 
@@ -56,8 +59,8 @@ export function AdminShellFrame(props: AdminShellFrameProps) {
             onClick={toggleCollapsed}
             className="hidden md:inline-flex"
           />
-          <Link href="/" aria-label={t("shell.home")}>
-            <Wordmark size="sm" />
+          <Link href="/" aria-label={t("shell.home")} className="rounded-control inline-flex shrink-0 items-center">
+            <BrandSlot brand={props.brand} collapsed={collapsed} />
           </Link>
           <span className="truncate text-sm font-semibold" data-testid="platform-user">
             {props.userName}

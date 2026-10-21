@@ -43,11 +43,11 @@ jobs:
         run: pnpm fonts --check
       - name: Icon glyphs match the curated set (D-179)
         run: pnpm icons:check
-      # The staff service worker bundle and the PWA icons are committed too.
+      # The staff service worker bundle and the brand kit (logo geometry, favicons, app/PWA icons, OG card) are committed too.
       - name: Service worker bundle is up to date
         run: pnpm sw:check
-      - name: PWA icons exist
-        run: pnpm exec tsx scripts/build-pwa-icons.ts --check
+      - name: Brand assets match the founder's logo (docs/brand)
+        run: pnpm brand:check
       # The generated API types, client flags and MSW base data must match the pinned contract.
       - name: Contract drift (generated files vs contract.lock.json)
         run: pnpm gen:api:check

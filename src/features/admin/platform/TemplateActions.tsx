@@ -9,6 +9,7 @@ import { ProblemNotice, useApiAction } from "@/features/shared/console/useApiAct
 import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
+import { BRAND_NAME } from "@/ui/brand/config";
 import { Button } from "@/ui/components/Button";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
@@ -180,7 +181,16 @@ export function PreviewTemplate({ version }: { version: Schemas["TemplateVersion
               data-testid="template-preview"
               aria-live="polite"
             >
-              {result.subject ? <p className="font-semibold">{result.subject}</p> : null}
+              {result.subject ? (
+                <>
+                  {/* An e-mail carries the hosted PNG logo (clients drop SVG); the preview shows it the same way. */}
+                  <p className="border-border -mx-4 -mt-4 mb-1 border-b px-4 py-3" data-testid="template-preview-brand">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- the e-mail's own static logo file, as the recipient's client loads it */}
+                    <img src="/brand/getproperty-logo.png" alt={BRAND_NAME} width={131} height={28} />
+                  </p>
+                  <p className="font-semibold">{result.subject}</p>
+                </>
+              ) : null}
               <p className="whitespace-pre-wrap">{result.text}</p>
             </div>
           ) : null}

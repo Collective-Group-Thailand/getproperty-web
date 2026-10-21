@@ -50,8 +50,10 @@ export function TenantSwitcher({
           iconEnd={IconChevronsUpDown}
           loading={pending}
           data-testid="tenant-switcher"
+          // Shrinks with the top bar (the name truncates) so a 360 px phone keeps every control apart.
+          className="max-w-full min-w-0"
         >
-          <span className="max-w-48 truncate">{current?.displayName}</span>
+          <span className="max-w-48 min-w-0 truncate">{current?.displayName}</span>
         </Button>
       }
       items={tenants.map((tenant) => ({

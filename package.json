@@ -19,6 +19,8 @@
     "tokens:check": "tsx scripts/build-tokens.ts --check",
     "icons": "tsx scripts/build-icons.ts",
     "icons:check": "tsx scripts/build-icons.ts --check",
+    "brand": "tsx scripts/build-brand.ts",
+    "brand:check": "tsx scripts/build-brand.ts --check",
     "contrast": "tsx scripts/check-contrast.ts",
     "fonts": "tsx scripts/copy-fonts.ts",
     "gen:api": "tsx scripts/gen-api.ts",

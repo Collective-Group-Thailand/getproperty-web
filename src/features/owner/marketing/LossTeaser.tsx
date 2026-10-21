@@ -52,6 +52,7 @@ export function LossTeaser({
           {available.length > 1 ? (
             <SegmentedControl
               label={copy.provider}
+              fullWidth
               value={provider}
               onValueChange={(value) => setProvider(value as "mea" | "pea")}
               options={available.map((value) => ({ value, label: copy.providers[value] }))}

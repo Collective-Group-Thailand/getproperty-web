@@ -34,7 +34,7 @@ const UTILITY_START = "(^|[\\s:!])";
 
 /** Components name semantic tokens; a primitive step bypasses the themes and the contrast gate. */
 const PRIMITIVE_PALETTE = classPattern(
-  `/${UTILITY_START}(bg|text|border|ring|outline|fill|stroke|from|via|to|decoration|divide|shadow|placeholder|caret)-(neutral|teal|green|amber|red|blue)-(50|[1-9]00|950)\\b/`,
+  `/${UTILITY_START}(bg|text|border|ring|outline|fill|stroke|from|via|to|decoration|divide|shadow|placeholder|caret)-(neutral|brand|green|amber|red|blue)-(50|[1-9]00|950)\\b/`,
   "Raw palette steps skip the themes and the contrast gate (ADR-0003). Use a semantic token such as bg-surface, text-muted or bg-primary.",
 );
 

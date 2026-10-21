@@ -1,5 +1,6 @@
 import en from "@/i18n/messages/en/staff/offline.json";
 import th from "@/i18n/messages/th/staff/offline.json";
+import { CHIMNEY_GRADIENT, CHIMNEY_PATH, HOUSE_PATH, INK_PATH, WORDMARK_VIEWBOX } from "@/ui/brand/geometry";
 import { oklchCss } from "@/ui/tokens/color";
 import { THEMES } from "@/ui/tokens/semantic";
 
@@ -17,7 +18,17 @@ function escape(value: string): string {
 
 /** The page's colours come from the design tokens (light and dark), as CSS custom properties. */
 function tokenVars(theme: (typeof THEMES)["light"]): string {
-  const keys = ["bg", "fg", "muted", "primary", "primary-fg"] as const;
+  const keys = [
+    "bg",
+    "fg",
+    "muted",
+    "primary",
+    "primary-fg",
+    "logo-ink",
+    "logo-house",
+    "logo-chimney-top",
+    "logo-chimney-bottom",
+  ] as const;
   return keys.map((key) => `--${key}: ${oklchCss(theme[key])};`).join(" ");
 }
 
@@ -27,10 +38,21 @@ const STYLE = `
   body { margin: 0; min-height: 100dvh; display: grid; place-items: center; background: var(--bg); color: var(--fg); }
   main { max-width: 26rem; padding: 2rem 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
   h1 { font-size: 1.5rem; margin: 0; } p { margin: 0; line-height: 1.6; } [lang="en"] { color: var(--muted); }
+  .logo { display: block; height: 28px; width: auto; margin-bottom: 0.5rem; }
+  .logo .i { fill: var(--logo-ink); } .logo .h { fill: var(--logo-house); }
+  .logo .t { stop-color: var(--logo-chimney-top); } .logo .b { stop-color: var(--logo-chimney-bottom); }
   a { align-self: flex-start; min-height: 48px; display: inline-flex; align-items: center; padding: 0 1.25rem;
       border-radius: 0.75rem; background: var(--primary); color: var(--primary-fg); font-weight: 600;
       text-decoration: none; }
 `;
+
+/** The founder's logo (src/ui/brand/geometry.ts), coloured by the same `logo-*` tokens as `<Wordmark>`. No script. */
+const { x1, y1, x2, y2 } = CHIMNEY_GRADIENT;
+const LOGO = `<svg class="logo" xmlns="http://www.w3.org/2000/svg" viewBox="${WORDMARK_VIEWBOX}" role="img" aria-label="getproperty">\
+<defs><linearGradient id="gp-chimney" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" gradientUnits="userSpaceOnUse">\
+<stop offset="0" class="t"/><stop offset="1" class="b"/></linearGradient></defs>\
+<path class="i" fill-rule="evenodd" d="${INK_PATH}"/><path class="h" fill-rule="evenodd" d="${HOUSE_PATH}"/>\
+<path fill="url(#gp-chimney)" fill-rule="evenodd" d="${CHIMNEY_PATH}"/></svg>`;
 
 export function GET() {
   const body = `<!doctype html>
@@ -44,6 +66,7 @@ export function GET() {
 </head>
 <body>
 <main>
+${LOGO}
 <h1>${escape(th.offlinePageTitle)}</h1>
 <p>${escape(th.offlinePageBody)}</p>
 <p lang="en">${escape(en.offlinePageTitle)}. ${escape(en.offlinePageBody)}</p>

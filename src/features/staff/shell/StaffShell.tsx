@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { ReadOnlyProvider } from "@/features/shared/providers/ReadOnlyProvider";
+import { shellBrand } from "@/features/shared/shell/brand";
 import { RealtimeProvider } from "@/features/shared/realtime/RealtimeProvider";
 import { entitledMenu } from "@/features/shared/shell/menu";
 import { ReadOnlyBanner } from "@/features/shared/shell/ReadOnlyBanner";
@@ -63,6 +64,7 @@ export async function StaffShell({
             todayLabel={t("staff.nav.today")}
             envBadge={serverEnv().NEXT_PUBLIC_ENV_BADGE}
             vapidPublicKey={await vapidPublicKey()}
+            brand={shellBrand().compact}
             banner={readOnly ? <ReadOnlyBanner /> : undefined}
           >
             {children}

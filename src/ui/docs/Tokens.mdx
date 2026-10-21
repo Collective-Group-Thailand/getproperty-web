@@ -8,7 +8,7 @@ import { Swatches, Scale } from "./tokens-blocks";
 Three tiers, authored in TypeScript (`src/ui/tokens`) and generated into `src/ui/generated/tokens.css`
 by `pnpm tokens`:
 
-1. **Primitives** — OKLCH palettes on one shared lightness ramp (`teal`, `neutral`, `green`, `amber`, `red`, `blue`) and the warm paper. Never used by a component.
+1. **Primitives** — OKLCH palettes on one shared lightness ramp (`brand`, `neutral`, `green`, `amber`, `red`, `blue`), the logo's own hex values (`BRAND`) and the warm paper. Never used by a component.
 2. **Semantic** — what a colour means, per theme: `bg`, `surface`, `fg`, `muted`, `primary`, `warning-subtle`… These are the only colours a component may name (`bg-surface`, `text-muted`).
 3. **Component** — CVA variants inside each component, written only in semantic utilities.
 

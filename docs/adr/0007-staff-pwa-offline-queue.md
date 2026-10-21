@@ -18,7 +18,7 @@ affecting the owner or admin hosts.
   the offline fallback; `/_next/static/*` cache-first; images stale-while-revalidate; `/bff/*` and
   every cross-origin request (signed upload URLs) network-only, never cached. A new worker version (hash
   of its bundle) drops the old page cache. The manifest (`/manifest.webmanifest`) is served in the
-  staff member's language with icons generated from the brand mark (`scripts/build-pwa-icons.ts`).
+  staff member's language with icons generated from the founder's logo (`pnpm brand`, `scripts/build-brand.ts`).
 - **Offline queue in the page, not the worker** (`src/lib/pwa/queue.ts`): IndexedDB (`idb`) holds each
   submission with its **`Idempotency-Key` fixed at enqueue time** and, for a photo, the `Blob`. The page
   replays — on start, on `online`, every 30 s while something waits, on demand, and when the worker

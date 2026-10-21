@@ -72,6 +72,11 @@ export const PAIRS: Pair[] = [
   { fg: "danger", bg: "surface", min: 3, why: "danger dot / icon on a card" },
   { fg: "info", bg: "surface", min: 3, why: "info dot / icon on a card" },
   { fg: "fg-inverse", bg: "neutral", min: 4.5, why: "text on an inverse (toast) surface" },
+  // The logo is exempt from 1.4.3/1.4.11 (logotypes), but it is held to the graphics minimum anyway.
+  { fg: "logo-ink", bg: "bg", min: 3, why: "logo lettering on the page" },
+  { fg: "logo-ink", bg: "surface", min: 3, why: "logo lettering on a card or top bar" },
+  { fg: "logo-house", bg: "bg", min: 3, why: "logo house on the page" },
+  { fg: "logo-house", bg: "surface", min: 3, why: "logo house on a card or top bar" },
 ];
 
 export interface Result {
@@ -98,8 +103,9 @@ export function checkContrast(): Result[] {
 /** Guards against a semantic colour that exists but no pair ever checks. */
 export function uncheckedKeys(): SemanticKey[] {
   const seen = new Set<SemanticKey>(PAIRS.flatMap((p) => [p.fg, p.bg]));
-  // Alpha scrims and the hairline border have no fixed partner to measure against.
-  const exempt = new Set<SemanticKey>(["overlay", "border"]);
+  // Alpha scrims and the hairline border have no fixed partner to measure against; the chimney's two
+  // gradient stops are a detail inside the mark, never the only thing that identifies it.
+  const exempt = new Set<SemanticKey>(["overlay", "border", "logo-chimney-top", "logo-chimney-bottom"]);
   return SEMANTIC_KEYS.filter((key) => !seen.has(key) && !exempt.has(key));
 }
 

@@ -13,7 +13,19 @@ test("manifest and service worker are served on the staff host only", async ({ r
   const manifest = await get(request, HOSTS.staff, "/manifest.webmanifest");
   expect(manifest.status()).toBe(200);
   expect(manifest.headers()["content-type"]).toContain("application/manifest+json");
-  expect(await manifest.json()).toMatchObject({ display: "standalone", start_url: "/", scope: "/" });
+  const body = await manifest.json();
+  expect(body).toMatchObject({ display: "standalone", start_url: "/", scope: "/", theme_color: "#1A4BA3" });
+  expect(body.background_color).toMatch(/^#[0-9a-f]{6}$/);
+  expect(body.icons).toEqual([
+    { src: "/pwa/staff-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+    { src: "/pwa/staff-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+    { src: "/pwa/staff-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+  ]);
+  for (const icon of body.icons as { src: string }[]) {
+    const file = await get(request, HOSTS.staff, icon.src);
+    expect(file.status(), icon.src).toBe(200);
+    expect(file.headers()["content-type"], icon.src).toBe("image/png");
+  }
   const sw = await get(request, HOSTS.staff, "/sw.js");
   expect(sw.status()).toBe(200);
   expect(sw.headers()["service-worker-allowed"]).toBe("/");
@@ -78,6 +90,7 @@ test("the staff worker caches no page, shows a static offline page, and sign-out
   await context.setOffline(true);
   await page.goto(`${HOSTS.staff}/`).catch(() => undefined);
   await expect(page.getByRole("heading", { name: "ไม่มีการเชื่อมต่อ" })).toBeVisible();
+  await expect(page.getByRole("img", { name: "getproperty" })).toBeVisible();
   await expect(page.locator("body")).not.toContainText(me.user.displayName);
   await context.setOffline(false);
   await page.goto(`${HOSTS.staff}/`);

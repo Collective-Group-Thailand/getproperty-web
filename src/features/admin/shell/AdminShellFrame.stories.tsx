@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
+import { shellBrand } from "@/features/shared/shell/brand";
 import { ADMIN_GROUPS } from "@/features/shared/storybook/fixtures";
 import { ShellStory } from "@/features/shared/storybook/ShellStory";
 
@@ -24,6 +25,7 @@ const meta: Meta<typeof AdminShellFrame> = {
     envBadge: "development",
     apiFakes: true,
     fakesLabel: "API ใช้ข้อมูลจำลอง",
+    brand: shellBrand(),
     children: (
       <div className="px-4 py-6 md:px-8">
         <h1 className="text-2xl font-semibold">องค์กรลูกค้า</h1>

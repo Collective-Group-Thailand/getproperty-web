@@ -35,8 +35,11 @@ import { routing } from "@/i18n/routing";
  *    `Referrer-Policy`, `X-Robots-Tag: noindex` on everything except the owner marketing pages.
  */
 
-/** Next's metadata files and the brand asset are served from the app root on every host. */
-const ROOT_ASSETS = new Set(["/favicon.ico", "/icon.svg", "/brand/wordmark.svg"]);
+/**
+ * Icons browsers ask for at the root of every host (`public/`, `pnpm brand`). The rest of the brand kit
+ * lives under `/brand/` and `/pwa/`, which the matcher already leaves alone.
+ */
+const ROOT_ASSETS = new Set(["/favicon.ico", "/apple-touch-icon.png"]);
 
 const intl = createIntlMiddleware(routing);
 

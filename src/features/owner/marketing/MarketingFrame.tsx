@@ -22,8 +22,9 @@ export async function MarketingFrame({ locale, children }: { locale: Locale; chi
       </a>
       <header className="border-border border-b">
         <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
-          <a href={href("/")} aria-label={t("nav.home")}>
-            <Wordmark size="sm" />
+          <a href={href("/")} aria-label={t("nav.home")} className="rounded-control inline-flex shrink-0 items-center">
+            <Wordmark size="sm" decorative className="max-[419px]:hidden" />
+            <Wordmark compact size="sm" decorative className="min-[420px]:hidden" />
           </a>
           <nav aria-label={t("nav.label")} className="ms-auto flex items-center gap-2">
             <a className="hover:text-primary px-2 text-sm font-medium" href={href("/pricing")}>

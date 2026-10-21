@@ -2,7 +2,7 @@ import { hasLocale } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
-import { ZoneDocument, zoneMetadata } from "@/features/shared/shell/ZoneDocument";
+import { ZoneDocument, zoneMetadata, zoneViewport } from "@/features/shared/shell/ZoneDocument";
 import { routing } from "@/i18n/routing";
 
 type Params = Promise<{ locale: string }>;
@@ -15,6 +15,8 @@ export async function generateMetadata({ params }: { params: Params }) {
   if (hasLocale(routing.locales, locale)) setRequestLocale(locale);
   return zoneMetadata("owner");
 }
+
+export const viewport = zoneViewport;
 
 export default async function OwnerLayout({ children, params }: { children: React.ReactNode; params: Params }) {
   const { locale } = await params;

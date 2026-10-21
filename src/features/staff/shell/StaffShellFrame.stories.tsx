@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
+import { shellBrand } from "@/features/shared/shell/brand";
 import { CURRENT_TENANT, TENANTS } from "@/features/shared/storybook/fixtures";
 import { ShellStory } from "@/features/shared/storybook/ShellStory";
 import { IconCamera } from "@/ui/icons/glyphs/camera";
@@ -36,6 +37,7 @@ const meta: Meta<typeof StaffShellFrame> = {
     ],
     todayLabel: "วันนี้",
     envBadge: "uat",
+    brand: shellBrand().compact,
     children: (
       <div className="py-6">
         <h1 className="text-2xl font-semibold">วันนี้</h1>

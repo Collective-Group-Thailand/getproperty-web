@@ -1,7 +1,7 @@
 import type { Viewport } from "next";
 
 import { ConsoleProviders } from "@/features/shared/providers/ConsoleProviders";
-import { ZoneDocument, zoneMetadata } from "@/features/shared/shell/ZoneDocument";
+import { ZoneDocument, zoneMetadata, zoneViewport } from "@/features/shared/shell/ZoneDocument";
 
 /** Staff zone root layout — `staff.localhost:3000`, rewritten onto `/staff` by src/proxy.ts (00-master-plan.md §2). */
 export async function generateMetadata() {
@@ -10,12 +10,11 @@ export async function generateMetadata() {
     // The installable PWA (F1 1.3 §5): manifest and service worker live at the staff host's root.
     manifest: "/manifest.webmanifest",
     appleWebApp: { capable: true, statusBarStyle: "default" as const, title: "getproperty" },
-    icons: { apple: "/pwa/staff-192.png" },
   };
 }
 
 export const viewport: Viewport = {
-  themeColor: "#1f7a66",
+  ...zoneViewport,
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",

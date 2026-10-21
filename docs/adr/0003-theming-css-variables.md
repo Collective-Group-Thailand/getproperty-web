@@ -32,9 +32,11 @@ contrast), stored in a cookie so the server can render the right theme with no f
   layout reads it (`src/ui/theme/server.ts`) and stamps `<html data-theme>`; `ThemeProvider` /
   `ThemeToggle` write it and flip the attribute without a round trip. Per-zone defaults:
   owner/staff/admin `light`, tenant `system`; only the staff zone offers `hc`.
-- **Hues (D-100 placeholders)**: teal-green `primary` (hue 172), warm neutrals (hue 75–80), amber
-  `warning` for attention, red `danger`, green `success`, blue `info`. See `docs/ui/brand.md`. A brand kit
-  arrives as hex and is pasted into `primitives.ts` via `hexToOklch`; the gate decides what it may do.
+- **Hues**: the D-100 placeholders (teal-green `primary`, hue 172) were replaced on 2026-10-21 by the
+  founder's logo colours, pasted as hex via `hexToOklch` (`BRAND` in `primitives.ts`): `primary` = the
+  house blue `#1A4BA3` (light), the chimney sky `#62AEF9` (dark), the navy `#21365B` (high contrast);
+  `logo-*` keys colour the logo itself. Warm neutrals (hue 75–80), amber `warning` for attention, red
+  `danger`, green `success`, cerulean `info` (hue 228). See `docs/ui/brand.md`; the gate decides what each may do.
 
 ## Consequences
 - Adding a semantic colour = add it to `SemanticTheme` (all three themes must define it), declare its

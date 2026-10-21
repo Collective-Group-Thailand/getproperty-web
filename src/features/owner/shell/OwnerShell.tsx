@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { ReadOnlyProvider } from "@/features/shared/providers/ReadOnlyProvider";
 import { RealtimeProvider } from "@/features/shared/realtime/RealtimeProvider";
+import { shellBrand } from "@/features/shared/shell/brand";
 import { entitledMenu } from "@/features/shared/shell/menu";
 import { ReadOnlyBanner } from "@/features/shared/shell/ReadOnlyBanner";
 import { groupItems, type ShellNavItem } from "@/features/shared/shell/types";
@@ -74,6 +75,7 @@ export async function OwnerShell({
           envBadge={serverEnv().NEXT_PUBLIC_ENV_BADGE}
           localePrefix={locale === "th" ? "" : `/${locale}`}
           loginHref={prefix("/login")}
+          brand={shellBrand()}
           banner={readOnly ? <ReadOnlyBanner subscriptionHref={subscription?.href} /> : undefined}
         >
           {children}

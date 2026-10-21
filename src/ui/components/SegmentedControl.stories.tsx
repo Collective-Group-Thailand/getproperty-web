@@ -27,3 +27,19 @@ function Demo(args: React.ComponentProps<typeof SegmentedControl>) {
 
 export const Default: Story = { render: (args) => <Demo {...args} /> };
 export const Large: Story = { render: (args) => <Demo {...args} size="lg" /> };
+/** `fullWidth` on a 360 px phone: the segments share the width and long Thai labels wrap instead of overflowing. */
+export const FullWidth: Story = {
+  args: {
+    label: "ผู้ให้บริการไฟฟ้า",
+    value: "mea",
+    options: [
+      { value: "mea", label: "การไฟฟ้านครหลวง (กฟน.)" },
+      { value: "pea", label: "การไฟฟ้าส่วนภูมิภาค (กฟภ.)" },
+    ],
+  },
+  render: (args) => (
+    <div className="w-[328px]">
+      <Demo {...args} fullWidth />
+    </div>
+  ),
+};

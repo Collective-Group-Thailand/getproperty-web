@@ -17,7 +17,21 @@ test("landing: hero, lawful-rate teaser from the API, Organization JSON-LD, inde
   await page.getByRole("radio", { name: "การไฟฟ้าส่วนภูมิภาค (กฟภ.)" }).click();
   await expect(page.getByTestId("loss-ceiling")).toContainText("4.6189");
   const jsonLd = JSON.parse((await page.locator('script[type="application/ld+json"]').textContent())!);
-  expect(jsonLd).toMatchObject({ "@type": "Organization", name: "getproperty" });
+  expect(jsonLd).toMatchObject({
+    "@type": "Organization",
+    name: "getproperty",
+    logo: /\/brand\/getproperty-logo\.png$/,
+  });
+  // The founder's logo in the header (drawn, not set in a font), and the Open Graph card.
+  await expect(page.locator("header svg[data-brand='wordmark']")).toBeVisible();
+  const og = await page.locator('meta[property="og:image"]').getAttribute("content");
+  expect(og).toMatch(/\/brand\/og-image\.png$/);
+  await expect(page.locator('meta[property="og:image:width"]')).toHaveAttribute("content", "1200");
+  await expect(page.locator('meta[property="og:image:height"]')).toHaveAttribute("content", "630");
+  await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute("content", "summary_large_image");
+  const card = await page.request.get(new URL(new URL(og!).pathname, HOSTS.owner).href);
+  expect(card.status()).toBe(200);
+  expect(card.headers()["content-type"]).toBe("image/png");
   await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "index, follow");
   await expect(page.locator('link[rel="alternate"][hreflang="en"]')).toHaveAttribute("href", /\/en$/);
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();

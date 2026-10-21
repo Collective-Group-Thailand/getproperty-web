@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 
 import { NotificationCentre } from "@/features/shared/notifications/NotificationCentre";
 import { LanguageSwitch } from "@/features/shared/shell/LanguageSwitch";
+import type { ShellBrand } from "@/features/shared/shell/brand";
+import { BrandSlot } from "@/features/shared/shell/BrandSlot";
 import { isActive } from "@/features/shared/shell/menu";
 import { ShellBreadcrumbs } from "@/features/shared/shell/ShellBreadcrumbs";
 import { TenantSwitcher } from "@/features/shared/shell/TenantSwitcher";
@@ -15,7 +17,6 @@ import { UserMenu } from "@/features/shared/shell/UserMenu";
 import { useSidebarCollapsed } from "@/features/shared/shell/useSidebarCollapsed";
 import { ZoneSidebar } from "@/features/shared/shell/ZoneSidebar";
 import type { Schemas } from "@/lib/api/types";
-import { Mark, Wordmark } from "@/ui/brand";
 import { AppShell, BottomNav, TopBar, type NavItem } from "@/ui/components/AppShell";
 import { EnvBadge } from "@/ui/components/EnvBadge";
 import { IconButton } from "@/ui/components/IconButton";
@@ -40,6 +41,8 @@ export interface OwnerShellFrameProps {
   envBadge?: string;
   localePrefix: string;
   loginHref: string;
+  /** The logo, rendered by the server shell (`shellBrand()`). */
+  brand: ShellBrand;
   banner?: React.ReactNode;
   children: React.ReactNode;
 }
@@ -94,12 +97,9 @@ export function OwnerShellFrame(props: OwnerShellFrameProps) {
           <Link
             href={home?.href ?? `${props.localePrefix}/dashboard`}
             aria-label={t("shell.home")}
-            className="shrink-0"
+            className="rounded-control inline-flex shrink-0 items-center"
           >
-            <Mark size={28} className="text-primary sm:hidden" aria-hidden="true" />
-            <span className="hidden sm:inline">
-              <Wordmark size="sm" />
-            </span>
+            <BrandSlot brand={props.brand} collapsed={collapsed} />
           </Link>
           <div className="flex min-w-0 flex-1 items-center gap-2 md:flex-none" data-testid="session-summary">
             {props.tenants.length > 1 ? (

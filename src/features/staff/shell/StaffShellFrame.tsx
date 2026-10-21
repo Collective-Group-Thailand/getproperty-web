@@ -12,7 +12,6 @@ import type { ShellNavItem } from "@/features/shared/shell/types";
 import { UserMenu } from "@/features/shared/shell/UserMenu";
 import type { Schemas } from "@/lib/api/types";
 import { setQueueIdentity } from "@/lib/pwa/queue";
-import { Mark } from "@/ui/brand";
 import { AppShell, BottomNav, TopBar, type NavItem } from "@/ui/components/AppShell";
 import { EnvBadge } from "@/ui/components/EnvBadge";
 import { Icon } from "@/ui/icons";
@@ -38,6 +37,8 @@ export interface StaffShellFrameProps {
   todayLabel: string;
   envBadge?: string;
   vapidPublicKey?: string;
+  /** The house mark, rendered by the server shell (`shellBrand().compact`): markup, not client JS. */
+  brand: React.ReactNode;
   banner?: React.ReactNode;
   children: React.ReactNode;
 }
@@ -92,7 +93,9 @@ export function StaffShellFrame(props: StaffShellFrameProps) {
       skipLabel={t("shell.skipToContent")}
       header={
         <TopBar className="gap-2">
-          <Mark size={28} className="text-primary shrink-0" aria-hidden="true" />
+          <span className="inline-flex shrink-0" data-testid="brand-compact">
+            {props.brand}
+          </span>
           <div className="flex min-w-0 flex-1 items-center gap-2" data-testid="session-summary">
             {props.tenants.length > 1 ? (
               <TenantSwitcher zone="staff" tenants={props.tenants} currentTenantId={props.currentTenant.id} />

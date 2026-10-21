@@ -69,7 +69,7 @@ export function OperatorSignIn({
             { value: "otp", label: t("signIn.method.otp"), icon: IconPhone },
             { value: "password", label: t("signIn.method.password"), icon: IconKey },
           ]}
-          className="w-full [&>*]:flex-1"
+          fullWidth
         />
       ) : null}
       {method === "otp" ? (

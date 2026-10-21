@@ -1,8 +1,11 @@
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import type { Metadata, Viewport } from "next";
+
 import { serverEnv } from "@/lib/env/server";
 import type { Zone } from "@/lib/zones";
+import { LOGO_COLOURS } from "@/ui/brand";
 import { fontClassNames } from "@/ui/fonts";
 import { ThemeProvider } from "@/ui/theme/ThemeProvider";
 import { readThemeChoice } from "@/ui/theme/server";
@@ -47,11 +50,30 @@ export async function ZoneDocument({ zone, children }: { zone: Zone; children: R
   );
 }
 
+/**
+ * The browser-tab and home-screen icons of every zone, generated from the founder's logo by `pnpm brand`
+ * (`public/brand`, `public/favicon.ico`). The ICO (16/32/48) is declared 32×32 so browsers that read SVG
+ * icons take the SVG mark, which turns white in a dark browser UI; the rest fall back to the ICO.
+ */
+export const ZONE_ICONS = {
+  icon: [
+    { url: "/favicon.ico", sizes: "32x32" },
+    { url: "/brand/favicon.svg", type: "image/svg+xml" },
+  ],
+  apple: [{ url: "/brand/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+} satisfies Metadata["icons"];
+
+/** The logo's house blue colours the browser UI (mobile address bar, installed-app title bar) in every zone. */
+export const BRAND_THEME_COLOR = LOGO_COLOURS.blue;
+
+export const zoneViewport: Viewport = { themeColor: BRAND_THEME_COLOR };
+
 /** Metadata shared by every zone: nothing is indexed except the owner marketing pages, which opt in. */
 export async function zoneMetadata(zone: Zone) {
   const t = await getTranslations("shell.zoneName");
   return {
     title: { default: `getproperty · ${t(zone)}`, template: "%s · getproperty" },
     robots: { index: false, follow: false },
+    icons: ZONE_ICONS,
   };
 }

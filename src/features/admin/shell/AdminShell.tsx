@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { RealtimeProvider } from "@/features/shared/realtime/RealtimeProvider";
+import { shellBrand } from "@/features/shared/shell/brand";
 import { entitledMenu } from "@/features/shared/shell/menu";
 import { groupItems } from "@/features/shared/shell/types";
 import { createApiClient, unwrap } from "@/lib/api/client";
@@ -43,6 +44,7 @@ export async function AdminShell({ me, children }: { me: Schemas["AdminMeDto"]; 
         envBadge={envBadge}
         apiFakes={info?.fakes ?? false}
         fakesLabel={t("admin.shell.fakes")}
+        brand={shellBrand()}
       >
         {children}
       </AdminShellFrame>

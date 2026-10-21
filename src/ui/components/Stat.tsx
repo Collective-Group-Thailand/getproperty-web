@@ -13,7 +13,7 @@ export interface StatProps {
   hint?: React.ReactNode;
   trend?: { direction: "up" | "down" | "flat"; label: React.ReactNode; good?: boolean };
   icon?: IconGlyph;
-  /** The "money recovered" variant: teal figure. */
+  /** The "money recovered" variant: brand-blue figure. */
   variant?: "default" | "recovered";
   className?: string;
 }

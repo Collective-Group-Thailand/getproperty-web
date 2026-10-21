@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 
+import { shellBrand } from "@/features/shared/shell/brand";
 import { BUILDINGS, CURRENT_TENANT, OWNER_GROUPS, TENANTS } from "@/features/shared/storybook/fixtures";
 import { ShellStory } from "@/features/shared/storybook/ShellStory";
 import { Callout } from "@/ui/components/Callout";
@@ -41,6 +42,7 @@ const meta: Meta<typeof OwnerShellFrame> = {
     envBadge: "uat",
     localePrefix: "",
     loginHref: "/login",
+    brand: shellBrand(),
     children: (
       <div className="px-4 py-6 md:px-8">
         <h1 className="text-2xl font-semibold">เช้านี้</h1>

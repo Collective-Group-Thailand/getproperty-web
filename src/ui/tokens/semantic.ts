@@ -11,7 +11,7 @@
  */
 
 import type { Oklch } from "./color";
-import { alpha, BLACK, PALETTES as P, PAPER, WHITE } from "./primitives";
+import { alpha, BLACK, BRAND, PALETTES as P, PAPER, WHITE } from "./primitives";
 
 interface BaseSlots {
   /** Page background, and the quieter band that separates sections. */
@@ -35,6 +35,14 @@ interface BaseSlots {
   /** Hover fill for the destructive button. Dimming with opacity would dim its label too. */
   "danger-hover": Oklch;
   "focus-ring": Oklch;
+  /**
+   * The logo (`src/ui/brand`): lettering, house, and the chimney gradient's two stops. Light and
+   * high contrast are the founder's colours; dark is the founder's one-colour white version.
+   */
+  "logo-ink": Oklch;
+  "logo-house": Oklch;
+  "logo-chimney-top": Oklch;
+  "logo-chimney-bottom": Oklch;
 }
 
 /**
@@ -74,7 +82,7 @@ const DP = PAPER.dark;
 
 /**
  * Light — the owner, staff and admin default (00-master-plan.md §2). Warm paper page, white cards,
- * warm ink, one teal for actions.
+ * warm ink, the logo's blue for actions and its navy for their hover.
  */
 const light = build(
   {
@@ -90,12 +98,16 @@ const light = build(
     muted: LP["ink-muted"],
     subtle: LP["ink-subtle"],
     "fg-inverse": WHITE,
-    "primary-hover": P.teal[800],
+    "primary-hover": BRAND.navy,
     "danger-hover": P.red[800],
-    "focus-ring": P.teal[700],
+    "focus-ring": BRAND.blue,
+    "logo-ink": BRAND.navy,
+    "logo-house": BRAND.blue,
+    "logo-chimney-top": BRAND.sky,
+    "logo-chimney-bottom": BRAND.azure,
   },
   {
-    primary: { base: P.teal[700], fg: WHITE, subtle: P.teal[50], subtleFg: P.teal[900] },
+    primary: { base: BRAND.blue, fg: WHITE, subtle: P.brand[50], subtleFg: BRAND.navy },
     success: { base: P.green[800], fg: WHITE, subtle: P.green[50], subtleFg: P.green[900] },
     // A solid amber fill is rare (the quiet badge carries the amber look); when it is used — a
     // "needs attention" icon or dot on a card — it must read at 3:1, which takes the 800 step.
@@ -123,12 +135,17 @@ const dark = build(
     subtle: DP["ink-subtle"],
     "fg-inverse": DP.page,
     // Hovering in dark goes one step *lighter*, which keeps the dark label pair at AA.
-    "primary-hover": P.teal[300],
+    "primary-hover": { ...BRAND.sky, l: BRAND.sky.l + 0.08 },
     "danger-hover": P.red[300],
-    "focus-ring": P.teal[400],
+    "focus-ring": BRAND.sky,
+    "logo-ink": WHITE,
+    "logo-house": WHITE,
+    "logo-chimney-top": WHITE,
+    "logo-chimney-bottom": WHITE,
   },
   {
-    primary: { base: P.teal[400], fg: DP.page, subtle: P.teal[950], subtleFg: P.teal[300] },
+    // The chimney's sky carries actions on dark: the logo's own accent, and 7:1 against the page.
+    primary: { base: BRAND.sky, fg: DP.page, subtle: P.brand[950], subtleFg: P.brand[300] },
     success: { base: P.green[400], fg: DP.page, subtle: P.green[950], subtleFg: P.green[300] },
     warning: { base: P.amber[400], fg: DP.page, subtle: P.amber[950], subtleFg: P.amber[300] },
     danger: { base: P.red[400], fg: DP.page, subtle: P.red[950], subtleFg: P.red[300] },
@@ -155,12 +172,16 @@ const hc = build(
     muted: P.neutral[900],
     subtle: P.neutral[800],
     "fg-inverse": WHITE,
-    "primary-hover": P.teal[950],
+    "primary-hover": P.brand[950],
     "danger-hover": P.red[950],
     "focus-ring": BLACK,
+    "logo-ink": BRAND.navy,
+    "logo-house": BRAND.blue,
+    "logo-chimney-top": BRAND.sky,
+    "logo-chimney-bottom": BRAND.azure,
   },
   {
-    primary: { base: P.teal[900], fg: WHITE, subtle: P.teal[50], subtleFg: P.teal[950] },
+    primary: { base: BRAND.navy, fg: WHITE, subtle: P.brand[50], subtleFg: P.brand[950] },
     success: { base: P.green[900], fg: WHITE, subtle: P.green[50], subtleFg: P.green[950] },
     warning: { base: P.amber[900], fg: WHITE, subtle: P.amber[50], subtleFg: P.amber[950] },
     danger: { base: P.red[900], fg: WHITE, subtle: P.red[50], subtleFg: P.red[950] },

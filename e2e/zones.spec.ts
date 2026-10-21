@@ -29,10 +29,36 @@ for (const { zone, host, lang, theme } of ZONES) {
 
       await expect(page.getByTestId("auth-card")).toBeVisible();
       await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-      await expect(page.locator("header").getByText("getproperty", { exact: true })).toBeVisible();
+      // The founder's logo, drawn (no lettering set in a font) and named for assistive technology.
+      await expect(page.locator("header").getByRole("img", { name: "getproperty" })).toBeVisible();
+      await expect(page.locator("header svg text")).toHaveCount(0);
       await expect(page.locator("main#main")).toHaveCount(1);
       await page.keyboard.press("Tab");
       await expect(page.locator(".skip-link")).toBeFocused();
+    });
+
+    test("declares the brand icons and theme colour, and serves them on its host", async ({ page }) => {
+      await page.goto(`${host}/login`);
+      await expect(page.locator('meta[name="theme-color"]')).toHaveAttribute("content", "#1A4BA3");
+      await expect(page.locator('link[rel="icon"][type="image/svg+xml"]')).toHaveAttribute(
+        "href",
+        "/brand/favicon.svg",
+      );
+      await expect(page.locator('link[rel="icon"][href^="/favicon.ico"]')).toHaveCount(1);
+      await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute("href", "/brand/apple-touch-icon.png");
+      for (const [path, type] of [
+        ["/favicon.ico", /image\/(x-icon|vnd\.microsoft\.icon)/],
+        ["/brand/favicon.svg", /image\/svg\+xml/],
+        ["/brand/apple-touch-icon.png", /image\/png/],
+        ["/apple-touch-icon.png", /image\/png/],
+        ["/brand/getproperty-logo.svg", /image\/svg\+xml/],
+      ] as const) {
+        // The other hosts resolve only inside the browser (`--host-resolver-rules`): ask loopback with the Host header.
+        const url = new URL(host);
+        const response = await page.request.get(`http://127.0.0.1:${url.port}${path}`, { headers: { host: url.host } });
+        expect(response.status(), path).toBe(200);
+        expect(response.headers()["content-type"], path).toMatch(type);
+      }
     });
 
     test("is axe-clean (WCAG 2.2 AA)", async ({ page }) => {

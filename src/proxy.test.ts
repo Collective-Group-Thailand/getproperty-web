@@ -95,7 +95,8 @@ describe("routeRequest", () => {
 
   it("passes root assets through unprefixed on every host", () => {
     expect(at("admin.localhost:3000", "/favicon.ico")!.url.pathname).toBe("/favicon.ico");
-    expect(at("staff.localhost:3000", "/brand/wordmark.svg")!.url.pathname).toBe("/brand/wordmark.svg");
+    expect(at("staff.localhost:3000", "/apple-touch-icon.png")!.url.pathname).toBe("/apple-touch-icon.png");
+    expect(at("localhost:3000", "/apple-touch-icon.png")).toMatchObject({ kind: "asset" });
   });
 
   it("answers no unknown host and no disabled zone", () => {
@@ -204,7 +205,8 @@ describe("config.matcher", () => {
     "/_next/static/chunks/main.js",
     "/_next/image?url=x",
     "/pwa/staff-192.png",
-    "/brand/wordmark.svg",
+    "/brand/getproperty-logo.svg",
+    "/brand/og-image.png",
     "/api/healthz",
     "/api/metrics",
   ])("leaves Next internals and the public folders alone: %s", (url) => {

@@ -2,6 +2,9 @@ import { cookies } from "next/headers";
 import { getTranslations } from "next-intl/server";
 
 import { isLocale, LOCALE_COOKIE } from "@/i18n/routing";
+import { LOGO_COLOURS } from "@/ui/brand/geometry";
+import { oklchToHex } from "@/ui/tokens/color";
+import { THEMES } from "@/ui/tokens/semantic";
 
 /** The staff host's web app manifest (installable PWA, F1 1.3 §5), in the staff member's language. */
 export async function GET() {
@@ -18,8 +21,9 @@ export async function GET() {
     scope: "/",
     display: "standalone",
     orientation: "portrait",
-    background_color: "#f8f6f2",
-    theme_color: "#1f7a66",
+    // The splash screen is the page's paper; the title bar is the logo's house blue (same as <meta name="theme-color">).
+    background_color: oklchToHex(THEMES.light.bg),
+    theme_color: LOGO_COLOURS.blue,
     icons: [
       { src: "/pwa/staff-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
       { src: "/pwa/staff-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
