@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { expect, type Locator, type Page } from "@playwright/test";
+import { expect, type Locator, type Page, type Route } from "@playwright/test";
 
 import { HOSTS, MOCK_API } from "../../playwright.config";
 import { signInWithOtp } from "./auth";
@@ -95,4 +95,15 @@ export async function expectTargets48(scope: Locator): Promise<void> {
     return found;
   });
   expect(small, `targets under 48 px:\n${small.join("\n")}`).toEqual([]);
+}
+
+/**
+ * Sends an intercepted request to the app as the browser would (its cookies included). Node cannot resolve
+ * `*.localhost`, so it goes to the loopback address with the zone host in `Host`.
+ */
+export async function sendThrough(route: Route): Promise<void> {
+  const url = new URL(route.request().url());
+  const host = url.host;
+  url.hostname = "127.0.0.1";
+  await route.fetch({ url: url.href, headers: { ...(await route.request().allHeaders()), host } });
 }

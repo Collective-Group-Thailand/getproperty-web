@@ -2,7 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 import { MOCK_API } from "../playwright.config";
 import { mockRequests } from "./support/auth";
-import { expectAxeClean, expectTargets48, gotoStaff, hydrated, mock, signInStaff } from "./support/staff";
+import { expectAxeClean, expectTargets48, gotoStaff, hydrated, mock, sendThrough, signInStaff } from "./support/staff";
 
 /**
  * F4 4.3 on the mock API (building B): gateway provisioning by QR (typed serial where the browser has
@@ -24,6 +24,24 @@ async function devicesOfB(page: Page) {
   await gotoStaff(page, "/devices");
   await page.getByTestId("building-select").selectOption({ label: "อาคาร B" });
   await expect(page.getByTestId("gateway-list")).toContainText("GP-GW-000125");
+}
+
+/**
+ * The API records the first request, but its answer never reaches the phone (a basement install, review M1): the
+ * request goes through to the mock API and the browser sees a dropped connection. Later requests pass.
+ */
+async function loseFirstAnswer(page: Page, path: string) {
+  let lost = false;
+  await page.route(`**/bff${path}`, async (route) => {
+    if (lost) return route.continue();
+    lost = true;
+    await sendThrough(route);
+    await route.abort("connectionreset");
+  });
+}
+
+async function photoCount(): Promise<number> {
+  return (await mock<{ kind: string }[]>("/__mock/staff/files")).filter((file) => file.kind === "meter_photo").length;
 }
 
 async function typeKeys(page: Page, value: string) {
@@ -113,6 +131,13 @@ test("binding wizard: inventory prefill, address validation, install reading pho
   await page.getByTestId("camera-shutter").click();
   await expect(page.getByTestId("install-photo")).toBeVisible();
   await typeKeys(page, "100.5");
+  // The first answer is lost: the retry must replay the recorded install (same key, same body — one photo
+  // upload, one `installedAt`), not be refused as `idempotency.key_reused` (review M1).
+  const photosBefore = await photoCount();
+  await loseFirstAnswer(page, "/v1/staff/devices/actions/install");
+  await page.getByTestId("install-submit").click();
+  await expect(wizard.getByText("You need signal to install.")).toBeVisible();
+  await expect(page.getByTestId("install-done")).toHaveCount(0);
   await page.getByTestId("install-submit").click();
 
   await expect(page.getByTestId("install-done")).toContainText("SDM120-0042 now reads B-101, starting at 100.5 kWh");
@@ -130,6 +155,12 @@ test("binding wizard: inventory prefill, address validation, install reading pho
   ).find((reading) => reading.assetItemId === E_B101 && reading.isInstall)!;
   expect(install.register).toBe("100.5");
   expect(install.evidenceDocumentId).toBeTruthy();
+  const installs = await mock<{ idempotencyKey: string | null }[]>(
+    `/__mock/requests?path=${encodeURIComponent("/v1/staff/devices/actions/install")}`,
+  );
+  expect(installs).toHaveLength(2);
+  expect(installs[1]!.idempotencyKey).toBe(installs[0]!.idempotencyKey);
+  expect((await photoCount()) - photosBefore).toBe(1);
 
   await page.getByRole("button", { name: "Blink the gateway's light (30 s)" }).click();
   await expect(page.getByTestId("identify-status")).toHaveAttribute("data-status", "done", { timeout: 10_000 });
@@ -159,8 +190,14 @@ test("swap a meter: final and initial registers with photos, reason, one request
   await expect(wizard).toHaveAttribute("data-step", "confirm");
   await expect(page.getByTestId("swap-old-register")).toHaveText("60 m³");
   await page.getByLabel("Why it is replaced").fill("หน้าปัดแตก");
+  const photosBefore = await photoCount();
+  await loseFirstAnswer(page, "/v1/staff/devices/actions/swap");
   await page.getByTestId("swap-submit").click();
+  await expect(wizard.getByText("You need signal to record the replacement")).toBeVisible();
+  await expect(page.getByTestId("swap-done")).toHaveCount(0);
+  await page.getByTestId("swap-submit").click(); // the retry replays the recorded swap (review M1)
   await expect(page.getByTestId("swap-done")).toBeVisible();
+  expect((await photoCount()) - photosBefore).toBe(2);
 
   const world = await mock<{ swaps: { oldAssignmentId: string; finalReadingId: string; firstReadingId: string }[] }>(
     "/__mock/staff/devices",
@@ -169,8 +206,9 @@ test("swap a meter: final and initial registers with photos, reason, one request
   const swapRequests = await mock<{ idempotencyKey: string | null }[]>(
     `/__mock/requests?path=${encodeURIComponent("/v1/staff/devices/actions/swap")}`,
   );
-  expect(swapRequests).toHaveLength(1);
+  expect(swapRequests).toHaveLength(2);
   expect(swapRequests[0]!.idempotencyKey).toMatch(/^[0-9a-f-]{36}$/);
+  expect(swapRequests[1]!.idempotencyKey).toBe(swapRequests[0]!.idempotencyKey);
 });
 
 test("gateway detail: identify and the LAN status page", async ({ page }) => {

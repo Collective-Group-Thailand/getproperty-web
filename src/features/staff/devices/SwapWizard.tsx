@@ -2,13 +2,14 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { Suspense, useId, useRef, useState } from "react";
+import { Suspense, useId, useState } from "react";
 
 import { formatUnits } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
 import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/errors";
+import { FrozenSubmission, objectIdentity, PhotoUploads } from "@/lib/api/submission";
 import type { StaffMeterPoint } from "./server";
 import type { Schemas } from "@/lib/api/types";
 import { uploadFile, UploadError } from "@/lib/pwa/queue";
@@ -53,7 +54,9 @@ export function SwapWizard({ points, initialMeter }: { points: StaffMeterPoint[]
   const keypadLabels = useKeypadLabels();
   const scanLabels = useScanLabels();
   const formId = useId();
-  const key = useRef(crypto.randomUUID());
+  // One key per submission with a frozen body: photos uploaded once, `swappedAt` from the first attempt (review M1).
+  const [submission] = useState(() => new FrozenSubmission<Schemas["MeterSwapDto"]>());
+  const [uploads] = useState(() => new PhotoUploads());
   const [step, setStep] = useState<Step>("point");
   const [pointId, setPointId] = useState<string | null>(
     initialMeter && points?.some((point) => point.assetItemId === initialMeter) ? initialMeter : null,
@@ -85,38 +88,49 @@ export function SwapWizard({ points, initialMeter }: { points: StaffMeterPoint[]
     setBusy(true);
     setFailure(null);
     try {
+      const assetItemId = point.assetItemId;
       const upload = (file: File) =>
-        uploadFile({
-          blob: file,
-          fileName: file.name,
-          kind: "meter_photo",
-          scopeType: "asset_item",
-          scopeId: point.assetItemId,
-          bodyField: "photoDocumentId",
-        });
-      const [oldPhotoDocumentId, newPhotoDocumentId] = [await upload(oldShot.file), await upload(newShot.file)];
+        uploads.upload(file, () =>
+          uploadFile({
+            blob: file,
+            fileName: file.name,
+            kind: "meter_photo",
+            scopeType: "asset_item",
+            scopeId: assetItemId,
+            bodyField: "photoDocumentId",
+          }),
+        );
+      const draft = {
+        meterAssetItemId: assetItemId,
+        oldFinalRegister: oldRegister,
+        newMeter: {
+          serial: newMeter.serial.trim() || null,
+          model: newMeter.model.trim() || null,
+          manufacturer: newMeter.manufacturer.trim() || null,
+        },
+        newInitialRegister: newRegister,
+        reason: reason.trim(),
+      };
+      const [oldFile, newFile] = [oldShot.file, newShot.file];
+      const { key, body } = await submission.prepare(
+        { ...draft, oldPhoto: objectIdentity(oldFile), newPhoto: objectIdentity(newFile) },
+        async () => ({
+          ...draft,
+          oldPhotoDocumentId: await upload(oldFile),
+          newPhotoDocumentId: await upload(newFile),
+          swappedAt: new Date().toISOString(),
+        }),
+      );
       const answer = await unwrap(
         browserApi().POST("/v1/staff/devices/actions/swap", {
-          params: { header: { "Idempotency-Key": key.current } },
-          body: {
-            meterAssetItemId: point.assetItemId,
-            oldFinalRegister: oldRegister,
-            oldPhotoDocumentId,
-            newMeter: {
-              serial: newMeter.serial.trim() || null,
-              model: newMeter.model.trim() || null,
-              manufacturer: newMeter.manufacturer.trim() || null,
-            },
-            newInitialRegister: newRegister,
-            newPhotoDocumentId,
-            reason: reason.trim(),
-            swappedAt: new Date().toISOString(),
-          },
+          params: { header: { "Idempotency-Key": key } },
+          body,
         }),
       );
       setResult(answer);
       go("done");
     } catch (error) {
+      if (isApiError(error) && error.code === "idempotency.key_reused") submission.forget();
       if (isApiError(error)) setFailure({ detail: error.detail || error.code, requestId: error.requestId });
       else if (error instanceof UploadError && error.problem.code !== "network")
         setFailure({ detail: error.problem.detail || error.problem.code, requestId: error.problem.requestId });

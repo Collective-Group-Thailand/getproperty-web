@@ -2,13 +2,14 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { Suspense, useId, useMemo, useRef, useState } from "react";
+import { Suspense, useId, useMemo, useState } from "react";
 
 import { formatUnits } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
 import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/errors";
+import { FrozenSubmission, objectIdentity, PhotoUploads } from "@/lib/api/submission";
 import type { StaffMeterPoint } from "./server";
 import type { Schemas } from "@/lib/api/types";
 import { uploadFile, UploadError } from "@/lib/pwa/queue";
@@ -45,7 +46,9 @@ interface Failure {
  * the building's inventory fills in model, vendor and driver) → choose the meter point (`asset_item`)
  * → the gateway, bus and Modbus address or GPIO pin → photograph the physical register and type the
  * install reading (it becomes the channel's first, staff-confirmed manual reading) → install
- * (`POST /v1/staff/devices/actions/install`, one Idempotency-Key per wizard) → flash the gateway's LED
+ * (`POST /v1/staff/devices/actions/install`: one Idempotency-Key per submission with a frozen body — the photo is
+ * uploaded once and `installedAt` stamped at the first attempt, so a retry after a lost answer replays the recorded
+ * install instead of `idempotency.key_reused`, review M1) → flash the gateway's LED
  * to find it again → done: the meter assignment reads through the gateway from now on.
  */
 export function InstallWizard({
@@ -72,7 +75,8 @@ export function InstallWizard({
   const cameraLabels = useCameraLabels();
   const keypadLabels = useKeypadLabels();
   const formId = useId();
-  const idempotencyKey = useRef(crypto.randomUUID());
+  const [submission] = useState(() => new FrozenSubmission<Schemas["DeviceInstallDto"]>());
+  const [uploads] = useState(() => new PhotoUploads());
 
   const free = useMemo(() => (points ?? []).filter((point) => point.channel === null), [points]);
   const [step, setStep] = useState<Step>(initial.meter ? "device" : "device");
@@ -129,36 +133,43 @@ export function InstallWizard({
     setBusy(true);
     setFailure(null);
     try {
-      const photoDocumentId = await uploadFile({
-        blob: photo.file,
-        fileName: photo.file.name,
-        kind: "meter_photo",
-        scopeType: "asset_item",
-        scopeId: point.assetItemId,
-        bodyField: "photoDocumentId",
-      });
+      const draft = {
+        meterAssetItemId: point.assetItemId,
+        gatewayDeviceId: gateway.id,
+        meterDevice: {
+          serial: device.serial.trim(),
+          model: device.model.trim(),
+          vendor: device.vendor.trim(),
+          driver: device.driver,
+        },
+        wiring: wiringInput(wiring),
+        installRegister: register,
+      };
+      const file = photo.file;
+      const { key, body } = await submission.prepare({ ...draft, photo: objectIdentity(file) }, async () => ({
+        ...draft,
+        installedAt: new Date().toISOString(),
+        photoDocumentId: await uploads.upload(file, () =>
+          uploadFile({
+            blob: file,
+            fileName: file.name,
+            kind: "meter_photo",
+            scopeType: "asset_item",
+            scopeId: draft.meterAssetItemId,
+            bodyField: "photoDocumentId",
+          }),
+        ),
+      }));
       const result = await unwrap(
         browserApi().POST("/v1/staff/devices/actions/install", {
-          params: { header: { "Idempotency-Key": idempotencyKey.current } },
-          body: {
-            meterAssetItemId: point.assetItemId,
-            gatewayDeviceId: gateway.id,
-            meterDevice: {
-              serial: device.serial.trim(),
-              model: device.model.trim(),
-              vendor: device.vendor.trim(),
-              driver: device.driver,
-            },
-            wiring: wiringInput(wiring),
-            installRegister: register,
-            installedAt: new Date().toISOString(),
-            photoDocumentId,
-          },
+          params: { header: { "Idempotency-Key": key } },
+          body,
         }),
       );
       setInstalled(result);
       go("done");
     } catch (error) {
+      if (isApiError(error) && error.code === "idempotency.key_reused") submission.forget();
       if (isApiError(error))
         setFailure({ detail: error.detail || error.code, requestId: error.requestId, fields: error.errors });
       else if (error instanceof UploadError && error.problem.code !== "network")

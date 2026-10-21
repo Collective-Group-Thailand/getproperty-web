@@ -173,8 +173,11 @@ export function useInspectionDraft(initial: Schemas["InspectionDto"], initialEta
 
   /** Merges fields into the latest draft (signatures, completion notes) without touching the lines. */
   const patch = useCallback(
-    (fields: Partial<Pick<InspectionDraft, "staffSignature" | "residentSignature" | "notes" | "completeKey">>) =>
-      commit({ ...draftRef.current, ...fields }),
+    (
+      fields: Partial<
+        Pick<InspectionDraft, "staffSignature" | "residentSignature" | "notes" | "completeKey" | "completeFingerprint">
+      >,
+    ) => commit({ ...draftRef.current, ...fields }),
     [commit],
   );
 

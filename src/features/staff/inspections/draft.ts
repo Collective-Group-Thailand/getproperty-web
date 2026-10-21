@@ -38,6 +38,11 @@ export interface InspectionDraft {
   notes?: string;
   /** The completion's Idempotency-Key, fixed at the first attempt so a retry is a replay. */
   completeKey?: string;
+  /**
+   * SHA-256 of the completion body that key was first sent with (review M1): the key is reused only for that very
+   * body; changed notes or signatures are a new submission with a new key.
+   */
+  completeFingerprint?: string;
   updatedAt: number;
 }
 
@@ -70,6 +75,17 @@ export async function loadDraft(inspectionId: string): Promise<InspectionDraft> 
 
 export async function saveDraft(draft: InspectionDraft): Promise<void> {
   await (await db()).put("drafts", { ...draft, updatedAt: Date.now() });
+}
+
+/** Removes every inspection draft on this device (sign-out: drafts hold residents' signatures, review H2). */
+export async function clearDrafts(): Promise<void> {
+  await (await db()).clear("drafts");
+}
+
+/** How many inspection drafts hold something the API does not have yet (the sign-out warning). */
+export async function unsentDraftCount(): Promise<number> {
+  const drafts = await (await db()).getAll("drafts");
+  return drafts.filter((draft) => draft.dirty.length > 0 || draft.staffSignature || draft.residentSignature).length;
 }
 
 export async function deleteDraft(inspectionId: string): Promise<void> {

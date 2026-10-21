@@ -15,6 +15,7 @@ import { blobToBase64, SignaturePad } from "@/ui/components/SignaturePad";
 import { IconSign } from "@/ui/icons/glyphs/sign";
 
 import { useSignatureLabels } from "../shared/labels";
+import { completionKey } from "./completion";
 import { deleteDraft, type InspectionDraft } from "./draft";
 
 /** The API's limit per signature PNG (`InspectionCompleteDto`). */
@@ -23,8 +24,9 @@ const SIGNATURE_MAX_BYTES = 200 * 1024;
 /**
  * Completing an inspection (D-023, D-050): the inspector signs (required here), the resident signs on
  * the same device when present (the report is then `signed`), both kept in the draft until sent. The
- * dirty lines are synced first; the completion carries an Idempotency-Key fixed at the first attempt
- * (kept in the draft), so pressing again after a dropped connection replays instead of failing.
+ * dirty lines are synced first; the completion carries an Idempotency-Key bound to its body (kept in the
+ * draft with the body's fingerprint), so pressing again after a dropped connection replays instead of
+ * failing, and edited notes are a new submission with a new key (review M1).
  */
 export function CompletePanel({
   inspection,
@@ -36,7 +38,9 @@ export function CompletePanel({
   inspection: Schemas["InspectionDto"];
   draft: InspectionDraft;
   patch: (
-    fields: Partial<Pick<InspectionDraft, "staffSignature" | "residentSignature" | "notes" | "completeKey">>,
+    fields: Partial<
+      Pick<InspectionDraft, "staffSignature" | "residentSignature" | "notes" | "completeKey" | "completeFingerprint">
+    >,
   ) => Promise<void>;
   sync: () => Promise<void>;
   onCancel: () => void;
@@ -68,16 +72,18 @@ export function CompletePanel({
     setBusy(true);
     try {
       await sync();
-      const key = draft.completeKey ?? crypto.randomUUID();
-      if (!draft.completeKey) await patch({ completeKey: key, notes });
+      const body = {
+        notes: notes.trim() ? notes : null,
+        staffSignaturePng: await blobToBase64(staff),
+        ...(resident ? { residentSignaturePng: await blobToBase64(resident) } : {}),
+      };
+      // One key per body (review M1): the same body after a lost answer replays; edited notes are a new key.
+      const { key, fingerprint, changed } = await completionKey(draft, body);
+      if (changed) await patch({ completeKey: key, completeFingerprint: fingerprint, notes });
       await unwrap(
         browserApi().POST("/v1/staff/inspections/{inspectionId}/actions/complete", {
           params: { path: { inspectionId: inspection.id }, header: { "Idempotency-Key": key } },
-          body: {
-            notes: notes.trim() ? notes : null,
-            staffSignaturePng: await blobToBase64(staff),
-            ...(resident ? { residentSignaturePng: await blobToBase64(resident) } : {}),
-          },
+          body,
         }),
       );
       await deleteDraft(inspection.id);
