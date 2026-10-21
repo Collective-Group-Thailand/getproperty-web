@@ -154,7 +154,7 @@ export function AddBankAccount({ buildings }: { buildings: { id: string; name: s
   const close = () => {
     setOpen(false);
     setPending(null);
-    idempotency.renew();
+    idempotency.renewUnless(action.unansweredAttempt()); // review L2
     router.refresh();
   };
   return (

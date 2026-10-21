@@ -79,8 +79,9 @@ export function FormDialog({
         iconStart={icon}
         disabled={disabled}
         onClick={() => {
+          // Same pending action (last attempt unanswered) → same key; otherwise a fresh one (review L2).
+          idempotency.renewUnless(action.unansweredAttempt());
           action.reset();
-          idempotency.renew();
           setOpen(true);
         }}
         data-testid={testId}

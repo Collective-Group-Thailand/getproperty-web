@@ -31,6 +31,11 @@ export function useApiAction<T = unknown>(options: { refresh?: boolean } = {}) {
   const [error, setError] = useState<unknown>(null);
   const [acknowledging, setAcknowledging] = useState(false);
   const ackIds = useRef<string[]>([]);
+  /**
+   * Whether the last attempt ended without an answer (network failure, timeout): the API may have recorded it, so
+   * the next attempt of the same action must carry the same Idempotency-Key (review L2).
+   */
+  const unanswered = useRef(false);
   const last = useRef<{
     call: (acknowledgementIds: string[]) => Promise<T>;
     done?: (result: T) => void | Promise<void>;
@@ -43,11 +48,13 @@ export function useApiAction<T = unknown>(options: { refresh?: boolean } = {}) {
     setError(null);
     try {
       const result = await current.call([...ackIds.current]);
+      unanswered.current = false;
       ackIds.current = [];
       await current.done?.(result);
       if (refresh) router.refresh();
       return result;
     } catch (failure) {
+      unanswered.current = !isApiError(failure);
       setError(failure);
       return undefined;
     } finally {
@@ -87,10 +94,12 @@ export function useApiAction<T = unknown>(options: { refresh?: boolean } = {}) {
       setError(null);
       try {
         const result = await current.call([...ackIds.current]);
+        unanswered.current = false;
         ackIds.current = [];
         await current.done?.(result);
         if (refresh) router.refresh();
       } catch (failure) {
+        unanswered.current = !isApiError(failure);
         setError(failure);
       } finally {
         setBusy(false);
@@ -106,7 +115,10 @@ export function useApiAction<T = unknown>(options: { refresh?: boolean } = {}) {
     ackIds.current = [];
   }, []);
 
-  return { run, busy, error, reset, acknowledge, acknowledging };
+  /** True while the last attempt is unanswered — reopening the dialog must not renew its key then. */
+  const unansweredAttempt = useCallback(() => unanswered.current, []);
+
+  return { run, busy, error, reset, acknowledge, acknowledging, unansweredAttempt };
 }
 
 /**
@@ -166,8 +178,20 @@ export function ProblemNotice({
   );
 }
 
-/** A fresh Idempotency-Key per confirmation dialog, kept across retries of the same dialog (contract §3). */
-export function useIdempotencyKey(): { key: string; renew: () => void } {
+/**
+ * The Idempotency-Key of one logical action (contract §3): kept across retries of the same dialog **and across
+ * closing and reopening it** while the last attempt is unanswered (review L2 — the API may have recorded it; a new
+ * key would book a manual payment or a refund twice). It is renewed on opening only after an answer: a success, or
+ * a refusal (the API releases the key of a refused request).
+ */
+export function useIdempotencyKey(): { key: string; renew: () => void; renewUnless: (pending: boolean) => void } {
   const [key, setKey] = useState(() => crypto.randomUUID());
-  return { key, renew: () => setKey(crypto.randomUUID()) };
+  const renew = useCallback(() => setKey(crypto.randomUUID()), []);
+  return {
+    key,
+    renew,
+    renewUnless: (pending: boolean) => {
+      if (!pending) renew();
+    },
+  };
 }

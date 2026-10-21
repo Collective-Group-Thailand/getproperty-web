@@ -84,8 +84,8 @@ export function EnterVersion({
       <Button
         iconStart={IconAdd}
         onClick={() => {
+          idempotency.renewUnless(action.unansweredAttempt()); // review L2
           action.reset();
-          idempotency.renew();
           setDraft(draftFrom(current));
           setShown(false);
           setSourceFile(null);
