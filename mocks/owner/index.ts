@@ -10,6 +10,7 @@ import { leaseHandlers, residentSigns } from "./leases";
 import { meteringHandlers } from "./metering";
 import { partyHandlers } from "./parties";
 import { paymentHandlers, providerPays } from "./payments";
+import { releaseHandlers } from "./release";
 import { settingsHandlers } from "./settings";
 import { initialOwnerWorld, type OwnerWorld } from "./world";
 
@@ -22,6 +23,7 @@ export const ownerHandlers: HttpHandler[] = [
   ...leaseHandlers,
   ...depositHandlers,
   ...billingHandlers,
+  ...releaseHandlers,
   ...paymentHandlers,
   ...meteringHandlers,
   ...settingsHandlers,
@@ -31,7 +33,7 @@ export const ownerHandlers: HttpHandler[] = [
  * Parts of the owner world a spec file resets on its own, so parallel spec files do not reset each
  * other: `assets` (properties, buildings, floors, units, profiles, accounts), `leases` (parties, leases,
  * deposits, acknowledgements), `money` (cycles, invoices, charges, payments, slips, receipts, credits,
- * exports), `metering` (reviews, utility invoices), `settings` (F2 2.6: settings, bank accounts, rate plans,
+ * exports, e-Tax submissions), `metering` (reviews, utility invoices), `settings` (F2 2.6: settings, bank accounts, rate plans,
  * invitations, routes, consents, asset grants), or everything.
  */
 const PARTS: Record<string, (keyof OwnerWorld)[]> = {
@@ -40,13 +42,41 @@ const PARTS: Record<string, (keyof OwnerWorld)[]> = {
     "parties",
     "leases",
     "leaseEvents",
+    "scheduledTerminations",
     "leaseInvitations",
     "deposits",
     "comparisons",
     "acknowledgements",
     "evaluations",
   ],
-  money: ["cycles", "invoices", "charges", "payments", "slips", "receipts", "credits", "exports", "readingRequests"],
+  money: [
+    "cycles",
+    "invoices",
+    "charges",
+    "payments",
+    "slips",
+    "receipts",
+    "credits",
+    "exports",
+    "readingRequests",
+    "etax",
+  ],
+  // The api release fixes and B6.2: link requests (D-226) and TM30 notifications (D-216).
+  release: [
+    "linkRequests",
+    "tm30",
+    "tm30Files",
+    "etax",
+    "payments",
+    "invoices",
+    "receipts",
+    "credits",
+    "parties",
+    "leases",
+    "leaseEvents",
+    "scheduledTerminations",
+    "consents",
+  ],
   metering: ["reviews", "utilityInvoices", "ownerReadings"],
   settings: [
     "settings",

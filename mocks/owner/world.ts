@@ -14,6 +14,7 @@ import {
   period,
 } from "../staff-world";
 import { add, baht, mul, satang } from "./money";
+import { initialEtax, initialHeldPayments, initialLinkRequests, initialTm30 } from "./release-seeds";
 
 type Schemas = components["schemas"];
 
@@ -1332,6 +1333,10 @@ function initialPayments(invoices: MockInvoice[]): Schemas["PaymentDto"][] {
       receipts: [{ id: RECEIPT.r101, kind: "payment", number: "RCP-2569-000051", voided: false }],
       reconciledAt: iso(-11),
       reverseReason: null,
+      heldReason: null,
+      duplicateOfPaymentId: null,
+      dismissedAt: null,
+      dismissReason: null,
       reversedAt: null,
       nextActions: ["reverse"],
       version: 1,
@@ -1363,6 +1368,10 @@ function initialPayments(invoices: MockInvoice[]): Schemas["PaymentDto"][] {
       receipts: [{ id: RECEIPT.r102, kind: "payment", number: "RCP-2569-000044", voided: false }],
       reconciledAt: null,
       reverseReason: null,
+      heldReason: null,
+      duplicateOfPaymentId: null,
+      dismissedAt: null,
+      dismissReason: null,
       reversedAt: null,
       nextActions: ["reverse"],
       version: 1,
@@ -1723,6 +1732,16 @@ export interface OwnerWorld {
   routes: Schemas["NotificationRouteDto"][];
   consents: Schemas["ConsentPurposeDto"][];
   assetGrants: Schemas["AssetGrantDto"][];
+  /** Phone sign-ins waiting for the Owner (D-226). */
+  linkRequests: Schemas["PartyLinkRequestDto"][];
+  /** TM30 notifications of foreign occupants (D-052, D-216). */
+  tm30: Schemas["Tm30ExportDto"][];
+  /** Generated Immigration upload files: document id → title and the notifications in it. */
+  tm30Files: Map<string, { title: string; exportIds: string[] }>;
+  /** Terminations recorded for a later date (D-219): lease id → the ground and notes kept for the close. */
+  scheduledTerminations: Map<string, { reasonCode: Schemas["TerminationReason"]; notes: string | null }>;
+  /** e-Tax submissions of the VAT-registered sample tenant (D-215). */
+  etax: Schemas["EtaxSubmissionDto"][];
 }
 
 type Scope = Schemas["SettingScope"];
@@ -1770,6 +1789,41 @@ function initialSettings(): Schemas["SettingDto"][] {
     setting("late_fee.amount", "0.00", "money", "Late fee per overdue invoice (D-201)", "platform", TENANT_UP),
     setting("payments.allow_partial", false, "bool", "Partial payments (D-198)", "platform", TENANT_UP),
     setting("payments.allow_slip", true, "bool", "Slip uploads (D-043)", "platform", TENANT_UP),
+    setting(
+      "payments.duplicate_window_hours",
+      72,
+      "int",
+      "A provider payment of the same amount as a slip or hand-recorded transfer within this many hours is held as a possible duplicate (D-220)",
+      "platform",
+      TENANT_UP,
+    ),
+    setting("etax.enabled", true, "bool", "Submit receipts to the e-Tax service provider (D-215)", "tenant", TENANT_UP),
+    setting("etax.provider", "inet", "string", "The e-Tax service provider (D-215)", "platform", TENANT_UP),
+    setting(
+      "etax.seller_branch",
+      "00000",
+      "string",
+      "Branch code registered with the Revenue Department (D-215)",
+      "platform",
+      TENANT_UP,
+    ),
+    setting(
+      "tm30.notify_within_hours",
+      24,
+      "int",
+      "TM30: notify the Immigration Bureau within this many hours of a foreigner's arrival (D-052, D-216)",
+      "platform",
+      ["platform"],
+      false,
+    ),
+    setting(
+      "analytics.csat_survey_interval_days",
+      90,
+      "int",
+      "The resident app offers the satisfaction survey this many days after the last answer (D-217)",
+      "platform",
+      TENANT_UP,
+    ),
     setting(
       "notifications.quiet_hours",
       { start: "21:00", end: "08:00", timezone: "Asia/Bangkok" },
@@ -2065,7 +2119,7 @@ export function initialOwnerWorld(): OwnerWorld {
     cycles: initialCycles(),
     invoices,
     charges: [],
-    payments: initialPayments(invoices),
+    payments: [...initialHeldPayments(invoices), ...initialPayments(invoices)],
     slips: initialSlips(invoices),
     receipts: initialReceipts(),
     credits: [
@@ -2120,6 +2174,18 @@ export function initialOwnerWorld(): OwnerWorld {
         capturedAt: iso(-120),
       },
       {
+        key: "analytics.anonymised",
+        title: "การใช้ข้อมูลนิรนามเพื่อพัฒนาบริการ",
+        bodyMarkdown: "ใช้ข้อมูลที่ไม่ระบุตัวตนเพื่อสถิติและเปรียบเทียบ (D-083)",
+        version: 1,
+        language: "th",
+        required: false,
+        effectiveFrom: day(-200),
+        granted: null,
+        grantedVersion: null,
+        capturedAt: null,
+      },
+      {
         key: "operator_product_updates",
         title: "รับข่าวสารผลิตภัณฑ์และกรณีศึกษา",
         bodyMarkdown: "ยินยอมให้ getproperty ส่งข่าวสารเกี่ยวกับผลิตภัณฑ์ทาง LINE และอีเมล",
@@ -2133,6 +2199,11 @@ export function initialOwnerWorld(): OwnerWorld {
       },
     ],
     assetGrants: [],
+    linkRequests: initialLinkRequests(),
+    tm30: initialTm30(),
+    tm30Files: new Map([[id("d0c7a300", 3), { title: "tm30-A-2569-08-23.xlsx", exportIds: [id("7a300000", 3)] }]]),
+    etax: initialEtax(),
+    scheduledTerminations: new Map(),
   };
 }
 

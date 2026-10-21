@@ -14,8 +14,8 @@ import { ownerPath } from "../shared/links";
 import { ListPagination } from "@/features/shared/console/ListPagination";
 import { MoneyNav } from "../shared/MoneyNav";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
-import { focusedBuilding, pageParam, param, type OwnerContext } from "../shared/server";
-import { slipsToReview } from "./PaymentsView";
+import { focusedBuilding, ownerCan, pageParam, param, type OwnerContext } from "../shared/server";
+import { heldCount, slipsToReview } from "./counts";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 const KINDS: Schemas["DocumentKind"][] = [
@@ -44,12 +44,13 @@ export async function DocumentsView({ context, searchParams }: { context: OwnerC
   const t = await getTranslations("owner.documents");
   const { api, locale } = context;
   const building = focusedBuilding(context);
+  const canOpenContracts = ownerCan(context.me, "party.pii.decrypt");
   const period =
     param(searchParams.period) && /^\d{4}-\d{2}$/.test(param(searchParams.period)!)
       ? param(searchParams.period)!
       : currentMonth();
   const kind = param(searchParams.kind);
-  const [list, slips] = await Promise.all([
+  const [list, slips, held] = await Promise.all([
     unwrap(
       api.GET("/v1/owner/billing-documents", {
         params: {
@@ -65,6 +66,7 @@ export async function DocumentsView({ context, searchParams }: { context: OwnerC
       }),
     ),
     slipsToReview(api),
+    heldCount(api, building?.id),
   ]);
   return (
     <OwnerPage testId="documents">
@@ -80,7 +82,12 @@ export async function DocumentsView({ context, searchParams }: { context: OwnerC
           />
         }
       />
-      <MoneyNav section="payments" current="/documents" locale={locale} counts={{ "/payments/slips": slips }} />
+      <MoneyNav
+        section="payments"
+        current="/documents"
+        locale={locale}
+        counts={{ "/payments/slips": slips, "/payments/held": held }}
+      />
       <FilterBar
         fields={[
           { name: "period", label: t("filter.period"), type: "month" },
@@ -115,13 +122,21 @@ export async function DocumentsView({ context, searchParams }: { context: OwnerC
               <span className="text-muted text-sm">
                 {t("size", { kb: formatNumber(Math.ceil(document.sizeBytes / 1024), locale) })}
               </span>
-              <DocumentButton
-                document={{ kind: "file", id: document.id }}
-                label={t("open")}
-                title={document.title}
-                variant="ghost"
-                testId="document-open"
-              />
+              {document.kind === "contract" && !canOpenContracts ? (
+                // A lease contract carries the lessee's ID number: the file download refuses it without
+                // `party.pii.decrypt` (D-222), so the row says why instead of offering a 403.
+                <span className="text-muted text-sm" data-testid="document-restricted">
+                  {t("contractRestricted")}
+                </span>
+              ) : (
+                <DocumentButton
+                  document={{ kind: "file", id: document.id }}
+                  label={t("open")}
+                  title={document.title}
+                  variant="ghost"
+                  testId="document-open"
+                />
+              )}
             </li>
           ))}
         </ul>

@@ -17,6 +17,7 @@ import { ownerPath, withQuery } from "../shared/links";
 import { MoneyNav } from "../shared/MoneyNav";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { param, type OwnerContext } from "../shared/server";
+import { heldCount } from "./counts";
 import { SlipDecision, SlipImage } from "./SlipDecision";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -31,6 +32,7 @@ export async function SlipQueue({ context, searchParams }: { context: OwnerConte
   const status = await getTranslations("status.slip");
   const { api, locale } = context;
   const statusParam = param(searchParams.status) ?? "pending_review";
+  const heldPromise = heldCount(api);
   const list = await unwrap(
     api.GET("/v1/owner/slip-reviews", {
       params: {
@@ -49,6 +51,7 @@ export async function SlipQueue({ context, searchParams }: { context: OwnerConte
       : await unwrap(api.GET("/v1/owner/slip-reviews", { params: { query: { status: "pending_review", perPage: 1 } } }))
           .then((page) => page.meta.total)
           .catch(() => undefined);
+  const held = await heldPromise;
   const selectedId = param(searchParams.slip) ?? list.data[0]?.id;
   const selected = list.data.find((slip) => slip.id === selectedId) ?? null;
   const href = (slipId: string) =>
@@ -61,7 +64,7 @@ export async function SlipQueue({ context, searchParams }: { context: OwnerConte
         section="payments"
         current="/payments/slips"
         locale={locale}
-        counts={{ "/payments/slips": pendingCount }}
+        counts={{ "/payments/slips": pendingCount, "/payments/held": held }}
       />
       <FilterBar
         fields={[
@@ -142,6 +145,13 @@ export async function SlipQueue({ context, searchParams }: { context: OwnerConte
                       </Badge>
                     </span>
                   ))}
+                </div>
+              ) : null}
+              {selected.reasons.includes("possible_qr_duplicate") ? (
+                <div className="mb-4" data-testid="slip-qr-duplicate">
+                  <Callout tone="warning" title={t("qrDuplicateTitle")}>
+                    {t("qrDuplicateBody")}
+                  </Callout>
                 </div>
               ) : null}
               <div className="grid gap-4 xl:grid-cols-[1fr_18rem]">

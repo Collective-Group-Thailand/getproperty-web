@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { MOCK_API } from "../playwright.config";
+import { mockRequests } from "./support/auth";
 import { expectAxeClean, expectTargets48, gotoStaff, hydrated, mock, signInStaff } from "./support/staff";
 
 /**
@@ -32,6 +33,8 @@ async function typeKeys(page: Page, value: string) {
 }
 
 async function scanTyped(page: Page, serial: string) {
+  // During a client navigation the leaving screen's scan button can still be mounted for a moment.
+  await expect(page.getByTestId("scan-button")).toHaveCount(1);
   await page.getByTestId("scan-button").click();
   // Headless Chromium has no BarcodeDetector: the panel offers the typed serial.
   await expect(page.getByTestId("scan-panel")).toHaveAttribute("data-mode", "manual", { timeout: 15_000 });
@@ -57,6 +60,11 @@ test("provision a gateway by QR: code, status page link, online over the realtim
 
   await expect(page.getByTestId("provision")).toHaveAttribute("data-step", "code");
   await expect(page.getByTestId("provision-code")).toHaveText(/^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/);
+  // An Idempotency-Key per serial (required since api 048a8bd, triage F7 #2).
+  const provisions = (await mockRequests("/v1/staff/devices/actions/provision")) as unknown as {
+    idempotencyKey: string | null;
+  }[];
+  expect(provisions.at(-1)?.idempotencyKey).toMatch(/^[0-9a-f-]{36}$/);
   await expect(page.getByTestId("network-check")).toContainText("Waiting since");
   await page.getByLabel("The gateway's LAN IP (from the router or the label)").fill("192.168.1.50");
   await expect(page.getByTestId("status-page-link")).toHaveAttribute("href", "http://192.168.1.50:8080/");

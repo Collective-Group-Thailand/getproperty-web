@@ -46,7 +46,9 @@
     "receipts": "Receipts",
     "receiptTitle": "Receipt {number}",
     "receiptVoided": "voided",
-    "noReceipts": "No receipt."
+    "noReceipts": "No receipt.",
+    "dismissed": "Dismissed",
+    "dismissedOn": "{date} — {reason}"
   },
   "reverse": {
     "button": "Reverse",
@@ -74,7 +76,10 @@
       "receiver_mismatch": "Paid to another account",
       "too_old": "Transfer too old",
       "unreadable": "Slip not readable",
-      "verification_unavailable": "Bank check unavailable"
+      "verification_unavailable": "Bank check unavailable",
+      "not_recognised": "Slip not recognised",
+      "amount_unreadable": "Amount unreadable",
+      "possible_qr_duplicate": "Possibly paid by QR already"
     },
     "imageAlt": "Transfer slip from {payer}, unit {unit}",
     "noImage": "No picture.",
@@ -101,7 +106,9 @@
       "reason": "Reason",
       "reasonHint": "The resident sees this",
       "rejected": "Slip rejected"
-    }
+    },
+    "qrDuplicateTitle": "A QR payment of the same amount is already booked",
+    "qrDuplicateBody": "This invoice was already paid by QR for the same amount. Approve only if the resident really paid twice; otherwise reject it with a reason."
   },
   "manual": {
     "title": "Record a payment",
@@ -164,5 +171,37 @@
     "title": "Send the receipt again?",
     "body": "Receipt {number} is sent to {payer} on LINE again (quiet hours and consent apply).",
     "done": "Receipt sent again"
+  },
+  "heldBadge": "To check (possible duplicate)",
+  "held": {
+    "title": "Payments to check",
+    "description": "Money the bank reported that was not booked because it looks like a transfer already booked. Check the bank account, then book it or dismiss it.",
+    "empty": {
+      "title": "No payments to check",
+      "body": "A payment the bank reports that repeats one already booked waits here."
+    },
+    "noPermission": "An Owner or Manager (record payments) decides these.",
+    "duplicateOf": "Open the payment already booked",
+    "neverBooked": "Nothing is allocated, credited or receipted until you confirm it.",
+    "reason": {
+      "qr_already_paid": {
+        "title": "This QR was already paid",
+        "body": "The bank reported money for a QR that is already paid — a repeated notification, or the resident scanned and paid twice."
+      },
+      "possible_duplicate_transfer": {
+        "title": "Possibly the same transfer as one already booked",
+        "body": "Same amount as a slip or hand-recorded transfer of the same payer and unit within the configured window."
+      }
+    },
+    "confirm": "Confirm and book",
+    "confirmTitle": "Book this payment?",
+    "confirmBody": "Book {amount} from {payer} for {unit} as a second payment: it pays the oldest open invoices first, the rest becomes the payer's credit, and a receipt is issued.",
+    "confirmed": "Payment booked",
+    "dismiss": "Dismiss",
+    "dismissTitle": "Dismiss this payment?",
+    "dismissBody": "{amount} for {unit} is marked failed and is never booked.",
+    "dismissReason": "Reason",
+    "dismissReasonHint": "For example: the bank repeated the same notification; checked against the statement.",
+    "dismissed": "Payment dismissed"
   }
 }

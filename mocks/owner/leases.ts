@@ -6,6 +6,7 @@ import { placeholderPdf } from "../handlers/staff";
 import { state } from "../state";
 import { add, mul, satang } from "./money";
 import {
+  allowed,
   body,
   documentDownload,
   etagged,
@@ -53,11 +54,13 @@ function nextActionsOf(lease: Schemas["LeaseDto"]): string[] {
       return lease.signatures.some((signature) => signature.signerRole === "lessee")
         ? ["countersign", "cancel"]
         : ["cancel"];
+    // As the API's `nextActions(status)` (getproperty-api 048a8bd).
     case "active":
-      return ["record-notice", "renew", "terminate"];
+      return ["record-notice", "begin-move-out", "terminate", "renew"];
     case "notice_given":
+      return ["begin-move-out", "terminate", "renew"];
     case "ending":
-      return ["begin-move-out", "terminate"];
+      return ["complete-move-out", "terminate", "renew"];
     default:
       return [];
   }
@@ -645,7 +648,8 @@ export const leaseHandlers: HttpHandler[] = [
       if (!["active", "notice_given", "ending"].includes(lease.status)) return problem(op, "lease.invalid_state");
       if (!input.reasonCode) return validation(op, "reasonCode", "a ground is required");
       if (!input.effectiveDate) return validation(op, "effectiveDate", "the termination date is required");
-      if (input.reasonCode !== "lessee_notice" && input.reasonCode !== "mutual_agreement") {
+      // As the API: every lessor ground (mutual agreement included) is checked against the notice rule (D-020).
+      if (input.reasonCode !== "lessee_notice") {
         const warning = needsAcknowledgement(
           op,
           "compliance.termination_notice",
@@ -658,6 +662,23 @@ export const leaseHandlers: HttpHandler[] = [
           LEGAL_REF.termination,
         );
         if (warning) return warning;
+      }
+      // D-219: a date after today (Bangkok) records the lessor's notice; nothing closes until the move-out.
+      if (input.effectiveDate > day(0)) {
+        if (input.effectiveDate > lease.endDate) return validation(op, "effectiveDate", "after the end of the lease");
+        if (lease.status !== "ending") lease.status = "notice_given";
+        lease.notice = {
+          by: "lessor",
+          givenAt: iso(),
+          reasonCode: input.reasonCode,
+          effectiveDate: input.effectiveDate,
+          evidenceDocumentIds: input.evidenceDocumentIds ?? [],
+        };
+        w().scheduledTerminations.set(lease.id, { reasonCode: input.reasonCode, notes: input.notes ?? null });
+        lease.version += 1;
+        sync(lease);
+        leaseEvent(lease.id, "notice_given", { by: "lessor", reasonCode: input.reasonCode });
+        return { status: 200, body: lease };
       }
       lease.status = "terminated";
       lease.termination = {
@@ -697,12 +718,23 @@ export const leaseHandlers: HttpHandler[] = [
     if (!lease) return notFound(op);
     return idempotent(request, op, () => {
       if (lease.status !== "ending") return problem(op, "lease.invalid_state");
-      lease.status = "ended";
+      // A termination scheduled for a later date closes as `terminated` once the move-out is done (D-219).
+      const scheduled = w().scheduledTerminations.get(lease.id);
+      lease.status = scheduled ? "terminated" : "ended";
       lease.moveOutAt = iso();
+      if (scheduled) {
+        lease.termination = {
+          reasonCode: scheduled.reasonCode,
+          terminatedAt: iso(),
+          notes: scheduled.notes,
+          evidenceDocumentIds: lease.notice?.evidenceDocumentIds ?? [],
+        };
+        w().scheduledTerminations.delete(lease.id);
+      }
       lease.version += 1;
       sync(lease);
       endOccupancy(lease);
-      leaseEvent(lease.id, "ended", { moveOutAt: lease.moveOutAt });
+      leaseEvent(lease.id, scheduled ? "terminated" : "ended", { moveOutAt: lease.moveOutAt });
       return { status: 200, body: lease };
     });
   }),
@@ -714,6 +746,9 @@ export const leaseHandlers: HttpHandler[] = [
     const lease = ok.own ? w().leases.find((candidate) => candidate.id === params.leaseId) : undefined;
     if (!lease) return notFound(op);
     if (!lease.contract) return problem(op, "lease.invalid_state");
+    // The stored contract carries the lessee's full ID number: `party.pii.decrypt` too (D-222).
+    const forbidden = allowed(ok, op, "party.pii.decrypt");
+    if (forbidden) return forbidden;
     const download = documentDownload(request, lease.contract.documentId, lease.number ?? "");
     return json({
       ...download,

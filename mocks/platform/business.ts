@@ -442,11 +442,9 @@ const subscriptionHandlers: HttpHandler[] = [
       emit("subscription.state_changed", { subscriptionId: sub.id, tenantId: sub.tenantId }, "admin");
       return { status: 200, body: sub };
     };
-    if (action === "cancel") return idempotent(request, op, apply);
-    const input = await body<Record<string, unknown>>(request);
-    record(op, request, input);
-    const answer = apply(input);
-    return answer instanceof Response ? answer : json(answer.body, answer.status);
+    // Every action requires an Idempotency-Key and replays its first answer (contract §3; change-plan,
+    // suspend and reinstate since getproperty-api 048a8bd, triage F7 #2).
+    return idempotent(request, op, apply);
   }),
 ];
 

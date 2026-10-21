@@ -22,5 +22,6 @@
   "empty": {
     "title": "No documents this month",
     "body": "Choose another month or kind."
-  }
+  },
+  "contractRestricted": "Owner / Manager only (carries the lessee's ID number)"
 }

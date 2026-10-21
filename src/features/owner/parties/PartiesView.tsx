@@ -15,7 +15,9 @@ import { FilterBar } from "@/features/shared/console/FilterBar";
 import { ownerPath } from "../shared/links";
 import { ListPagination } from "@/features/shared/console/ListPagination";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
-import { pageParam, param, type OwnerContext } from "../shared/server";
+import { ownerCan, pageParam, param, type OwnerContext } from "../shared/server";
+import { linkRequestsPending, openTm30 } from "./counts";
+import { PartiesNav } from "./PartiesNav";
 import { NewPartyButton } from "./PartyForm";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -25,24 +27,38 @@ export async function PartiesView({ context, searchParams }: { context: OwnerCon
   const t = await getTranslations("owner.parties");
   const { api, locale } = context;
   const page = pageParam(searchParams.page);
-  const list = await unwrap(
-    api.GET("/v1/owner/parties", {
-      params: {
-        query: {
-          page,
-          perPage: 25,
-          q: param(searchParams.q),
-          type: param(searchParams.type) as never,
+  const [list, linkRequests, tm30] = await Promise.all([
+    unwrap(
+      api.GET("/v1/owner/parties", {
+        params: {
+          query: {
+            page,
+            perPage: 25,
+            q: param(searchParams.q),
+            type: param(searchParams.type) as never,
+          },
         },
-      },
-    }),
-  );
+      }),
+    ),
+    linkRequestsPending(api),
+    ownerCan(context.me, "tm30.manage")
+      ? openTm30(api).then(
+          (rows) => rows.length,
+          () => undefined,
+        )
+      : Promise.resolve(undefined),
+  ]);
   return (
     <OwnerPage testId="parties">
       <PageHeader
         title={t("title")}
         description={t("description")}
         actions={<NewPartyButton defaultOpen={param(searchParams.new) === "1"} />}
+      />
+      <PartiesNav
+        context={context}
+        current="/parties"
+        counts={{ "/parties/link-requests": linkRequests, "/tm30": tm30 }}
       />
       <FilterBar
         fields={[

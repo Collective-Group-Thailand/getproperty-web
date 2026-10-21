@@ -3,8 +3,9 @@ import { getTranslations } from "next-intl/server";
 import { PAYMENT_STATUS, PAYMENT_VALUES } from "@/domain/status/payment";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { formatDateTime, formatTHB } from "@/i18n/format";
-import { unwrap, type ApiClient } from "@/lib/api/client";
+import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
+import { Badge } from "@/ui/components/Badge";
 import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Icon } from "@/ui/icons";
@@ -17,16 +18,10 @@ import { ListPagination } from "@/features/shared/console/ListPagination";
 import { MoneyNav } from "../shared/MoneyNav";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { focusedBuilding, pageParam, param, type OwnerContext } from "../shared/server";
+import { heldCount, slipsToReview } from "./counts";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 const METHODS: Schemas["PaymentMethod"][] = ["qr", "transfer_slip", "cash", "bank_transfer_manual", "card", "offset"];
-
-/** Slips waiting for a person — the count on the Money tabs. */
-export async function slipsToReview(api: ApiClient): Promise<number | undefined> {
-  return unwrap(api.GET("/v1/owner/slip-reviews", { params: { query: { status: "pending_review", perPage: 1 } } }))
-    .then((page) => page.meta.total)
-    .catch(() => undefined);
-}
 
 /** The first and last day of a `YYYY-MM` month, as the list's `from` / `to` dates. */
 function monthRange(month: string | undefined): { from?: string; to?: string } {
@@ -45,7 +40,7 @@ export async function PaymentsView({ context, searchParams }: { context: OwnerCo
   const building = focusedBuilding(context);
   const statusParam = param(searchParams.status);
   const methodParam = param(searchParams.method);
-  const [list, slips] = await Promise.all([
+  const [list, slips, held] = await Promise.all([
     unwrap(
       api.GET("/v1/owner/payments", {
         params: {
@@ -66,11 +61,17 @@ export async function PaymentsView({ context, searchParams }: { context: OwnerCo
       }),
     ),
     slipsToReview(api),
+    heldCount(api, building?.id),
   ]);
   return (
     <OwnerPage testId="payments">
       <PageHeader title={t("title")} description={t("description")} />
-      <MoneyNav section="payments" current="/payments" locale={locale} counts={{ "/payments/slips": slips }} />
+      <MoneyNav
+        section="payments"
+        current="/payments"
+        locale={locale}
+        counts={{ "/payments/slips": slips, "/payments/held": held }}
+      />
       <FilterBar
         fields={[
           { name: "q", label: t("filter.search"), type: "search", placeholder: t("filter.searchPlaceholder") },
@@ -118,6 +119,13 @@ export async function PaymentsView({ context, searchParams }: { context: OwnerCo
                     {payment.providerRef ? ` · ${payment.providerRef}` : ""}
                   </span>
                 </span>
+                {payment.heldReason ? (
+                  <span data-testid="payment-held">
+                    <Badge tone="warning" size="sm">
+                      {t("heldBadge")}
+                    </Badge>
+                  </span>
+                ) : null}
                 <span className="tabular-nums">{formatTHB(payment.amount, locale)}</span>
                 <StatusBadgeOf map={PAYMENT_STATUS} value={payment.status} size="sm" />
                 <Icon icon={IconChevronRight} className="text-muted" />

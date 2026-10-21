@@ -1,0 +1,76 @@
+{
+  "title": "e-Tax",
+  "description": "Receipts and tax invoices sent to your e-Tax service provider, their signature, and what the provider refused.",
+  "notVat": {
+    "title": "e-Tax is for VAT-registered businesses",
+    "body": "Once your company is VAT-registered and signed up with an e-Tax service provider, its documents are sent and listed here."
+  },
+  "noPermission": "Your role does not see payments and e-Tax.",
+  "summary": {
+    "title": "Summary of {month}",
+    "enabled": "Sent automatically through {provider}",
+    "disabled": "e-Tax submission was off this month",
+    "register": "Download the register (Excel)",
+    "subtotal": "Before VAT (signed)",
+    "vat": "VAT",
+    "total": "Total",
+    "documents": "{count, plural, one {# document} other {# documents}}",
+    "byType": "By ETDA document type"
+  },
+  "filter": {
+    "month": "Month",
+    "search": "Search",
+    "searchPlaceholder": "Document number",
+    "status": "Status",
+    "allStatuses": "All statuses",
+    "type": "Type",
+    "allTypes": "All types"
+  },
+  "subject": {
+    "receipt": "Receipt",
+    "tax_invoice": "Tax invoice",
+    "credit_note": "Credit note",
+    "debit_note": "Debit note"
+  },
+  "typeCode": {
+    "T01": "T01 Receipt",
+    "T03": "T03 Receipt / tax invoice",
+    "388": "388 Tax invoice"
+  },
+  "empty": {
+    "title": "No e-Tax documents this month",
+    "body": "Receipts you issue are sent to the provider and listed here."
+  },
+  "listCaption": "e-Tax documents",
+  "col": {
+    "number": "Number",
+    "type": "Type",
+    "issued": "Issued",
+    "total": "Total",
+    "status": "Status",
+    "documents": "Documents"
+  },
+  "detail": {
+    "title": "e-Tax {number}",
+    "errorTitle": "The provider says",
+    "facts": "Details",
+    "provider": "Provider",
+    "providerDocId": "Provider reference",
+    "submittedAt": "Submitted",
+    "signedAt": "Signed",
+    "attempts": "Attempts",
+    "nextAttempt": "Next attempt",
+    "files": "Files",
+    "filesHint": "Links last 5 minutes; open them again any time.",
+    "sourcePdf": "Our PDF",
+    "signedPdf": "Signed PDF",
+    "signedXml": "Signed XML",
+    "noFiles": "No files yet"
+  },
+  "retry": {
+    "button": "Send again",
+    "title": "Send {number} again?",
+    "body": "Fix what the provider refused first (for example the buyer's tax id), then {number} is sent again at once.",
+    "done": "Queued again"
+  }
+}

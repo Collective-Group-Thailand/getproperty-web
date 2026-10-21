@@ -70,7 +70,9 @@
     "links": "Resident app logins",
     "linksHint": "Logins linked to this party through an invitation or a match.",
     "documents": "ID documents",
-    "documentsHint": "Each opening is recorded with its purpose."
+    "documentsHint": "Each opening is recorded with its purpose.",
+    "linkRequests": "Link requests waiting",
+    "linkRequestsHint": "A login that signed in with this party's phone sees its data only after the Owner confirms."
   },
   "privacy": {
     "reveal": "Show sealed data",
@@ -105,5 +107,42 @@
     "unlinkTitle": "Unlink this login?",
     "unlinkBody": "The person can no longer see this party's bills and lease in the resident app.",
     "reason": "Reason"
+  },
+  "nav": {
+    "label": "Residents and parties",
+    "parties": "Parties",
+    "linkRequests": "Link requests",
+    "tm30": "TM30"
+  },
+  "linkRequests": {
+    "title": "Link requests",
+    "description": "Someone signed in to the resident app with the SMS code of a phone number you entered. They see no lease, bill or door code of that party until the Owner confirms it is the same person.",
+    "howTitle": "Before you confirm",
+    "howBody": "Call the number on file or ask the resident whether they just signed in. If not, reject it with a reason. Invitation codes (QR / link) still link at once.",
+    "ownerOnly": "Only the Owner confirms or rejects these requests.",
+    "login": "Login “{login}”",
+    "unnamedLogin": "unnamed",
+    "lineToo": "Also signed in with LINE",
+    "matched": "Phone matches",
+    "requestedAt": "requested {date}",
+    "decidedAt": "decided {date}",
+    "filter": {
+      "state": "State",
+      "all": "All"
+    },
+    "empty": {
+      "title": "No link requests waiting",
+      "body": "When someone signs in with a phone that matches a party, the request waits here."
+    },
+    "confirm": "Confirm",
+    "confirmTitle": "Confirm this is {party}?",
+    "confirmBody": "Links the login “{login}” to {party}: from its next refresh it sees {party}'s leases, bills and door codes.",
+    "confirmed": "Login linked",
+    "reject": "Reject",
+    "rejectTitle": "Reject the request for {party}?",
+    "rejectBody": "The login “{login}” is not linked to {party}.",
+    "rejectReason": "Reason",
+    "rejected": "Request rejected",
+    "alreadyDecided": "Someone already decided this request; the list is up to date."
   }
 }

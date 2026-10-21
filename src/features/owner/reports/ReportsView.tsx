@@ -19,6 +19,7 @@ import { SimpleTable } from "@/ui/components/SimpleTable";
 import { ExportButton } from "../shared/ExportButton";
 import { ownerPath } from "../shared/links";
 import { focusedBuilding, ownerCan, param, section, type OwnerContext } from "../shared/server";
+import { ReportsNav } from "./ReportsNav";
 import { ownerPilotKpis } from "./server";
 
 const PERIOD = /^\d{4}-(0[1-9]|1[0-2])$/;
@@ -88,6 +89,7 @@ export async function ReportsView({
   return (
     <OwnerPage testId="reports">
       <PageHeader title={t("title")} description={t("description")} />
+      <ReportsNav context={context} current="/reports" vatRegistered={vat} />
       <form method="get" className="flex flex-wrap items-end gap-3" data-testid="period-form">
         <label className="flex flex-col gap-1 text-sm">
           {t("period")}

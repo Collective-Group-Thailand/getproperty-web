@@ -1,6 +1,6 @@
 {
   "extends": "./shared.json",
-  "$comment": "Owner console (dashboard / board / wizard / workspaces / lists / details): LCP ≤ 2.5 s, CLS ≤ 0.1, initial JS ≤ 260 KB gz (D-179, docs/performance-budgets.md) — a hard limit on every URL, the F2 workspaces included. Measured signed in (scripts/lhci.ts signs the owner persona in on the mock API and sends the session cookies). F2 2.6 adds settings, bank accounts, rate plans, members, notifications, privacy, subscription, a platform invoice and reports. F2 2.7 (R2) adds the service requests inbox and a request, the work orders and a work order, maintenance, locks and a lock, announcements and the composer, parcels, facilities and rules. One run per URL (34 URLs); the JS size does not vary between runs.",
+  "$comment": "Owner console (dashboard / board / wizard / workspaces / lists / details): LCP ≤ 2.5 s, CLS ≤ 0.1, initial JS ≤ 260 KB gz (D-179, docs/performance-budgets.md) — a hard limit on every URL, the F2 workspaces included. Measured signed in (scripts/lhci.ts signs the owner persona in on the mock API and sends the session cookies). F2 2.6 adds settings, bank accounts, rate plans, members, notifications, privacy, subscription, a platform invoice and reports. F2 2.7 (R2) adds the service requests inbox and a request, the work orders and a work order, maintenance, locks and a lock, announcements and the composer, parcels, facilities and rules. One run per URL (34 URLs); the JS size does not vary between runs. Release fixes + B6 (2026-10-21): held payments list and a held payment, link requests, TM30, e-Tax list and detail, insights (server-drawn SVG charts, no chart library).",
   "ci": {
     "collect": {
       "url": [
@@ -37,7 +37,14 @@
         "http://localhost:3200/announcements/new",
         "http://localhost:3200/parcels",
         "http://localhost:3200/community/facilities",
-        "http://localhost:3200/community/rules"
+        "http://localhost:3200/community/rules",
+        "http://localhost:3200/payments/held",
+        "http://localhost:3200/payments/9a9e0000-0000-4000-8000-000000000009",
+        "http://localhost:3200/parties/link-requests",
+        "http://localhost:3200/tm30",
+        "http://localhost:3200/reports/etax",
+        "http://localhost:3200/reports/etax/e7a00000-0000-4000-8000-000000000002",
+        "http://localhost:3200/reports/insights"
       ],
       "numberOfRuns": 1,
       "settings": {

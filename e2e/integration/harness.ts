@@ -32,6 +32,13 @@
  *      is active (signed in getproperty-liff's way, countersigned by the owner). `POST /r2/resident-request`
  *      reports a plumbing request as the resident (`POST /v1/resident/service-requests`), `GET
  *      /r2/resident-parcels` reads the resident's parcels with their pick-up PINs (`GET /v1/resident/parcels`).
+ *   8. The release-fix world (`GET /rel`, triage F7, D-219–D-227): a fifth tenant with a confirmed bank account on
+ *      the fake KBank merchant, an active lease of L-101 (signed getproperty-liff's way) whose rent invoice is
+ *      issued with its QR, and a party (+66810000053) entered with a phone but never linked. `POST /rel/held`
+ *      pays the invoice's QR through the provider's signed callback and then sends a second callback for the same
+ *      QR — held as `qr_already_paid` (D-220); `POST /rel/phone-sign-in` signs in to the resident app with the
+ *      SMS code of that phone (D-226: a pending link request, nothing linked); `GET /rel/resident-me` reads that
+ *      login's `GET /v1/resident/me` (after a token refresh).
  *
  * Nothing here is part of the app: it exists so the suite can run the real sign-in flows once.
  */
@@ -58,6 +65,10 @@ const F2_MERCHANT = "010555000000777";
 const R2_OWNER_PHONE = "+66810000041";
 const R2_STAFF_PHONE = "+66810000042";
 const R2_RESIDENT_PHONE = "+66810000043";
+const REL_OWNER_PHONE = "+66810000051";
+const REL_RESIDENT_PHONE = "+66810000052";
+const REL_LINK_PHONE = "+66810000053";
+const REL_MERCHANT = "010555000000778";
 const PNG_BASE64 = Buffer.from(
   "89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000d4944415478da6364f8cf00000301010018dd8db00000000049454e44ae426082",
   "hex",
@@ -924,6 +935,317 @@ async function f2ProviderPays(app: NestApp, apiDir: string, session: OperatorSes
   };
 }
 
+/** One signed callback of the fake KBank (`simulatePayment`) for a QR reference, as the provider sends it. */
+async function kbankCallback(
+  app: NestApp,
+  apiDir: string,
+  input: { merchantRef: string; reference: string; amount: string; providerRef: string },
+) {
+  const require = createRequire(join(apiDir, "package.json"));
+  const { PAYMENT_PROVIDERS } = require(join(apiDir, "dist/src/integrations/payments/payment-provider.port.js")) as {
+    PAYMENT_PROVIDERS: symbol;
+  };
+  const fake = app
+    .get<{
+      adapter(provider: string): {
+        simulatePayment(p: Record<string, unknown>): { body: string; headers: Record<string, string> };
+      };
+    }>(PAYMENT_PROVIDERS)
+    .adapter("kbank");
+  const callback = fake.simulatePayment({ ...input, paidAt: new Date() });
+  const response = await fetch(`${API}/webhooks/payments/kbank`, {
+    method: "POST",
+    headers: callback.headers,
+    body: callback.body,
+  });
+  return { status: response.status, body: (await response.json().catch(() => ({}))) as Record<string, unknown> };
+}
+
+/** Polls `read` until `done` holds (the API's worker ticks every second), or fails after `ms`. */
+async function until<T>(what: string, read: () => Promise<T>, done: (value: T) => boolean, ms = 60_000): Promise<T> {
+  const deadline = Date.now() + ms;
+  for (;;) {
+    const value = await read();
+    if (done(value)) return value;
+    if (Date.now() > deadline) throw new Error(`${what}: not reached in ${ms} ms (${JSON.stringify(value)})`);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+}
+
+/**
+ * 8. The release-fix world (triage F7): a tenant with a confirmed KBank account, an active lease of L-101 signed
+ * the way getproperty-liff does, its rent invoice issued with a QR (billing cycle open → compute → issue), and a
+ * party entered with a phone number nobody has linked yet.
+ */
+async function setupReleaseWorld(
+  apiDir: string,
+  token: string,
+  sms: { lastCodeTo(phone: string): string | undefined },
+) {
+  const owner = await createTenant(token, "web-integration-rel", "หอพักทดสอบรีลีส", REL_OWNER_PHONE);
+  const challenge = await otpChallenge("/v1/auth/operator/otp/request", { phone: owner.phone });
+  const pair = await call("POST", "/v1/auth/operator/otp/verify", {
+    challengeId: challenge.challengeId,
+    code: sms.lastCodeTo(owner.phone),
+    invitationCode: owner.code,
+  });
+  if (pair.status !== 200) throw new Error(`rel owner sign-in: ${JSON.stringify(pair.body)}`);
+  const session = new OperatorSession(String(pair.body.accessToken), String(pair.body.refreshToken));
+  const ok = (step: string, result: { status: number; body: unknown }) => {
+    if (result.status >= 300) throw new Error(`rel ${step}: ${result.status} ${JSON.stringify(result.body)}`);
+    return result.body as Record<string, unknown> & unknown[];
+  };
+  const auth = async (extra: Record<string, string> = {}) => ({ ...(await session.header()), ...extra });
+  const property = ok(
+    "property",
+    await call("POST", "/v1/owner/properties", { code: "RL", name: "หอพักรีลีส" }, await auth()),
+  );
+  const building = ok(
+    "building",
+    await call(
+      "POST",
+      "/v1/owner/buildings",
+      { propertyId: property.id, code: "L", name: "อาคาร L", type: "apartment" },
+      await auth(),
+    ),
+  );
+  const buildingId = String(building.id);
+  const floor = ok(
+    "floor",
+    await call("POST", `/v1/owner/buildings/${buildingId}/floors`, { level: 1, name: "ชั้น 1" }, await auth()),
+  );
+  ok(
+    "units",
+    await call(
+      "POST",
+      `/v1/owner/buildings/${buildingId}/units/bulk`,
+      { floorIds: [floor.id], countPerFloor: 2, pattern: "{building}-{floor}{nn}" },
+      await auth(),
+    ),
+  );
+  const units = ok(
+    "unit list",
+    await call("GET", `/v1/owner/units?buildingId=${buildingId}&perPage=10`, undefined, await auth()),
+  ).data as unknown as { id: string; unitNo: string }[];
+  const unit = units.find((candidate) => candidate.unitNo.endsWith("101")) ?? units[0]!;
+  const account = ok(
+    "bank account",
+    await call(
+      "POST",
+      "/v1/owner/bank-accounts",
+      {
+        bankCode: "004",
+        bankNameTh: "ธนาคารกสิกรไทย",
+        accountNo: "123-4-56789-1",
+        accountName: "บริษัท หอพักทดสอบรีลีส จำกัด",
+        isDefault: true,
+        paymentProvider: "kbank",
+        providerMerchantRef: REL_MERCHANT,
+      },
+      await auth({ "idempotency-key": randomUUID() }),
+    ),
+  ) as unknown as { account: { id: string }; otp: { challengeId: string } };
+  ok(
+    "bank account confirm",
+    await call(
+      "POST",
+      `/v1/owner/bank-accounts/${account.account.id}/actions/confirm`,
+      { challengeId: account.otp.challengeId, code: sms.lastCodeTo(owner.phone) },
+      await auth(),
+    ),
+  );
+
+  // The resident's lease of L-101 (signed in the resident's app, countersigned): active from yesterday (UTC).
+  const resident = ok(
+    "resident",
+    await call(
+      "POST",
+      "/v1/owner/parties",
+      {
+        type: "person",
+        displayName: "ธีรวัฒน์ ทดสอบรีลีส",
+        firstName: "ธีรวัฒน์",
+        lastName: "ทดสอบรีลีส",
+        phone: REL_RESIDENT_PHONE,
+        idDocumentType: "thai_national_id",
+        idNumber: "1101700207056",
+      },
+      await auth(),
+    ),
+  );
+  const startDate = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+  const lease = ok(
+    "lease",
+    await call(
+      "POST",
+      "/v1/owner/leases",
+      {
+        unitId: unit.id,
+        lesseePartyId: resident.id,
+        startDate,
+        months: 12,
+        rent: "4500.00",
+        utilityBillingMode: "included",
+      },
+      await auth(),
+    ),
+  );
+  const leaseId = String(lease.id);
+  ok(
+    "send",
+    await call(
+      "POST",
+      `/v1/owner/leases/${leaseId}/actions/send-for-signature`,
+      {},
+      await auth({ "idempotency-key": randomUUID() }),
+    ),
+  );
+  const invitation = ok(
+    "lease invitation",
+    await call(
+      "POST",
+      `/v1/owner/leases/${leaseId}/invitations`,
+      { channel: "link", partyId: resident.id },
+      await auth(),
+    ),
+  );
+  await residentSignsLease(apiDir, sms, { code: String(invitation.code), leaseId, phone: REL_RESIDENT_PHONE });
+  ok(
+    "countersign",
+    await call(
+      "POST",
+      `/v1/owner/leases/${leaseId}/actions/countersign`,
+      { signaturePng: PNG_BASE64 },
+      await auth({ "idempotency-key": randomUUID() }),
+    ),
+  );
+  await until(
+    "lease active",
+    async () => (await call("GET", `/v1/owner/leases/${leaseId}`, undefined, await auth())).body.status,
+    (status) => status === "active",
+  );
+
+  // The month's rent invoice with its QR: open the cycle (or get the one the worker opened), compute, issue.
+  const cycle = ok("cycle", await call("POST", "/v1/owner/billing-cycles", { propertyId: property.id }, await auth()));
+  ok("compute", await call("POST", `/v1/owner/billing-cycles/${String(cycle.id)}/actions/compute`, {}, await auth()));
+  ok(
+    "issue",
+    await call(
+      "POST",
+      `/v1/owner/billing-cycles/${String(cycle.id)}/actions/issue`,
+      {},
+      await auth({ "idempotency-key": randomUUID() }),
+    ),
+  );
+  const invoice = await until(
+    "invoice with QR",
+    async () => {
+      const list = await call("GET", `/v1/owner/invoices?unitId=${unit.id}`, undefined, await auth());
+      const issued = (list.body.data as unknown as { id: string; number: string | null }[] | undefined)?.find(
+        (candidate) => candidate.number,
+      );
+      if (!issued) return null;
+      return (await call("GET", `/v1/owner/invoices/${issued.id}`, undefined, await auth())).body as Record<
+        string,
+        unknown
+      >;
+    },
+    (detail) => Boolean(detail?.promptpayRef),
+  );
+
+  // A party entered with a phone number that no login is linked to yet (D-226).
+  const linkParty = ok(
+    "link party",
+    await call(
+      "POST",
+      "/v1/owner/parties",
+      {
+        type: "person",
+        displayName: "อรุณี รอยืนยัน",
+        firstName: "อรุณี",
+        lastName: "รอยืนยัน",
+        phone: REL_LINK_PHONE,
+        idDocumentType: "thai_national_id",
+        idNumber: "1101700207064",
+      },
+      await auth(),
+    ),
+  );
+  log(`release world: ${owner.tenantName}, lease of ${unit.unitNo} active, invoice ${String(invoice!.number)} issued`);
+  return {
+    session,
+    world: {
+      ownerPhone: REL_OWNER_PHONE,
+      tenantName: owner.tenantName,
+      buildingId,
+      unitId: unit.id,
+      unitNo: unit.unitNo,
+      leaseId,
+      leaseEndDate: String(lease.endDate ?? ""),
+      invoiceId: String(invoice!.id),
+      invoiceNumber: String(invoice!.number),
+      invoiceTotal: String(invoice!.total),
+      promptpayRef: String(invoice!.promptpayRef),
+      linkPartyId: String(linkParty.id),
+      linkPartyName: "อรุณี รอยืนยัน",
+      linkPhone: REL_LINK_PHONE,
+    },
+  };
+}
+
+/** D-220: the invoice's QR is paid by the provider, then the same QR again (a second transfer) — that one is held. */
+async function releaseHeldPayment(
+  app: NestApp,
+  apiDir: string,
+  session: OperatorSession,
+  world: { invoiceId: string; invoiceTotal: string; promptpayRef: string },
+) {
+  const first = await kbankCallback(app, apiDir, {
+    merchantRef: REL_MERCHANT,
+    reference: world.promptpayRef,
+    amount: world.invoiceTotal,
+    providerRef: `KB-REL-${Date.now()}-1`,
+  });
+  if (first.status >= 300) throw new Error(`first callback: ${first.status} ${JSON.stringify(first.body)}`);
+  await until(
+    "invoice paid",
+    async () =>
+      (await call("GET", `/v1/owner/invoices/${world.invoiceId}`, undefined, await session.header())).body.status,
+    (status) => status === "paid",
+  );
+  const second = await kbankCallback(app, apiDir, {
+    merchantRef: REL_MERCHANT,
+    reference: world.promptpayRef,
+    amount: world.invoiceTotal,
+    providerRef: `KB-REL-${Date.now()}-2`,
+  });
+  if (second.status >= 300) throw new Error(`second callback: ${second.status} ${JSON.stringify(second.body)}`);
+  const held = await until(
+    "held payment",
+    async () => {
+      const list = await call("GET", "/v1/owner/payments?status=pending", undefined, await session.header());
+      return (list.body.data as unknown as { id: string; heldReason: string | null }[] | undefined)?.find(
+        (payment) => payment.heldReason,
+      );
+    },
+    (payment) => Boolean(payment),
+  );
+  return { first: first.body, second: second.body, held };
+}
+
+/** D-226: someone signs in to the resident app with the SMS code of the party's phone; nothing is linked yet. */
+async function releasePhoneSignIn(sms: { lastCodeTo(phone: string): string | undefined }, phone: string) {
+  const challenge = await otpChallenge("/v1/auth/resident/otp/request", { phone });
+  const pair = await call("POST", "/v1/auth/resident/otp/verify", {
+    challengeId: challenge.challengeId,
+    code: sms.lastCodeTo(phone),
+  });
+  if (pair.status !== 200) throw new Error(`resident OTP sign-in: ${pair.status} ${JSON.stringify(pair.body)}`);
+  const resident = new ResidentSession(String(pair.body.refreshToken));
+  const me = await call("GET", "/v1/resident/me", undefined, await resident.header());
+  return { resident, me: me.body };
+}
+
 /**
  * 3b. The worker's `document-scan` subscriber, in this process: the harness runs the API only (no
  * worker, no outbox relay), and the uploaded bytes live in the API process's fake object storage, so
@@ -979,6 +1301,8 @@ async function main() {
   const f2 = await setupF2World(token, sms);
   await setupF5World(token);
   const r2 = await setupR2World(apiDir, token, sms);
+  const rel = await setupReleaseWorld(apiDir, token, sms);
+  let relLogin: ResidentSession | null = null;
   startDocumentScans(app, apiDir);
   const require = createRequire(join(apiDir, "package.json"));
   const { SubscriptionsService } = require(
@@ -1023,6 +1347,19 @@ async function main() {
           ownerPhone: f2.world.phone,
         });
       if (url.pathname === "/r2") return send(200, r2.world);
+      if (url.pathname === "/rel") return send(200, rel.world);
+      if (url.pathname === "/rel/held" && req.method === "POST")
+        return send(200, await releaseHeldPayment(app, apiDir, rel.session, rel.world));
+      if (url.pathname === "/rel/phone-sign-in" && req.method === "POST") {
+        const signedIn = await releasePhoneSignIn(sms, rel.world.linkPhone);
+        relLogin = signedIn.resident;
+        return send(200, signedIn.me);
+      }
+      if (url.pathname === "/rel/resident-me") {
+        if (!relLogin) return send(409, { error: "sign in first (POST /rel/phone-sign-in)" });
+        const me = await call("GET", "/v1/resident/me", undefined, await relLogin.header());
+        return send(me.status, me.body);
+      }
       if (url.pathname === "/r2/resident-request" && req.method === "POST")
         return send(200, await r2ResidentRequest(r2.resident, r2.world.unitId));
       if (url.pathname === "/r2/resident-parcels") {

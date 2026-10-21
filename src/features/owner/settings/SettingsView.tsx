@@ -27,7 +27,7 @@ const GROUPS: { id: string; prefixes: string[] }[] = [
   { id: "readings", prefixes: ["readings.", "health."] },
   { id: "deposits", prefixes: ["deposit."] },
   { id: "access", prefixes: ["access."] },
-  { id: "compliance", prefixes: ["compliance.", "tenant.", "tax."] },
+  { id: "compliance", prefixes: ["compliance.", "tenant.", "tax.", "etax.", "tm30."] },
 ];
 /** Property-level settings the building page links to (D-031: billing cycle, cut-off, grace). */
 const PROPERTY_FIRST = [

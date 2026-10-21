@@ -159,10 +159,10 @@ export function SubscriptionActions({
           title={t("changePlanTitle", { name: subscription.tenantName })}
           submitLabel={t("changePlan")}
           successMessage={t("planChanged")}
-          onSubmit={(data) =>
+          onSubmit={(data, _ackIds, idempotencyKey) =>
             unwrap(
               browserApi().POST("/v1/admin/subscriptions/{subscriptionId}/actions/change-plan", {
-                ...path,
+                params: { ...path.params, header: { "Idempotency-Key": idempotencyKey } },
                 body: {
                   planKey: text(data, "planKey") ?? "",
                   addonKeys: addonKeys(data),
@@ -199,10 +199,10 @@ export function SubscriptionActions({
           confirmLabel={t("suspend")}
           phrase={slug}
           ready={reason.trim().length > 0}
-          onConfirm={() =>
+          onConfirm={(idempotencyKey) =>
             unwrap(
               browserApi().POST("/v1/admin/subscriptions/{subscriptionId}/actions/suspend", {
-                ...path,
+                params: { ...path.params, header: { "Idempotency-Key": idempotencyKey } },
                 body: { confirm: slug, reason: reason.trim() },
               }),
             )
@@ -223,10 +223,10 @@ export function SubscriptionActions({
           confirmLabel={t("reinstate")}
           phrase={slug}
           ready={reason.trim().length > 0}
-          onConfirm={() =>
+          onConfirm={(idempotencyKey) =>
             unwrap(
               browserApi().POST("/v1/admin/subscriptions/{subscriptionId}/actions/reinstate", {
-                ...path,
+                params: { ...path.params, header: { "Idempotency-Key": idempotencyKey } },
                 body: { reason: reason.trim() },
               }),
             )

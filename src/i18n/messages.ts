@@ -24,6 +24,8 @@ export const MESSAGE_FILES = {
     "deposits",
     "devices",
     "documents",
+    "etax",
+    "insights",
     "invoices",
     "leases",
     "loss",
@@ -37,6 +39,7 @@ export const MESSAGE_FILES = {
     "service",
     "settings",
     "subscription",
+    "tm30",
     "units",
   ],
   staff: [

@@ -377,6 +377,7 @@ const TENANT_KEYS = [
   "community.manage",
   "notification.route.manage",
   "privacy.manage",
+  "tm30.manage",
 ];
 const MANAGER_EXCLUDED = new Set([
   "tenant.update",

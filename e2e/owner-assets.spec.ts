@@ -165,8 +165,9 @@ test("unit list: server filters and sort in the URL, saved views", async ({ page
   await expect(page.getByTestId("saved-view")).toHaveText("ห้องว่าง");
   await gotoOwner(page, `/units?building=${W.buildingA}&view=list`);
   await page.getByTestId("saved-view").click();
-  await hydrated(page);
+  // The saved view is a full navigation: wait for the new URL before the new document's hydration mark.
   await expect(page).toHaveURL(/status=vacant/);
+  await hydrated(page);
   await expectAxeClean(page);
 });
 

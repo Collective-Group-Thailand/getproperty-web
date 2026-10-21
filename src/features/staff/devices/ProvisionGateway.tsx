@@ -3,7 +3,7 @@
 import { DEVICE_STATUS } from "@/domain/status/device";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { useCallback, useEffect, useId, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 
 import { useRealtimeEvents } from "@/features/shared/realtime/RealtimeProvider";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
@@ -63,14 +63,24 @@ export function ProvisionGateway({
   const [ip, setIp] = useState("");
   const [copied, setCopied] = useState(false);
 
+  // One Idempotency-Key per serial being provisioned, reused when the same serial is sent again after a
+  // failure (the API replays the first answer, contract §3); a new serial or a success starts a new key.
+  const attempt = useRef<{ serial: string; key: string } | null>(null);
+
   const provision = useCallback(
     async (serial: string) => {
       setBusy(true);
       setError(null);
+      const trimmed = serial.trim();
+      if (attempt.current?.serial !== trimmed) attempt.current = { serial: trimmed, key: crypto.randomUUID() };
       try {
         const issued = await unwrap(
-          browserApi().POST("/v1/staff/devices/actions/provision", { body: { serial: serial.trim(), buildingId } }),
+          browserApi().POST("/v1/staff/devices/actions/provision", {
+            params: { header: { "Idempotency-Key": attempt.current.key } },
+            body: { serial: trimmed, buildingId },
+          }),
         );
+        attempt.current = null;
         setCode(issued);
         setStartedAt(Date.now());
         setNow(Date.now());

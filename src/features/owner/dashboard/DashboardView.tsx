@@ -26,20 +26,26 @@ import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 import { IconChevronRight } from "@/ui/icons/glyphs/chevron-right";
 import { IconClock } from "@/ui/icons/glyphs/clock";
 import { IconLease } from "@/ui/icons/glyphs/lease";
+import { IconLink } from "@/ui/icons/glyphs/link";
 import { IconLoss } from "@/ui/icons/glyphs/loss";
 import { IconMeter } from "@/ui/icons/glyphs/meter";
 import { IconParcel } from "@/ui/icons/glyphs/parcel";
 import { IconPayment } from "@/ui/icons/glyphs/payment";
+import { IconReceipt } from "@/ui/icons/glyphs/receipt";
 import { IconResidents } from "@/ui/icons/glyphs/residents";
 import { IconRoom } from "@/ui/icons/glyphs/room";
 import { IconShield } from "@/ui/icons/glyphs/shield";
 import { IconStaff } from "@/ui/icons/glyphs/staff";
+import { IconTimer } from "@/ui/icons/glyphs/timer";
 import { IconUpload } from "@/ui/icons/glyphs/upload";
 import { IconWallet } from "@/ui/icons/glyphs/wallet";
 
 import { ownerPath, withQuery } from "../shared/links";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
-import { focusedBuilding, section, type OwnerContext } from "../shared/server";
+import { etaxToFix } from "../etax/counts";
+import { linkRequestsPending, openTm30 } from "../parties/counts";
+import { heldCount } from "../payments/counts";
+import { focusedBuilding, ownerCan, section, type OwnerContext } from "../shared/server";
 
 interface QueueItem {
   kind: string;
@@ -62,7 +68,8 @@ export async function DashboardView({ context }: { context: OwnerContext }) {
   const { api, locale } = context;
   const building = focusedBuilding(context);
   const buildingId = building?.id;
-  const [dashboard, rounds, deposits, score, board, count] = await Promise.all([
+  const canTm30 = ownerCan(context.me, "tm30.manage");
+  const [dashboard, rounds, deposits, score, board, count, held, linkRequests, tm30, etax] = await Promise.all([
     section(unwrap(api.GET("/v1/owner/dashboard", { params: { query: { buildingId } } }))),
     section(unwrap(api.GET("/v1/owner/reading-rounds/current", { params: { query: { buildingId } } }))),
     section(unwrap(api.GET("/v1/owner/deposits/summary"))),
@@ -73,6 +80,12 @@ export async function DashboardView({ context }: { context: OwnerContext }) {
         )
       : Promise.resolve({ data: null, error: null }),
     building ? Promise.resolve({ data: null, error: null }) : section(unwrap(api.GET("/v1/owner/units/count"))),
+    // Release fixes and B6.2 (no counts in `DashboardDto` yet — CONTRACT-REQUEST in docs/contract-requests.md):
+    // held payments (D-220), phone sign-ins waiting for the Owner (D-226), open TM30 duties (D-216), e-Tax to fix.
+    ownerCan(context.me, "payment.read") ? heldCount(api, buildingId) : Promise.resolve(undefined),
+    context.me.menu.includes("parties") ? linkRequestsPending(api) : Promise.resolve(undefined),
+    canTm30 ? openTm30(api, buildingId).catch(() => null) : Promise.resolve(null),
+    ownerCan(context.me, "payment.read") ? etaxToFix(api) : Promise.resolve(undefined),
   ]);
   const href = (path: string, query: Record<string, string | undefined> = {}) =>
     ownerPath(locale, withQuery(path, query));
@@ -177,6 +190,51 @@ export async function DashboardView({ context }: { context: OwnerContext }) {
       detail: t("queue.parcels.detail"),
       href: href("/parcels"),
       icon: IconParcel,
+    });
+
+  if (tm30 && tm30.length > 0) {
+    const overdue = tm30.filter((row) => row.overdue).length;
+    const next = tm30.find((row) => !row.overdue);
+    queue.push({
+      kind: "tm30",
+      count: tm30.length,
+      title: t("queue.tm30.title", { count: tm30.length }),
+      detail: overdue
+        ? t("queue.tm30.overdue", { count: overdue })
+        : next
+          ? t("queue.tm30.detail", { due: formatDateTime(next.dueAt, locale) })
+          : "",
+      href: href("/tm30"),
+      icon: IconTimer,
+      urgent: true,
+    });
+  }
+  if (held && held > 0)
+    queue.push({
+      kind: "heldPayments",
+      count: held,
+      title: t("queue.heldPayments.title", { count: held }),
+      detail: t("queue.heldPayments.detail"),
+      href: href("/payments/held"),
+      icon: IconPayment,
+    });
+  if (linkRequests && linkRequests > 0)
+    queue.push({
+      kind: "linkRequests",
+      count: linkRequests,
+      title: t("queue.linkRequests.title", { count: linkRequests }),
+      detail: t("queue.linkRequests.detail"),
+      href: href("/parties/link-requests"),
+      icon: IconLink,
+    });
+  if (etax && etax > 0)
+    queue.push({
+      kind: "etax",
+      count: etax,
+      title: t("queue.etax.title", { count: etax }),
+      detail: t("queue.etax.detail"),
+      href: href("/reports/etax", { status: "rejected" }),
+      icon: IconReceipt,
     });
 
   const scope = building

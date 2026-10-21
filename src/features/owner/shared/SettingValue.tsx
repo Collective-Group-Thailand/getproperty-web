@@ -35,6 +35,8 @@ export function SettingValue({
       case "billing.estimate_policy":
         return value === "allow" ? t("estimateAllow") : t("estimateBlock");
       case "billing.reading_grace_hours":
+      case "payments.duplicate_window_hours":
+      case "tm30.notify_within_hours":
       case "access.work_order_window_hours":
       case "access.resident_visitor_max_hours":
         return t("hours", { count: Number(value) });
@@ -43,6 +45,7 @@ export function SettingValue({
       case "billing.default_due_day":
         return t("dueDay", { day: Number(value) });
       case "deposit.refund_days":
+      case "analytics.csat_survey_interval_days":
       case "readings.round_window_days":
         return t("days", { count: Number(value) });
       case "reminders.schedule":

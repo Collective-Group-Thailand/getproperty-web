@@ -1,0 +1,59 @@
+{
+  "title": "Insights",
+  "description": "Your key measures over the last 90 days, their monthly trend and anonymised comparisons with other buildings (once you opt in).",
+  "noPermission": "Your role does not see reports.",
+  "noData": "No data yet",
+  "scope": "As of {asOf} · trends of {building}",
+  "allBuildings": "all buildings",
+  "kpisTitle": "Key measures (90 days, all buildings)",
+  "lossIdentified": "Loss sources identified",
+  "lossNotIdentified": "Loss sources not identified yet",
+  "seriesHeading": "Monthly trends",
+  "monthsLabel": "Period",
+  "months": "{count} months",
+  "moreMeasures": "More measures ({count})",
+  "seriesTitle": "{metric} by month",
+  "seriesTable": "Show as a table",
+  "month": "Month",
+  "noSeries": "Nothing measured in this period yet",
+  "lowerIsBetter": "Lower is better",
+  "higherIsBetter": "Higher is better",
+  "unit": {
+    "hours": "{value} h",
+    "score": "{value} / 5",
+    "perM2": "{value} per m²"
+  },
+  "metric": {
+    "time_to_bill_hours": "Time to bill",
+    "invoice_correction_rate_pct": "Invoices corrected",
+    "on_time_payment_pct": "Paid on time",
+    "auto_reconciled_pct": "Reconciled automatically",
+    "paid_by_qr_pct": "Paid by QR",
+    "reminder_effectiveness_pct": "Reminders that worked",
+    "loss_pct": "Utility loss",
+    "meter_uptime_pct": "Meter uptime",
+    "csat": "Resident satisfaction",
+    "compliance_score": "Compliance score",
+    "above_cap_acknowledged_pct": "Above-cap lines acknowledged",
+    "service_requests_via_line_pct": "Requests via LINE",
+    "rent_per_m2": "Rent per m²"
+  },
+  "benchmarks": {
+    "title": "Benchmarks (anonymised)",
+    "hint": "Percentiles of groups of at least 5 tenants; nobody is identifiable.",
+    "col": {
+      "metric": "Measure",
+      "mine": "Yours",
+      "p25": "25th",
+      "p50": "Median",
+      "p75": "75th",
+      "k": "Tenants"
+    },
+    "bucket": "Group {bucket} · as of {asOf}",
+    "noBuckets": "No group has enough participants yet.",
+    "optInBody": "Available once an Owner agrees to the use of anonymised data for statistics. You can withdraw at any time.",
+    "consentMissing": "This consent is not offered yet.",
+    "ownerOnly": "An Owner gives this consent.",
+    "privacyLink": "Go to privacy"
+  }
+}

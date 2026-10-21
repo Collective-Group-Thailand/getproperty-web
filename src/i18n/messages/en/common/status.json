@@ -319,5 +319,24 @@
     "acked": "Acknowledged",
     "failed": "Failed",
     "dead": "Dead letter"
+  },
+  "etax": {
+    "queued": "Queued",
+    "submitted": "Submitted, awaiting signature",
+    "signed": "Signed",
+    "rejected": "Rejected by the provider",
+    "failed": "Failed"
+  },
+  "tm30": {
+    "due": "Due",
+    "generated": "File generated",
+    "downloaded": "File downloaded",
+    "submitted_manually": "Submitted",
+    "cancelled": "Cancelled"
+  },
+  "linkRequest": {
+    "pending": "Waiting for you",
+    "confirmed": "Confirmed",
+    "rejected": "Rejected"
   }
 }

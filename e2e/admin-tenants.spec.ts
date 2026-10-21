@@ -67,6 +67,9 @@ test("subscription: change plan, suspend and reinstate with the slug typed", asy
   await expect(change).toHaveCount(0);
   const state = await platformControl<{ subscriptions: { tenantId: string; plan: { key: string } }[] }>("state");
   expect(state.subscriptions.find((sub) => sub.tenantId === P.sample)?.plan.key).toBe("apartment_smart");
+  // Plan changes, suspensions and reinstatements carry an Idempotency-Key (required since api 048a8bd).
+  for (const op of ["admin.subscriptions.changePlan", "admin.subscriptions.suspend", "admin.subscriptions.reinstate"])
+    expect((await platformReceived(op)).at(-1)?.idempotencyKey, op).toMatch(/^[0-9a-f-]{36}$/);
   await expectAxeClean(page);
 });
 
@@ -155,6 +158,8 @@ test("feature flags per tenant: override with a reason", async ({ page }) => {
   await expect(dialog).toHaveCount(0);
   const changes = await platformReceived("admin.featureFlags.update");
   expect(changes.at(-1)?.body).toMatchObject({ tenantId: P.sample, reason: "Pilot asked for auto-issue" });
+  // Let the confirmation toast mount first, so axe measures it at rest rather than mid fade-in.
+  await expect(page.locator("[data-sonner-toast]").first()).toBeVisible();
   await expectAxeClean(page);
 });
 

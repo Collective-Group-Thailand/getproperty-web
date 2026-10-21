@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { ManualPaymentForm } from "@/features/owner/payments/ManualPaymentForm";
-import { slipsToReview } from "@/features/owner/payments/PaymentsView";
+import { heldCount, slipsToReview } from "@/features/owner/payments/counts";
 import { MoneyNav } from "@/features/owner/shared/MoneyNav";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { focusedBuilding, ownerContext, param } from "@/features/owner/shared/server";
@@ -31,7 +31,7 @@ export default async function Page({
   const t = await getTranslations("owner.payments.manual");
   const building = focusedBuilding(context);
   const partyId = param(query.party);
-  const [lists, slips] = await Promise.all([
+  const [lists, slips, held] = await Promise.all([
     Promise.all(
       OPEN.map((status) =>
         unwrap(
@@ -44,11 +44,17 @@ export default async function Page({
       ),
     ),
     slipsToReview(context.api),
+    heldCount(context.api, building?.id),
   ]);
   return (
     <OwnerPage testId="payment-new">
       <PageHeader title={t("title")} description={t("description")} crumbs={[{ label: t("title") }]} />
-      <MoneyNav section="payments" current="/payments/new" locale={locale} counts={{ "/payments/slips": slips }} />
+      <MoneyNav
+        section="payments"
+        current="/payments/new"
+        locale={locale}
+        counts={{ "/payments/slips": slips, "/payments/held": held }}
+      />
       <ManualPaymentForm invoices={lists.flat()} initialInvoiceId={param(query.invoice)} />
     </OwnerPage>
   );

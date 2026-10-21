@@ -1,8 +1,10 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { formatDate } from "@/i18n/format";
+import type { Locale } from "@/i18n/routing";
 import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
@@ -10,6 +12,7 @@ import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { NativeSelect } from "@/ui/components/NativeSelect";
 import { blobToBase64, SignaturePad } from "@/ui/components/SignaturePad";
+import { toast } from "@/ui/components/Toast";
 import { IconCalendar } from "@/ui/icons/glyphs/calendar";
 import { IconCheck } from "@/ui/icons/glyphs/check";
 import { IconRefresh } from "@/ui/icons/glyphs/refresh";
@@ -59,6 +62,18 @@ export function LeaseActions({ lease }: { lease: LeaseView }) {
   const [noticeBy, setNoticeBy] = useState<Schemas["NoticeParty"]>("lessee");
   const can = (name: string) => lease.nextActions.includes(name);
   const path = { leaseId: lease.id };
+  const locale = useLocale() as Locale;
+  /**
+   * D-219: a date after today records the lessor's notice (`notice_given` / still `ending`, `termination: null`) —
+   * the lease, the occupancy and the resident's door codes stay as they are until the office completes the
+   * move-out; only a date of today or earlier closes the lease now.
+   */
+  const terminationMessage = (answer: Schemas["LeaseDto"]) =>
+    answer.status === "terminated" || !answer.notice?.effectiveDate
+      ? t("terminated")
+      : t("terminationScheduled", {
+          date: formatDate(answer.notice.effectiveDate, locale),
+        });
 
   return (
     <div className="flex flex-wrap gap-2" data-testid="lease-actions">
@@ -242,7 +257,7 @@ export function LeaseActions({ lease }: { lease: LeaseView }) {
           confirmLabel={t("terminate")}
           phrase={lease.unitNo}
           ready={Boolean(terminate.reasonCode && terminate.effectiveDate)}
-          successMessage={t("terminated")}
+          onDone={(result) => toast.success(terminationMessage(result as Schemas["LeaseDto"]))}
           onConfirm={(key, acknowledgementIds) =>
             unwrap(
               browserApi().POST("/v1/owner/leases/{leaseId}/actions/terminate", {
@@ -266,7 +281,7 @@ export function LeaseActions({ lease }: { lease: LeaseView }) {
               data-testid="terminate-reason"
             />
           </Field>
-          <Field label={t("effectiveDate")} required>
+          <Field label={t("effectiveDate")} required hint={t("terminateDateHint")}>
             <DateField
               name="terminateDate"
               onChange={(value) => setTerminate((current) => ({ ...current, effectiveDate: value }))}

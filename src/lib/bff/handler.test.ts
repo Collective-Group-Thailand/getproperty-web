@@ -137,6 +137,29 @@ describe("allow-list", () => {
     expect(response.status).toBe(status);
   });
 
+  // The API routes case-sensitively (release fix, triage F7 #3): the BFF forwards the path exactly as the
+  // browser sent it and matches its allow-list exactly, so an upper-case variant is refused here instead of
+  // reaching the API as another (404) path — and never lower-cased into an allowed one.
+  it.each([
+    ["owner", "/V1/OWNER/me"],
+    ["owner", "/v1/Owner/me"],
+    ["staff", "/v1/Staff/me"],
+    ["admin", "/V1/ADMIN/me"],
+    ["owner", "/v1/RESIDENT/me"],
+  ] as const)("%s refuses %s without calling the API (case-sensitive routes)", async (zone, path) => {
+    const { response, api } = await call(zone, path, { cookies: signedIn });
+    expect(response.status).toBe(404);
+    expect(api.calls).toHaveLength(0);
+  });
+
+  it("forwards the path with its case unchanged (ids and keys are case-sensitive upstream)", async () => {
+    const { response, api } = await call("owner", "/v1/owner/settings/payments.duplicate_window_hours/AbC", {
+      cookies: signedIn,
+    });
+    expect(response.status).toBe(200);
+    expect(api.calls[0]!.url).toBe(`${API}/v1/owner/settings/payments.duplicate_window_hours/AbC`);
+  });
+
   it.each(["owner", "staff", "admin"] as const)(
     "%s refuses the resident and technician surfaces (D-154)",
     async (zone) => {

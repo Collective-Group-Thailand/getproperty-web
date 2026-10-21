@@ -1,13 +1,14 @@
 import { http, type HttpHandler } from "msw";
 
 import type { components } from "../../src/lib/api/schema";
-import { TENANTS, tenantPermissions } from "../fixtures";
+import { tenantPermissions } from "../fixtures";
 import { emit } from "../handlers/realtime";
 import { pilotKpis } from "../platform/business";
 import { charge } from "../platform/operations";
 import { state } from "../state";
 import {
   LEGAL_REF,
+  allowed,
   body,
   documentDownload,
   etagged,
@@ -21,6 +22,7 @@ import {
   problem,
   query,
   record,
+  roleOf,
   stale,
   validation,
   type Ok,
@@ -43,16 +45,6 @@ type Schemas = components["schemas"];
 const w = () => state.owner;
 const p = () => state.platform;
 const OTP_CODE = "123456";
-
-function roleOf(ok: Ok): Schemas["TenantRole"] | null {
-  const membership = ok.persona.memberships.find((m) => TENANTS[m.tenant].profile.id === ok.tenantId);
-  return membership?.role ?? null;
-}
-
-function allowed(ok: Ok, op: string, permission: string): Response | null {
-  const role = roleOf(ok);
-  return role && tenantPermissions(role).includes(permission) ? null : problem(op, "auth.forbidden");
-}
 
 const tenantProfile = (tenantId: string) => p().tenants.find((tenant) => tenant.id === tenantId) ?? null;
 

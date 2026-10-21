@@ -14,7 +14,9 @@ import { DocumentButton } from "../shared/DocumentButton";
 import { ownerPath } from "../shared/links";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { PhotoThumb } from "../shared/PhotoThumb";
-import type { OwnerContext } from "../shared/server";
+import { ownerCan, readOnly, type OwnerContext } from "../shared/server";
+import { HeldPaymentActions } from "./HeldPaymentActions";
+import { HeldNotice } from "./HeldPaymentsView";
 import { ReversePayment } from "./PaymentActions";
 
 /** One payment (F2 2.4): how and when it came, its allocation to invoices, receipts, evidence, reversal. */
@@ -40,8 +42,16 @@ export async function PaymentDetail({ context, paymentId }: { context: OwnerCont
         description={[payment.payerName, payment.unitNo].filter(Boolean).join(" · ") || undefined}
         crumbs={[{ label: methods(payment.method) }]}
         status={<StatusBadgeOf map={PAYMENT_STATUS} value={payment.status} />}
-        actions={<ReversePayment payment={payment} amountLabel={amount} />}
+        actions={
+          <>
+            {ownerCan(context.me, "payment.record") && !readOnly(context.me) ? (
+              <HeldPaymentActions payment={payment} amountLabel={amount} />
+            ) : null}
+            <ReversePayment payment={payment} amountLabel={amount} />
+          </>
+        }
       />
+      {payment.status === "pending" && payment.heldReason ? <HeldNotice payment={payment} locale={locale} /> : null}
       <div className="grid gap-4 lg:grid-cols-2">
         <Card as="section" aria-labelledby="payment-facts">
           <CardHeader title={<span id="payment-facts">{t("facts")}</span>} />
@@ -69,6 +79,22 @@ export async function PaymentDetail({ context, paymentId }: { context: OwnerCont
               { id: "wht", term: t("wht"), description: formatTHB(payment.whtAmount, locale) },
               { id: "credited", term: t("credited"), description: formatTHB(payment.creditedAmount, locale) },
               { id: "notes", term: t("notes"), description: payment.notes },
+              ...(payment.dismissedAt
+                ? [
+                    {
+                      id: "dismissed",
+                      term: t("dismissed"),
+                      description: (
+                        <span data-testid="payment-dismissed">
+                          {t("dismissedOn", {
+                            date: formatDateTime(payment.dismissedAt, locale),
+                            reason: payment.dismissReason ?? "",
+                          })}
+                        </span>
+                      ),
+                    },
+                  ]
+                : []),
               ...(payment.reversedAt
                 ? [
                     {

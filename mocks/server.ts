@@ -23,10 +23,13 @@
  *   GET  /__mock/r2/state           requests, work orders, parcels (+ PINs), locks, announcements, bookings, received
  *   POST /__mock/staff/ocr?mode=    the fake OCR reads (`ok`) or reads nothing (`unreadable`)
  *   POST /__mock/staff/devices/online?serial=  a gateway bootstraps and comes online (realtime events)
- *   POST /__mock/owner/reset?part=  reset the owner world (assets | leases | money | metering), or all of it
+ *   POST /__mock/owner/reset?part=  reset the owner world (assets | leases | money | metering | settings |
+ *                                   release), or all of it
  *   POST /__mock/owner/leases/<id>/resident-sign      the resident signs in getproperty-liff
  *   POST /__mock/owner/deposits/<id>/resident-response?answer=accepted|disputed
  *   POST /__mock/owner/payments/webhook?invoice=<number>  the payment provider pays an invoice's QR
+ *   POST /__mock/owner/slips/qr-duplicate  a slip of the same amount as a QR payment already booked (D-220)
+ *   POST /__mock/owner/link-requests?party=<id>  a phone sign-in matched the party: a pending link request (D-226)
  *   GET  /__mock/owner/received?op=  requests the owner world received (body, Idempotency-Key)
  *   GET  /__mock/owner/state         leases, deposits, invoices, slips, cycles, units (A/B) as held
  *   POST /__mock/platform/reset      reset the platform admin's world (tenants, billing, tariffs, fleet…)
@@ -50,6 +53,7 @@ import { getResponse } from "msw";
 import { OPERATORS, PLATFORM_USERS } from "./fixtures";
 import { handlers } from "./handlers";
 import { providerPays, resetOwnerWorld, residentAnswers, residentSigns } from "./owner";
+import { phoneSignIn, qrDuplicateSlip } from "./owner/release";
 import { advanceRollout, resetPlatformWorld } from "./platform";
 import { resetR2World } from "./r2";
 import { emit } from "./handlers/realtime";
@@ -227,6 +231,14 @@ function ownerControl(url: URL, req: IncomingMessage): { status: number; body: u
       ? { status: 200, body: payment }
       : { status: 404, body: { error: "no open invoice with that number" } };
   }
+  if (req.method === "POST" && parts[0] === "slips" && parts[1] === "qr-duplicate") {
+    const slip = qrDuplicateSlip();
+    return slip ? { status: 200, body: slip } : { status: 409, body: { error: "no paid A-201 invoice" } };
+  }
+  if (req.method === "POST" && parts[0] === "link-requests") {
+    const request = phoneSignIn(url.searchParams.get("party") ?? "");
+    return request ? { status: 200, body: request } : { status: 404, body: { error: "no such party" } };
+  }
   if (req.method === "GET" && parts[0] === "received") {
     const op = url.searchParams.get("op");
     return { status: 200, body: state.owner.received.filter((entry) => !op || entry.op === op) };
@@ -259,6 +271,14 @@ function platformControl(url: URL, req: IncomingMessage): { status: number; body
     const outcome = url.searchParams.get("outcome") === "failed" ? "failed" : "applied";
     const rollout = advanceRollout(url.searchParams.get("rollout") ?? "", outcome);
     return rollout ? { status: 200, body: rollout } : { status: 409, body: { error: "rollout not running" } };
+  }
+  if (req.method === "POST" && parts[0] === "slips" && parts[1] === "qr-duplicate") {
+    const slip = qrDuplicateSlip();
+    return slip ? { status: 200, body: slip } : { status: 409, body: { error: "no paid A-201 invoice" } };
+  }
+  if (req.method === "POST" && parts[0] === "link-requests") {
+    const request = phoneSignIn(url.searchParams.get("party") ?? "");
+    return request ? { status: 200, body: request } : { status: 404, body: { error: "no such party" } };
   }
   if (req.method === "GET" && parts[0] === "received") {
     const op = url.searchParams.get("op");

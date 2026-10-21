@@ -6,5 +6,6 @@
   "loadMore": "Load more",
   "error": "Could not load notifications",
   "live": "Live updates on",
-  "offline": "Live updates paused"
+  "offline": "Live updates paused",
+  "openItem": "Open"
 }

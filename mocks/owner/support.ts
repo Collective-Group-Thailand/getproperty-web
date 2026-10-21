@@ -1,7 +1,7 @@
 import { HttpResponse } from "msw";
 
 import { OPERATION_PROBLEMS } from "../generated/problems";
-import { TENANTS, type OperatorPersona } from "../fixtures";
+import { TENANTS, tenantPermissions, type OperatorPersona } from "../fixtures";
 import { tenantContext } from "../handlers/context";
 import { authenticate, json, problem } from "../handlers/support";
 import { state } from "../state";
@@ -40,6 +40,18 @@ export function mutating(request: Request, op: string): Ok | Response {
 }
 
 export const notFound = (op: string) => problem(op, "http.not_found");
+
+/** The persona's role in the request's tenant. */
+export function roleOf(ok: Ok): OperatorPersona["memberships"][number]["role"] | null {
+  const membership = ok.persona.memberships.find((m) => TENANTS[m.tenant].profile.id === ok.tenantId);
+  return membership?.role ?? null;
+}
+
+/** `403 auth.forbidden` unless the role holds the permission (the API's `x-required-permissions`). */
+export function allowed(ok: Ok, op: string, permission: string): Response | null {
+  const role = roleOf(ok);
+  return role && tenantPermissions(role).includes(permission) ? null : problem(op, "auth.forbidden");
+}
 
 export function validation(op: string, path: string, message: string, code = "invalid") {
   return problem(op, "validation.failed", { errors: [{ path, code, message }] });

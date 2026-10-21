@@ -648,20 +648,23 @@ const deviceHandlers: HttpHandler[] = [
     const op = "staff.deviceInstalls.provision";
     const ok = mutating(request, op);
     if (ok instanceof Response) return ok;
-    const body = (await request.json().catch(() => ({}))) as Partial<Schemas["ProvisionGatewayDto"]>;
-    if (!body.serial || !body.buildingId) return validation(op, "serial", "serial and buildingId are required");
-    const device = inWorld(ok)
-      ? state.staff.devices.find((d) => d.serial.toLowerCase() === body.serial!.trim().toLowerCase())
-      : undefined;
-    if (!device || device.buildingId !== body.buildingId) return problem(op, "http.not_found");
-    if (device.kind !== "gateway") return problem(op, "device.not_gateway");
-    if (device.status === "retired") return problem(op, "device.invalid_state");
-    const code = Array.from({ length: 3 }, () =>
-      Array.from({ length: 4 }, () => "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.floor(Math.random() * 32)]).join(""),
-    ).join("-");
-    const expiresAt = new Date(Date.now() + 72 * 3600_000).toISOString();
-    state.staff.provisioning.set(device.id, { code, expiresAt });
-    return json({ deviceId: device.id, code, expiresAt } satisfies Schemas["ProvisioningCodeDto"]);
+    // Idempotency-Key required since getproperty-api 048a8bd (triage F7 #2): a retry replays the same code.
+    return idempotent(request, op, async (payload) => {
+      const body = payload as Partial<Schemas["ProvisionGatewayDto"]>;
+      if (!body.serial || !body.buildingId) return validation(op, "serial", "serial and buildingId are required");
+      const device = inWorld(ok)
+        ? state.staff.devices.find((d) => d.serial.toLowerCase() === body.serial!.trim().toLowerCase())
+        : undefined;
+      if (!device || device.buildingId !== body.buildingId) return problem(op, "http.not_found");
+      if (device.kind !== "gateway") return problem(op, "device.not_gateway");
+      if (device.status === "retired") return problem(op, "device.invalid_state");
+      const code = Array.from({ length: 3 }, () =>
+        Array.from({ length: 4 }, () => "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.floor(Math.random() * 32)]).join(""),
+      ).join("-");
+      const expiresAt = new Date(Date.now() + 72 * 3600_000).toISOString();
+      state.staff.provisioning.set(device.id, { code, expiresAt });
+      return { status: 200, body: { deviceId: device.id, code, expiresAt } satisfies Schemas["ProvisioningCodeDto"] };
+    });
   }),
 
   http.post("*/v1/staff/devices/actions/install", async ({ request }) => {

@@ -11,9 +11,12 @@ import { unwrap } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/errors";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
+import { Button } from "@/ui/components/Button";
+import { Callout } from "@/ui/components/Callout";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { Timeline, type TimelineEvent } from "@/ui/components/Timeline";
+import { IconBill } from "@/ui/icons/glyphs/bill";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 import { IconClock } from "@/ui/icons/glyphs/clock";
 import { IconLease } from "@/ui/icons/glyphs/lease";
@@ -23,7 +26,7 @@ import { IconXCircle } from "@/ui/icons/glyphs/x-circle";
 import { DocumentButton } from "../shared/DocumentButton";
 import { ownerPath } from "../shared/links";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
-import { section, type OwnerContext } from "../shared/server";
+import { ownerCan, section, type OwnerContext } from "../shared/server";
 import { ComplianceChecks } from "./ComplianceChecks";
 import { LeaseActions } from "./LeaseActions";
 import { LeaseInviteButton } from "./LeaseInvite";
@@ -92,6 +95,9 @@ export async function LeaseDetail({ context, leaseId }: { context: OwnerContext;
   const signedBy = new Map(lease.signatures.map((signature) => [signature.partyId ?? signature.signerRole, signature]));
   const lessorSigned = lease.signatures.find((signature) => signature.signerRole === "lessor");
   const eventList = timeline.data ?? [];
+  // The stored contract carries the lessee's full ID / passport number: only `party.pii.decrypt` holders
+  // (Owner, Manager) may download it; Staff and Accountant get 403 from the API (D-172, D-222).
+  const canOpenContract = ownerCan(context.me, "party.pii.decrypt");
 
   return (
     <OwnerPage testId="lease-detail">
@@ -114,7 +120,21 @@ export async function LeaseDetail({ context, leaseId }: { context: OwnerContext;
             })}
           </p>
           {lease.notice.reasonCode ? <p className="text-muted text-sm">{reasons(lease.notice.reasonCode)}</p> : null}
+          {lease.status === "notice_given" ? (
+            <p className="mt-2 text-sm" data-testid="lease-notice-access">
+              {t("noticeAccess", {
+                effective: lease.notice.effectiveDate ? formatDate(lease.notice.effectiveDate, locale) : "—",
+              })}
+            </p>
+          ) : null}
         </Card>
+      ) : null}
+      {lease.status === "ending" ? (
+        <div data-testid="lease-ending-card">
+          <Callout tone="info" title={t("endingTitle")}>
+            {lease.nextActions.includes("complete-move-out") ? t("endingBody") : t("endingBodyNoAction")}
+          </Callout>
+        </div>
       ) : null}
       {lease.termination ? (
         <Card data-testid="lease-termination-card">
@@ -262,7 +282,16 @@ export async function LeaseDetail({ context, leaseId }: { context: OwnerContext;
           />
           <ComplianceChecks lease={lease} />
           <div className="mt-3 flex flex-wrap gap-2">
-            {lease.contract ? (
+            {lease.contract && !canOpenContract ? (
+              <div className="flex flex-col gap-1" data-testid="lease-contract-restricted">
+                <Button variant="secondary" size="sm" iconStart={IconBill} disabled aria-describedby="contract-pii">
+                  {lease.contract.signed ? t("signedContract") : t("contractPdf")}
+                </Button>
+                <p id="contract-pii" className="text-muted text-sm">
+                  {t("contractPiiOnly")}
+                </p>
+              </div>
+            ) : lease.contract ? (
               <DocumentButton
                 document={{ kind: "leaseContract", id: lease.id }}
                 label={lease.contract.signed ? t("signedContract") : t("contractPdf")}
@@ -278,6 +307,11 @@ export async function LeaseDetail({ context, leaseId }: { context: OwnerContext;
               />
             )}
           </div>
+          {!lease.contract && !canOpenContract ? (
+            <p className="text-muted mt-2 text-sm" data-testid="contract-preview-masked">
+              {t("previewMasked")}
+            </p>
+          ) : null}
           {lease.contract ? (
             <p className="text-muted mt-2 font-mono text-xs break-all">{t("sha", { sha: lease.contract.sha256 })}</p>
           ) : null}

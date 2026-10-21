@@ -24,11 +24,14 @@ test.beforeAll(async () => {
 test("payments: list with filters, detail with allocation and receipt", async ({ page }) => {
   await signInOwner(page);
   await gotoOwner(page, "/payments");
-  await expect(page.getByTestId("payment-row")).toHaveCount(2);
+  // Two booked payments and the QR callback held as a possible duplicate (D-220).
+  await expect(page.getByTestId("payment-row")).toHaveCount(3);
+  await expect(page.getByTestId("payment-held")).toHaveCount(1);
   await expect(page.getByTestId("money-tab-slips")).toContainText("2");
+  await expect(page.getByTestId("money-tab-held")).toContainText("1");
   await expectAxeClean(page);
   await gotoOwner(page, "/payments?method=qr");
-  await expect(page.getByTestId("payment-row")).toHaveCount(1);
+  await expect(page.getByTestId("payment-row")).toHaveCount(2);
 
   await gotoOwner(page, `/payments/${PAYMENT_QR}`);
   await expect(page.getByTestId("allocation")).toHaveCount(1);

@@ -1,0 +1,59 @@
+{
+  "title": "ภาพรวมผลการดำเนินงาน",
+  "description": "ตัวชี้วัดหลักของคุณ 90 วันล่าสุด แนวโน้มรายเดือน และการเปรียบเทียบแบบนิรนามกับหอพักอื่น (ถ้าเลือกเข้าร่วม)",
+  "noPermission": "บทบาทของคุณไม่เห็นรายงาน",
+  "noData": "ยังไม่มีข้อมูล",
+  "scope": "ข้อมูล ณ {asOf} · แนวโน้มของ {building}",
+  "allBuildings": "ทุกอาคาร",
+  "kpisTitle": "ตัวชี้วัดหลัก (90 วัน ทุกอาคาร)",
+  "lossIdentified": "ระบุจุดรั่วไหลได้แล้ว",
+  "lossNotIdentified": "ยังไม่ได้ระบุจุดรั่วไหล",
+  "seriesHeading": "แนวโน้มรายเดือน",
+  "monthsLabel": "ช่วงเวลา",
+  "months": "{count} เดือน",
+  "moreMeasures": "ตัวชี้วัดอื่น ({count})",
+  "seriesTitle": "{metric} รายเดือน",
+  "seriesTable": "ดูเป็นตาราง",
+  "month": "เดือน",
+  "noSeries": "ยังไม่มีข้อมูลช่วงนี้",
+  "lowerIsBetter": "ยิ่งต่ำยิ่งดี",
+  "higherIsBetter": "ยิ่งสูงยิ่งดี",
+  "unit": {
+    "hours": "{value} ชม.",
+    "score": "{value} / 5",
+    "perM2": "{value} ต่อ ตร.ม."
+  },
+  "metric": {
+    "time_to_bill_hours": "เวลาออกบิล",
+    "invoice_correction_rate_pct": "บิลที่ต้องแก้",
+    "on_time_payment_pct": "ชำระตรงเวลา",
+    "auto_reconciled_pct": "กระทบยอดอัตโนมัติ",
+    "paid_by_qr_pct": "ชำระผ่าน QR",
+    "reminder_effectiveness_pct": "การแจ้งเตือนที่ได้ผล",
+    "loss_pct": "น้ำ/ไฟสูญหาย",
+    "meter_uptime_pct": "มิเตอร์ออนไลน์",
+    "csat": "ความพึงพอใจผู้เช่า",
+    "compliance_score": "คะแนนตามประกาศ สคบ.",
+    "above_cap_acknowledged_pct": "รายการเกินเพดานที่รับทราบแล้ว",
+    "service_requests_via_line_pct": "แจ้งซ่อมผ่าน LINE",
+    "rent_per_m2": "ค่าเช่าต่อ ตร.ม."
+  },
+  "benchmarks": {
+    "title": "เปรียบเทียบกับหอพักอื่น (นิรนาม)",
+    "hint": "ค่ากลางของกลุ่มที่มีอย่างน้อย 5 ราย ไม่มีข้อมูลระบุตัวตนของใคร",
+    "col": {
+      "metric": "ตัวชี้วัด",
+      "mine": "ของคุณ",
+      "p25": "25%",
+      "p50": "ค่ากลาง",
+      "p75": "75%",
+      "k": "จำนวนราย"
+    },
+    "bucket": "กลุ่ม {bucket} · ณ {asOf}",
+    "noBuckets": "ยังไม่มีกลุ่มที่มีผู้เข้าร่วมพอ",
+    "optInBody": "เปิดใช้ได้เมื่อเจ้าของยินยอมให้ใช้ข้อมูลแบบนิรนามเพื่อสถิติ ยกเลิกได้ทุกเมื่อ",
+    "consentMissing": "ยังไม่พบหัวข้อความยินยอมนี้",
+    "ownerOnly": "เจ้าของเป็นผู้ให้ความยินยอม",
+    "privacyLink": "ไปที่ความเป็นส่วนตัว"
+  }
+}

@@ -202,14 +202,14 @@ test("members, notification routing, privacy and support access", async ({ page 
   await expect(sms).toHaveAttribute("aria-checked", "false");
   await sms.click();
   await expect(sms).toHaveAttribute("aria-checked", "true");
-  expect((await received("owner.notificationRoutes.update")).at(-1)?.body).toMatchObject({
-    eventType: "invoice.issued",
-    channel: "sms",
-    enabled: true,
-  });
+  // The switch turns on as it is clicked; the PUT may still be on its way to the API (seen on a loaded run).
+  await expect
+    .poll(async () => (await received("owner.notificationRoutes.update")).at(-1)?.body ?? null)
+    .toMatchObject({ eventType: "invoice.issued", channel: "sms", enabled: true });
 
   await gotoOwner(page, "/settings/privacy");
-  await expect(page.getByTestId("consent-row")).toHaveCount(2);
+  // Terms, anonymised analytics (B6.3 benchmarks, D-217) and product updates — as the API seeds them.
+  await expect(page.getByTestId("consent-row")).toHaveCount(3);
   await page.getByTestId("consent-operator_product_updates").click();
   await expect(page.getByTestId("consent-operator_product_updates")).toHaveAttribute("aria-checked", "true");
   const dsr = page.getByTestId("dsr-row").first();

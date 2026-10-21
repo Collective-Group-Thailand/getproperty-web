@@ -9,8 +9,9 @@ export async function requestOtp(page: Page) {
   for (let attempt = 0; attempt < 8; attempt += 1) {
     await page.getByRole("button", { name: "ส่งรหัส" }).click();
     const limited = page.getByRole("alert").filter({ hasText: "ขอรหัสบ่อยเกินไป" });
-    await expect(firstDigit.or(limited)).toBeVisible();
-    if (await firstDigit.isVisible()) return;
+    // A refused request still renders the (disabled) code inputs next to the notice: check the notice first.
+    await expect(firstDigit.or(limited).first()).toBeVisible();
+    if (!(await limited.isVisible()) && (await firstDigit.isEnabled())) return;
     await page.waitForTimeout(15_000);
   }
   await expect(firstDigit).toBeVisible();

@@ -1106,6 +1106,45 @@ export function initialPlatformWorld(): PlatformWorld {
         effectiveFrom: "2026-01-01T00:00:00+07:00",
         description: "D-021a: how a rate above the utility rate is treated.",
       },
+      // Release fixes and B6 platform defaults (getproperty-api 048a8bd catalogue).
+      {
+        key: "payments.duplicate_window_hours",
+        valueType: "int",
+        value: 72,
+        scopeAllowed: ["platform", "tenant"],
+        editableBy: ["tenant.billing_settings.update"],
+        effectiveFrom: "2026-10-21T00:00:00+07:00",
+        description:
+          "D-220: a QR callback or settlement row of the same amount as a slip or hand-recorded transfer of the same payer × unit within this many hours is held for the owner as a possible duplicate.",
+      },
+      {
+        key: "etax.enabled",
+        valueType: "bool",
+        value: false,
+        scopeAllowed: ["platform", "tenant"],
+        editableBy: ["tenant.billing_settings.update"],
+        effectiveFrom: "2026-10-21T00:00:00+07:00",
+        description:
+          "D-050 / D-215: submit receipts of a VAT-registered tenant to its e-Tax service provider (opt-in).",
+      },
+      {
+        key: "tm30.notify_within_hours",
+        valueType: "int",
+        value: 24,
+        scopeAllowed: ["platform"],
+        editableBy: ["admin.compliance.manage"],
+        effectiveFrom: "2026-10-21T00:00:00+07:00",
+        description: "D-052 / D-216 ⚖ (Immigration Act B.E. 2522 s.38): hours to notify a foreigner's stay (TM30 SLA).",
+      },
+      {
+        key: "analytics.reminder_effective_days",
+        valueType: "int",
+        value: 7,
+        scopeAllowed: ["platform"],
+        editableBy: ["admin.setting.manage"],
+        effectiveFrom: "2026-10-21T00:00:00+07:00",
+        description: "D-045 / D-217: a reminder counts as effective when the invoice is paid within this many days.",
+      },
     ],
     tenantSettings: [],
     templates: [

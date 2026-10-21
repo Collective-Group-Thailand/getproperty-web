@@ -1,7 +1,7 @@
 "use client";
 
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useFormatter, useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 
 import { QueryProvider } from "@/features/shared/providers/QueryProvider";
 import { queryKeys } from "@/lib/api/query";
@@ -14,6 +14,7 @@ import { IconCheck } from "@/ui/icons/glyphs/check";
 
 import { useRealtimeStatus } from "../realtime/RealtimeProvider";
 import { listInbox, markRead } from "./inbox";
+import { notificationHref } from "./links";
 
 export interface NotificationPanelProps {
   zone: Zone;
@@ -40,6 +41,7 @@ function Inbox({ zone, onChanged }: NotificationPanelProps) {
   const format = useFormatter();
   const client = useQueryClient();
   const realtime = useRealtimeStatus();
+  const locale = useLocale();
 
   const inbox = useInfiniteQuery({
     queryKey: queryKeys.notifications(zone),
@@ -90,6 +92,19 @@ function Inbox({ zone, onChanged }: NotificationPanelProps) {
                   <div className="min-w-0 flex-1">
                     {item.title ? <p className="text-sm font-semibold">{item.title}</p> : null}
                     <p className="text-sm">{item.body}</p>
+                    {notificationHref(zone, item.eventType, locale) ? (
+                      <a
+                        href={notificationHref(zone, item.eventType, locale)!}
+                        className="text-primary text-sm font-medium underline-offset-4 hover:underline"
+                        data-testid="notification-link"
+                        data-event={item.eventType}
+                        onClick={() => {
+                          if (item.readAt === null) read.mutate(item.id);
+                        }}
+                      >
+                        {t("openItem")}
+                      </a>
+                    ) : null}
                     <p className="text-muted mt-1 text-xs">{format.relativeTime(new Date(item.createdAt))}</p>
                   </div>
                   {item.readAt === null ? (

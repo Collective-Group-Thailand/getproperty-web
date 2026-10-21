@@ -45,6 +45,23 @@
     "parcels": {
       "title": "{count, plural, one {# parcel} other {# parcels}} waiting",
       "detail": "Residents were told; they pick up with the PIN in their app"
+    },
+    "tm30": {
+      "title": "{count, plural, one {# TM30 notification} other {# TM30 notifications}} to submit",
+      "detail": "Due by {due}",
+      "overdue": "{count} past the 24-hour deadline"
+    },
+    "heldPayments": {
+      "title": "{count, plural, one {# payment} other {# payments}} to check",
+      "detail": "The bank reported money that may be a duplicate; nothing is booked yet"
+    },
+    "linkRequests": {
+      "title": "{count, plural, one {# link request} other {# link requests}}",
+      "detail": "Someone signed in with a resident's phone; the Owner confirms"
+    },
+    "etax": {
+      "title": "{count, plural, one {# e-Tax document} other {# e-Tax documents}} to fix",
+      "detail": "Refused by the provider or failed"
     }
   },
   "kpi": {

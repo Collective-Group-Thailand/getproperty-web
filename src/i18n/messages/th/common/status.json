@@ -319,5 +319,24 @@
     "acked": "ปลายทางรับแล้ว",
     "failed": "ล้มเหลว",
     "dead": "ส่งไม่ได้ (dead letter)"
+  },
+  "etax": {
+    "queued": "รอส่ง",
+    "submitted": "ส่งแล้ว รอลงนาม",
+    "signed": "ลงนามแล้ว",
+    "rejected": "ผู้ให้บริการปฏิเสธ",
+    "failed": "ส่งไม่สำเร็จ"
+  },
+  "tm30": {
+    "due": "ต้องแจ้ง",
+    "generated": "สร้างไฟล์แล้ว",
+    "downloaded": "ดาวน์โหลดไฟล์แล้ว",
+    "submitted_manually": "แจ้งแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "linkRequest": {
+    "pending": "รอยืนยัน",
+    "confirmed": "ยืนยันแล้ว",
+    "rejected": "ปฏิเสธแล้ว"
   }
 }

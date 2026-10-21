@@ -1,0 +1,49 @@
+import { NextResponse } from "next/server";
+
+import { unwrap } from "@/lib/api/client";
+import { isApiError } from "@/lib/api/errors";
+import { serverApi } from "@/lib/api/server";
+
+export const dynamic = "force-dynamic";
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function problem(status: number, code: string, title: string) {
+  return NextResponse.json(
+    { type: `https://errors.getproperty.co/${code}`, title, status, code, detail: title },
+    { status, headers: { "content-type": "application/problem+json", "cache-control": "no-store" } },
+  );
+}
+
+/**
+ * `GET /bff/tm30-exports/{tm30ExportId}/download` (owner zone, D-052, D-216): the Immigration Bureau upload file
+ * a TM30 notification went into, streamed as an attachment from this origin. The member's own session reads
+ * `GET /v1/owner/tm30-exports/{id}/file` (`tm30.manage`, tenant-scoped — another tenant's id is a 404; the API
+ * audits the download and marks the file's notifications `downloaded`); its 5-minute signed URL is fetched
+ * here and piped through, so the file with passport numbers never sits behind a URL in the page.
+ */
+export async function GET(_request: Request, { params }: { params: Promise<{ tm30ExportId: string }> }) {
+  const { tm30ExportId } = await params;
+  if (!UUID.test(tm30ExportId)) return problem(404, "http.not_found", "Not found");
+  const api = await serverApi("owner");
+  let file;
+  try {
+    file = await unwrap(api.GET("/v1/owner/tm30-exports/{tm30ExportId}/file", { params: { path: { tm30ExportId } } }));
+  } catch (error) {
+    if (isApiError(error)) return problem(error.status, error.code, error.title || error.code);
+    return problem(502, "upstream.unavailable", "The API could not be reached");
+  }
+  const upstream = await fetch(file.url, { cache: "no-store" }).catch(() => null);
+  if (!upstream?.ok || !upstream.body) return problem(502, "tm30.download_failed", "The file could not be fetched");
+  const name = file.title.replace(/[^\w.\-ก-๙]/g, "_") || "tm30.xlsx";
+  return new NextResponse(upstream.body, {
+    status: 200,
+    headers: {
+      "content-type":
+        upstream.headers.get("content-type") ?? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "content-disposition": `attachment; filename="${name.replace(/[^\x20-\x7e]/g, "_")}"; filename*=UTF-8''${encodeURIComponent(name)}`,
+      "cache-control": "no-store",
+      "x-content-type-options": "nosniff",
+    },
+  });
+}

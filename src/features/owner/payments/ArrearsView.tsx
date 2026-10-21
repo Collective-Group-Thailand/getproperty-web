@@ -17,7 +17,7 @@ import { MoneyNav } from "../shared/MoneyNav";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { focusedBuilding, pageParam, param, section, type OwnerContext } from "../shared/server";
 import { SettingValue } from "../shared/SettingValue";
-import { slipsToReview } from "./PaymentsView";
+import { heldCount, slipsToReview } from "./counts";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 const BUCKETS: Schemas["AgingBucket"][] = ["current", "d1_30", "d31_60", "d61_90", "d90p"];
@@ -36,7 +36,7 @@ export async function ArrearsView({ context, searchParams }: { context: OwnerCon
   const bucket = param(searchParams.bucket);
   const sortBy = param(searchParams.sort);
   const minDays = Number(param(searchParams.minDays));
-  const [list, settings, slips] = await Promise.all([
+  const [list, settings, slips, held] = await Promise.all([
     unwrap(
       api.GET("/v1/owner/receivables", {
         params: {
@@ -56,6 +56,7 @@ export async function ArrearsView({ context, searchParams }: { context: OwnerCon
     ),
     section(unwrap(api.GET("/v1/owner/settings", { params: { query: { propertyId: building?.propertyId } } }))),
     slipsToReview(api),
+    heldCount(api, building?.id),
   ]);
   const policy = (settings.data ?? []).filter((setting) => POLICY_KEYS.includes(setting.key));
 
@@ -73,7 +74,12 @@ export async function ArrearsView({ context, searchParams }: { context: OwnerCon
           />
         }
       />
-      <MoneyNav section="payments" current="/arrears" locale={locale} counts={{ "/payments/slips": slips }} />
+      <MoneyNav
+        section="payments"
+        current="/arrears"
+        locale={locale}
+        counts={{ "/payments/slips": slips, "/payments/held": held }}
+      />
       <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6" data-testid="aging-totals">
         <Stat
           label={t("totalBalance")}

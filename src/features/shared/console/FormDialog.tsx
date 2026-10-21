@@ -9,7 +9,7 @@ import { LazyDialog } from "@/ui/components/overlays";
 import { toast } from "@/ui/components/Toast";
 import type { IconGlyph } from "@/ui/icons";
 
-import { ProblemNotice, useApiAction } from "./useApiAction";
+import { ProblemNotice, useApiAction, useIdempotencyKey } from "./useApiAction";
 
 /** The API's field errors by form field name (`lines[1].amount` → `lines.1.amount`). */
 export function fieldErrors(error: unknown): Record<string, string> {
@@ -29,9 +29,10 @@ export interface FormDialogProps {
   size_?: "sm" | "md" | "lg";
   /**
    * Sends the form. Receives the form's data and the acknowledgement ids of D-021a warnings
-   * acknowledged in the dialog; throws the API's problem (`unwrap`) on failure.
+   * acknowledged in the dialog, and the dialog's Idempotency-Key (one per opening, reused when the
+   * same dialog is sent again — contract §3); throws the API's problem (`unwrap`) on failure.
    */
-  onSubmit: (data: FormData, acknowledgementIds: string[]) => Promise<unknown>;
+  onSubmit: (data: FormData, acknowledgementIds: string[], idempotencyKey: string) => Promise<unknown>;
   successMessage?: string;
   onDone?: (result: unknown) => void;
   /** The fields; given the API's field errors of the last attempt. */
@@ -67,6 +68,7 @@ export function FormDialog({
   const formId = useId();
   const [open, setOpen] = useState(defaultOpen);
   const action = useApiAction();
+  const idempotency = useIdempotencyKey();
   const errors = fieldErrors(action.error);
 
   return (
@@ -78,6 +80,7 @@ export function FormDialog({
         disabled={disabled}
         onClick={() => {
           action.reset();
+          idempotency.renew();
           setOpen(true);
         }}
         data-testid={testId}
@@ -110,7 +113,7 @@ export function FormDialog({
             event.preventDefault();
             const data = new FormData(event.currentTarget);
             void action.run(
-              (ackIds) => onSubmit(data, ackIds),
+              (ackIds) => onSubmit(data, ackIds, idempotency.key),
               (result) => {
                 setOpen(false);
                 if (successMessage) toast.success(successMessage);

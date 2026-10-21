@@ -1,0 +1,73 @@
+{
+  "title": "TM30 notifications",
+  "description": "A foreign occupant who moves in must be notified to the Immigration Bureau within 24 hours. Generate the upload file per building, then record the submission. The platform never submits for you.",
+  "noPermission": "Only Owners and Managers (TM30 permission) see and handle these.",
+  "ruleTitle": "Notify within 24 hours of the move-in",
+  "ruleBody": "The house master must notify the stay of a foreigner. Each deadline comes from the API, counted from the move-in.",
+  "legalRef": "Immigration Act B.E. 2522, section 38",
+  "overdueCount": "{count, plural, one {# notification is} other {# notifications are}} past the deadline",
+  "filesTitle": "Upload files for Immigration",
+  "filesHint": "Generate a building's file and upload it on the Immigration Bureau's site. Passport numbers exist only inside the file.",
+  "filter": {
+    "search": "Search",
+    "searchPlaceholder": "Name or unit",
+    "building": "Building",
+    "allBuildings": "All buildings",
+    "status": "Status",
+    "allStatuses": "All statuses"
+  },
+  "empty": {
+    "title": "No TM30 notifications",
+    "body": "When a foreign occupant moves in, the notification due appears here."
+  },
+  "col": {
+    "person": "Occupant",
+    "unit": "Unit",
+    "movedIn": "Moved in",
+    "deadline": "Deadline",
+    "status": "Status",
+    "actions": "Actions"
+  },
+  "nationality": "Nationality {code}",
+  "noNationality": "Nationality not recorded",
+  "arrived": "Arrived {date}",
+  "missing": "Still missing: {fields}",
+  "field": {
+    "passportNo": "passport number",
+    "nationality": "nationality",
+    "firstName": "first name",
+    "lastName": "last name",
+    "gender": "gender",
+    "dateOfBirth": "date of birth",
+    "arrivalDate": "arrival date",
+    "visaType": "visa type",
+    "entryPort": "port of entry"
+  },
+  "overdue": "Overdue {since}",
+  "dueIn": "{hours} h left",
+  "submittedOn": "Submitted {date}",
+  "download": "Download file",
+  "generate": {
+    "button": "Generate file — {building}",
+    "title": "Generate the TM30 file of {building}?",
+    "body": "Generates the Immigration Bureau upload file for the {count} pending notifications of {building}. Passport numbers are decrypted for the file only, and every reveal is audited.",
+    "confirm": "Generate file",
+    "done": "File generated — download it from the list"
+  },
+  "row": {
+    "markSubmitted": "Record submission",
+    "markSubmittedTitle": "TM30 of {name} ({unit}) submitted?",
+    "markSubmittedBody": "Record when you uploaded the file or notified in person, and the receipt reference if any. The deadline reminders stop.",
+    "submittedAt": "Submitted at (Bangkok time)",
+    "submittedAtHint": "Defaults to now; never in the future.",
+    "reference": "Receipt reference",
+    "referenceHint": "Optional",
+    "submitted": "Submission recorded",
+    "cancel": "Not due",
+    "cancelTitle": "Cancel the notification of {name} ({unit})?",
+    "cancelBody": "Only when it is not due after all — for example the nationality was recorded wrongly and the occupant is Thai.",
+    "cancelReason": "Reason",
+    "cancelReasonHint": "At least 3 characters",
+    "cancelled": "Notification cancelled"
+  }
+}

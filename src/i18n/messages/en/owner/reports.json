@@ -79,5 +79,11 @@
   },
   "insights": "Insights",
   "noInsights": "No insights yet",
-  "noInsightsHint": "Pilot KPIs appear here once your pilot agreement is in place and getproperty publishes them."
+  "noInsightsHint": "Pilot KPIs appear here once your pilot agreement is in place and getproperty publishes them.",
+  "nav": {
+    "label": "Reports",
+    "exports": "Reports & exports",
+    "insights": "Insights",
+    "etax": "e-Tax"
+  }
 }

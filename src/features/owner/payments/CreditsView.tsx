@@ -12,7 +12,7 @@ import { ownerPath } from "../shared/links";
 import { MoneyNav } from "../shared/MoneyNav";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { section, type OwnerContext } from "../shared/server";
-import { slipsToReview } from "./PaymentsView";
+import { heldCount, slipsToReview } from "./counts";
 import { RefundButton } from "./RefundButton";
 
 /**
@@ -22,15 +22,21 @@ import { RefundButton } from "./RefundButton";
 export async function CreditsView({ context }: { context: OwnerContext }) {
   const t = await getTranslations("owner.payments.credits");
   const { api, locale } = context;
-  const [credits, receipts, slips] = await Promise.all([
+  const [credits, receipts, slips, held] = await Promise.all([
     unwrap(api.GET("/v1/owner/payer-credits", { params: { query: {} } })),
     section(unwrap(api.GET("/v1/owner/receipts", { params: { query: { perPage: 20 } } }))),
     slipsToReview(api),
+    heldCount(api),
   ]);
   return (
     <OwnerPage testId="credits">
       <PageHeader title={t("title")} description={t("description")} />
-      <MoneyNav section="payments" current="/payments/credits" locale={locale} counts={{ "/payments/slips": slips }} />
+      <MoneyNav
+        section="payments"
+        current="/payments/credits"
+        locale={locale}
+        counts={{ "/payments/slips": slips, "/payments/held": held }}
+      />
       <Card as="section" aria-labelledby="credit-list">
         <CardHeader title={<span id="credit-list">{t("credits")}</span>} description={t("creditsHint")} />
         {credits.length ? (

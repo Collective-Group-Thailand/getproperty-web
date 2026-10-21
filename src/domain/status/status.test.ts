@@ -65,6 +65,9 @@ const CONTRACT_ENUM: Partial<Record<keyof typeof STATUS_MAPS, string>> = {
   credential: "CredentialStatus",
   parcel: "ParcelStatus",
   invoiceCharge: "InvoiceChargeStatus",
+  etax: "EtaxStatus",
+  tm30: "Tm30Status",
+  linkRequest: "PartyLinkRequestState",
 };
 
 describe("status maps", () => {

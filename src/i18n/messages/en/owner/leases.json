@@ -204,14 +204,16 @@
     "completeMoveOutBody": "Unit {unit} becomes vacant and the deposit settlement starts its refund deadline.",
     "terminate": "Terminate",
     "terminateTitle": "Terminate the lease",
-    "terminateBody": "Ends the lease of unit {unit}. This cannot be undone.",
+    "terminateBody": "Terminates the lease of unit {unit} on the date below: a later date records the termination for that date, today or earlier closes it now. This cannot be undone.",
     "terminated": "Lease terminated",
     "notes": "Notes",
     "cancel": "Cancel lease",
     "cancelTitle": "Cancel this lease?",
     "cancelBody": "The lease of unit {unit} has not been signed; cancelling it frees the unit.",
     "cancelConfirm": "Cancel lease",
-    "cancelReason": "Reason"
+    "cancelReason": "Reason",
+    "terminateDateHint": "A date after today records the termination for that date: the lease and access stay as they are until the office completes the move-out.",
+    "terminationScheduled": "Termination recorded, effective {date}. The resident keeps access until the office completes the move-out."
   },
   "detail": {
     "title": "Lease · unit {unit}",
@@ -263,7 +265,13 @@
     "reportTitle": "Inspection report — unit {unit}",
     "noInspections": "No inspections yet.",
     "deposit": "Deposit",
-    "noDeposit": "No deposit recorded."
+    "noDeposit": "No deposit recorded.",
+    "noticeAccess": "Nothing changes before {effective}: the resident keeps the unit and their door codes. The move-out starts on that date, and access ends only when the office completes it.",
+    "endingTitle": "Move-out in progress",
+    "endingBody": "Complete the move-out once the resident has handed the unit back: that closes the lease and the occupancy, the unit becomes vacant, the resident's door codes end and the 7-day deposit clock starts. Until then the resident keeps access.",
+    "endingBodyNoAction": "The office completes the move-out; until then the resident keeps access.",
+    "contractPiiOnly": "The stored contract carries the lessee's ID / passport number. Only an Owner or Manager (personal data access) can open it.",
+    "previewMasked": "Your preview masks the lessee's ID / passport number."
   },
   "preview": {
     "title": "Legal checks before the draft",

@@ -72,7 +72,8 @@
       "credits": "Credits & refunds",
       "arrears": "Arrears",
       "documents": "Documents",
-      "rates": "Rate plans"
+      "rates": "Rate plans",
+      "held": "To check"
     }
   },
   "export": {

@@ -17,7 +17,8 @@ import { IconLease } from "@/ui/icons/glyphs/lease";
 import { LeaseInviteButton } from "../leases/LeaseInvite";
 import { ownerPath } from "../shared/links";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
-import { section, type OwnerContext } from "../shared/server";
+import { ownerCan, readOnly, section, type OwnerContext } from "../shared/server";
+import { LinkRequestRow } from "./LinkRequestsView";
 import { IdDocuments, PartyLinks, RevealPii } from "./PartyPrivacy";
 
 const LIVE = new Set<Schemas["LeaseStatus"]>(["draft", "pending_signature", "active", "notice_given", "ending"]);
@@ -40,12 +41,17 @@ export async function PartyDetail({ context, partyId }: { context: OwnerContext;
   }
   const role = context.me.currentTenant?.role;
   const privileged = role === "owner" || role === "manager";
-  const [leases, links, documents] = await Promise.all([
+  const [leases, links, documents, requests] = await Promise.all([
     section(unwrap(api.GET("/v1/owner/leases", { params: { query: { partyId, perPage: 50 } } }))),
     section(unwrap(api.GET("/v1/owner/parties/{partyId}/links", { params: { path: { partyId } } }))),
     privileged
       ? section(unwrap(api.GET("/v1/owner/parties/{partyId}/id-documents", { params: { path: { partyId } } })))
       : Promise.resolve({ data: null, error: null }),
+    section(
+      unwrap(
+        api.GET("/v1/owner/party-link-requests", { params: { query: { partyId, state: "pending", perPage: 10 } } }),
+      ),
+    ),
   ]);
 
   return (
@@ -154,6 +160,24 @@ export async function PartyDetail({ context, partyId }: { context: OwnerContext;
         <Card as="section" aria-labelledby="party-links" data-testid="party-links">
           <CardHeader title={<span id="party-links">{t("links")}</span>} description={t("linksHint")} />
           <PartyLinks partyId={party.id} links={links.data ?? []} canUnlink={role === "owner"} />
+          {requests.data?.data.length ? (
+            <div className="mt-4" data-testid="party-link-requests">
+              <h3 className="font-semibold">{t("linkRequests")}</h3>
+              <p className="text-muted text-sm">{t("linkRequestsHint")}</p>
+              <ul className="divide-border divide-y">
+                {requests.data.data.map((request) => (
+                  <li key={request.id}>
+                    <LinkRequestRow
+                      request={request}
+                      locale={locale}
+                      canDecide={ownerCan(context.me, "party.link.manage") && !readOnly(context.me)}
+                      showParty={false}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
         </Card>
 
         {privileged ? (

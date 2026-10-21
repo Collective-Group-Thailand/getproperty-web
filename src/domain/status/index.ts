@@ -50,6 +50,9 @@ export { PRIORITY_STATUS, PRIORITY_VALUES, type ServicePriority } from "./priori
 export { BOOKING_STATUS, BOOKING_VALUES, type BookingStatus } from "./booking";
 export { CREDENTIAL_STATUS, CREDENTIAL_VALUES, type CredentialStatus } from "./credential";
 export { PARCEL_STATUS, PARCEL_VALUES, type ParcelStatus } from "./parcel";
+export { ETAX_STATUS, ETAX_VALUES, type EtaxStatus } from "./etax";
+export { TM30_STATUS, TM30_VALUES, TM30_OPEN, type Tm30Status } from "./tm30";
+export { LINK_REQUEST_STATUS, LINK_REQUEST_VALUES, type PartyLinkRequestState } from "./linkRequest";
 
 import { COMMAND_STATUS } from "./command";
 import { DEPOSIT_STATUS } from "./deposit";
@@ -96,6 +99,9 @@ import { PRIORITY_STATUS } from "./priority";
 import { BOOKING_STATUS } from "./booking";
 import { CREDENTIAL_STATUS } from "./credential";
 import { PARCEL_STATUS } from "./parcel";
+import { ETAX_STATUS } from "./etax";
+import { TM30_STATUS } from "./tm30";
+import { LINK_REQUEST_STATUS } from "./linkRequest";
 
 /** Every status map by its domain key (the `status.<domain>` namespace of its labels). */
 export const STATUS_MAPS = {
@@ -144,6 +150,9 @@ export const STATUS_MAPS = {
   booking: BOOKING_STATUS,
   credential: CREDENTIAL_STATUS,
   parcel: PARCEL_STATUS,
+  etax: ETAX_STATUS,
+  tm30: TM30_STATUS,
+  linkRequest: LINK_REQUEST_STATUS,
 } as const;
 
 export type StatusDomain = keyof typeof STATUS_MAPS;
