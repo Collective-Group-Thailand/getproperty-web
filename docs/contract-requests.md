@@ -9,9 +9,12 @@ getproperty-api `docs/contract-requests-triage.md` (D-180).
 
 | Date | Method | Path | Purpose | Fields | Status |
 |---|---|---|---|---|---|
-
-None — every request up to api `18b160e` is implemented and adopted (getproperty-api
-`docs/contract-requests-triage.md` F5, F6).
+| 2026-10-21 | — | `DashboardAttentionDto.paymentsHeld`, `.linkRequestsPending`, `.tm30Open`, `.tm30Overdue`, `.etaxToFix` | The owner dashboard's Today queue after the release fixes and B6.2: held payments (D-220), phone sign-ins waiting for the Owner (D-226), open / overdue TM30 notifications (D-216), e-Tax documents refused or failed (D-215). Today the web reads them from the list endpoints (up to 6 extra reads per dashboard; held payments counted within the first 100 pending). | five `number`s, scoped like the rest of `attention` (`buildingId`) | open — web workaround: `heldCount`, `linkRequestsPending`, `openTm30`, `etaxToFix` (`src/features/owner/{payments,parties,etax}/counts.ts`) |
+| 2026-10-21 | GET | `/v1/owner/payments?held=true` | List only the payments held as possible duplicates (D-220). `status=pending` also returns pending payments that are not held, so the "payments to check" page reads 100 and keeps those with `heldReason`. | query `held: boolean` (or `heldReason: PaymentHeldReason`) | open — web filters the first 100 `status=pending` client-side |
+| 2026-10-21 | GET | `/v1/owner/tm30-exports?status=due,generated,downloaded` (or `open=true`) | The open TM30 duties in one read, soonest deadline first (dashboard + the People tabs' count). Today three reads (one per open status, 100 each) are merged. | `status` as a comma list or `open: boolean`; `sort=dueAt` | open — web merges three reads (`openTm30`) |
+| 2026-10-21 | — | `OwnerMenuKey` `tm30`, `insights`, `etax` | Menu entitlements of the new B6 owner screens. Today TM30 is a tab of People (shown with `tm30.manage`), insights and e-Tax tabs of Reports (`reports` menu; e-Tax only for a VAT-registered tenant). | three enum values | open — tabs under existing menu keys |
+| 2026-10-21 | — | `InboxItemDto.subjectType`, `.subjectId` | Notification deep links to the record itself (a held payment, a link request, a TM30 notification) instead of the queue it waits in. | `subjectType: string \| null`, `subjectId: uuid \| null` | open — links open the queue by `eventType` (`src/features/shared/notifications/links.ts`) |
+| 2026-10-21 | GET | `/v1/admin/etax/submissions`, `/v1/admin/tm30/overdue`, `/v1/admin/analytics/benchmarks` | Platform oversight of B6.2 / B6.3 across tenants (e-Tax documents failing at a provider, TM30 notifications past the 24-hour deadline, benchmark buckets and their k). The admin console has no B6 endpoint today; its B6 surface is the platform settings (`etax.*`, `tm30.notify_within_hours`, `analytics.*`) and the pilot KPIs (CSAT now measured). | paged lists with `tenantId`, state, deadline / error; buckets without tenant ids | open — not built (no endpoint) |
 
 ## Closed
 

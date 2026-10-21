@@ -270,3 +270,24 @@ dropped ≈ 2 KB and `/readings` to 195.0 KB. Client code must import status map
 | `admin` | `/ota/rollouts/aa000000-0000-4000-8000-000000000001` | 191.7 KB |
 | `admin` | `/integration-events` | 184.5 KB |
 | `admin` | `/privacy` | 188.2 KB |
+
+## Release-fix adoption (api `048a8bd`) and B6.2 / B6.3 owner screens (2026-10-21, `pnpm lhci`, every URL of every set, signed in)
+
+Every set met its budget and accessibility 1.0 (`owner-marketing` 3, `owner` 41, `staff` 10, `admin` 15 URLs). The owner set
+was re-run on its own after one Lighthouse runtime error (`NO_NAVSTART` on `/loss` — the page loaded too slowly on a
+machine shared with another session's Lighthouse run; not a budget result). The new screens, all well inside 260 KB:
+
+| Set | URL | Initial JS | Budget | Headroom |
+|---|---|---|---|---|
+| `owner` | `/payments/held` (held payments to check) | 189.4 KB | 260 KB | 70.6 KB |
+| `owner` | `/payments/[id]` (a held payment) | 190.6 KB | 260 KB | 69.4 KB |
+| `owner` | `/parties/link-requests` | 190.1 KB | 260 KB | 69.9 KB |
+| `owner` | `/tm30` | 191.0 KB | 260 KB | 69.0 KB |
+| `owner` | `/reports/etax` | 189.8 KB | 260 KB | 70.2 KB |
+| `owner` | `/reports/etax/[id]` | 188.7 KB | 260 KB | 71.3 KB |
+| `owner` | `/reports/insights` (12 series charts + benchmarks) | 193.6 KB | 260 KB | 66.4 KB |
+
+Insights draws its charts with the server-rendered SVG `Chart` (no chart library, no client JavaScript); six series are
+shown, the other six sit in a native `<details>` — nothing to download until opened, and no JS either way. The rest of the
+sets moved by ≤ 1.5 KB against the `18b160e` pass (largest: `/dashboard` 184.9 KB with the new queue items, `/settings`
+202.3 KB, `/leases/new` 226.0 KB, `/loss` 220.8 KB; staff 188.4–197.1 KB of 200 KB; admin 181.7–216.8 KB).
