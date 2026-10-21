@@ -7,13 +7,17 @@ import { createApiClient, unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { clientEnv } from "@/lib/env/client";
 import { serverEnv } from "@/lib/env/server";
+import { inboundEdgeHeaders } from "@/lib/http/server";
 
 import { AdminShellFrame } from "./AdminShellFrame";
 import { ADMIN_MENU, ADMIN_MENU_GROUPS } from "./menu";
 
 async function systemInfo(): Promise<Schemas["SystemInfoDto"] | null> {
   try {
-    return await unwrap(createApiClient({ baseUrl: serverEnv().API_INTERNAL_URL }).GET("/v1/admin/system/info"));
+    const edge = await inboundEdgeHeaders();
+    return await unwrap(
+      createApiClient({ baseUrl: serverEnv().API_INTERNAL_URL, headers: () => edge }).GET("/v1/admin/system/info"),
+    );
   } catch {
     return null;
   }

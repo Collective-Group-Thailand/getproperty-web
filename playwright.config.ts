@@ -32,6 +32,9 @@ const zoneEnv = {
   // The mock serves presigned uploads and signed downloads itself (mocks/server.ts `/__upload`, `/__files`):
   // it is this suite's object storage, so the staff CSP must allow it like the real bucket.
   NEXT_PUBLIC_ASSET_BASE_URL: MOCK_API,
+  // One proxy hop, as on Cloud Run: the BFFs and Server Actions forward the right-most X-Forwarded-For entry
+  // (review H1), so the suite runs that path rather than the "forward nothing" default.
+  TRUSTED_HOPS: "1",
 };
 
 /**

@@ -14,6 +14,10 @@ export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
   const { serverEnv } = await import("@/lib/env/server");
   const env = serverEnv();
+  if (env.NODE_ENV === "production" && env.TRUSTED_HOPS === 0) {
+    // Review H1: without it every user shares this server's address at the API (throttle, audit, sessions).
+    console.warn("TRUSTED_HOPS=0 in production: no end-user address is forwarded to the API (see .env.example)");
+  }
 
   if (env.OTEL_EXPORTER_OTLP_ENDPOINT) {
     const { registerOTel } = await import("@vercel/otel");

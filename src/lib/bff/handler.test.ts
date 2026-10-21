@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { resetRefreshCache } from "../auth/refresh";
-import { BFF_MAX_BODY_BYTES, createBffHandler, upstreamPath } from "./handler";
+import { BFF_MAX_BODY_BYTES, createBffHandler, STREAM_TOKEN_COOKIE, upstreamPath } from "./handler";
 
 const API = "http://api.test";
 const HOST = "localhost:3000";
@@ -89,8 +89,13 @@ async function call(
   path: string,
   init: Parameters<typeof request>[1],
   api = fakeApi(),
+  trustedHops = 0,
 ) {
-  const handler = createBffHandler(zone, { fetch: api.fetchImpl as unknown as typeof fetch, apiUrl: () => API });
+  const handler = createBffHandler(zone, {
+    fetch: api.fetchImpl as unknown as typeof fetch,
+    apiUrl: () => API,
+    trustedHops: () => trustedHops,
+  });
   const method = (init?.method ?? "GET") as "GET" | "POST";
   const [pathname, search] = path.split("?");
   const response = await handler[method](request(path, init), segments(pathname!));
@@ -362,5 +367,124 @@ describe("response", () => {
     const body = await response.json();
     expect(Object.keys(body)).toEqual(["subject"]);
     expect(response.headers.getSetCookie().some((c) => c.startsWith("__Host-gp_at=at-9"))).toBe(true);
+  });
+});
+
+describe("edge trust (review H1, L1)", () => {
+  const spoofed = { "x-forwarded-for": "198.51.100.7, 203.0.113.9", "x-real-ip": "198.51.100.7" };
+
+  it.each(["owner", "staff", "admin"] as const)(
+    "%s: sends the entry our edge appended as the only X-Forwarded-For, never the spoofed left-most one",
+    async (zone) => {
+      const path = zone === "admin" ? "/v1/admin/me" : `/v1/${zone}/me`;
+      const { api } = await call(zone, path, { cookies: signedIn, headers: spoofed }, fakeApi(), 1);
+      const sent = api.calls.at(-1)!.headers;
+      expect(sent.get("x-forwarded-for")).toBe("203.0.113.9");
+      expect(sent.get("x-real-ip")).toBeNull();
+    },
+  );
+
+  it("counts two hops behind the load balancer, and forwards nothing with 0 hops or a short header", async () => {
+    const lb = { "x-forwarded-for": "198.51.100.7, 203.0.113.9, 130.211.0.5" };
+    const two = await call("owner", "/v1/owner/me", { cookies: signedIn, headers: lb }, fakeApi(), 2);
+    expect(two.api.calls.at(-1)!.headers.get("x-forwarded-for")).toBe("203.0.113.9");
+    const none = await call("owner", "/v1/owner/me", { cookies: signedIn, headers: lb }, fakeApi(), 0);
+    expect(none.api.calls.at(-1)!.headers.get("x-forwarded-for")).toBeNull();
+    const short = await call(
+      "owner",
+      "/v1/owner/me",
+      { cookies: signedIn, headers: { "x-forwarded-for": "1.2.3.4" } },
+      fakeApi(),
+      2,
+    );
+    expect(short.api.calls.at(-1)!.headers.get("x-forwarded-for")).toBeNull();
+    const junk = await call(
+      "owner",
+      "/v1/owner/me",
+      { cookies: signedIn, headers: { "x-forwarded-for": "evil, <x>" } },
+      fakeApi(),
+      1,
+    );
+    expect(junk.api.calls.at(-1)!.headers.get("x-forwarded-for")).toBeNull();
+  });
+
+  it("forwards the address on anonymous sign-in calls and on the token refresh too", async () => {
+    const signIn = await call(
+      "owner",
+      "/v1/auth/operator/otp/request",
+      { method: "POST", headers: { ...writeHeaders, ...spoofed }, body: "{}" },
+      fakeApi(),
+      1,
+    );
+    expect(signIn.api.calls.at(-1)!.headers.get("x-forwarded-for")).toBe("203.0.113.9");
+    const refreshed = await call(
+      "owner",
+      "/v1/owner/me",
+      { cookies: { "__Host-gp_rt": "rt-1" }, headers: spoofed },
+      fakeApi(),
+      1,
+    );
+    const refresh = refreshed.api.calls.find((entry) => entry.url.endsWith("/v1/auth/refresh"))!;
+    expect(refresh.headers.get("x-forwarded-for")).toBe("203.0.113.9");
+  });
+
+  it("replaces a client x-request-id that is not a UUID and keeps one that is", async () => {
+    const evil = await call("owner", "/v1/owner/me", {
+      cookies: signedIn,
+      headers: { "x-request-id": 'evil" injected=1' },
+    });
+    const sent = evil.api.calls.at(-1)!.headers.get("x-request-id")!;
+    expect(sent).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+    expect(evil.response.headers.get("x-request-id")).not.toContain("injected");
+    const id = "3b241101-e2bb-4255-8caf-4136c566a962";
+    const kept = await call("owner", "/v1/owner/me", { cookies: signedIn, headers: { "x-request-id": id } });
+    expect(kept.api.calls.at(-1)!.headers.get("x-request-id")).toBe(id);
+  });
+});
+
+describe("realtime stream token (review L6)", () => {
+  function realtimeApi() {
+    const api = fakeApi();
+    const inner = api.fetchImpl.getMockImplementation()!;
+    api.fetchImpl.mockImplementation(async (input, init) => {
+      if (String(input).endsWith("/realtime/auth")) {
+        await inner(input, init);
+        return Response.json({
+          streamToken: "st-secret",
+          streamUrl: "/v1/staff/realtime/stream?token=st-secret",
+          channels: ["user:u"],
+          expiresAt: new Date(Date.now() + 60_000).toISOString(),
+        });
+      }
+      return inner(input, init);
+    });
+    return api;
+  }
+
+  it("answers the token in an httpOnly cookie and a streamUrl without it", async () => {
+    const { response } = await call(
+      "staff",
+      "/v1/staff/realtime/auth",
+      { method: "POST", cookies: signedIn, headers: writeHeaders },
+      realtimeApi(),
+    );
+    const body = (await response.json()) as { streamToken: string; streamUrl: string };
+    expect(body.streamUrl).toBe("/v1/staff/realtime/stream");
+    expect(body.streamToken).toBe("");
+    expect(JSON.stringify(body)).not.toContain("st-secret");
+    const cookie = response.headers.getSetCookie().find((c) => c.startsWith(`${STREAM_TOKEN_COOKIE}=`))!;
+    expect(cookie).toContain("st-secret");
+    expect(cookie).toMatch(/HttpOnly/i);
+    expect(cookie).toMatch(/Max-Age=(60|59)/);
+  });
+
+  it("puts the cookie's token back into the API query, ignores one in the browser URL, and clears the cookie", async () => {
+    const { response, api } = await call("staff", "/v1/staff/realtime/stream?token=from-url", {
+      cookies: { ...signedIn, [STREAM_TOKEN_COOKIE]: "st-secret" },
+    });
+    expect(api.calls.at(-1)!.url).toBe(`${API}/v1/staff/realtime/stream?token=st-secret`);
+    const cleared = response.headers.getSetCookie().find((c) => c.startsWith(`${STREAM_TOKEN_COOKIE}=`))!;
+    expect(cleared).toMatch(/Max-Age=0/);
+    expect(response.headers.get("content-type")).toBe("text/event-stream");
   });
 });

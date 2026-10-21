@@ -20,12 +20,13 @@ export async function refreshBeforeRender(
   request: NextRequest,
   apiUrl: string,
   fetchImpl: typeof fetch = fetch,
+  clientIp?: string,
 ): Promise<SessionRefresh | null> {
   if (request.cookies.get(ACCESS_COOKIE)?.value) return null;
   const refreshToken = request.cookies.get(REFRESH_COOKIE)?.value;
   if (!refreshToken) return null;
 
-  const outcome = await refreshTokens(apiUrl, refreshToken, fetchImpl);
+  const outcome = await refreshTokens(apiUrl, refreshToken, fetchImpl, clientIp);
   if (outcome.ok) {
     const cookies = sessionCookies(outcome.pair);
     return { cookies, cookieHeader: withCookies(request, cookies) };

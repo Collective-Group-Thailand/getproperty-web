@@ -1,3 +1,4 @@
+import { unstable_doesMiddlewareMatch } from "next/experimental/testing/server";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
@@ -164,7 +165,62 @@ describe("proxy", () => {
 });
 
 describe("config.matcher", () => {
+  const runs = (url: string) => unstable_doesMiddlewareMatch({ config, url });
+
   it("runs the proxy for every BFF call, dots included (the static-file pattern would skip them)", () => {
-    expect(config.matcher).toContain("/bff/:path*");
+    expect(runs("/bff/v1/owner/settings/reminders.schedule")).toBe(true);
+    expect(runs("/bff/v1/admin/feature-flags/billing.auto_issue")).toBe(true);
+  });
+
+  it.each([
+    "/admin/bff/v1/admin/x.y",
+    "/staff/bff/v1/staff/me.json",
+    "/staff/work-orders/a.b",
+    "/work-orders/a.b",
+    "/en/units/A.101",
+    "/tenant/x.y",
+    "/resident/a.b",
+    "/x.php",
+    "/sw.js",
+    "/manifest.webmanifest",
+    "/robots.txt",
+    "/sitemap.xml",
+    "/favicon.ico",
+    "/icon.svg",
+    "/",
+    "/dashboard",
+  ])("runs for %s (review L3: reserved segments, zone rewrite, CSP on dotted paths too)", (url) => {
+    expect(runs(url)).toBe(true);
+  });
+
+  it.each(["/_next/static/chunks/main.js", "/_next/image?url=x", "/pwa/staff-192.png", "/brand/wordmark.svg"])(
+    "leaves Next internals and the public folders alone: %s",
+    (url) => {
+      expect(runs(url)).toBe(false);
+    },
+  );
+});
+
+describe("dotted paths (review L3)", () => {
+  const call = (host: string, path: string, headers: Record<string, string> = {}) =>
+    proxy(new NextRequest(`http://${host}${path}`, { headers: { host, ...headers } }));
+
+  it("404 another zone's segment and stamp the security headers", async () => {
+    for (const [host, path] of [
+      ["localhost:3000", "/admin/bff/v1/admin/x.y"],
+      ["admin.localhost:3000", "/staff/work-orders/a.b"],
+      ["staff.localhost:3000", "/admin/x.y"],
+    ] as const) {
+      const response = await call(host, path);
+      expect(response.headers.get("x-middleware-rewrite") ?? "").toContain(NOT_FOUND_PATH);
+      expect(response.headers.get("Content-Security-Policy")).toContain("frame-ancestors 'none'");
+      expect(response.headers.get("X-Frame-Options")).toBe("DENY");
+    }
+  });
+
+  it("overwrites client-sent zone and path headers", async () => {
+    const response = await call("staff.localhost:3000", "/work-orders/a.b", { "x-gp-zone": "admin" });
+    expect(response.headers.get("x-gp-zone")).toBe("staff");
+    expect(response.headers.get("x-middleware-request-x-gp-zone")).toBe("staff");
   });
 });

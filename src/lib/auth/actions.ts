@@ -15,6 +15,7 @@ import { createApiClient, unwrap } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/errors";
 import type { OperatorMe, Problem, TokenPair } from "@/lib/api/types";
 import { serverEnv } from "@/lib/env/server";
+import { inboundEdgeHeaders } from "@/lib/http/server";
 import { isLocale, LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE } from "@/i18n/routing";
 
 import { clearSession, readRefreshToken, readTenant, writeSession, writeTenant } from "./session";
@@ -36,10 +37,15 @@ export type OperatorNext = { next: "console" | "select-tenant" };
 
 type OperatorZone = "owner" | "staff";
 
-function apiClient(language?: string) {
+/**
+ * Every call of a Server Action carries the end user's address as our edge saw it (review H1): the API's sign-in
+ * throttle, session rows, audit and D-021a acknowledgements record it instead of this server's egress address.
+ */
+async function apiClient(language?: string, extra: Record<string, string | undefined> = {}) {
+  const edge = await inboundEdgeHeaders();
   return createApiClient({
     baseUrl: serverEnv().API_INTERNAL_URL,
-    headers: () => ({ "Accept-Language": language }),
+    headers: () => ({ ...edge, "Accept-Language": language, ...extra }),
     fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }),
   });
 }
@@ -97,11 +103,7 @@ async function rememberLanguage(value: string | undefined): Promise<void> {
 }
 
 async function operatorMe(zone: OperatorZone, accessToken: string, tenantId?: string): Promise<OperatorMe> {
-  const api = createApiClient({
-    baseUrl: serverEnv().API_INTERNAL_URL,
-    headers: () => ({ authorization: `Bearer ${accessToken}`, "x-tenant-id": tenantId }),
-    fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }),
-  });
+  const api = await apiClient(undefined, { authorization: `Bearer ${accessToken}`, "x-tenant-id": tenantId });
   return zone === "owner" ? unwrap(api.GET("/v1/owner/me")) : unwrap(api.GET("/v1/staff/me"));
 }
 
@@ -132,7 +134,9 @@ export async function requestOperatorOtp(
   try {
     const lang = await language();
     const data = await unwrap(
-      apiClient(lang).POST("/v1/auth/operator/otp/request", { body: { phone: parsed.data.phone, language: lang } }),
+      (await apiClient(lang)).POST("/v1/auth/operator/otp/request", {
+        body: { phone: parsed.data.phone, language: lang },
+      }),
     );
     return { ok: true, data };
   } catch (error) {
@@ -147,7 +151,9 @@ export async function verifyOperatorOtp(
   const parsed = otpVerifySchema.safeParse(input);
   if (!parsed.success) return invalid(parsed.error);
   try {
-    const pair = await unwrap(apiClient(await language()).POST("/v1/auth/operator/otp/verify", { body: parsed.data }));
+    const pair = await unwrap(
+      (await apiClient(await language())).POST("/v1/auth/operator/otp/verify", { body: parsed.data }),
+    );
     return { ok: true, data: await afterOperatorSignIn(zone, pair) };
   } catch (error) {
     return failure(error);
@@ -161,7 +167,9 @@ export async function operatorPasswordLogin(
   const parsed = passwordLoginSchema.safeParse(input);
   if (!parsed.success) return invalid(parsed.error);
   try {
-    const pair = await unwrap(apiClient(await language()).POST("/v1/auth/operator/login", { body: parsed.data }));
+    const pair = await unwrap(
+      (await apiClient(await language())).POST("/v1/auth/operator/login", { body: parsed.data }),
+    );
     return { ok: true, data: await afterOperatorSignIn(zone, pair) };
   } catch (error) {
     return failure(error);
@@ -172,7 +180,9 @@ export async function platformLogin(input: z.input<typeof passwordLoginSchema>):
   const parsed = passwordLoginSchema.safeParse(input);
   if (!parsed.success) return invalid(parsed.error);
   try {
-    const pair = await unwrap(apiClient(await language()).POST("/v1/auth/platform/login", { body: parsed.data }));
+    const pair = await unwrap(
+      (await apiClient(await language())).POST("/v1/auth/platform/login", { body: parsed.data }),
+    );
     await afterPlatformSignIn(pair);
     return { ok: true, data: null };
   } catch (error) {
@@ -191,7 +201,9 @@ export async function platformEnrollTotp(
   const parsed = totpEnrollSchema.safeParse(input);
   if (!parsed.success) return invalid(parsed.error);
   try {
-    const data = await unwrap(apiClient(await language()).POST("/v1/auth/platform/totp/enroll", { body: parsed.data }));
+    const data = await unwrap(
+      (await apiClient(await language())).POST("/v1/auth/platform/totp/enroll", { body: parsed.data }),
+    );
     const { toString } = await import("qrcode");
     const qrSvg = await toString(data.otpauthUri, { type: "svg", errorCorrectionLevel: "M", margin: 1 });
     return { ok: true, data: { secret: data.secret, otpauthUri: data.otpauthUri, qrSvg } };
@@ -205,7 +217,7 @@ export async function platformActivateTotp(input: z.input<typeof totpActivateSch
   if (!parsed.success) return invalid(parsed.error);
   try {
     const pair = await unwrap(
-      apiClient(await language()).POST("/v1/auth/platform/totp/activate", { body: parsed.data }),
+      (await apiClient(await language())).POST("/v1/auth/platform/totp/activate", { body: parsed.data }),
     );
     await afterPlatformSignIn(pair);
     return { ok: true, data: null };
@@ -217,11 +229,7 @@ export async function platformActivateTotp(input: z.input<typeof totpActivateSch
 async function afterPlatformSignIn(pair: TokenPair): Promise<void> {
   await writeSession(pair);
   try {
-    const api = createApiClient({
-      baseUrl: serverEnv().API_INTERNAL_URL,
-      headers: () => ({ authorization: `Bearer ${pair.accessToken}` }),
-      fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }),
-    });
+    const api = await apiClient(undefined, { authorization: `Bearer ${pair.accessToken}` });
     const me = await unwrap(api.GET("/v1/admin/me"));
     await rememberLanguage(me.user.language);
   } catch {
@@ -259,7 +267,7 @@ export async function signOut(): Promise<ActionResult<null>> {
   const refreshToken = await readRefreshToken();
   if (refreshToken) {
     try {
-      await apiClient().POST("/v1/auth/logout", { body: { refreshToken } });
+      await (await apiClient()).POST("/v1/auth/logout", { body: { refreshToken } });
     } catch (error) {
       console.error("logout upstream failed", error);
     }

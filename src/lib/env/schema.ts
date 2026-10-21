@@ -74,6 +74,13 @@ function serverSchema(production: boolean) {
     ZONES: zonesList,
     /** getproperty-api as this server reaches it (never exposed to the browser). */
     API_INTERNAL_URL: production ? urlValue : urlValue.default("http://localhost:4000"),
+    /**
+     * Proxies in front of this app that append to `X-Forwarded-For` (Cloud Run's front end = 1; + the external
+     * HTTPS load balancer = 2). The BFFs, Server Actions and Server Components send the API only the entry this many
+     * from the right — the end-user address our own edge saw (review H1, api RUNBOOK §11, D-229). 0 = none is
+     * forwarded (local dev); never more than the real number of hops, or a caller chooses its own address.
+     */
+    TRUSTED_HOPS: z.coerce.number().int().min(0).max(5).default(0),
     /** Build-time only (`pnpm gen:api --adopt`); validated so a typo is caught where it is set. */
     API_CONTRACT_SOURCE: optionalString,
     SENTRY_DSN: optionalUrl,

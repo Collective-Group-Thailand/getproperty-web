@@ -39,6 +39,8 @@
  *      QR — held as `qr_already_paid` (D-220); `POST /rel/phone-sign-in` signs in to the resident app with the
  *      SMS code of that phone (D-226: a pending link request, nothing linked); `GET /rel/resident-me` reads that
  *      login's `GET /v1/resident/me` (after a token refresh).
+ *   9. `GET /sessions/last-ip?phone=` — the address the API recorded on the newest session of that phone's user
+ *      (`platform.auth_session.ip`), to check the web forwards the end user's address (review H1).
  *
  * Nothing here is part of the app: it exists so the suite can run the real sign-in flows once.
  */
@@ -252,6 +254,9 @@ async function startApi(apiDir: string, databaseUrl: string) {
   };
   const app = await NestFactory.create(ApiWithWorker, { logger: ["error", "warn"], abortOnError: false });
   configureApp(app);
+  // As in production behind Cloud Run's front end (`TRUST_PROXY=1`, the API's main.ts): the web app is the one
+  // trusted hop, so `req.ip` is the end-user address it forwards (review H1, D-229).
+  (app as unknown as { set(name: string, value: unknown): void }).set("trust proxy", 1);
   await app.listen(API_PORT, "127.0.0.1");
   log(`getproperty-api listening on http://127.0.0.1:${API_PORT}`);
   const sms = app.get<{ lastCodeTo(phone: string): string | undefined }>(SMS);
@@ -1321,6 +1326,22 @@ async function main() {
     if (url.pathname === "/health") return send(200, { ok: true });
     if (url.pathname === "/invitation") return send(200, invitation);
     if (url.pathname === "/staff-invitation") return send(200, staffWorld);
+    if (url.pathname === "/sessions/last-ip") {
+      const db = new (createRequire(join(apiDir, "package.json"))("pg") as PgModule).Client({
+        connectionString: database.url,
+      });
+      await db.connect();
+      try {
+        const result = (await db.query(
+          `SELECT host(s.ip) AS ip FROM platform.auth_session s JOIN core.user_account u ON u.id = s.user_id
+            WHERE u.phone_e164 = $1 ORDER BY s.issued_at DESC LIMIT 1`,
+          [url.searchParams.get("phone")],
+        )) as { rows: { ip: string | null }[] };
+        return send(200, { ip: result.rows[0]?.ip ?? null });
+      } finally {
+        await db.end();
+      }
+    }
     try {
       if (url.pathname === "/f2") return send(200, f2.world);
       if (url.pathname === "/f2/units.xlsx") {

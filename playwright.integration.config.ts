@@ -67,6 +67,8 @@ export default defineConfig({
         API_INTERNAL_URL: INT_API,
         // The API's fake object storage hands out these presigned URLs; the suite answers them (route).
         NEXT_PUBLIC_ASSET_BASE_URL: "https://fake-s3.invalid",
+        // One proxy hop (Cloud Run's front end): the web forwards the right-most X-Forwarded-For entry (review H1).
+        TRUSTED_HOPS: "1",
         NEXT_TELEMETRY_DISABLED: "1",
       },
     },

@@ -36,12 +36,23 @@ function prune(now: number) {
   }
 }
 
-async function exchange(apiUrl: string, refreshToken: string, fetchImpl: typeof fetch): Promise<RefreshOutcome> {
+async function exchange(
+  apiUrl: string,
+  refreshToken: string,
+  fetchImpl: typeof fetch,
+  clientIp: string | undefined,
+): Promise<RefreshOutcome> {
   let response: Response;
   try {
     response = await fetchImpl(`${apiUrl}/v1/auth/refresh`, {
       method: "POST",
-      headers: { "content-type": "application/json", accept: "application/json", "x-request-id": crypto.randomUUID() },
+      headers: {
+        "content-type": "application/json",
+        accept: "application/json",
+        "x-request-id": crypto.randomUUID(),
+        // The end user's address as our edge saw it (review H1): the session row and the throttle use it.
+        ...(clientIp ? { "x-forwarded-for": clientIp } : {}),
+      },
       body: JSON.stringify({ refreshToken }),
       cache: "no-store",
     });
@@ -63,6 +74,7 @@ export async function refreshTokens(
   apiUrl: string,
   refreshToken: string,
   fetchImpl: typeof fetch = fetch,
+  clientIp?: string,
 ): Promise<RefreshOutcome> {
   const now = Date.now();
   prune(now);
@@ -70,7 +82,7 @@ export async function refreshTokens(
   const existing = inflight.get(key);
   if (existing) return existing.promise;
 
-  const entry: Entry = { promise: exchange(apiUrl, refreshToken, fetchImpl) };
+  const entry: Entry = { promise: exchange(apiUrl, refreshToken, fetchImpl, clientIp) };
   inflight.set(key, entry);
   entry.promise.then(
     (outcome) => {

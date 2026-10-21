@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { PATH_HEADER } from "@/lib/auth/guards-shared";
 import { applyCookies, refreshBeforeRender } from "@/lib/auth/proxy-session";
 import { serverEnv } from "@/lib/env/server";
+import { clientIpFrom, requestIdFrom } from "@/lib/http/edge";
 import { createNonce, securityHeaders, sentryOriginFromDsn } from "@/lib/security/headers";
 import {
   isReservedPath,
@@ -116,6 +117,9 @@ export async function proxy(request: NextRequest) {
   });
 
   const requestHeaders = new Headers(request.headers);
+  // A client-chosen request id is not trusted (review L1): only a UUID passes, else this request gets its own.
+  const requestId = requestIdFrom(request.headers);
+  requestHeaders.set("x-request-id", requestId);
   requestHeaders.set(ZONE_HEADER, zone);
   requestHeaders.set("x-nonce", nonce);
   requestHeaders.set("content-security-policy", headers["Content-Security-Policy"]!);
@@ -123,7 +127,9 @@ export async function proxy(request: NextRequest) {
 
   // Pages only: the BFF refreshes for itself, and assets need no session.
   const session =
-    route.kind === "intl" || route.kind === "rewrite" ? await refreshBeforeRender(request, env.API_INTERNAL_URL) : null;
+    route.kind === "intl" || route.kind === "rewrite"
+      ? await refreshBeforeRender(request, env.API_INTERNAL_URL, fetch, clientIpFrom(request.headers, env.TRUSTED_HOPS))
+      : null;
   if (session?.cookieHeader !== undefined) requestHeaders.set("cookie", session.cookieHeader);
 
   let response: NextResponse;
@@ -137,24 +143,17 @@ export async function proxy(request: NextRequest) {
 
   for (const [name, value] of Object.entries(headers)) response.headers.set(name, value);
   response.headers.set(ZONE_HEADER, zone);
+  // The BFF answers with the id the API echoed for the same value; pages carry this request's own.
+  if (route.kind !== "asset") response.headers.set("x-request-id", requestId);
   if (session) applyCookies(response, session.cookies);
   return response;
 }
 
 export const config = {
-  // Everything except Next's own assets and static files with an extension, plus the root files
-  // the proxy routes per zone (robots, sitemap, the staff service worker and manifest), plus every BFF
-  // call even with a dot in it (`…/settings/reminders.schedule`, `…/feature-flags/billing.auto_issue`):
-  // without the proxy such a call would reach the owner's `/bff` on the staff or admin host.
-  matcher: [
-    "/((?!_next/|.*\\..*).*)",
-    "/bff/:path*",
-    "/favicon.ico",
-    "/icon.svg",
-    "/brand/wordmark.svg",
-    "/robots.txt",
-    "/sitemap.xml",
-    "/sw.js",
-    "/manifest.webmanifest",
-  ],
+  // Every request except Next's own internals (`/_next/*`: hashed static chunks, the image optimiser, HMR) and the
+  // public folders (`/pwa/*` icons, `/brand/*`), which are the same on every host. Paths with a dot are *not*
+  // skipped (review L3): `/admin/bff/v1/admin/x.y`, `/staff/a.b` or `/work-orders/a.b` must meet the reserved-segment
+  // 404, the host → zone rewrite, and the CSP / `X-Frame-Options` like any other page. The proxy itself sends the
+  // root files (robots, sitemap, `/sw.js`, the manifest, the favicon) to their zone.
+  matcher: ["/((?!_next/|pwa/|brand/|__nextjs).*)"],
 };
