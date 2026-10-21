@@ -19,7 +19,7 @@ const MANIFEST = {
   releasedAt: "2026-10-19T03:00:00Z",
   minAgentVersion: "0.3.0",
   artifact: {
-    url: "https://releases.getproperty.co/edge/0.5.0/arm64.tar.zst",
+    url: "https://device.getproperty.example/v1/device/ota/artifacts/0.5.0/getproperty-edge-0.5.0-linux-arm64",
     sha256: "ab".repeat(32),
     size: 18_234_112,
   },
@@ -133,6 +133,18 @@ test("OTA: register a signed release, plan a rollout; progress arrives over SSE;
   await page.getByTestId("register-release").click();
   const register = page.getByRole("dialog");
   await register.getByTestId("release-manifest").fill(JSON.stringify(MANIFEST));
+  await register.getByTestId("form-submit").click();
+  // D-231: the binary is not in the product bucket yet — the form says which key to upload, and keeps the manifest.
+  const notice = register.getByTestId("problem-notice");
+  await expect(notice).toHaveAttribute("data-code", "ota.artifact_missing");
+  await expect(notice).toContainText("releases/edge/0.5.0/getproperty-edge-0.5.0-linux-arm64");
+  await expect(notice).toContainText("release-publisher");
+  await expect(register.getByTestId("release-manifest")).toHaveValue(JSON.stringify(MANIFEST));
+  await expectAxeClean(page);
+  await platformControl(
+    `ota/upload?key=releases/edge/0.5.0/getproperty-edge-0.5.0-linux-arm64&size=${MANIFEST.artifact.size}`,
+    "POST",
+  );
   await register.getByTestId("form-submit").click();
   await expect(register).toHaveCount(0);
   await expect(page.locator('[data-testid="release-row"][data-version="0.5.0"]')).toBeVisible();

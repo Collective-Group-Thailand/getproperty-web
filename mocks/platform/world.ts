@@ -246,6 +246,8 @@ export interface PlatformWorld {
   deviceEvents: Record<string, Schemas["DeviceEventDto"][]>;
   commands: Schemas["DeviceCommandDto"][];
   releases: Schemas["OtaReleaseDto"][];
+  /** Objects under `releases/edge/` in the product bucket, with their size (D-231; uploaded by a release engineer). */
+  releaseObjects: Record<string, number>;
   rollouts: Schemas["OtaRolloutDto"][];
   ingestDeadLetters: Schemas["DeadLetterDto"][];
   platformUsers: Schemas["PlatformUserDto"][];
@@ -1486,6 +1488,10 @@ export function initialPlatformWorld(): PlatformWorld {
         result: { fileId: "a8000000-0000-4000-8000-000000000001", sizeBytes: 182334 },
       },
     ],
+    releaseObjects: {
+      "releases/edge/0.3.0/getproperty-edge-0.3.0-linux-arm64": 17_904_640,
+      "releases/edge/0.4.0/getproperty-edge-0.4.0-linux-arm64": 18_102_272,
+    },
     releases: [
       {
         id: "a9000000-0000-4000-8000-000000000003",
@@ -1494,7 +1500,8 @@ export function initialPlatformWorld(): PlatformWorld {
         channel: "stable",
         sha256: "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
         keyId: "gp-ota-2026",
-        artifactUrl: "https://releases.getproperty.co/edge/0.4.0/arm64.tar.zst",
+        artifactUrl:
+          "https://device.getproperty.example/v1/device/ota/artifacts/0.4.0/getproperty-edge-0.4.0-linux-arm64",
         notes: "Modbus timeouts fixed",
         releasedAt: iso(-2),
         deprecatedAt: null,
@@ -1506,7 +1513,8 @@ export function initialPlatformWorld(): PlatformWorld {
         channel: "stable",
         sha256: "1f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
         keyId: "gp-ota-2026",
-        artifactUrl: "https://releases.getproperty.co/edge/0.3.0/arm64.tar.zst",
+        artifactUrl:
+          "https://device.getproperty.example/v1/device/ota/artifacts/0.3.0/getproperty-edge-0.3.0-linux-arm64",
         notes: null,
         releasedAt: iso(-60),
         deprecatedAt: null,
@@ -1522,7 +1530,8 @@ export function initialPlatformWorld(): PlatformWorld {
           channel: "stable",
           sha256: "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
           keyId: "gp-ota-2026",
-          artifactUrl: "https://releases.getproperty.co/edge/0.4.0/arm64.tar.zst",
+          artifactUrl:
+            "https://device.getproperty.example/v1/device/ota/artifacts/0.4.0/getproperty-edge-0.4.0-linux-arm64",
           notes: "Modbus timeouts fixed",
           releasedAt: iso(-2),
           deprecatedAt: null,

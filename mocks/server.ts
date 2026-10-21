@@ -33,6 +33,8 @@
  *   GET  /__mock/owner/received?op=  requests the owner world received (body, Idempotency-Key)
  *   GET  /__mock/owner/state         leases, deposits, invoices, slips, cycles, units (A/B) as held
  *   POST /__mock/platform/reset      reset the platform admin's world (tenants, billing, tariffs, fleet…)
+ *   POST /__mock/platform/ota/upload?key=releases/edge/<version>/<file>&size=<bytes>  a release engineer uploads an
+ *                                    agent binary to the product bucket (D-231)
  *   POST /__mock/platform/ota/advance?rollout=<id>[&outcome=failed]  the next gateway of a running
  *                                   rollout moves one step (realtime `ota.rollout_changed`)
  *   GET  /__mock/platform/received?op=  requests the platform world received (body, Idempotency-Key)
@@ -266,6 +268,14 @@ function platformControl(url: URL, req: IncomingMessage): { status: number; body
   if (req.method === "POST" && parts[0] === "reset") {
     resetPlatformWorld();
     return { status: 200, body: { ok: true } };
+  }
+  if (req.method === "POST" && parts[0] === "ota" && parts[1] === "upload") {
+    const key = url.searchParams.get("key") ?? "";
+    const size = Number(url.searchParams.get("size"));
+    if (!key.startsWith("releases/edge/") || !Number.isInteger(size) || size <= 0)
+      return { status: 400, body: { error: "key releases/edge/… and a size are required" } };
+    state.platform.releaseObjects[key] = size;
+    return { status: 200, body: { key, size } };
   }
   if (req.method === "POST" && parts[0] === "ota" && parts[1] === "advance") {
     const outcome = url.searchParams.get("outcome") === "failed" ? "failed" : "applied";

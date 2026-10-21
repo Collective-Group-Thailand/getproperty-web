@@ -7,6 +7,7 @@ import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 import { FormDialog, text } from "@/features/shared/console/FormDialog";
 import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
+import { ApiError, isApiError } from "@/lib/api/errors";
 import type { Schemas } from "@/lib/api/types";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
@@ -41,8 +42,41 @@ export function parseManifest(raw: string): { manifest: Schemas["OtaManifestDto"
 }
 
 /**
+ * The product-bucket key of an artefact the API serves on the device host (D-231, getproperty-api
+ * docs/deployment.md §5a): `…/v1/device/ota/artifacts/<version>/<file>` → `releases/edge/<version>/<file>`. Only
+ * used to tell the release engineer where to upload; the API decides (`ota.artifact_missing`).
+ */
+export function artifactBucketKey(url: string): string | null {
+  let path: string;
+  try {
+    path = new URL(url, "https://device.invalid").pathname;
+  } catch {
+    return null;
+  }
+  const match = /^\/v1\/device\/ota\/artifacts\/([^/]+)\/([^/]+)$/.exec(path);
+  return match ? `releases/edge/${match[1]}/${match[2]}` : null;
+}
+
+/**
+ * `ota.artifact_missing` with what to do about it: the binary must be uploaded to the bucket key first (by a release
+ * engineer with the release-publisher role — the API itself can only read `releases/*`), then the same manifest is
+ * registered again. Other problems pass through unchanged.
+ */
+export function explainArtifactMissing(
+  error: unknown,
+  manifest: Schemas["OtaManifestDto"],
+  explain: (key: string) => string,
+): unknown {
+  if (!isApiError(error) || error.code !== "ota.artifact_missing") return error;
+  const key = artifactBucketKey(manifest.artifact.url) ?? `releases/edge/${manifest.version}/<file of artifact.url>`;
+  return new ApiError(error.status, { ...error.problem, code: error.code, detail: explain(key) });
+}
+
+/**
  * `POST /v1/admin/ota/releases` — registers a release from its signed manifest (D-131): the console
- * never signs; the API verifies the ed25519 signature against the platform key (`ota.signature_invalid`).
+ * never signs; the API verifies the ed25519 signature against the platform key (`ota.signature_invalid`) and, for an
+ * artefact served on the device host (D-231), that the binary is already in the product bucket with the signed size
+ * (`ota.artifact_missing`, explained with the bucket key to upload to).
  */
 export function RegisterRelease() {
   const t = useTranslations("admin.fleet.ota");
@@ -66,7 +100,11 @@ export function RegisterRelease() {
             params: { header: { "Idempotency-Key": crypto.randomUUID() } },
             body: { manifest: parsed.manifest, notes: text(data, "notes") ?? null },
           }),
-        );
+        ).catch((error: unknown) => {
+          throw explainArtifactMissing(error, parsed.manifest, (key) =>
+            t("artifactMissing", { key, version: parsed.manifest.version }),
+          );
+        });
       }}
     >
       {(errors) => (

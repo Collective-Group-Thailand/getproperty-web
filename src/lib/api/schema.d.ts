@@ -899,7 +899,7 @@ export interface paths {
         put?: never;
         /**
          * Register a signed release
-         * @description The manifest produced by `getproperty-edge` (`pnpm image`); its ed25519 signature must verify against a trusted key (`OTA_SIGNING_PUBLIC_KEYS`) — the agent verifies it again before applying (D-131, edge CR-011). One release per version × architecture. Audited.
+         * @description The manifest produced by `getproperty-edge` (`pnpm image`); its ed25519 signature must verify against a trusted key (`OTA_SIGNING_PUBLIC_KEYS`) — the agent verifies it again before applying (D-131, edge CR-011). One release per version × architecture. An artefact URL on the device surface (`…/v1/device/ota/artifacts/<version>/<file>`, D-231) must carry the manifest version and its object `releases/edge/<version>/<file>` must already be in the product bucket with the signed size (`ota.artifact_missing`). Audited.
          *
          *     Implements: D-131.
          */
@@ -2776,6 +2776,28 @@ export interface paths {
          *     Implements: D-131, D-130.
          */
         post: operations["device.logs.presign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/device/ota/artifacts/{version}/{file}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download a release artefact
+         * @description The signed release artefact named by the manifest (`artifact.url` = `https://<DEVICE_HOST>/v1/device/ota/artifacts/<version>/<file>`), streamed from the product bucket (`releases/edge/<version>/<file>`, read-only for the app) to the calling gateway only — device JWT + its client certificate on the device host, a registered non-deprecated release of its architecture; anything else is a `404` (D-231, edge CR-012). The agent checks size and sha256 against the signed manifest before installing (D-131). No range requests; a broken download is restarted.
+         *
+         *     Implements: D-231, D-131.
+         */
+        get: operations["device.ota.artifact"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -19551,10 +19573,10 @@ export interface components {
              */
             username: string;
             /**
-             * @description WebSocket fallback for networks that block 8883 (device protocol §1).
+             * @description WebSocket fallback for networks that block 8883 (device protocol §1). **Omitted** unless the platform enables it (`MQTT_PUBLIC_WS_URL`): while O-012 is open the Collective platform has no WSS endpoint that verifies the gateway certificate (D-231, edge CR-013).
              * @example wss://mqtt.getproperty.invalid/mqtt
              */
-            wsUrl: string;
+            wsUrl?: string;
         };
         MultipartPartDto: {
             /** @example 1 */
@@ -19902,7 +19924,10 @@ export interface components {
             sha256: string;
             /** @example 48211234 */
             size: number;
-            /** @example https://releases.getproperty.co/edge/0.4.0/arm64.tar.zst */
+            /**
+             * @description HTTPS. On the platform (D-231) `https://<DEVICE_HOST>/v1/device/ota/artifacts/<version>/<file>`: the API serves the object `releases/edge/<version>/<file>` of the product bucket to the gateways only, and the release is registered only when that object exists with this size.
+             * @example https://device.getproperty.co/v1/device/ota/artifacts/0.4.0/getproperty-edge-0.4.0-linux-arm64
+             */
             url: string;
         };
         /** @enum {string} */
@@ -19936,7 +19961,7 @@ export interface components {
         OtaReleaseDto: {
             /** @example arm64 */
             arch: components["schemas"]["OtaArch"];
-            /** @example https://releases.getproperty.co/edge/0.4.0/arm64.tar.zst */
+            /** @example https://device.getproperty.co/v1/device/ota/artifacts/0.4.0/getproperty-edge-0.4.0-linux-arm64 */
             artifactUrl: string;
             /** @example stable */
             channel: string;
@@ -32871,7 +32896,7 @@ export interface operations {
                      * @example [
                      *       {
                      *         "arch": "arm64",
-                     *         "artifactUrl": "https://releases.getproperty.co/edge/0.4.0/arm64.tar.zst",
+                     *         "artifactUrl": "https://device.getproperty.co/v1/device/ota/artifacts/0.4.0/getproperty-edge-0.4.0-linux-arm64",
                      *         "channel": "stable",
                      *         "deprecatedAt": null,
                      *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
@@ -32971,7 +32996,7 @@ export interface operations {
                     /**
                      * @example {
                      *       "arch": "arm64",
-                     *       "artifactUrl": "https://releases.getproperty.co/edge/0.4.0/arm64.tar.zst",
+                     *       "artifactUrl": "https://device.getproperty.co/v1/device/ota/artifacts/0.4.0/getproperty-edge-0.4.0-linux-arm64",
                      *       "channel": "stable",
                      *       "deprecatedAt": null,
                      *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
@@ -33025,7 +33050,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `idempotency.key_reused`, `ota.signature_invalid`, `validation.failed` */
+            /** @description Problem: `idempotency.key_reused`, `ota.artifact_missing`, `ota.signature_invalid`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -33102,7 +33127,7 @@ export interface operations {
                      *       ],
                      *       "release": {
                      *         "arch": "arm64",
-                     *         "artifactUrl": "https://releases.getproperty.co/edge/0.4.0/arm64.tar.zst",
+                     *         "artifactUrl": "https://device.getproperty.co/v1/device/ota/artifacts/0.4.0/getproperty-edge-0.4.0-linux-arm64",
                      *         "channel": "stable",
                      *         "deprecatedAt": null,
                      *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
@@ -33250,7 +33275,7 @@ export interface operations {
                      *         ],
                      *         "release": {
                      *           "arch": "arm64",
-                     *           "artifactUrl": "https://releases.getproperty.co/edge/0.4.0/arm64.tar.zst",
+                     *           "artifactUrl": "https://device.getproperty.co/v1/device/ota/artifacts/0.4.0/getproperty-edge-0.4.0-linux-arm64",
                      *           "channel": "stable",
                      *           "deprecatedAt": null,
                      *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
@@ -33370,7 +33395,7 @@ export interface operations {
                      *       ],
                      *       "release": {
                      *         "arch": "arm64",
-                     *         "artifactUrl": "https://releases.getproperty.co/edge/0.4.0/arm64.tar.zst",
+                     *         "artifactUrl": "https://device.getproperty.co/v1/device/ota/artifacts/0.4.0/getproperty-edge-0.4.0-linux-arm64",
                      *         "channel": "stable",
                      *         "deprecatedAt": null,
                      *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
@@ -33499,7 +33524,7 @@ export interface operations {
                      *       "nextActions": [],
                      *       "release": {
                      *         "arch": "arm64",
-                     *         "artifactUrl": "https://releases.getproperty.co/edge/0.4.0/arm64.tar.zst",
+                     *         "artifactUrl": "https://device.getproperty.co/v1/device/ota/artifacts/0.4.0/getproperty-edge-0.4.0-linux-arm64",
                      *         "channel": "stable",
                      *         "deprecatedAt": null,
                      *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
@@ -33648,7 +33673,7 @@ export interface operations {
                      *       ],
                      *       "release": {
                      *         "arch": "arm64",
-                     *         "artifactUrl": "https://releases.getproperty.co/edge/0.4.0/arm64.tar.zst",
+                     *         "artifactUrl": "https://device.getproperty.co/v1/device/ota/artifacts/0.4.0/getproperty-edge-0.4.0-linux-arm64",
                      *         "channel": "stable",
                      *         "deprecatedAt": null,
                      *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
@@ -33787,7 +33812,7 @@ export interface operations {
                      *       ],
                      *       "release": {
                      *         "arch": "arm64",
-                     *         "artifactUrl": "https://releases.getproperty.co/edge/0.4.0/arm64.tar.zst",
+                     *         "artifactUrl": "https://device.getproperty.co/v1/device/ota/artifacts/0.4.0/getproperty-edge-0.4.0-linux-arm64",
                      *         "channel": "stable",
                      *         "deprecatedAt": null,
                      *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
@@ -33929,7 +33954,7 @@ export interface operations {
                      *       ],
                      *       "release": {
                      *         "arch": "arm64",
-                     *         "artifactUrl": "https://releases.getproperty.co/edge/0.4.0/arm64.tar.zst",
+                     *         "artifactUrl": "https://device.getproperty.co/v1/device/ota/artifacts/0.4.0/getproperty-edge-0.4.0-linux-arm64",
                      *         "channel": "stable",
                      *         "deprecatedAt": null,
                      *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
@@ -42879,8 +42904,7 @@ export interface operations {
                      *         ],
                      *         "clientId": "gw-2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e5f",
                      *         "url": "mqtts://mqtt.getproperty.invalid:8883",
-                     *         "username": "gw-2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e5f",
-                     *         "wsUrl": "wss://mqtt.getproperty.invalid/mqtt"
+                     *         "username": "gw-2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e5f"
                      *       },
                      *       "refreshToken": "q2r8XoT1Vb9mJ0yPz4LkWnE6aGs3dHf5Q2r8XoT1Vb9",
                      *       "refreshTokenExpiresAt": "2026-12-01T00:15:00+07:00",
@@ -43265,6 +43289,90 @@ export interface operations {
             };
         };
     };
+    "device.ota.artifact": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description Artefact file name */
+                file: string;
+                /** @description Release version (semver) */
+                version: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The artefact bytes (`Content-Length` = the signed size, `ETag` = its sha256) */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example <ELF binary, 48211234 bytes> */
+                    "application/octet-stream": string;
+                };
+            };
+            /** @description Problem: `auth.unauthenticated`, `device.certificate_invalid` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "device.ota.manifest": {
         parameters: {
             query?: {
@@ -43296,7 +43404,7 @@ export interface operations {
                      *       "artifact": {
                      *         "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
                      *         "size": 48211234,
-                     *         "url": "https://releases.getproperty.co/edge/0.4.0/arm64.tar.zst"
+                     *         "url": "https://device.getproperty.co/v1/device/ota/artifacts/0.4.0/getproperty-edge-0.4.0-linux-arm64"
                      *       },
                      *       "channel": "stable",
                      *       "minAgentVersion": "0.3.0",

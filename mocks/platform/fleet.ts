@@ -410,6 +410,16 @@ const otaHandlers: HttpHandler[] = [
         return validation(op, "manifest", "version and artifact are required");
       if (!manifest.signature?.value || manifest.signature.alg !== "ed25519")
         return problem(op, "ota.signature_invalid");
+      // D-231: an artefact the API serves on the device host must already be in the bucket with the signed size.
+      const hosted = /^\/v1\/device\/ota\/artifacts\/([^/]+)\/([^/]+)$/.exec(
+        new URL(manifest.artifact.url, "https://device.invalid").pathname,
+      );
+      if (hosted) {
+        if (hosted[1] !== manifest.version)
+          return validation(op, "manifest.artifact.url", "the artefact path must carry the manifest version");
+        if (w().releaseObjects[`releases/edge/${hosted[1]}/${hosted[2]}`] !== manifest.artifact.size)
+          return problem(op, "ota.artifact_missing");
+      }
       if (w().releases.some((r) => r.version === manifest.version && r.arch === manifest.arch))
         return problem(op, "ota.release_exists");
       const release: Schemas["OtaReleaseDto"] = {
