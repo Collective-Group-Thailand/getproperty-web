@@ -32,7 +32,7 @@ const control = async <T>(path: string, method: "GET" | "POST" = "GET"): Promise
 };
 
 async function hydrated(page: Page, zone: "admin" | "owner") {
-  await page.waitForFunction((z) => document.documentElement.dataset.hydrated === z, zone);
+  await page.waitForFunction((z) => document.documentElement?.dataset.hydrated === z, zone);
 }
 
 async function gotoAdmin(page: Page, path: string) {

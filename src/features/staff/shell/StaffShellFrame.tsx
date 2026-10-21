@@ -23,7 +23,6 @@ import { IconMore } from "@/ui/icons/glyphs/more";
 import { LazyAlertDialog, LazySheet } from "@/ui/components/overlays";
 
 import { useDeviceLock } from "../lock/DeviceLock";
-import { signOutStaff, unsentOnDevice } from "../pwa/leaveDevice";
 import { PushPrompt } from "../pwa/PushPrompt";
 import { SyncCenter } from "../pwa/SyncCenter";
 
@@ -58,10 +57,12 @@ export function StaffShellFrame(props: StaffShellFrameProps) {
   // Set during render (not in an effect) so it is in place before any child's mount effect replays the queue;
   // browser only — module state on the server would be shared between requests.
   if (typeof window !== "undefined") setQueueIdentity({ userId: props.userId, tenantId: props.currentTenant.id });
-  const leave = () => startLeaving(() => signOutStaff("/login"));
+  // The clean-up code loads on first use: the staff budget is 200 KB (D-179).
+  const leave = () => startLeaving(async () => (await import("../pwa/leaveDevice")).signOutStaff("/login"));
   /** Sign-out deletes what is unsent on this phone (review H2): say so first when there is something. */
   const requestSignOut = () =>
     startLeaving(async () => {
+      const { signOutStaff, unsentOnDevice } = await import("../pwa/leaveDevice");
       const count = await unsentOnDevice();
       if (count > 0) setUnsent(count);
       else await signOutStaff("/login");

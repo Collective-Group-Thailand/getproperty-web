@@ -22,7 +22,7 @@ export async function signInPlatform(page: Page, persona: Exclude<PlatformPerson
 }
 
 export async function hydratedAdmin(page: Page): Promise<void> {
-  await page.waitForFunction(() => document.documentElement.dataset.hydrated === "admin");
+  await page.waitForFunction(() => document.documentElement?.dataset.hydrated === "admin");
 }
 
 /** A full navigation in the admin console, ready for interaction. */

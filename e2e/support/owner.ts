@@ -23,7 +23,7 @@ export async function signInOwner(page: Page): Promise<void> {
 
 /** Wait until React has hydrated the owner console (the shell marks `<html data-hydrated="owner">`). */
 export async function hydrated(page: Page): Promise<void> {
-  await page.waitForFunction(() => document.documentElement.dataset.hydrated === "owner");
+  await page.waitForFunction(() => document.documentElement?.dataset.hydrated === "owner");
 }
 
 /** A full navigation in the owner console, ready for interaction (hydrated). */

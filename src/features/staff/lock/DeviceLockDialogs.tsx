@@ -10,7 +10,6 @@ import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 
 import { LOCK_AFTER_MINUTES, MAX_PIN_ATTEMPTS, PIN_PATTERN, recordActivity, setPin, verifyPin } from "./pin";
-import { signOutStaff } from "../pwa/leaveDevice";
 import { lockStore } from "./store";
 
 export interface DeviceLockDialogsProps {
@@ -70,7 +69,8 @@ export function DeviceLockDialogs({ setupOpen, onSetupOpenChange, locked, loginH
       setAttempts(used);
       setPinValue("");
       if (used >= MAX_PIN_ATTEMPTS) {
-        await signOutStaff(loginHref); // also clears the PIN, the queue, caches and push (review H2, M4)
+        // Also clears the PIN, the queue, caches and push (review H2, M4); loaded on first use (D-179).
+        await (await import("../pwa/leaveDevice")).signOutStaff(loginHref);
         return;
       }
       setError(t("wrongPin", { count: MAX_PIN_ATTEMPTS - used }));
@@ -142,7 +142,7 @@ export function DeviceLockDialogs({ setupOpen, onSetupOpenChange, locked, loginH
             size="md"
             onClick={() =>
               startTransition(async () => {
-                await signOutStaff(loginHref);
+                await (await import("../pwa/leaveDevice")).signOutStaff(loginHref);
               })
             }
           >

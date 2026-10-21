@@ -89,13 +89,13 @@ export interface QueueEntry {
   sentAt?: number;
 }
 
-interface QueueLease {
+export interface QueueLease {
   name: string;
   holder: string;
   expiresAt: number;
 }
 
-interface QueueDb extends DBSchema {
+export interface QueueDb extends DBSchema {
   entries: { key: string; value: QueueEntry; indexes: { byCreated: number } };
   /** The cross-tab replay lease where the Web Locks API is missing. */
   leases: { key: string; value: QueueLease };
@@ -108,8 +108,6 @@ export const SENT_TTL_MS = 24 * 3600_000;
 export const QUEUE_EVENT = "gp:offline-queue";
 
 export const QUEUE_LOCK = "gp-offline-queue";
-/** How long a fallback lease lives without renewal (a tab that died while replaying frees it after this). */
-const LEASE_MS = 60_000;
 
 let dbPromise: Promise<IDBPDatabase<QueueDb>> | undefined;
 
@@ -372,39 +370,9 @@ type LockManagerLike = {
 export async function withQueueLock<T>(task: () => Promise<T>): Promise<T> {
   const locks = (globalThis.navigator as (Navigator & { locks?: LockManagerLike }) | undefined)?.locks;
   if (locks?.request) return locks.request(QUEUE_LOCK, { mode: "exclusive" }, task);
-  return withLease(task);
-}
-
-/**
- * The fallback lock: a lease record taken in a read-write transaction (IndexedDB serialises overlapping read-write
- * transactions across tabs, so check-and-take is atomic), renewed while the task runs and released after it. A
- * lease left by a tab that died expires after `LEASE_MS`.
- */
-async function withLease<T>(task: () => Promise<T>): Promise<T> {
-  const holder = crypto.randomUUID();
-  const take = async (): Promise<boolean> => {
-    const database = await db();
-    const tx = database.transaction("leases", "readwrite");
-    const lease = await tx.store.get(QUEUE_LOCK);
-    const free = !lease || lease.holder === holder || lease.expiresAt <= Date.now();
-    if (free) await tx.store.put({ name: QUEUE_LOCK, holder, expiresAt: Date.now() + LEASE_MS });
-    await tx.done;
-    return free;
-  };
-  for (let wait = 50; !(await take()); wait = Math.min(wait * 2, 1_000)) {
-    await new Promise((resolve) => setTimeout(resolve, wait));
-  }
-  const renew = setInterval(() => void take(), LEASE_MS / 3);
-  try {
-    return await task();
-  } finally {
-    clearInterval(renew);
-    const database = await db();
-    const tx = database.transaction("leases", "readwrite");
-    const lease = await tx.store.get(QUEUE_LOCK);
-    if (lease?.holder === holder) await tx.store.delete(QUEUE_LOCK);
-    await tx.done;
-  }
+  // Rare (every target browser has Web Locks): the fallback loads only when needed.
+  const { withLease } = await import("./queue-lease");
+  return withLease(db, task);
 }
 
 async function run(fetchImpl: typeof fetch, now: () => number): Promise<ReplayResult> {

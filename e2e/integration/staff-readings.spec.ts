@@ -59,7 +59,7 @@ test("staff OTP sign-in → reading round → a manual reading with its photo �
   await expect(page.getByTestId("today-readings").getByTestId("big-action-count")).toHaveText("2");
   await page.getByTestId("today-readings").click();
   // A full page load: tap only once React has hydrated the round (the staff shell marks it).
-  await page.waitForFunction(() => document.documentElement.dataset.hydrated === "staff");
+  await page.waitForFunction(() => document.documentElement?.dataset.hydrated === "staff");
 
   await expect(page.getByTestId("round-item")).toHaveCount(2);
   const first = page.getByTestId("round-item").first();

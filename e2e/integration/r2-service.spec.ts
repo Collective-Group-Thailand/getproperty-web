@@ -58,7 +58,7 @@ async function routeStorage(page: Page) {
 }
 
 async function hydrated(page: Page, zone: "owner" | "staff") {
-  await page.waitForFunction((name) => document.documentElement.dataset.hydrated === name, zone);
+  await page.waitForFunction((name) => document.documentElement?.dataset.hydrated === name, zone);
 }
 
 async function signInOwner(page: Page, world: R2World) {

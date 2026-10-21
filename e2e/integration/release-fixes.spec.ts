@@ -39,7 +39,7 @@ const control = async <T>(path: string, method: "GET" | "POST" = "GET"): Promise
 };
 
 async function hydrated(page: Page) {
-  await page.waitForFunction(() => document.documentElement.dataset.hydrated === "owner");
+  await page.waitForFunction(() => document.documentElement?.dataset.hydrated === "owner");
 }
 
 async function goto(page: Page, path: string) {

@@ -18,7 +18,8 @@ export async function signInStaff(page: Page): Promise<void> {
  * reaches a handler rather than a server-rendered button that does nothing yet.
  */
 export async function hydrated(page: Page): Promise<void> {
-  await page.waitForFunction(() => document.documentElement.dataset.hydrated === "staff");
+  // `documentElement` is briefly null while a full navigation swaps the document.
+  await page.waitForFunction(() => document.documentElement?.dataset.hydrated === "staff");
 }
 
 /** A full navigation on the staff host, ready for interaction. */
