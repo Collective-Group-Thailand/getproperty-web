@@ -1,4 +1,4 @@
-# getproperty: Master checklist (24 ต.ค. 2026)
+# getproperty: Master checklist (อัปเดต 25 ต.ค. 2026)
 
 สัญลักษณ์: ✅ เสร็จและ commit แล้ว · 🟡 เสร็จบน cloud รอ commit · 🔄 กำลังทำ · ⬜ ยังไม่เริ่ม · ⛔ รออย่างอื่นก่อน (บอกไว้ว่ารออะไร)
 
@@ -21,10 +21,10 @@
 - ✅ /landlords สำหรับเจ้าของบ้าน/คอนโด
 - ✅ /pricing ใช้ฟรี + ค่าธรรมเนียมต่อรายการ, verify slip, LINE OA 2 แบบ, add-on ดึงจาก API
 - ✅ ตัดการขายเรื่องเพดานค่าไฟ สคบ. ออก (D-262)
-- 🟡 Navbar ใหม่ (เมนูกลาง, เส้นใต้หน้าปัจจุบัน, ปุ่ม "เริ่มใช้ฟรี"/"ลงประกาศฟรี" ตามหน้า, เมนูมือถือ)
-- 🟡 /rent หน้าค้นหาห้องเช่า: ค้นตามย่าน/ประเภท/ราคา/ห้องนอน/สัตว์เลี้ยง/เรียงลำดับ, ตัวกรองอยู่ใน URL
-- 🟡 /rent/[slug] หน้ารายละเอียด: แกลเลอรี, ข้อมูลห้อง, ที่อยู่เต็ม + Google Maps, ติดต่อเจ้าของทาง LINE, badge ยืนยันเจ้าของ, รายงานประกาศ, ห้องคล้ายกัน
-- 🟡 เอาป้าย "เร็ว ๆ นี้" ออกจากทุกหน้า
+- ✅ Navbar ใหม่ (เมนูกลาง, เส้นใต้หน้าปัจจุบัน, ปุ่ม "เริ่มใช้ฟรี"/"ลงประกาศฟรี" ตามหน้า, เมนูมือถือ)
+- ✅ /rent หน้าค้นหาห้องเช่า: ค้นตามย่าน/ประเภท/ราคา/ห้องนอน/สัตว์เลี้ยง/เรียงลำดับ, ตัวกรองอยู่ใน URL
+- ✅ /rent/[slug] หน้ารายละเอียด: แกลเลอรี, ข้อมูลห้อง, ที่อยู่เต็ม + Google Maps, ติดต่อเจ้าของทาง LINE, badge ยืนยันเจ้าของ, รายงานประกาศ, ห้องคล้ายกัน
+- ✅ เอาป้าย "เร็ว ๆ นี้" ออกจากทุกหน้า
 - 🔄 ขัดเกลาดีไซน์จากภาพหน้าจอ 1440/390 ทุกหน้า (แผงค้นหา, แกลเลอรี, ระยะห่าง)
 - ⬜ เทียบกับ canvas "getproperty Website Redesign" ทีละ section แล้วแก้จุดที่ยังห่าง
 - ⬜ หน้าภาษาอังกฤษ: ตรวจทุกหน้าว่าโครงตรงกับภาษาไทยและคำแปลเป็นธรรมชาติ
@@ -35,12 +35,14 @@
 
 ## 3. SEO / GEO / AEO (แบบ getpack)
 - ✅ Meta title/description ไทย-อังกฤษ, canonical, hreflang, OG image ทุกหน้า
-- 🟡 JSON-LD: Organization, WebSite + SearchAction, SoftwareApplication (ราคา 0), FAQPage, BreadcrumbList, ItemList, Offer + Apartment/House ต่อประกาศ
-- 🟡 sitemap.xml รวม URL ประกาศทุกอัน (ดึงจาก API)
-- 🟡 robots.txt เปิด /rent, /rent/*, /landlords, /llms.txt
-- 🟡 /llms.txt สรุปเป็น markdown สำหรับ AI (ข้อเท็จจริง, หน้า, FAQ 3 ชุด, ประกาศล่าสุด)
-- ⬜ หน้า landing ตามพื้นที่ (เช่น "คอนโดให้เช่า อารีย์") สร้างจากข้อมูลประกาศจริง ⛔ ต้องมีประกาศพอ
-- ⬜ หน้าบทความ/คู่มือ (เช่น สัญญาเช่าต้องมีอะไร, ตม.30 คืออะไร) เพื่อ AEO
+- ✅ JSON-LD: Organization, WebSite + SearchAction, SoftwareApplication (ราคา 0), FAQPage, BreadcrumbList, ItemList, Offer + Apartment/House ต่อประกาศ
+- ✅ sitemap.xml รวม URL ประกาศทุกอัน (ดึงจาก API)
+- ✅ robots.txt เปิด /rent, /rent/*, /landlords, /llms.txt
+- ✅ /llms.txt สรุปเป็น markdown สำหรับ AI (ข้อเท็จจริง, หน้า, FAQ 3 ชุด, ประกาศล่าสุด)
+- ✅ หน้าย่าน/สถานี /rent/area/[slug] + ลิงก์ย่านยอดนิยม (ใช้ mock จนกว่า API B7.9)
+- ✅ คู่มือ 5 เรื่อง th/en (/guides) + เครื่องมือฟรี 3 ตัว (/tools)
+- ✅ หน้าเกี่ยวกับเรา, ติดต่อ (ฟอร์ม), ความปลอดภัย/PDPA, ศูนย์ช่วยเหลือ, สำหรับผู้เช่าชาวต่างชาติ
+- ⬜ ย้ายคู่มือเข้า CMS (API B7.13) และเพิ่มบทความต่อเนื่อง
 - ⬜ ลงทะเบียน Google Search Console / Bing, ส่ง sitemap ⛔ คุณ (ต้องใช้บัญชีโดเมน)
 
 ## 4. Owner console (web: `src/app/[locale]/(console)`)
@@ -93,3 +95,11 @@
 - ⬜ Patch ลง Mac แล้ว commit บน `feat/marketing-redesign-landlords` (ไม่แตะ `.env.example`, `package.json` dev port, `.vscode/` ของคุณ)
 - ⬜ ภาพหน้าจอ 1440/390 ทุกหน้าส่งให้คุณดู
 - ⬜ ลบโฟลเดอร์ชั่วคราว `_xfer`
+
+## 11. แพ็กเกจกลาง และคิดเงินตามพื้นที่ (D-275, D-276)
+- ⬜ repo `collective-shared`: `@collective/integrations`, `@collective/web-kit`, `@collective/documents` (ยกจาก getpack + getproperty)
+- ⬜ prompt ให้ getpack และ getproperty เปลี่ยนมาใช้แพ็กเกจ (รันบน Mac)
+- ⬜ นับพื้นที่ต่อเจ้าของ + ใบแจ้งค่าพื้นที่ ⛔ คุณกำหนดพื้นที่ฟรีและราคา
+
+## 12. ทำงานต่อข้าม account
+- ✅ `RESUME.md` (สถานะ + ล็อก) และ `HANDOFF-PROMPT.md` ใน `Collective/getproperty`

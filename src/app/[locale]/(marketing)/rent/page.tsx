@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { parseListingQuery } from "@/features/owner/marketing/listings/contract";
 import { ListingCard } from "@/features/owner/marketing/listings/ListingCard";
 import { ListingSearch } from "@/features/owner/marketing/listings/ListingSearch";
-import { publicListings } from "@/features/owner/marketing/publicApi";
+import { publicListingAreas, publicListings } from "@/features/owner/marketing/publicApi";
 import { JsonLdScript } from "@/features/owner/marketing/JsonLdScript";
 import { lineOaHref, marketingMetadata, marketingOrigin, ownerHref } from "@/features/owner/marketing/seo";
 import { breadcrumbSchema, itemListSchema } from "@/features/owner/marketing/structured-data";
@@ -33,7 +33,8 @@ export default async function Rent({ params, searchParams }: Props) {
   setRequestLocale(locale);
   const t = await getTranslations("owner.marketing.listings");
   const query = parseListingQuery(await searchParams);
-  const page = await publicListings(query);
+  const [page, areas] = await Promise.all([publicListings(query), publicListingAreas()]);
+  const popular = [...areas].sort((a, b) => b.count - a.count).slice(0, 8);
   const action = getPathname({ href: "/rent", locale });
   const line = lineOaHref();
   const list = line ?? ownerHref("/login", locale);
@@ -61,6 +62,22 @@ export default async function Rent({ params, searchParams }: Props) {
             <p className="text-muted text-lg">{t("search.body")}</p>
           </div>
           <ListingSearch query={query} action={action} />
+          {popular.length > 0 ? (
+            <nav aria-labelledby="popular-areas" className="flex flex-wrap items-center gap-2">
+              <h2 id="popular-areas" className="text-muted me-2 text-sm font-semibold">
+                {t("area.popular")}
+              </h2>
+              {popular.map((area) => (
+                <a
+                  key={area.slug}
+                  href={getPathname({ href: `/rent/area/${area.slug}`, locale })}
+                  className="bg-surface border-border hover:border-fg rounded-control inline-flex min-h-9 items-center border px-3 text-sm"
+                >
+                  {locale === "en" ? area.nameEn : area.name}
+                </a>
+              ))}
+            </nav>
+          ) : null}
         </div>
       </section>
 

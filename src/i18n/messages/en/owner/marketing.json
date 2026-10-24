@@ -22,7 +22,14 @@
     "owners": "For owners",
     "menu": "Menu",
     "close": "Close menu",
-    "list": "List for free"
+    "list": "List for free",
+    "guides": "Guides",
+    "tools": "Free tools",
+    "help": "Help centre",
+    "about": "About",
+    "contactPage": "Contact",
+    "security": "Security & PDPA",
+    "foreignRenters": "For foreign renters"
   },
   "hero": {
     "eyebrow": "Free for apartments, dormitories and landlords",
@@ -291,7 +298,13 @@
     "company": "Operated by Collective Group (Thailand)",
     "rights": "© {year} Collective Group (Thailand)",
     "photos": "Photos from Unsplash",
-    "tagline": "Rental management for people who want to look after their homes well, without wearing themselves out"
+    "tagline": "Rental management for people who want to look after their homes well, without wearing themselves out",
+    "columns": {
+      "owners": "For owners",
+      "renters": "For renters",
+      "resources": "Resources",
+      "company": "Company"
+    }
   },
   "preview": {
     "label": "Sample screen",

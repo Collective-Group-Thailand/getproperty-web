@@ -84,6 +84,9 @@ test("sitemap lists only the marketing pages, robots points at it", async ({ req
   expect(sitemap).toContain("/landlords</loc>");
   expect(sitemap).toContain("/rent</loc>");
   expect(sitemap).toContain("/rent/condo-ari-1br-sunlit</loc>");
+  expect(sitemap).toContain("/guides/tm30</loc>");
+  expect(sitemap).toContain("/tools/rent-receipt</loc>");
+  expect(sitemap).toContain("/rent/area/nonthaburi</loc>");
   expect(sitemap).toContain(`hreflang="en" href="${HOSTS.owner}/en/legal/dpa"`);
   expect(sitemap).not.toContain("dashboard");
   const robots = await (await get(request, HOSTS.owner, "/robots.txt")).text();
@@ -102,6 +105,7 @@ test("llms.txt: a markdown statement for answer engines, on the indexed host onl
   expect(body.startsWith("# getproperty\n")).toBe(true);
   expect(body).toContain("getproperty คืออะไร");
   expect(body).toContain("/rent/condo-ari-1br-sunlit");
+  expect(body).toContain("/guides/rental-income-tax");
   expect((await get(request, HOSTS.staff, "/llms.txt")).status()).toBe(404);
 });
 
@@ -127,4 +131,77 @@ test("rent detail: full address, rent, owner contact, Offer JSON-LD; unknown slu
   const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
   expect(results.violations).toEqual([]);
   expect((await page.goto(`${HOSTS.owner}/rent/no-such-listing`))?.status()).toBe(404);
+});
+
+test("guides: index and an article with its short answer, Article and FAQ JSON-LD (D-271)", async ({ page }) => {
+  await page.goto(`${HOSTS.owner}/guides`);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("รู้ก่อนปล่อยเช่า");
+  await page.getByRole("link", { name: /ตม\.30 คืออะไร/ }).click();
+  await expect(page).toHaveURL(/\/guides\/tm30$/);
+  await expect(page.getByRole("heading", { level: 2, name: "สรุปสั้น" })).toBeVisible();
+  const graphs = await jsonLdGraphs(page);
+  expect(graphs.find((g) => g["@type"] === "Article")).toMatchObject({
+    dateModified: expect.stringMatching(/^\d{4}-/),
+  });
+  expect(graphs.some((g) => g["@type"] === "FAQPage")).toBe(true);
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
+  expect(results.violations).toEqual([]);
+  expect((await page.goto(`${HOSTS.owner}/guides/no-such-guide`))?.status()).toBe(404);
+});
+
+test("tools: utility bill adds up, receipt writes the amount in words, yield shows a percentage (D-271)", async ({
+  page,
+}) => {
+  await page.goto(`${HOSTS.owner}/tools/utility-bill`);
+  await page.getByLabel("ค่าเช่าห้อง (บาท)").fill("4500");
+  await page.getByLabel("เลขมิเตอร์ครั้งก่อน").first().fill("1200");
+  await page.getByLabel("เลขมิเตอร์ครั้งนี้").first().fill("1325");
+  await page.getByLabel("อัตราต่อหน่วย (บาท)").fill("7");
+  await expect(page.getByText("฿5,375.00")).toBeVisible();
+
+  await page.goto(`${HOSTS.owner}/tools/rent-receipt`);
+  await page.getByLabel("ค่าเช่า", { exact: true }).fill("15000");
+  await expect(page.getByText("(หนึ่งหมื่นห้าพันบาทถ้วน)")).toBeVisible();
+
+  await page.goto(`${HOSTS.owner}/tools/rental-yield`);
+  await page.getByLabel("ราคาซื้อ (บาท)").fill("3000000");
+  await page.getByLabel("ค่าเช่าต่อเดือน (บาท)").fill("15000");
+  await page.getByLabel("ค่าใช้จ่ายต่อปี (บาท)").fill("24000");
+  await expect(page.getByText("4.7%")).toBeVisible();
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
+  expect(results.violations).toEqual([]);
+});
+
+test("trust pages render, are indexable and accessible", async ({ page }) => {
+  for (const [path, heading] of [
+    ["/about", "เราทำ getproperty เพราะการเช่าบ้านไม่ควรเหนื่อยขนาดนี้"],
+    ["/security", "ข้อมูลผู้เช่าของคุณ เราดูแลเหมือนของเรา"],
+    ["/help", "มีอะไรให้เราช่วย"],
+    ["/foreign-renters", "เช่าที่พักในไทย ไม่ต้องเดาว่าต้องทำอะไรบ้าง"],
+    ["/en/foreign-renters", "Rent a home in Thailand without guessing the next step"],
+  ] as const) {
+    const response = await page.goto(`${HOSTS.owner}${path}`);
+    expect(response!.headers()["x-robots-tag"]).toBeUndefined();
+    await expect(page.getByRole("heading", { level: 1 })).toHaveText(heading);
+    const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
+    expect(results.violations).toEqual([]);
+  }
+});
+
+test("contact: the form sends a lead and says so", async ({ page }) => {
+  await page.goto(`${HOSTS.owner}/contact`);
+  await page.getByLabel("ชื่อ", { exact: true }).fill("สมชาย");
+  await page.getByLabel("เบอร์โทร", { exact: true }).fill("0812345678");
+  await page.getByLabel("ข้อความ", { exact: true }).fill("อยากย้ายข้อมูลจาก Excel");
+  await page.getByRole("checkbox").check();
+  await page.getByRole("button", { name: "ส่งข้อความ" }).click();
+  await expect(page.getByRole("status")).toHaveText("ได้รับข้อความแล้ว ทีมงานจะติดต่อกลับในวันทำการ");
+});
+
+test("area page: listings near a station, nearby areas, 404 for an unknown area (D-272)", async ({ page }) => {
+  await page.goto(`${HOSTS.owner}/rent/area/ari`);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("ห้องเช่าใกล้อารีย์");
+  await expect(page.getByTestId("listings").getByRole("listitem")).toHaveCount(1);
+  await expect(page.getByRole("heading", { name: "ย่านอื่นใกล้เคียง" })).toBeVisible();
+  expect((await page.goto(`${HOSTS.owner}/rent/area/no-such-area`))?.status()).toBe(404);
 });

@@ -17,11 +17,16 @@ const LINKS = [
   { key: "apartments", path: "/", match: (p: string) => p === "/" },
   { key: "owners", path: "/landlords", match: (p: string) => p === "/landlords" },
   { key: "pricing", path: "/pricing", match: (p: string) => p === "/pricing" },
+  {
+    key: "guides",
+    path: "/guides",
+    match: (p: string) => p === "/guides" || p.startsWith("/guides/") || p === "/tools" || p.startsWith("/tools/"),
+  },
 ] as const;
 
 /**
- * The public header (redesign 2026-10-24): the wordmark, four destinations in the middle — find a home, for
- * dormitories, for owners, pricing — with the current one underlined, and on the right the language, sign-in and
+ * The public header (redesign 2026-10-24): the wordmark, five destinations in the middle — find a home, for
+ * dormitories, for owners, pricing, guides — with the current one underlined, and on the right the language, sign-in and
  * the one call to action. On a phone the destinations fold into a disclosure menu (`<details>`, no JS).
  */
 export async function MarketingNav({ locale }: { locale: Locale }) {

@@ -1,7 +1,9 @@
 import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 
-import { publicListings } from "@/features/owner/marketing/publicApi";
+import { guidesFor } from "@/features/owner/marketing/guides";
+import { publicListingAreas, publicListings } from "@/features/owner/marketing/publicApi";
+import { TOOL_PATH } from "@/features/owner/marketing/tools/ToolFrame";
 import { marketingOrigin } from "@/features/owner/marketing/seo";
 import { serverEnv } from "@/lib/env/server";
 import { hostname } from "@/lib/zones";
@@ -46,8 +48,22 @@ export async function GET(): Promise<Response> {
           `- [${t("nav.landlords")}](${url("/landlords", locale)}): ${t("landlords.meta.description")}`,
           `- [${t("nav.rent")}](${url("/rent", locale)}): ${t("listings.meta.description")}`,
           `- [${t("nav.pricing")}](${url("/pricing", locale)}): ${t("meta.pricingDescription")}`,
+          `- [${t("guides.title")}](${url("/guides", locale)}): ${t("guides.meta.description")}`,
+          `- [${t("tools.title")}](${url("/tools", locale)}): ${t("tools.intro")}`,
+          ...(["utility", "receipt", "yield"] as const).map(
+            (key) => `  - [${t(`tools.${key}.title`)}](${url(TOOL_PATH[key], locale)}): ${t(`tools.${key}.card`)}`,
+          ),
+          `- [${t("nav.foreignRenters")}](${url("/foreign-renters", locale)}): ${t("foreign.meta.description")}`,
+          `- [${t("nav.help")}](${url("/help", locale)}): ${t("help.meta.description")}`,
+          `- [${t("nav.security")}](${url("/security", locale)}): ${t("security.meta.description")}`,
+          `- [${t("nav.about")}](${url("/about", locale)}): ${t("about.meta.description")}`,
+          `- [${t("nav.contactPage")}](${url("/contact", locale)}): ${t("contact.meta.description")}`,
           `- [${t("nav.legal")}](${url("/legal/terms", locale)})`,
         ].join("\n"),
+        // Guides: the short answer of each, which is what an answer engine quotes (D-271).
+        guidesFor(locale)
+          .map((guide) => `### [${guide.title}](${url(`/guides/${guide.slug}`, locale)})\n\n${guide.answer}`)
+          .join("\n\n"),
         faq("faq.items"),
         faq("landlords.faq.items"),
         faq("pricing.faq.items"),
@@ -59,6 +75,11 @@ export async function GET(): Promise<Response> {
   const listingLines = (listings?.data ?? []).map(
     (l) =>
       `- [${l.title}](${url(`/rent/${l.slug}`, routing.defaultLocale)}): ${l.district}, ${l.province} · ${l.rent} THB/month`,
+  );
+
+  const areas = (await publicListingAreas()).filter((area) => area.indexable);
+  const areaLines = areas.map(
+    (a) => `- [${a.nameEn} / ${a.name}](${url(`/rent/area/${a.slug}`, routing.defaultLocale)}): ${a.count} listings`,
   );
 
   const tEn = await getTranslations({ locale: "en", namespace: "owner.marketing" });
@@ -76,6 +97,7 @@ export async function GET(): Promise<Response> {
       "- Listings: owners list rooms, condos and houses for rent free, with the full address shown",
     ].join("\n"),
     ...sections,
+    areaLines.length ? ["## Areas", ...areaLines].join("\n") : "",
     listingLines.length ? ["## Listings (latest)", ...listingLines].join("\n") : "",
     `## More\n\n- [Sitemap](${origin}/sitemap.xml)`,
   ]

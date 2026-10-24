@@ -4,6 +4,25 @@ import { headers } from "next/headers";
 import { marketingOrigin } from "@/features/owner/marketing/seo";
 import { serverEnv } from "@/lib/env/server";
 import { hostname } from "@/lib/zones";
+import { MARKETING_PATHS } from "@/lib/zones/marketing";
+
+/**
+ * Every public path in both languages, from the zone's own list (so a new page cannot be forgotten here): exact pages
+ * end with `$`, slug families (listings, areas, guides) end with `/`.
+ */
+const ROBOTS_ALLOW = [
+  ...new Set(
+    [
+      ...MARKETING_PATHS.filter((path) => !path.startsWith("/legal/")).map((path) =>
+        path === "/" ? "/$" : `${path}$`,
+      ),
+      "/legal/",
+      "/rent/",
+      "/guides/",
+    ].flatMap((rule) => [rule, rule === "/$" ? "/en$" : `/en${rule}`]),
+  ),
+  "/llms.txt$",
+];
 
 /** Rendered per request: the origin comes from the runtime environment, not the build. */
 export const dynamic = "force-dynamic";
@@ -22,21 +41,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
     rules: [
       {
         userAgent: "*",
-        allow: [
-          "/$",
-          "/pricing$",
-          "/landlords$",
-          "/rent$",
-          "/rent/",
-          "/legal/",
-          "/en$",
-          "/en/pricing$",
-          "/en/landlords$",
-          "/en/rent$",
-          "/en/rent/",
-          "/en/legal/",
-          "/llms.txt$",
-        ],
+        allow: ROBOTS_ALLOW,
         disallow: "/",
       },
     ],
