@@ -1,4 +1,4 @@
-# getproperty: Master checklist (อัปเดต 25 ต.ค. 2026)
+# getproperty: Master checklist (อัปเดต 25 ต.ค. 2026 03:30)
 
 สัญลักษณ์: ✅ เสร็จและ commit แล้ว · 🟡 เสร็จบน cloud รอ commit · 🔄 กำลังทำ · ⬜ ยังไม่เริ่ม · ⛔ รออย่างอื่นก่อน (บอกไว้ว่ารออะไร)
 
@@ -30,6 +30,8 @@
 - ⬜ หน้าภาษาอังกฤษ: ตรวจทุกหน้าว่าโครงตรงกับภาษาไทยและคำแปลเป็นธรรมชาติ
 - ⬜ หน้า /rent ฝั่งผู้เช่า: บันทึกห้องที่ชอบ, แจ้งเตือนเมื่อมีห้องใหม่ตรงเงื่อนไข (ทาง LINE) ⛔ API B7.3
 - ⬜ แบบฟอร์มรายงานประกาศ (scam) และหน้าเงื่อนไขการลงประกาศ ⛔ ร่างจาก O-018
+- ✅ Guides ใช้โมเดลบทความกลาง `@collective/content` + รองรับลิงก์พันธมิตร (มีข้อความเปิดเผย, `rel=sponsored`) (D-277)
+- ⬜ ใส่ลิงก์พันธมิตรจริงในคู่มือ ⛔ คุณ (ลิงก์โปรแกรม Shopee/Lazada)
 - ⬜ Analytics events: cta_start, cta_list, cta_line, listing_view, listing_contact, search_used
 - ⬜ Lighthouse ≥ 95 (Performance/Accessibility/SEO) ทุกหน้า, ไม่มี scroll แนวนอนที่ 360px
 
@@ -47,7 +49,8 @@
 
 ## 4. Owner console (web: `src/app/[locale]/(console)`)
 - ✅ หน้าเดิมทั้งหมด (dashboard, ตึก, ห้อง, มิเตอร์, บิล, ชำระเงิน, เงินประกัน, สัญญา, แจ้งซ่อม, ตม.30, รายงาน ฯลฯ) ใช้ฟอนต์/ขนาดใหม่แล้ว
-- ⬜ รีวิวดีไซน์ทุกหน้าด้วยภาพหน้าจอ (dev:mock) แล้วแก้ให้ตรงกับเว็บใหม่
+- 🔄 รีวิวดีไซน์ทุกหน้าด้วยภาพหน้าจอ (dev:mock): desktop เสร็จ, เหลือมือถือ 390px และหน้า เงินประกัน/พัสดุ/ประตู/รายงาน/อุปกรณ์
+- ✅ การ์ดพื้นที่จัดเก็บในหน้าค่าบริการ getproperty (ใช้ไป/พื้นที่ฟรี, ไฟล์ vs ข้อมูล, ย้ำว่าไม่ลบ/ไม่ล็อกข้อมูล) (D-276)
 - ⬜ เอาหน้า /subscription ออกหรือเปลี่ยนเป็น "ค่าธรรมเนียมรายเดือน" (ใบแจ้ง fee จาก verify slip) ⛔ API B7.2
 - ⬜ F6.1 สมัครเองสำหรับเจ้าของบ้าน/คอนโด + console แบบ portfolio ⛔ API B7.1
 - ⬜ F6.2 แก้ไขประกาศ (รูป ≥ 5, ราคา, เงื่อนไข), กล่องคนสนใจ, นัดดูห้อง ⛔ API B7.2–7.4
@@ -73,6 +76,9 @@
 - ⬜ B7.6 แจ้งซ่อมตามประเภท tenant
 - ⬜ B7.7 LINE OA ของตัวเอง / ค่าข้อความ
 - ⬜ B7.8 login หลายช่องทาง
+- ✅ ใช้แพ็กเกจกลาง `@collective/integrations` + `@collective/documents` (D-278) — 358 integration test ผ่าน
+- ✅ D-276 นับพื้นที่ต่อเจ้าของ: snapshot รายวัน, แจ้งเตือน 80/100% ทาง LINE, ไม่บล็อกเอกสารตามกฎหมาย, `GET /v1/owner/storage`
+- ⬜ บรรทัดค่าพื้นที่ในใบแจ้งค่าบริการรายเดือน ⛔ API B7.2
 - ⬜ หลังเสร็จแต่ละข้อ: `pnpm contract:build` แล้วในเว็บรัน `pnpm gen:api` และลบ type ชั่วคราว `listings/contract.ts`
 
 ## 8. getproperty-liff (Mac)
@@ -90,18 +96,20 @@
 - ⚠️ ย้ายไฟล์ AWS access key (.csv) และ Firebase admin JSON ในโฟลเดอร์ Collective ไปเก็บที่ปลอดภัย และ rotate key
 
 ## 10. ปิดงานรอบนี้ (web)
-- ⬜ เพิ่ม endpoint ประกาศใน `docs/contract-requests.md`, บันทึก PROGRESS.md
-- ⬜ รัน typecheck / lint / unit (ล่าสุดผ่าน 1,052 test) / e2e บน Mac
-- ⬜ Patch ลง Mac แล้ว commit บน `feat/marketing-redesign-landlords` (ไม่แตะ `.env.example`, `package.json` dev port, `.vscode/` ของคุณ)
+- ✅ บันทึก PROGRESS.md
+- ✅ typecheck / lint / unit 1,083 / e2e 163 / build ผ่าน (Node 24, sandbox)
+- ✅ commit แล้ว merge เข้า `main` ทุก repo (ยังไม่ push) — ไฟล์ส่วนตัวของคุณถูกเอาออกจาก git แต่ยังอยู่ในเครื่องครบ
 - ⬜ ภาพหน้าจอ 1440/390 ทุกหน้าส่งให้คุณดู
-- ⬜ ลบโฟลเดอร์ชั่วคราว `_xfer`
+- ✅ ลบไฟล์ชั่วคราวใน `_xfer`
 
 ## 11. แพ็กเกจกลาง และคิดเงินตามพื้นที่ (D-275, D-276)
 - ✅ repo `collective-shared` (`~/Collective/collective-shared`): `@collective/integrations`, `@collective/documents`, `@collective/content`, `@collective/web-kit` 0.1 — 59 tests ผ่าน
 - ✅ prompt ให้ getpack และ getproperty เปลี่ยนมาใช้แพ็กเกจ (`collective-shared/docs/adoption/`)
-- ⬜ รัน adoption บน Mac: getproperty-api → getproperty-web → getpack-api → getpack-web
+- ✅ adoption: getproperty-api, getproperty-web (+ แก้แพ็กเกจ: code splitting, safeReturnTo เข้มขึ้น)
+- ⬜ adoption: getpack-api → getpack-web ⛔ getpack-web มีงานที่คุณแก้ค้างไว้ยังไม่ commit
 - ⬜ push repo ขึ้น GitHub (private) + ตั้ง GitHub Packages ⛔ คุณ
-- ⬜ นับพื้นที่ต่อเจ้าของ + ใบแจ้งค่าพื้นที่ ⛔ คุณกำหนดพื้นที่ฟรีและราคา
+- ✅ นับพื้นที่ต่อเจ้าของ (ค่าเริ่มต้น = ยังไม่จำกัด)
+- ⬜ กำหนดพื้นที่ฟรี/ราคาต่อ GB/แพ็กเสริม ใน settings `storage.*` ⛔ คุณ
 
 ## 12. ทำงานต่อข้าม account
 - ✅ `RESUME.md` (สถานะ + ล็อก) และ `HANDOFF-PROMPT.md` ใน `Collective/getproperty`
