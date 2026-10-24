@@ -1,5 +1,7 @@
 # ADR-0001 — Thai-first typography: Noto Sans Thai (UI), Anuphan (display), JetBrains Mono (numbers)
 
+> **Amended 2026-10-24 (founder):** one typeface for the whole system — Anuphan for UI and headlines, as getpack; Noto Sans Thai is no longer loaded. JetBrains Mono stays for tabular figures. Sizes: one scale in `src/ui/tokens/scale.ts` (see design-system.md).
+
 **Status:** Accepted (2026-10-16, F0 0.2) · Proposed 2026-10-16 (F0 0.1)
 
 ## Context

@@ -77,7 +77,6 @@
     "@axe-core/playwright": "^4.13.0",
     "@fontsource-variable/anuphan": "^5.3.0",
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
-    "@fontsource-variable/noto-sans-thai": "^5.3.0",
     "@lhci/cli": "^0.15.1",
     "@next/bundle-analyzer": "16.4.2",
     "@playwright/test": "^1.64.1",

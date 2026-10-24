@@ -26,7 +26,10 @@ import {
   CONTAINER,
   DURATION,
   EASING,
+  CONSOLE_FONT_SIZE,
+  CONSOLE_LINE_HEIGHT,
   FONT_FAMILY,
+  FONT_LINE_HEIGHT,
   FONT_SIZE,
   FONT_WEIGHT,
   LINE_HEIGHT,
@@ -55,6 +58,14 @@ function semanticVars(theme: keyof typeof THEMES): string[] {
   return SEMANTIC_KEYS.map((key) => `--sem-${key}: ${oklchCss(THEMES[theme][key])};`);
 }
 
+/** `--text-<step>` and its `--text-<step>--line-height`, the pair every Tailwind `text-*` utility reads. */
+function typeScale(sizes: Record<string, string>, lineHeights: Record<string, string>): string[] {
+  return Object.entries(sizes).flatMap(([name, size]) => [
+    `--text-${name}: ${size};`,
+    `--text-${name}--line-height: ${lineHeights[name]};`,
+  ]);
+}
+
 function themeBlock(): string {
   const lines: string[] = [];
 
@@ -80,7 +91,7 @@ function themeBlock(): string {
   lines.push("", "/* Typography (ADR-0001). */");
   lines.push("--font-*: initial;");
   for (const [name, stack] of Object.entries(FONT_FAMILY)) lines.push(`--font-${name}: ${stack};`);
-  for (const [name, size] of Object.entries(FONT_SIZE)) lines.push(`--text-${name}: ${size};`);
+  lines.push(...typeScale(FONT_SIZE, FONT_LINE_HEIGHT));
   for (const [name, value] of Object.entries(LINE_HEIGHT)) lines.push(`--leading-${name}: ${value};`);
   for (const [name, value] of Object.entries(FONT_WEIGHT)) lines.push(`--font-weight-${name}: ${value};`);
 
@@ -110,6 +121,9 @@ export function buildTokensCss(): string {
     `@media (prefers-color-scheme: dark) {\n${indent(block(":root:not([data-theme])", semanticVars("dark")))}\n}`,
     block('[data-theme="dark"]', semanticVars("dark")),
     block('[data-theme="hc"]', semanticVars("hc")),
+    "/* Type scales (src/ui/tokens/scale.ts): the consoles are fixed and dense; the marketing pages inside the owner\n   zone take the fluid scale back. The staff zone's own sizes live in src/ui/styles/zones.css. */",
+    block(':is([data-zone="owner"], [data-zone="admin"])', typeScale(CONSOLE_FONT_SIZE, CONSOLE_LINE_HEIGHT)),
+    block('[data-type-scale="marketing"]', typeScale(FONT_SIZE, FONT_LINE_HEIGHT)),
     "",
   ].join("\n\n");
 }

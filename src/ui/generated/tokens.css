@@ -131,17 +131,29 @@
 
   /* Typography (ADR-0001). */
   --font-*: initial;
-  --font-sans: var(--font-gp-sans-latin), var(--font-gp-sans-thai), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-gp-display-latin), var(--font-gp-display-thai), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-gp-display-latin), var(--font-gp-display-thai), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-gp-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1.4;
   --text-xs: 0.75rem;
+  --text-xs--line-height: 1.5;
   --text-sm: 0.875rem;
+  --text-sm--line-height: 1.6;
   --text-base: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.25rem;
-  --text-2xl: 1.5rem;
-  --text-3xl: 1.875rem;
-  --text-4xl: 2.25rem;
+  --text-base--line-height: 1.6;
+  --text-lg: clamp(1.125rem, 1.1rem + 0.13vw, 1.1875rem);
+  --text-lg--line-height: 1.6;
+  --text-xl: clamp(1.25rem, 1.19rem + 0.27vw, 1.375rem);
+  --text-xl--line-height: 1.5;
+  --text-2xl: clamp(1.5rem, 1.39rem + 0.54vw, 1.75rem);
+  --text-2xl--line-height: 1.4;
+  --text-3xl: clamp(1.875rem, 1.6rem + 1.2vw, 2.375rem);
+  --text-3xl--line-height: 1.3;
+  --text-4xl: clamp(2.25rem, 1.87rem + 1.7vw, 3rem);
+  --text-4xl--line-height: 1.25;
+  --text-display: clamp(2.5rem, 1.6rem + 3.6vw, 4rem);
+  --text-display--line-height: 1.2;
   --leading-tight: 1.25;
   --leading-snug: 1.4;
   --leading-normal: 1.6;
@@ -161,6 +173,7 @@
   --radius-control: 0.5rem;
   --radius-card: 0.75rem;
   --radius-panel: 1rem;
+  --radius-photo: 1.25rem;
   --shadow-none: none;
   --shadow-card: 0 1px 2px rgb(40 35 28 / 0.06), 0 1px 1px rgb(40 35 28 / 0.04);
   --shadow-raised: 0 4px 12px rgb(40 35 28 / 0.1);
@@ -374,5 +387,54 @@
   --sem-neutral-fg: oklch(100% 0 0);
   --sem-neutral-subtle: oklch(96.2% 0.0017 75);
   --sem-neutral-subtle-fg: oklch(0% 0 0);
+}
+
+/* Type scales (src/ui/tokens/scale.ts): the consoles are fixed and dense; the marketing pages inside the owner
+   zone take the fluid scale back. The staff zone's own sizes live in src/ui/styles/zones.css. */
+
+:is([data-zone="owner"], [data-zone="admin"]) {
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.125rem;
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 0.9375rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.0625rem;
+  --text-lg--line-height: 1.625rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.75rem;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 2rem;
+  --text-3xl: 1.5rem;
+  --text-3xl--line-height: 2rem;
+  --text-4xl: 1.875rem;
+  --text-4xl--line-height: 2.375rem;
+  --text-display: 1.875rem;
+  --text-display--line-height: 2.375rem;
+}
+
+[data-type-scale="marketing"] {
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1.4;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.5;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.6;
+  --text-base: 1rem;
+  --text-base--line-height: 1.6;
+  --text-lg: clamp(1.125rem, 1.1rem + 0.13vw, 1.1875rem);
+  --text-lg--line-height: 1.6;
+  --text-xl: clamp(1.25rem, 1.19rem + 0.27vw, 1.375rem);
+  --text-xl--line-height: 1.5;
+  --text-2xl: clamp(1.5rem, 1.39rem + 0.54vw, 1.75rem);
+  --text-2xl--line-height: 1.4;
+  --text-3xl: clamp(1.875rem, 1.6rem + 1.2vw, 2.375rem);
+  --text-3xl--line-height: 1.3;
+  --text-4xl: clamp(2.25rem, 1.87rem + 1.7vw, 3rem);
+  --text-4xl--line-height: 1.25;
+  --text-display: clamp(2.5rem, 1.6rem + 3.6vw, 4rem);
+  --text-display--line-height: 1.2;
 }
 
