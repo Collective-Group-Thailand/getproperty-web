@@ -24,7 +24,7 @@
   "access_grants": "สิทธิ์เข้าถึงอาคาร",
   "support_access": "สิทธิ์ทีมซัพพอร์ต",
   "audit_log": "บันทึกการใช้งาน",
-  "subscription": "การสมัครใช้งาน",
+  "subscription": "ค่าบริการ getproperty",
   "group": {
     "operations": "งานประจำวัน",
     "money": "การเงิน",

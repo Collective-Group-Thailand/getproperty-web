@@ -1,6 +1,6 @@
 {
-  "title": "Subscription",
-  "description": "Your getproperty plan, what is counted, invoices from getproperty and the hardware at your buildings.",
+  "title": "getproperty billing",
+  "description": "getproperty is free with no monthly fee. Here are the fees on payments the platform confirms, invoices from getproperty and the hardware at your buildings.",
   "readOnly": {
     "title": "Your account is read-only",
     "body": "The subscription is suspended for an unpaid invoice ({count, plural, one {# open} other {# open}}). Pay it with the Thai QR below; the account reopens once getproperty confirms the payment."
@@ -13,8 +13,8 @@
     "title": "Free trial",
     "body": "The trial ends on {date}; the first invoice follows."
   },
-  "none": "No subscription yet",
-  "noneHint": "getproperty sets up your plan when you sign up.",
+  "none": "Free — no monthly plan",
+  "noneHint": "A fee applies only to payments the platform confirms, summed on a monthly invoice below.",
   "plan": "Plan",
   "planName": "Plan",
   "addons": "Add-ons",
@@ -91,5 +91,39 @@
     "monthly": "Per month",
     "requested": "Requested",
     "scheduled": "Scheduled"
+  },
+  "storage": {
+    "title": "Storage",
+    "description": "Every file and record of this account, counted at the file's real size and a standard size per record.",
+    "ofAllowance": "of {allowance}",
+    "noAllowance": "No limit yet",
+    "left": "{percent}% used · {bytes} left",
+    "overBy": "{percent}% used · {bytes} over",
+    "files": "Files",
+    "filesHint": "Meter photos, slips, repair photos, contracts and uploads",
+    "recordsLabel": "Records",
+    "recordCount": "{count} records",
+    "recordItem": "{label} {count}",
+    "records": {
+      "invoice": "Invoices",
+      "receipt": "Receipts",
+      "payment": "Payments",
+      "meter_reading": "Meter readings",
+      "lease": "Leases",
+      "service_request": "Repair requests"
+    },
+    "level": {
+      "ok": "Healthy",
+      "warning": "Nearly full",
+      "full": "Full",
+      "over": "Over",
+      "unmetered": "No limit"
+    },
+    "note": {
+      "unmetered": "Storage has no limit at the moment; keep working as usual.",
+      "safe": "Your data is never deleted or locked, even when storage is full. Documents the law requires, such as receipts and leases, are always produced.",
+      "full": "Everything you stored stays. Documents the law requires are produced as usual; only some optional uploads wait until you remove files you no longer need or add space.",
+      "billed": "Extra storage is {price} per GB per month, on your monthly getproperty invoice. All your data stays."
+    }
   }
 }

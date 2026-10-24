@@ -259,9 +259,9 @@ export interface paths {
         put?: never;
         /**
          * Switch a gateway’s MQTT WebSocket fallback
-         * @description For a building whose network blocks outbound 8883 (D-239, O-012 resolved): `wsFallback: true` lets the gateway connect over EMQX ws 8083 behind Caddy authenticated by its device JWT **alone** — no client certificate on that path, so a stolen JWT (≤ 1 h, issued only over mTLS to a non-retired gateway) is enough to connect for its lifetime. Off by default; the bootstrap answer carries `mqtt.wsUrl` only for such a gateway. Only gateways, never retired ones; audited with the reason; the next WebSocket connect is decided by the new value.
+         * @description For a building whose network blocks outbound 8883 (D-239, O-012 resolved): `wsFallback: true` lets the gateway connect over EMQX ws 8083 behind Caddy authenticated by its device JWT **alone** — no client certificate on that path, so a stolen JWT (≤ 1 h, issued only over mTLS to a non-retired gateway) is enough to connect for its lifetime. Off by default; the bootstrap answer and every `POST /v1/device/token` answer carry `mqtt.wsUrl` only for such a gateway, so a provisioned gateway picks the change up at its next token refresh (≤ 1 h, edge CR-015, D-249) — no new provisioning code. Only gateways, never retired ones; audited with the reason; the next WebSocket connect is decided by the new value.
          *
-         *     Implements: D-235, D-239.
+         *     Implements: D-235, D-239, D-249.
          */
         post: operations["admin.devices.setMqttTransport"];
         delete?: never;
@@ -2953,9 +2953,9 @@ export interface paths {
         put?: never;
         /**
          * Mint a device JWT from the mTLS client certificate
-         * @description Authenticated by the gateway’s client certificate alone (mTLS, no bearer): a certificate issued by the platform device CA, not revoked, within its validity, of a gateway that is not retired → a short-lived JWT (`aud=device`, `DEVICE_ACCESS_TOKEN_TTL_SECONDS`) in the gateway’s current session family. The agent refreshes one minute before `expiresAt` and never stores the token (CR-002, D-130, D-165).
+         * @description Authenticated by the gateway’s client certificate alone (mTLS, no bearer): a certificate issued by the platform device CA, not revoked, within its validity, of a gateway that is not retired → a short-lived JWT (`aud=device`, `DEVICE_ACCESS_TOKEN_TTL_SECONDS`) in the gateway’s current session family. The agent refreshes one minute before `expiresAt` and never stores the token (CR-002, D-130, D-165). The answer also carries the gateway’s **current** MQTT endpoints (`mqtt { url, wsUrl? }`, edge CR-015, D-249): `wsUrl` is present only while the platform admin has this gateway’s WebSocket fallback on (D-239) and the platform publishes one — so switching the fallback on or off reaches an already-provisioned gateway at its next refresh, without a new provisioning code or a site visit. Additive within device protocol 1.2.
          *
-         *     Implements: D-130, D-165.
+         *     Implements: D-130, D-165, D-239, D-249.
          */
         post: operations["device.token.create"];
         delete?: never;
@@ -7984,6 +7984,28 @@ export interface paths {
          *     Implements: D-043, D-044.
          */
         post: operations["owner.slipReviews.decide"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/storage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My storage
+         * @description What the tenant stores (files + records at their counted size), the allowance and its level (ok / warning / full / over), the price per GB-month above it and the last 30 daily snapshots (D-276). `metered: false` while the platform has not set a free allowance for the tenant type.
+         *
+         *     Implements: D-276.
+         */
+        get: operations["owner.storage.get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -15376,6 +15398,18 @@ export interface components {
             /** @example https://storage.example.com/getproperty/t/…/log_bundle/…?X-Amz-Signature=abc */
             uploadUrl: string;
         };
+        DeviceMqttEndpointDto: {
+            /**
+             * @description mTLS listener (`MQTT_PUBLIC_URL`) — the same value the bootstrap answer carries as `mqtt.url`.
+             * @example mqtts://mqtt.getproperty.invalid:8883
+             */
+            url: string;
+            /**
+             * @description WebSocket fallback (device protocol §1, D-239), **present only** while the platform admin has the fallback of **this** gateway enabled (`POST /v1/admin/devices/{deviceId}/actions/set-mqtt-transport`) **and** the platform publishes it (`MQTT_PUBLIC_WS_URL`). Absent = the gateway must not use (or must stop using) the WebSocket path; the broker refuses it anyway (D-244). Read on every refresh (edge CR-015, D-249).
+             * @example wss://mqtt.getproperty.invalid/mqtt
+             */
+            wsUrl?: string;
+        };
         DeviceMqttTransportDto: {
             /** @example building firewall blocks outbound 8883 (ticket INC-2026-021) */
             reason: string;
@@ -15402,6 +15436,20 @@ export interface components {
         };
         /** @enum {string} */
         DeviceStatus: "inventory" | "assigned" | "provisioned" | "online" | "degraded" | "offline" | "retired";
+        DeviceTokenDto: {
+            /**
+             * @description Device JWT (`aud=device`).
+             * @example eyJhbGciOiJFZERTQSJ9.eyJhdWQiOiJkZXZpY2UifQ.c2lnbmF0dXJl
+             */
+            accessToken: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T01:15:00+07:00
+             */
+            expiresAt: string;
+            /** @description Current MQTT connection info of this gateway, evaluated at the time of the call (protocol 1.2, additive — D-249). */
+            mqtt: components["schemas"]["DeviceMqttEndpointDto"];
+        };
         DeviceUnbindDto: {
             /**
              * Format: date-time
@@ -19719,7 +19767,7 @@ export interface components {
              */
             username: string;
             /**
-             * @description WebSocket fallback for buildings whose network blocks 8883 (device protocol §1, D-239 — O-012 resolved): EMQX ws 8083 behind Caddy, authenticated by the device JWT **alone** (no client certificate on that path). **Omitted** unless the platform admin enabled the fallback for this gateway (`POST /v1/admin/devices/{deviceId}/actions/set-mqtt-transport`) and the platform publishes it (`MQTT_PUBLIC_WS_URL`); off by default (D-231, edge CR-013).
+             * @description WebSocket fallback for buildings whose network blocks 8883 (device protocol §1, D-239 — O-012 resolved): EMQX ws 8083 behind Caddy, authenticated by the device JWT **alone** (no client certificate on that path). **Omitted** unless the platform admin enabled the fallback for this gateway (`POST /v1/admin/devices/{deviceId}/actions/set-mqtt-transport`) and the platform publishes it (`MQTT_PUBLIC_WS_URL`); off by default (D-231, edge CR-013). A later change reaches the gateway in the `mqtt` block of every `POST /v1/device/token` answer (edge CR-015, D-249).
              * @example wss://mqtt.getproperty.invalid/mqtt
              */
             wsUrl?: string;
@@ -20303,6 +20351,62 @@ export interface components {
          * @enum {string}
          */
         OwnerMenuKey: "dashboard" | "buildings" | "units" | "parties" | "leases" | "deposits" | "readings" | "devices" | "rate_plans" | "invoices" | "payments" | "reports" | "utility_loss" | "service_requests" | "access" | "parcels" | "announcements" | "members" | "bank_accounts" | "settings" | "notifications" | "privacy" | "access_grants" | "support_access" | "audit_log" | "subscription";
+        OwnerStorageDto: {
+            /**
+             * @description Free allowance + packs (bytes).
+             * @example 5368709120
+             */
+            allowanceBytes: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-10-25T09:00:00+07:00
+             */
+            asOf: string;
+            /**
+             * @description Bytes of the stored files (decimal string).
+             * @example 650000000
+             */
+            fileBytes: string;
+            /**
+             * @description Free allowance in GB (setting).
+             * @example 5
+             */
+            freeGb: string | null;
+            history: components["schemas"]["StorageDayDto"][];
+            /** @example ok */
+            level: components["schemas"]["StorageLevel"] | null;
+            /**
+             * @description False while the platform has not set a free allowance for this tenant type: usage is shown, nothing is held.
+             * @example false
+             */
+            metered: boolean;
+            /**
+             * @description THB per GB-month above the allowance (setting); null = overage not sold.
+             * @example null
+             */
+            pricePerGbMonth: string | null;
+            /**
+             * @description Stored records per counted type.
+             * @example {
+             *       "invoice": 1203,
+             *       "meter_reading": 8800,
+             *       "receipt": 1150
+             *     }
+             */
+            records: {
+                [key: string]: number;
+            };
+            /**
+             * @description Counted bytes: files + records × counted size (decimal string).
+             * @example 734003200
+             */
+            usedBytes: string;
+            /**
+             * @description Used / allowance, whole percent (floor).
+             * @example 13
+             */
+            usedPercent: number | null;
+        };
         OwnerSubscriptionDto: {
             /** @description What a month would cost with today’s usage (estimate; the invoice of the 1st is the truth). */
             estimate: components["schemas"]["ChargesDto"] | null;
@@ -25424,6 +25528,20 @@ export interface components {
             /** @description By floor level, then unit number. */
             data: components["schemas"]["StaffUnitDto"][];
         };
+        StorageDayDto: {
+            /**
+             * @description Counted bytes that day (decimal string).
+             * @example 734003200
+             */
+            countedBytes: string;
+            /**
+             * Format: date
+             * @example 2026-10-24
+             */
+            day: string;
+        };
+        /** @enum {string} */
+        StorageLevel: "ok" | "warning" | "full" | "over";
         SubjectDto: {
             /** @example operator */
             audience: components["schemas"]["TokenAudience"];
@@ -38134,7 +38252,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `idempotency.in_progress`, `subscription.exists` */
+            /** @description Problem: `idempotency.in_progress`, `subscription.disabled`, `subscription.exists` */
             409: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -44461,7 +44579,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Token */
+            /** @description Token and current MQTT endpoints */
             200: {
                 headers: {
                     "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
@@ -44474,10 +44592,13 @@ export interface operations {
                     /**
                      * @example {
                      *       "accessToken": "eyJhbGciOiJFZERTQSJ9.eyJhdWQiOiJkZXZpY2UifQ.c2lnbmF0dXJl",
-                     *       "expiresAt": "2026-11-01T01:15:00+07:00"
+                     *       "expiresAt": "2026-11-01T01:15:00+07:00",
+                     *       "mqtt": {
+                     *         "url": "mqtts://mqtt.getproperty.invalid:8883"
+                     *       }
                      *     }
                      */
-                    "application/json": components["schemas"]["DeviceAccessTokenDto"];
+                    "application/json": components["schemas"]["DeviceTokenDto"];
                 };
             };
             /** @description Problem: `http.bad_request` */
@@ -80483,6 +80604,113 @@ export interface operations {
             };
             /** @description Problem: `idempotency.key_reused`, `payment.partial_not_allowed`, `validation.failed` */
             422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.storage.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description My storage */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "allowanceBytes": "5368709120",
+                     *       "asOf": "2026-10-25T09:00:00+07:00",
+                     *       "fileBytes": "650000000",
+                     *       "freeGb": "5",
+                     *       "history": [
+                     *         {
+                     *           "countedBytes": "731906048",
+                     *           "day": "2026-10-24"
+                     *         }
+                     *       ],
+                     *       "level": "ok",
+                     *       "metered": true,
+                     *       "pricePerGbMonth": null,
+                     *       "records": {
+                     *         "invoice": 1203,
+                     *         "lease": 40,
+                     *         "meter_reading": 8800,
+                     *         "payment": 1150,
+                     *         "receipt": 1150,
+                     *         "service_request": 35
+                     *       },
+                     *       "usedBytes": "734003200",
+                     *       "usedPercent": 13
+                     *     }
+                     */
+                    "application/json": components["schemas"]["OwnerStorageDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope` */
+            403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;

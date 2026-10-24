@@ -4,6 +4,7 @@ import {
   formatDate,
   formatDateTime,
   formatIsoDate,
+  formatBytes,
   formatPercent,
   formatPeriodKey,
   formatPhone,
@@ -42,6 +43,16 @@ describe("formatUnits", () => {
   });
   it("never renders NaN", () => {
     expect(formatUnits("x", "kWh")).toBe("—");
+  });
+});
+
+describe("formatBytes (D-276)", () => {
+  it("uses binary units with one decimal, like the API's notices", () => {
+    expect(formatBytes("1610612736", "en")).toBe("1.5 GB");
+    expect(formatBytes("5368709120")).toBe("5 GB");
+    expect(formatBytes(512)).toBe("512 B");
+    expect(formatBytes("2048", "en")).toBe("2 KB");
+    expect(formatBytes("x")).toBe("—");
   });
 });
 

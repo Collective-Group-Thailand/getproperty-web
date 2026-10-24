@@ -1,6 +1,6 @@
 # getproperty-web
 
-**getproperty — บิลทำเอง เก็บเงินเอง ถูกกฎหมาย** · Collective Group (Thailand)
+**getproperty — ให้เช่าง่าย อยู่สบาย** · Collective Group (Thailand)
 
 The single Next.js 16 application of getproperty: one codebase, one deployment, three host-based zones —
 **owner** console, **staff** PWA, **admin** back office. The resident LINE Mini App (LIFF) is the separate

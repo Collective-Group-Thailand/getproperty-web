@@ -1,9 +1,22 @@
+import { robotsAllowRules } from "@collective/web-kit";
 import type { MetadataRoute } from "next";
 import { headers } from "next/headers";
 
 import { marketingOrigin } from "@/features/owner/marketing/seo";
 import { serverEnv } from "@/lib/env/server";
 import { hostname } from "@/lib/zones";
+import { MARKETING_PATHS } from "@/lib/zones/marketing";
+
+/**
+ * Every public path in both languages, from the zone's own list (so a new page cannot be forgotten here): exact pages
+ * end with `$`, slug families (listings, areas, guides) end with `/`.
+ */
+const ROBOTS_ALLOW = robotsAllowRules({
+  pages: MARKETING_PATHS.filter((path) => !path.startsWith("/legal/")),
+  families: ["/legal/", "/rent/", "/guides/"],
+  localePrefixes: ["/en"],
+  extra: ["/llms.txt$"],
+});
 
 /** Rendered per request: the origin comes from the runtime environment, not the build. */
 export const dynamic = "force-dynamic";
@@ -22,7 +35,7 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
     rules: [
       {
         userAgent: "*",
-        allow: ["/$", "/pricing$", "/legal/", "/en$", "/en/pricing$", "/en/legal/"],
+        allow: ROBOTS_ALLOW,
         disallow: "/",
       },
     ],

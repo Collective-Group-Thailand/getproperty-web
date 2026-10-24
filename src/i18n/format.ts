@@ -86,6 +86,25 @@ export function formatNumber(value: number, locale: Locale = "th", options?: Int
   return new Intl.NumberFormat(localeTag(locale), options).format(value);
 }
 
+/**
+ * A byte count the API sent as a decimal string (storage, D-276) in binary units with one decimal: `"1610612736"` →
+ * `1.5 GB`. Same units as the API's notices (`@collective/documents` formatBytes).
+ */
+export function formatBytes(value: string | number, locale: Locale = "th"): string {
+  const bytes = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(bytes) || bytes < 0) return "—";
+  const units = [
+    [1024 ** 4, "TB"],
+    [1024 ** 3, "GB"],
+    [1024 ** 2, "MB"],
+    [1024, "KB"],
+  ] as const;
+  for (const [size, label] of units)
+    if (bytes >= size)
+      return `${formatNumber(Math.round((bytes / size) * 10) / 10, locale, { maximumFractionDigits: 1 })} ${label}`;
+  return `${formatNumber(bytes, locale)} B`;
+}
+
 /** A percentage the API sent as a decimal string (`"12.5000"` → `12.5%`), trimmed as text. */
 export function formatPercent(value: string | number, locale: Locale = "th", maxDecimals = 2): string {
   const text = formatDecimal(value, locale, maxDecimals);

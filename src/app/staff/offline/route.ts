@@ -33,7 +33,7 @@ function tokenVars(theme: (typeof THEMES)["light"]): string {
 }
 
 const STYLE = `
-  :root { color-scheme: light dark; font-family: system-ui, "Noto Sans Thai", sans-serif; ${tokenVars(THEMES.light)} }
+  :root { color-scheme: light dark; font-family: system-ui, sans-serif; ${tokenVars(THEMES.light)} }
   @media (prefers-color-scheme: dark) { :root { ${tokenVars(THEMES.dark)} } }
   body { margin: 0; min-height: 100dvh; display: grid; place-items: center; background: var(--bg); color: var(--fg); }
   main { max-width: 26rem; padding: 2rem 1.25rem; display: flex; flex-direction: column; gap: 1rem; }

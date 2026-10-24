@@ -1,21 +1,7 @@
 /*
- * The same five faces src/ui/fonts/index.ts loads with next/font/local, declared by hand because Vite
+ * The same three faces src/ui/fonts/index.ts loads with next/font/local, declared by hand because Vite
  * cannot run next/font. Keep in step with src/ui/fonts/index.ts and its README.
  */
-
-@font-face {
-  font-family: "getproperty Sans Latin";
-  src: url("/fonts/noto-sans-thai-latin.woff2") format("woff2");
-  font-weight: 100 900;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "getproperty Sans Thai";
-  src: url("/fonts/noto-sans-thai-thai.woff2") format("woff2");
-  font-weight: 100 900;
-  font-display: swap;
-}
 
 @font-face {
   font-family: "getproperty Display Latin";
@@ -39,8 +25,6 @@
 }
 
 :root {
-  --font-gp-sans-latin: "getproperty Sans Latin";
-  --font-gp-sans-thai: "getproperty Sans Thai";
   --font-gp-display-latin: "getproperty Display Latin";
   --font-gp-display-thai: "getproperty Display Thai";
   --font-gp-mono: "getproperty Mono";

@@ -247,6 +247,10 @@ test("subscription: plan, usage, invoices with Thai QR and PDF, hardware, upgrad
   await expect(page.getByTestId("plan-name")).toHaveText("Apartment Starter");
   await expect(page.getByTestId("usage-units")).not.toBeEmpty();
   await expect(page.getByTestId("platform-invoice-row").first()).toBeVisible();
+  // D-276: storage against the allowance, with the reassurance that data is never deleted or locked
+  await expect(page.getByTestId("storage-used")).toHaveText(/GB$/);
+  await expect(page.getByTestId("storage").getByRole("progressbar")).toHaveAttribute("aria-valuetext", /ใช้ไป \d+%/);
+  await expect(page.getByTestId("storage-note")).toContainText("ไม่ถูกลบหรือล็อก");
   await expectAxeClean(page);
 
   const surveys = await page.getByTestId("survey-row").count();

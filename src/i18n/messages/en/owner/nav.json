@@ -24,7 +24,7 @@
   "access_grants": "Building access",
   "support_access": "Support access",
   "audit_log": "Audit log",
-  "subscription": "Subscription",
+  "subscription": "getproperty billing",
   "group": {
     "operations": "Daily work",
     "money": "Money",

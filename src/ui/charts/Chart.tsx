@@ -101,7 +101,7 @@ export function Chart({
                 className="stroke-border"
                 strokeDasharray="3 3"
               />
-              <text x={PAD.left - 8} y={y(tick) + 4} textAnchor="end" className="fill-muted text-[11px] tabular-nums">
+              <text x={PAD.left - 8} y={y(tick) + 4} textAnchor="end" className="fill-muted text-2xs tabular-nums">
                 {formatValue(tick.toFixed(2))}
               </text>
             </g>
@@ -148,7 +148,7 @@ export function Chart({
                 x={x(index)}
                 y={height - 8}
                 textAnchor="middle"
-                className="fill-muted text-[11px] tabular-nums"
+                className="fill-muted text-2xs tabular-nums"
               >
                 {point.label}
               </text>

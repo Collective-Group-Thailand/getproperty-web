@@ -116,6 +116,12 @@ export const CURATED_ICONS = {
   receipt: "receipt-text",
   "calendar-check": "calendar-check",
   archive: "archive",
+  // public site tools and guides (D-271)
+  printer: "printer",
+  calculator: "calculator",
+  book: "book-open",
+  globe: "globe",
+  percent: "percent",
   // theme & language
   "theme-system": "monitor",
   "theme-light": "sun",

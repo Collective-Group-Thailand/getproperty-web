@@ -11,15 +11,27 @@ export interface ProgressProps {
   valueText: string;
   /** Show `valueText` under the bar. */
   showCaption?: boolean;
+  /** Fill colour: `warning` (near a limit) and `danger` (at or over it) — the caption must say it too. */
+  tone?: "primary" | "warning" | "danger";
   className?: string;
 }
+
+const FILL = { primary: "bg-primary", warning: "bg-warning", danger: "bg-danger" } as const;
 
 /**
  * A determinate progress bar (round progress, upload progress) — WAI-ARIA `progressbar` with a text
  * value, so the number is announced, not just drawn. Colour is never the only signal: the caption says
  * the same thing in words.
  */
-export function Progress({ value, max, label, valueText, showCaption = true, className }: ProgressProps) {
+export function Progress({
+  value,
+  max,
+  label,
+  valueText,
+  showCaption = true,
+  tone = "primary",
+  className,
+}: ProgressProps) {
   const clamped = Math.max(0, Math.min(value, max));
   const percent = max > 0 ? Math.round((clamped / max) * 100) : 0;
   return (
@@ -34,7 +46,7 @@ export function Progress({ value, max, label, valueText, showCaption = true, cla
         className="bg-bg-subtle h-3 w-full overflow-hidden rounded-full"
       >
         <div
-          className="bg-primary duration-slow ease-standard h-full rounded-full transition-[width]"
+          className={cn("duration-slow ease-standard h-full rounded-full transition-[width]", FILL[tone])}
           style={{ width: `${percent}%` }}
         />
       </div>

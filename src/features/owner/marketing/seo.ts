@@ -37,16 +37,21 @@ export function ogImage(origin: string) {
 
 /** Indexable metadata of a marketing page: canonical, th/en alternates, Open Graph. */
 export function marketingMetadata(
-  path: MarketingPath,
+  path: MarketingPath | `/${string}`,
   locale: Locale,
-  { title, description }: { title: string; description: string },
+  {
+    title,
+    description,
+    type = "website",
+    noindex = false,
+  }: { title: string; description: string; type?: "website" | "article"; noindex?: boolean },
 ): Metadata {
   const origin = marketingOrigin();
   const url = (lang: Locale) => `${origin}${getPathname({ href: path, locale: lang })}`;
   return {
     title: { absolute: title },
     description,
-    robots: { index: true, follow: true },
+    robots: { index: !noindex, follow: true },
     alternates: {
       canonical: url(locale),
       languages: Object.fromEntries([...routing.locales.map((lang) => [lang, url(lang)]), ["x-default", url("th")]]),
@@ -57,23 +62,21 @@ export function marketingMetadata(
       url: url(locale),
       siteName: "getproperty",
       locale: locale === "th" ? "th_TH" : "en_US",
-      type: "website",
+      type,
       images: [ogImage(origin)],
     },
     twitter: { card: "summary_large_image", title, description, images: [ogImage(origin)] },
   };
 }
 
-/** Organization JSON-LD (schema.org) for the landing page. */
-export function organizationJsonLd(description: string): string {
-  return JSON.stringify({
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    name: "getproperty",
-    legalName: "Collective Group (Thailand)",
-    url: marketingOrigin(),
-    // A raster logo: search engines want PNG/JPEG for an organisation's logo (`pnpm brand`, 880 × 188).
-    logo: `${marketingOrigin()}/brand/getproperty-logo.png`,
-    description,
-  }).replace(/</g, "\\u003c");
+/** The platform's LINE Official Account ("add friend" link), the public pages' sales channel; null when not configured. */
+export function lineOaHref(): string | null {
+  const id = serverEnv().NEXT_PUBLIC_LINE_OA_ID;
+  return id ? `https://line.me/R/ti/p/${encodeURIComponent(id)}` : null;
+}
+
+/** Opens a chat with the platform LINE OA with `text` typed in (LINE URL scheme `oaMessage`); null when not configured. */
+export function lineOaMessageHref(text: string): string | null {
+  const id = serverEnv().NEXT_PUBLIC_LINE_OA_ID;
+  return id ? `https://line.me/R/oaMessage/${encodeURIComponent(id)}/?${encodeURIComponent(text)}` : null;
 }

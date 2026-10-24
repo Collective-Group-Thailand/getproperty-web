@@ -26,7 +26,7 @@ test.describe("owner shell", () => {
     const sidebar = page.getByRole("navigation", { name: "เมนูหลัก" });
     await expect(sidebar.getByRole("link", { name: "เช้านี้" })).toHaveAttribute("aria-current", "page");
     await expect(sidebar.getByRole("link", { name: "บิล" })).toHaveAttribute("href", "/invoices");
-    await expect(sidebar.getByRole("link", { name: "การสมัครใช้งาน" })).toBeVisible();
+    await expect(sidebar.getByRole("link", { name: "ค่าบริการ getproperty" })).toBeVisible();
     await expect(sidebar.getByRole("heading", { name: "การเงิน" })).toBeVisible();
   });
 
@@ -36,7 +36,7 @@ test.describe("owner shell", () => {
     const sidebar = page.getByRole("navigation", { name: "เมนูหลัก" });
     await expect(sidebar.getByRole("link", { name: "บิล" })).toBeVisible();
     await expect(sidebar.getByRole("link", { name: "บัญชีรับเงิน" })).toHaveCount(0);
-    await expect(sidebar.getByRole("link", { name: "การสมัครใช้งาน" })).toHaveCount(0);
+    await expect(sidebar.getByRole("link", { name: "ค่าบริการ getproperty" })).toHaveCount(0);
   });
 
   test("collapses the sidebar and remembers it", async ({ page }) => {

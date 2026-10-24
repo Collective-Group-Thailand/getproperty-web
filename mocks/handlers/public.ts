@@ -1,6 +1,7 @@
 import { http, type HttpHandler } from "msw";
 
 import type { components } from "../../src/lib/api/schema";
+import { listingHandlers } from "./listings";
 import { json, problem } from "./support";
 
 type Schemas = components["schemas"];
@@ -89,6 +90,9 @@ const TARIFFS: Record<string, Schemas["PublicTariffDto"]> = {
 };
 
 export const publicHandlers: HttpHandler[] = [
+  ...listingHandlers,
+  // CONTRACT-REQUEST: the public contact form's lead (D-271).
+  http.post("*/v1/public/contact-requests", () => new Response(null, { status: 202 })),
   http.get("*/v1/public/plans", () => json({ data: PLANS } satisfies Schemas["PublicPlansDto"])),
   http.get("*/v1/public/utility-tariffs/current", ({ request }) => {
     const url = new URL(request.url);
