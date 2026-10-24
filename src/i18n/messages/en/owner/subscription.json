@@ -1,6 +1,6 @@
 {
-  "title": "Subscription",
-  "description": "Your getproperty plan, what is counted, invoices from getproperty and the hardware at your buildings.",
+  "title": "getproperty billing",
+  "description": "getproperty is free with no monthly fee. Here are the fees on payments the platform confirms, invoices from getproperty and the hardware at your buildings.",
   "readOnly": {
     "title": "Your account is read-only",
     "body": "The subscription is suspended for an unpaid invoice ({count, plural, one {# open} other {# open}}). Pay it with the Thai QR below; the account reopens once getproperty confirms the payment."
@@ -13,8 +13,8 @@
     "title": "Free trial",
     "body": "The trial ends on {date}; the first invoice follows."
   },
-  "none": "No subscription yet",
-  "noneHint": "getproperty sets up your plan when you sign up.",
+  "none": "Free — no monthly plan",
+  "noneHint": "A fee applies only to payments the platform confirms, summed on a monthly invoice below.",
   "plan": "Plan",
   "planName": "Plan",
   "addons": "Add-ons",
