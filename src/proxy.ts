@@ -7,8 +7,10 @@ import { serverEnv } from "@/lib/env/server";
 import { clientIpFrom, requestIdFrom } from "@/lib/http/edge";
 import { createNonce, securityHeaders, sentryOriginFromDsn } from "@/lib/security/headers";
 import {
+  hostname,
   isReservedPath,
   isZoneEnabled,
+  publicOrigin,
   resolveZone,
   ZONE_HEADER,
   ZONE_SEGMENT,
@@ -33,6 +35,11 @@ import { routing } from "@/i18n/routing";
  *    `/bff`, the others at `/<zone>/bff` — so a BFF is only reachable on its own host.
  * 6. Security headers on the response: CSP, `Permissions-Policy` (camera on staff only), HSTS,
  *    `Referrer-Policy`, `X-Robots-Tag: noindex` on everything except the owner marketing pages.
+ *
+ * The platform's public site (`MARKETING_HOST`, e.g. `getproperty.app`) is the owner zone limited to the marketing
+ * pages: those (and the root files) are served there with no session, everything else is a 308 to the same path on
+ * `OWNER_HOST`. Once it is set the marketing pages on the owner host are `noindex` (their canonical is the public
+ * site), so a search engine sees one copy.
  */
 
 /**
@@ -48,9 +55,20 @@ export const NOT_FOUND_PATH = "/_not-found-zone";
 
 export interface ZoneRoute {
   zone: Zone;
-  /** `rewrite`: serve this internal URL · `intl`: hand to next-intl (owner pages) · `asset`: as is. */
-  kind: "rewrite" | "intl" | "asset" | "not-found";
+  /**
+   * `rewrite`: serve this internal URL · `intl`: hand to next-intl (owner pages) · `asset`: as is ·
+   * `redirect`: 308 to `url` (a non-marketing path on the public site → the owner host).
+   */
+  kind: "rewrite" | "intl" | "asset" | "not-found" | "redirect";
   url: URL;
+  /** The request came in on `MARKETING_HOST`. */
+  marketing?: true;
+}
+
+/** The public site: its host, and the owner host's public origin the rest of the paths move to. */
+export interface MarketingSite {
+  host: string;
+  ownerOrigin: string;
 }
 
 /** Where a request goes, without side effects (unit-tested). `null` = unknown or disabled host. */
@@ -59,7 +77,11 @@ export function routeRequest(
   host: string | null,
   hosts: Record<Zone, string> = zoneHosts(),
   enabled: readonly Zone[] = ["owner", "staff", "admin"],
+  marketing?: MarketingSite,
 ): ZoneRoute | null {
+  if (marketing && hostname(host) === hostname(marketing.host)) {
+    return isZoneEnabled("owner", enabled) ? marketingRoute(url, marketing) : null;
+  }
   const zone = resolveZone(host, hosts);
   if (!zone || !isZoneEnabled(zone, enabled)) return null;
 
@@ -83,6 +105,17 @@ export function routeRequest(
     return { zone, kind: "asset", url: rewritten };
   }
   return { zone, kind: "intl", url: rewritten };
+}
+
+function marketingRoute(url: URL, site: MarketingSite): ZoneRoute {
+  const zone = "owner" as const;
+  if (ROOT_ASSETS.has(url.pathname) || isRootFile(url.pathname)) {
+    return { zone, kind: "asset", url: new URL(url), marketing: true };
+  }
+  if (!isReservedPath(url.pathname) && isMarketingPath(zone, url.pathname)) {
+    return { zone, kind: "intl", url: new URL(url), marketing: true };
+  }
+  return { zone, kind: "redirect", url: new URL(`${url.pathname}${url.search}`, site.ownerOrigin), marketing: true };
 }
 
 function isRootFile(pathname: string): boolean {
@@ -141,6 +174,7 @@ export async function proxy(request: NextRequest) {
     request.headers.get("host"),
     zoneHosts({ OWNER_HOST: env.OWNER_HOST, STAFF_HOST: env.STAFF_HOST, ADMIN_HOST: env.ADMIN_HOST }),
     env.ZONES,
+    env.MARKETING_HOST ? { host: env.MARKETING_HOST, ownerOrigin: publicOrigin(env.OWNER_HOST) } : undefined,
   );
   if (!route) return notFoundResponse();
 
@@ -153,7 +187,10 @@ export async function proxy(request: NextRequest) {
     dev,
     assetOrigin: env.NEXT_PUBLIC_ASSET_BASE_URL,
     sentryOrigin: sentryOriginFromDsn(env.NEXT_PUBLIC_SENTRY_DSN),
-    indexable: route.kind !== "not-found" && isMarketingPath(zone, request.nextUrl.pathname),
+    indexable:
+      (route.kind === "intl" || route.kind === "asset") &&
+      isMarketingPath(zone, request.nextUrl.pathname) &&
+      (!env.MARKETING_HOST || route.marketing === true),
     hsts: env.NODE_ENV === "production",
   });
 
@@ -166,15 +203,18 @@ export async function proxy(request: NextRequest) {
   requestHeaders.set("content-security-policy", headers["Content-Security-Policy"]!);
   requestHeaders.set(PATH_HEADER, `${request.nextUrl.pathname}${request.nextUrl.search}`);
 
-  // Pages only: the BFF refreshes for itself, and assets need no session.
+  // Pages only: the BFF refreshes for itself, assets need no session, and the public site has none (its pages are
+  // the same for everyone, and the session cookies belong to the owner host).
   const session =
-    route.kind === "intl" || route.kind === "rewrite"
+    (route.kind === "intl" || route.kind === "rewrite") && !route.marketing
       ? await refreshBeforeRender(request, env.API_INTERNAL_URL, fetch, clientIpFrom(request.headers, env.TRUSTED_HOPS))
       : null;
   if (session?.cookieHeader !== undefined) requestHeaders.set("cookie", session.cookieHeader);
 
   let response: NextResponse;
-  if (route.kind === "intl") {
+  if (route.kind === "redirect") {
+    response = NextResponse.redirect(route.url, 308);
+  } else if (route.kind === "intl") {
     response = publicRedirect(intl(new NextRequest(request, { headers: requestHeaders })), request);
   } else if (route.kind === "asset") {
     response = NextResponse.next({ request: { headers: requestHeaders } });

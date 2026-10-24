@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { LossTeaser } from "@/features/owner/marketing/LossTeaser";
 import { formatDate } from "@/i18n/format";
 import { publicElectricityTariffs } from "@/features/owner/marketing/publicApi";
-import { marketingMetadata, organizationJsonLd } from "@/features/owner/marketing/seo";
+import { marketingMetadata, organizationJsonLd, ownerHref } from "@/features/owner/marketing/seo";
 import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { Button } from "@/ui/components/Button";
@@ -40,7 +40,7 @@ export default async function Landing({ params }: Params) {
     publicElectricityTariffs(),
     headers().then((h) => h.get("x-nonce") ?? undefined),
   ]);
-  const signIn = getPathname({ href: "/login", locale });
+  const signIn = ownerHref("/login", locale);
   return (
     <>
       <script

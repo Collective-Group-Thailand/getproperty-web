@@ -1,9 +1,8 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { publicPlans, type PublicPlan } from "@/features/owner/marketing/publicApi";
-import { marketingMetadata } from "@/features/owner/marketing/seo";
+import { marketingMetadata, ownerHref } from "@/features/owner/marketing/seo";
 import { formatTHB } from "@/i18n/format";
-import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
@@ -75,7 +74,7 @@ export default async function Pricing({ params }: Params) {
   const t = await getTranslations("owner.marketing.pricing");
   const plans = await publicPlans();
   const vatExcluded = plans?.every((plan) => !plan.vatIncluded) ?? true;
-  const signIn = getPathname({ href: "/login", locale });
+  const signIn = ownerHref("/login", locale);
   return (
     <section className="mx-auto max-w-6xl px-4 py-14">
       <h1 className="font-display text-4xl font-semibold">{t("title")}</h1>

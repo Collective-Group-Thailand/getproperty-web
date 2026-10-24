@@ -1,7 +1,8 @@
 import { unstable_doesMiddlewareMatch } from "next/experimental/testing/server";
 import { NextRequest } from "next/server";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { REFRESH_COOKIE } from "@/lib/auth/cookies";
 import { resetServerEnv } from "@/lib/env/server";
 import { DEFAULT_HOSTS, hostname, isReservedPath, resolveZone, zoneHosts } from "@/lib/zones";
 
@@ -104,6 +105,40 @@ describe("routeRequest", () => {
     expect(at("tenant.localhost:3000", "/")).toBeNull();
     expect(at("admin.localhost:3000", "/", ["owner", "staff"])).toBeNull();
     expect(at("localhost:3000", "/", ["owner", "staff"])).toMatchObject({ zone: "owner" });
+  });
+});
+
+describe("routeRequest on the public site (MARKETING_HOST)", () => {
+  const site = { host: "getproperty.app", ownerOrigin: "https://app.getproperty.app" };
+  const at = (path: string, enabled?: ("owner" | "staff" | "admin")[], host = "getproperty.app") =>
+    routeRequest(new URL(`https://${host}${path}`), host, hosts, enabled, site);
+
+  it.each(["/", "/pricing", "/en", "/en/pricing", "/legal/terms", "/en/legal/dpa", "/th/pricing"])(
+    "serves the marketing page %s through next-intl, flagged as the public site",
+    (path) => expect(at(path)).toMatchObject({ zone: "owner", kind: "intl", marketing: true }),
+  );
+
+  it.each(["/robots.txt", "/sitemap.xml", "/favicon.ico", "/apple-touch-icon.png"])("serves the root file %s", (path) =>
+    expect(at(path)).toMatchObject({ zone: "owner", kind: "asset", marketing: true }),
+  );
+
+  it("sends every other path to the same path on the owner host", () => {
+    for (const path of ["/login", "/en/login", "/dashboard?x=1", "/bff/v1/owner/me", "/staff", "/legal/other"]) {
+      const route = at(path)!;
+      expect(route.kind, path).toBe("redirect");
+      expect(route.url.href, path).toBe(`https://app.getproperty.app${path}`);
+    }
+  });
+
+  it("matches the host without the port or case, and 404s it when the owner zone is off", () => {
+    expect(at("/", undefined, "GetProperty.app:443")).toMatchObject({ kind: "intl", marketing: true });
+    expect(at("/", ["staff", "admin"])).toBeNull();
+  });
+
+  it("leaves the zone hosts as they were", () => {
+    expect(routeRequest(new URL("http://localhost:3000/"), "localhost:3000", hosts, undefined, site)).toEqual(
+      routeRequest(new URL("http://localhost:3000/"), "localhost:3000", hosts),
+    );
   });
 });
 
@@ -260,6 +295,65 @@ describe("the platform's real hostnames (collective-infra caddy/sites.<env>.yml,
     const response = await call("uat-app.getproperty.example", "/pricing");
     expect(response.headers.get("location")).toBeNull();
     expect(response.headers.get("x-middleware-rewrite")).toBe("https://0.0.0.0:3000/th/pricing");
+  });
+});
+
+describe("the public site (MARKETING_HOST) as Caddy forwards it", () => {
+  const saved = { ...process.env };
+  beforeEach(() => {
+    Object.assign(process.env, {
+      OWNER_HOST: "uat-app.getproperty.example",
+      STAFF_HOST: "uat-staff.getproperty.example",
+      ADMIN_HOST: "uat-admin.getproperty.example",
+      MARKETING_HOST: "uat.getproperty.example",
+      ZONES: "",
+    });
+    resetServerEnv();
+  });
+  afterEach(() => {
+    process.env = { ...saved };
+    resetServerEnv();
+  });
+
+  const call = (host: string, path: string) =>
+    proxy(
+      new NextRequest(`https://0.0.0.0:3000${path}`, {
+        headers: { host, "x-forwarded-proto": "https", cookie: `${REFRESH_COOKIE}=x` },
+      }),
+    );
+
+  it("serves the marketing pages on the public site, indexable, without a session refresh", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(null, { status: 401 }));
+    const response = await call("uat.getproperty.example", "/pricing");
+    expect(fetchSpy).not.toHaveBeenCalled();
+    await call("uat-app.getproperty.example", "/pricing");
+    expect(fetchSpy).toHaveBeenCalled();
+    fetchSpy.mockRestore();
+    expect(response.headers.get("x-gp-zone")).toBe("owner");
+    expect(response.headers.get("x-middleware-rewrite")).toBe("https://0.0.0.0:3000/th/pricing");
+    expect(response.headers.get("X-Robots-Tag")).toBeNull();
+  });
+
+  it("308s the rest to the owner host, path and query kept", async () => {
+    const response = await call("uat.getproperty.example", "/login?next=%2Fdashboard");
+    expect(response.status).toBe(308);
+    expect(response.headers.get("location")).toBe("https://uat-app.getproperty.example/login?next=%2Fdashboard");
+  });
+
+  it("redirects next-intl's /th prefix on the public origin", async () => {
+    const response = await call("uat.getproperty.example", "/th/pricing");
+    expect(response.headers.get("location")).toBe("https://uat.getproperty.example/pricing");
+  });
+
+  it("makes the owner host's copy of the marketing pages noindex, and keeps the console as it was", async () => {
+    expect((await call("uat-app.getproperty.example", "/pricing")).headers.get("X-Robots-Tag")).toBe(
+      "noindex, nofollow",
+    );
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response(null, { status: 401 }));
+    const login = await call("uat-app.getproperty.example", "/login");
+    fetchSpy.mockRestore();
+    expect(login.status).toBeLessThan(300);
+    expect(login.headers.get("x-gp-zone")).toBe("owner");
   });
 });
 

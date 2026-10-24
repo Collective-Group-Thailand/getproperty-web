@@ -57,6 +57,15 @@ export function zoneHosts(env: Record<string, string | undefined> = process.env)
   ) as Record<Zone, string>;
 }
 
+/**
+ * The public origin of a host (`host[:port]`): HTTPS, except a loopback host (local runs, the e2e suite), which is
+ * plain HTTP.
+ */
+export function publicOrigin(host: string): string {
+  const local = /^(localhost|127\.\d+\.\d+\.\d+|\[::1\])(:\d+)?$/.test(host);
+  return `${local ? "http" : "https"}://${host}`;
+}
+
 /** Which zone a request's `Host` belongs to; an unknown host is `null` (the proxy answers 404). */
 export function resolveZone(host: string | null | undefined, hosts: Record<Zone, string> = zoneHosts()): Zone | null {
   const name = hostname(host);

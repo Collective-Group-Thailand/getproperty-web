@@ -129,6 +129,16 @@ function serverSchema(production: boolean) {
     OWNER_HOST: host(`${DEFAULT_HOSTS.owner}:3000`),
     STAFF_HOST: host(`${DEFAULT_HOSTS.staff}:3000`),
     ADMIN_HOST: host(`${DEFAULT_HOSTS.admin}:3000`),
+    /**
+     * The platform's public site (`getproperty.app`): serves only the owner marketing pages (`MARKETING_PATHS`) and
+     * sends every other path to `OWNER_HOST` (308). Unset = the marketing pages live on the owner host, as before.
+     */
+    MARKETING_HOST: z
+      .string()
+      .trim()
+      .transform((value) => (value === "" ? undefined : value))
+      .pipe(hostValue.optional())
+      .optional(),
     ZONES: zonesList,
     /** getproperty-api as this server reaches it (never exposed to the browser). */
     API_INTERNAL_URL: production ? urlValue : urlValue.default("http://localhost:4000"),
@@ -208,9 +218,11 @@ export function parseServerEnv(env: Record<string, string | undefined>): ServerE
   if (!result.success) throw new EnvError(format(result.error));
   const parsed = result.data;
   const issues: string[] = [];
-  const hosts = [parsed.OWNER_HOST, parsed.STAFF_HOST, parsed.ADMIN_HOST].map((h) => h.split(":")[0]);
+  const hosts = [parsed.OWNER_HOST, parsed.STAFF_HOST, parsed.ADMIN_HOST, parsed.MARKETING_HOST]
+    .filter((h): h is string => h !== undefined)
+    .map((h) => h.split(":")[0]);
   if (new Set(hosts).size !== hosts.length)
-    issues.push("OWNER_HOST, STAFF_HOST and ADMIN_HOST must be different hosts");
+    issues.push("OWNER_HOST, STAFF_HOST, ADMIN_HOST and MARKETING_HOST must be different hosts");
   if (issues.length > 0) throw new EnvError(issues);
   return parsed;
 }

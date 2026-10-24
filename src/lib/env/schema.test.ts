@@ -32,6 +32,14 @@ describe("parseServerEnv", () => {
     expect(() => parseServerEnv({ OWNER_HOST: "a.test", STAFF_HOST: "a.test:3000" })).toThrow(/different hosts/);
   });
 
+  it("takes an optional MARKETING_HOST that must differ from the zone hosts", () => {
+    expect(parseServerEnv({}).MARKETING_HOST).toBeUndefined();
+    expect(parseServerEnv({ MARKETING_HOST: "" }).MARKETING_HOST).toBeUndefined();
+    expect(parseServerEnv({ MARKETING_HOST: " GetProperty.app " }).MARKETING_HOST).toBe("getproperty.app");
+    expect(() => parseServerEnv({ MARKETING_HOST: "https://getproperty.app" })).toThrow(/MARKETING_HOST/);
+    expect(() => parseServerEnv({ OWNER_HOST: "a.test", MARKETING_HOST: "a.test" })).toThrow(/different hosts/);
+  });
+
   it("trims a trailing slash from the API URL and refuses a non-http one", () => {
     expect(parseServerEnv({ API_INTERNAL_URL: "http://api:3000/" }).API_INTERNAL_URL).toBe("http://api:3000");
     expect(() => parseServerEnv({ API_INTERNAL_URL: "ftp://api" })).toThrow(/API_INTERNAL_URL/);

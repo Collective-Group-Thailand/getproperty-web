@@ -7,8 +7,9 @@ import { Wordmark } from "@/ui/brand";
 import { Button } from "@/ui/components/Button";
 
 import { MarketingLanguageLink } from "./MarketingLanguageLink";
+import { ownerHref } from "./seo";
 
-/** The public pages' frame (owner host): header with pricing and sign-in, footer with the legal pages. */
+/** The public pages' frame (public site, or the owner host): header with pricing and sign-in, footer with the legal pages. */
 export async function MarketingFrame({ locale, children }: { locale: Locale; children: React.ReactNode }) {
   const t = await getTranslations("owner.marketing");
   const shell = await getTranslations("shell");
@@ -32,7 +33,7 @@ export async function MarketingFrame({ locale, children }: { locale: Locale; chi
             </a>
             <MarketingLanguageLink />
             <Button asChild size="sm">
-              <a href={href("/login")}>{t("nav.signIn")}</a>
+              <a href={ownerHref("/login", locale)}>{t("nav.signIn")}</a>
             </Button>
           </nav>
         </div>
