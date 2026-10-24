@@ -76,7 +76,7 @@ export async function TenantOverview({
             <h2 id="tenant-health" className="text-lg font-semibold">
               {t("health")}
             </h2>
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
               <Stat
                 icon={IconWallet}
                 label={t("subscription")}

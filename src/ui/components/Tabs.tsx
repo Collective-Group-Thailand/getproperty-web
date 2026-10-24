@@ -29,7 +29,7 @@ export const TabPanel = TabsPrimitive.Content;
 export function Tabs({ tabs, label, children, className, ...props }: TabsProps) {
   return (
     <TabsPrimitive.Root className={className} {...props}>
-      <TabsPrimitive.List aria-label={label} className="border-border flex gap-1 overflow-x-auto border-b">
+      <TabsPrimitive.List aria-label={label} className="border-border relative flex gap-1 overflow-x-auto border-b">
         {tabs.map((tab) => (
           <TabsPrimitive.Trigger
             key={tab.value}

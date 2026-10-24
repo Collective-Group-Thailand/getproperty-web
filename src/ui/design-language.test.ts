@@ -64,3 +64,13 @@ describe("type rules", () => {
     expect(scan(ui, /\bbg-(gradient|linear|radial|conic)-|(linear|radial|conic)-gradient\(/)).toEqual([]);
   });
 });
+
+describe("layout rules", () => {
+  it("every scroll container is positioned, so absolutely positioned children (sr-only labels) never widen the page", () => {
+    // An `overflow-*-auto` box that is not a containing block lets `position: absolute` descendants escape its clip;
+    // a table's `sr-only` header then made the whole console scroll sideways on a 390-px phone (2026-10-25).
+    expect(
+      scan(ui, /\boverflow-(x-)?auto\b/, (_file, text) => /\b(relative|absolute|fixed|sticky)\b/.test(text)),
+    ).toEqual([]);
+  });
+});

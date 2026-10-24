@@ -24,7 +24,7 @@ export interface LinkTabsProps {
  */
 export function LinkTabs({ tabs, current, label, className }: LinkTabsProps) {
   return (
-    <nav aria-label={label} className={cn("border-border flex gap-1 overflow-x-auto border-b", className)}>
+    <nav aria-label={label} className={cn("border-border relative flex gap-1 overflow-x-auto border-b", className)}>
       {tabs.map((tab) => {
         const active = tab.href === current;
         return (

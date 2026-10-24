@@ -115,7 +115,7 @@ export async function DevicesView({ context, searchParams }: { context: OwnerCon
                     {t(`kind.${device.kind}`)} · {device.vendor} {device.model}
                   </span>
                 </span>
-                <span className="text-muted flex-1 text-sm">
+                <span className="text-muted min-w-48 flex-1 text-sm">
                   {device.lastSeenAt
                     ? t("lastSeen", { at: formatDateTime(device.lastSeenAt, locale) })
                     : t("neverSeen")}
@@ -123,7 +123,7 @@ export async function DevicesView({ context, searchParams }: { context: OwnerCon
                 </span>
                 <Ownership ownership={device.ownership} />
                 <StatusBadgeOf map={DEVICE_STATUS} value={device.status} size="sm" />
-                <Icon icon={IconChevronRight} className="text-muted" />
+                <Icon icon={IconChevronRight} className="text-muted ms-auto" />
               </a>
             </li>
           ))}

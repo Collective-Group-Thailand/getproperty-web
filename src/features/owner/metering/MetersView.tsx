@@ -156,7 +156,7 @@ export async function MetersView({ context, searchParams }: { context: OwnerCont
           <EmptyState icon={IconMeter} title={t("empty.title")} description={t("empty.body")} />
         </Card>
       ) : (
-        <div className="border-border bg-surface rounded-card overflow-x-auto border">
+        <div className="border-border bg-surface rounded-card relative overflow-x-auto border">
           <table className="w-full min-w-[48rem] text-sm" data-testid="meter-table">
             <caption className="sr-only">{t("title")}</caption>
             <thead>

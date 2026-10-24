@@ -126,7 +126,7 @@ export async function InsightsView({ context, searchParams }: { context: OwnerCo
         <h2 id="insights-kpis" className="text-lg font-semibold">
           {t("kpisTitle")}
         </h2>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
           <Stat
             label={t("metric.time_to_bill_hours")}
             value={kpi("time_to_bill_hours", data.current.timeToBillHours)}

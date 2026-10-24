@@ -127,7 +127,7 @@ export async function FleetView({ context, searchParams }: { context: AdminConte
         <SectionError error={summary.error} />
       ) : (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" data-testid="fleet-stats">
+          <div className="grid grid-cols-2 gap-4 xl:grid-cols-4" data-testid="fleet-stats">
             <Stat
               icon={IconOnline}
               label={t("online")}

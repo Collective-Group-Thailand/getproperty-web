@@ -76,7 +76,7 @@ export function DataTable<Row>({
   const cell = density === "compact" ? "px-3 py-1.5" : "px-4 py-3";
 
   return (
-    <div className={cn("border-border bg-surface rounded-card overflow-x-auto border", className)}>
+    <div className={cn("border-border bg-surface rounded-card relative overflow-x-auto border", className)}>
       <table className="w-full text-sm">
         <caption className="sr-only">{caption}</caption>
         <thead className="bg-bg-subtle text-muted">

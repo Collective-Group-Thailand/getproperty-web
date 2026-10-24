@@ -310,7 +310,7 @@ export default async function Landing({ params }: Params) {
       <section className="mx-auto max-w-7xl px-4 pb-20 md:pb-28">
         <RunningHead index="06" label={t("table.eyebrow")} />
         <h2 className="mt-6 max-w-3xl text-4xl">{t("table.title")}</h2>
-        <div className="mt-10 overflow-x-auto">
+        <div className="relative mt-10 overflow-x-auto">
           <table className="w-full min-w-[680px] border-collapse text-start">
             <caption className="sr-only">{t("table.caption")}</caption>
             <thead>

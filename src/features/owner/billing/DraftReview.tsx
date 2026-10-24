@@ -56,7 +56,7 @@ export function DraftReview({ drafts }: { drafts: Draft[] }) {
   };
 
   return (
-    <div className="overflow-x-auto">
+    <div className="relative overflow-x-auto">
       <table className="w-full min-w-[44rem] text-sm" data-testid="draft-table">
         <caption className="sr-only">{t("caption")}</caption>
         <thead>

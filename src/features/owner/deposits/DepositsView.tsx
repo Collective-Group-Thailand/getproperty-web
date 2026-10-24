@@ -63,7 +63,7 @@ export async function DepositsView({ context, searchParams }: { context: OwnerCo
     <OwnerPage testId="deposits">
       <PageHeader title={t("title")} description={t("description")} />
       {summary.data ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" data-testid="deposit-summary">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" data-testid="deposit-summary">
           <Stat label={t("summary.held")} value={formatNumber(summary.data.byStatus.held, locale)} />
           <Stat
             label={t("summary.settling")}
@@ -118,7 +118,7 @@ export async function DepositsView({ context, searchParams }: { context: OwnerCo
                   data-late={settlement?.isLate ? "true" : undefined}
                 >
                   <span className="w-20 font-mono font-semibold">{deposit.unitNo}</span>
-                  <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="flex min-w-40 flex-1 flex-col">
                     <span className="font-medium">{deposit.lesseeName ?? "—"}</span>
                     <span className="text-muted text-sm">{deposit.leaseNumber ?? ""}</span>
                   </span>
@@ -138,7 +138,7 @@ export async function DepositsView({ context, searchParams }: { context: OwnerCo
                       </Badge>
                     </span>
                   ) : null}
-                  <Icon icon={IconChevronRight} className="text-muted" />
+                  <Icon icon={IconChevronRight} className="text-muted ms-auto" />
                 </a>
               </li>
             );

@@ -31,7 +31,7 @@ function Change({ entry, label }: { entry: Schemas["AuditEntryDto"]; label: stri
   return (
     <details className="max-w-md">
       <summary className="text-primary cursor-pointer text-xs">{label}</summary>
-      <pre className="bg-bg-subtle rounded-control mt-1 max-h-64 overflow-auto p-2 text-xs whitespace-pre-wrap">
+      <pre className="bg-bg-subtle rounded-control relative mt-1 max-h-64 overflow-auto p-2 text-xs whitespace-pre-wrap">
         {JSON.stringify({ before: entry.before, after: entry.after, metadata: entry.metadata }, null, 2)}
       </pre>
     </details>

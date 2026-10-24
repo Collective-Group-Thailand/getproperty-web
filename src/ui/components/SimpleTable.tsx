@@ -40,7 +40,7 @@ export function SimpleTable({
   className?: string;
 }) {
   return (
-    <div className={cn("border-border bg-surface rounded-card overflow-x-auto border", className)}>
+    <div className={cn("border-border bg-surface rounded-card relative overflow-x-auto border", className)}>
       <table className="w-full text-sm" style={{ minWidth }} data-testid={testId}>
         <caption className="sr-only">{caption}</caption>
         <thead>

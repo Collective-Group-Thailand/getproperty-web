@@ -148,7 +148,7 @@ export function UnitImport({
               {t("errorsBody")}
             </Callout>
           ) : null}
-          <div className="border-border bg-surface rounded-card max-h-[28rem] overflow-auto border">
+          <div className="border-border bg-surface rounded-card relative max-h-[28rem] overflow-auto border">
             <table className="w-full text-sm" data-testid="import-rows">
               <caption className="sr-only">{t("rowsCaption")}</caption>
               <thead className="bg-bg-subtle text-muted sticky top-0">

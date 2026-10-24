@@ -30,7 +30,7 @@ export function ImageViewer({ src, alt, labels, className, "data-testid": testId
     <div className={cn("flex flex-col gap-2", className)} data-testid={testId} data-zoom={zoom}>
       {/* Focusable so the zoomed picture can be scrolled with the keyboard (WCAG 2.1.1). */}
       <div
-        className="border-border bg-bg-subtle max-h-[70vh] overflow-auto rounded-md border"
+        className="border-border bg-bg-subtle relative max-h-[70vh] overflow-auto rounded-md border"
         tabIndex={0}
         role="region"
         aria-label={alt}

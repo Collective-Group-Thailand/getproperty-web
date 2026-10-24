@@ -116,7 +116,7 @@ export async function ArrearsParty({
       </Card>
       <Card as="section" aria-labelledby="ledger" data-testid="party-ledger">
         <CardHeader title={<span id="ledger">{t("ledger")}</span>} description={t("ledgerHint")} />
-        <div className="overflow-x-auto">
+        <div className="relative overflow-x-auto">
           <table className="w-full min-w-[36rem] text-sm">
             <caption className="sr-only">{t("ledger")}</caption>
             <thead>

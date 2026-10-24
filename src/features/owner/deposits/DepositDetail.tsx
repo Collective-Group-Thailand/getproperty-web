@@ -279,7 +279,7 @@ export async function DepositDetail({ context, depositId }: { context: OwnerCont
             description={t("comparisonHint")}
           />
           {lines.length ? (
-            <div className="overflow-x-auto">
+            <div className="relative overflow-x-auto">
               <table className="w-full min-w-[40rem] text-sm">
                 <caption className="sr-only">{t("comparison")}</caption>
                 <thead>

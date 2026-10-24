@@ -469,7 +469,7 @@ export async function DashboardView({ context }: { context: OwnerContext }) {
           <h2 id="all-buildings" className="text-lg font-semibold">
             {t("summary.title")}
           </h2>
-          <div className="border-border bg-surface rounded-card overflow-x-auto border">
+          <div className="border-border bg-surface rounded-card relative overflow-x-auto border">
             <table className="w-full text-sm">
               <caption className="sr-only">{t("summary.title")}</caption>
               <thead className="bg-bg-subtle text-muted">

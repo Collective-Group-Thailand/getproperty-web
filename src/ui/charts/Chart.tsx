@@ -158,7 +158,7 @@ export function Chart({
       )}
       <details className="text-sm">
         <summary className="text-primary w-fit cursor-pointer font-medium">{table.summary}</summary>
-        <div className="border-border mt-2 max-h-72 overflow-auto rounded-md border">
+        <div className="border-border relative mt-2 max-h-72 overflow-auto rounded-md border">
           <table className="w-full text-sm" data-testid={testId ? `${testId}-table` : undefined}>
             <caption className="sr-only">{title}</caption>
             <thead className="bg-bg-subtle text-muted">

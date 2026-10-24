@@ -175,7 +175,7 @@ export async function MeterDetail({
       </div>
       <Card as="section" aria-labelledby="meter-readings" data-testid="meter-readings">
         <CardHeader title={<span id="meter-readings">{t("readings")}</span>} />
-        <div className="overflow-x-auto">
+        <div className="relative overflow-x-auto">
           <table className="w-full min-w-[40rem] text-sm">
             <caption className="sr-only">{t("readings")}</caption>
             <thead>

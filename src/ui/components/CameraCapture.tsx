@@ -245,7 +245,7 @@ export function CameraCapture({
       </div>
 
       {multiple && shots.length > 0 ? (
-        <ul className="flex gap-2 overflow-x-auto pb-1" data-testid="camera-shots">
+        <ul className="relative flex gap-2 overflow-x-auto pb-1" data-testid="camera-shots">
           {shots.map((shot, index) => (
             <li key={shot.url} className="relative shrink-0">
               {/* eslint-disable-next-line @next/next/no-img-element -- a local blob preview, not a page image */}

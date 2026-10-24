@@ -225,7 +225,7 @@ function ItemCard({
             {before.meterRegister ? ` · ${formatUnits(before.meterRegister, registerUnit, locale)}` : null}
           </p>
           {before.photoDocumentIds.length > 0 ? (
-            <div className="flex gap-2 overflow-x-auto">
+            <div className="relative flex gap-2 overflow-x-auto">
               {before.photoDocumentIds.map((photoId, index) => (
                 <PhotoThumb
                   key={photoId}
@@ -325,7 +325,7 @@ function ItemCard({
       ) : null}
 
       {line.photoDocumentIds.length + line.added.length > 0 ? (
-        <ul className="flex gap-2 overflow-x-auto pb-1" aria-label={t("photos")} data-testid="item-photos">
+        <ul className="relative flex gap-2 overflow-x-auto pb-1" aria-label={t("photos")} data-testid="item-photos">
           {line.photoDocumentIds.map((photoId, index) => (
             <li key={photoId} className="relative shrink-0">
               <PhotoThumb fileId={photoId} alt={t("photoAlt", { item: line.label, index: index + 1 })} />

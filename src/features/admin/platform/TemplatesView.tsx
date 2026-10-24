@@ -108,7 +108,7 @@ export async function TemplateDetail({ context, templateId }: { context: AdminCo
               action={<TemplateVersionActions template={template} version={version} />}
             />
             {version.subject ? <p className="font-semibold">{version.subject}</p> : null}
-            <pre className="bg-bg-subtle rounded-control overflow-x-auto p-3 text-sm whitespace-pre-wrap">
+            <pre className="bg-bg-subtle rounded-control relative overflow-x-auto p-3 text-sm whitespace-pre-wrap">
               {version.body}
             </pre>
           </Card>

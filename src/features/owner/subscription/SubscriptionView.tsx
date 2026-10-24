@@ -142,7 +142,7 @@ export async function SubscriptionView({
               <h2 id="sub-today" className="text-lg font-semibold">
                 {t("today")}
               </h2>
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
                 <Stat
                   icon={IconRoom}
                   label={t("units")}
