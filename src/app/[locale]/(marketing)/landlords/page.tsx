@@ -3,7 +3,9 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { LandlordPreview } from "@/features/owner/marketing/LandlordPreview";
 import { Photo } from "@/features/owner/marketing/Photo";
 import { PHOTOS } from "@/features/owner/marketing/photos";
-import { lineOaHref, marketingMetadata, ownerHref } from "@/features/owner/marketing/seo";
+import { JsonLdScript } from "@/features/owner/marketing/JsonLdScript";
+import { lineOaHref, marketingMetadata, marketingOrigin, ownerHref } from "@/features/owner/marketing/seo";
+import { breadcrumbSchema, faqSchema } from "@/features/owner/marketing/structured-data";
 import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { Button } from "@/ui/components/Button";
@@ -21,15 +23,15 @@ export async function generateMetadata({ params }: Params) {
 }
 
 const PAINS = ["chase", "slip", "contract", "deposit", "tax", "foreign"] as const;
-/** The tenancy from listing to tax; `soon` marks what is not shipped yet (listing and tax helper: D-252/D-253; repairs: R2). */
+/** The tenancy from listing to tax. Nothing is marked `soon`: everything shown ships (founder 2026-10-24, D-252/D-253/D-263). */
 const JOURNEY: { key: string; soon?: boolean }[] = [
-  { key: "list", soon: true },
+  { key: "list" },
   { key: "lease" },
   { key: "rent" },
   { key: "receipt" },
   { key: "repair" },
   { key: "moveout" },
-  { key: "tax", soon: true },
+  { key: "tax" },
 ];
 const TABLE_ROWS = ["cost", "rent", "proof", "contract", "control"] as const;
 const FOREIGN = ["contract", "tm30", "language"] as const;
@@ -59,8 +61,18 @@ export default async function Landlords({ params }: Params) {
   const external = line ? { rel: "noopener noreferrer", target: "_blank" } : {};
   const pricing = getPathname({ href: "/pricing", locale });
 
+  const origin = marketingOrigin();
   return (
     <>
+      <JsonLdScript
+        graphs={[
+          breadcrumbSchema([
+            { name: shared("nav.home"), url: `${origin}${getPathname({ href: "/", locale })}` },
+            { name: shared("nav.owners") },
+          ]),
+          faqSchema(FAQ_KEYS.map((key) => ({ question: t(`faq.items.${key}.q`), answer: t(`faq.items.${key}.a`) }))),
+        ]}
+      />
       <section className="mx-auto grid max-w-7xl items-end gap-10 px-4 pt-10 pb-16 md:pt-16 lg:grid-cols-12 lg:gap-8">
         <div className="flex flex-col gap-7 lg:col-span-6 lg:pb-10" data-testid="landlords-hero">
           <p className="text-muted flex items-center gap-3 text-sm font-medium">

@@ -22,7 +22,21 @@ export default async function robots(): Promise<MetadataRoute.Robots> {
     rules: [
       {
         userAgent: "*",
-        allow: ["/$", "/pricing$", "/legal/", "/en$", "/en/pricing$", "/en/legal/"],
+        allow: [
+          "/$",
+          "/pricing$",
+          "/landlords$",
+          "/rent$",
+          "/rent/",
+          "/legal/",
+          "/en$",
+          "/en/pricing$",
+          "/en/landlords$",
+          "/en/rent$",
+          "/en/rent/",
+          "/en/legal/",
+          "/llms.txt$",
+        ],
         disallow: "/",
       },
     ],

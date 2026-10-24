@@ -1,6 +1,7 @@
 import { http, type HttpHandler } from "msw";
 
 import type { components } from "../../src/lib/api/schema";
+import { listingHandlers } from "./listings";
 import { json, problem } from "./support";
 
 type Schemas = components["schemas"];
@@ -89,6 +90,7 @@ const TARIFFS: Record<string, Schemas["PublicTariffDto"]> = {
 };
 
 export const publicHandlers: HttpHandler[] = [
+  ...listingHandlers,
   http.get("*/v1/public/plans", () => json({ data: PLANS } satisfies Schemas["PublicPlansDto"])),
   http.get("*/v1/public/utility-tariffs/current", ({ request }) => {
     const url = new URL(request.url);

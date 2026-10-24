@@ -119,7 +119,7 @@ function marketingRoute(url: URL, site: MarketingSite): ZoneRoute {
 }
 
 function isRootFile(pathname: string): boolean {
-  return pathname === "/robots.txt" || pathname === "/sitemap.xml";
+  return pathname === "/robots.txt" || pathname === "/sitemap.xml" || pathname === "/llms.txt";
 }
 
 /**

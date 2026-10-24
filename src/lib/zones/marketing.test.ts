@@ -14,7 +14,7 @@ describe("isMarketingPath", () => {
     "/th/legal/terms",
     "/pricing/",
   ])("owner %s is a marketing page", (path) => expect(isMarketingPath("owner", path)).toBe(true));
-  it.each(["/dashboard", "/login", "/en/dashboard", "/legal", "/bff/v1/owner/me"])("owner %s is not", (path) =>
+  it.each(["/rent/Not_A_Slug", "/rent/a/b", "/dashboard", "/login", "/en/dashboard", "/legal", "/bff/v1/owner/me"])("owner %s is not", (path) =>
     expect(isMarketingPath("owner", path)).toBe(false),
   );
   it("no staff or admin page is a marketing page", () => {

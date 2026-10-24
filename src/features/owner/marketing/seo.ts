@@ -64,22 +64,14 @@ export function marketingMetadata(
   };
 }
 
-/** Organization JSON-LD (schema.org) for the landing page. */
-export function organizationJsonLd(description: string): string {
-  return JSON.stringify({
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    name: "getproperty",
-    legalName: "Collective Group (Thailand)",
-    url: marketingOrigin(),
-    // A raster logo: search engines want PNG/JPEG for an organisation's logo (`pnpm brand`, 880 × 188).
-    logo: `${marketingOrigin()}/brand/getproperty-logo.png`,
-    description,
-  }).replace(/</g, "\\u003c");
-}
-
 /** The platform's LINE Official Account ("add friend" link), the public pages' sales channel; null when not configured. */
 export function lineOaHref(): string | null {
   const id = serverEnv().NEXT_PUBLIC_LINE_OA_ID;
   return id ? `https://line.me/R/ti/p/${encodeURIComponent(id)}` : null;
+}
+
+/** Opens a chat with the platform LINE OA with `text` typed in (LINE URL scheme `oaMessage`); null when not configured. */
+export function lineOaMessageHref(text: string): string | null {
+  const id = serverEnv().NEXT_PUBLIC_LINE_OA_ID;
+  return id ? `https://line.me/R/oaMessage/${encodeURIComponent(id)}/?${encodeURIComponent(text)}` : null;
 }

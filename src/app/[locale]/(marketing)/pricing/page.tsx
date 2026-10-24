@@ -1,7 +1,10 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { publicPlans, type PublicPlan } from "@/features/owner/marketing/publicApi";
-import { lineOaHref, marketingMetadata, ownerHref } from "@/features/owner/marketing/seo";
+import { JsonLdScript } from "@/features/owner/marketing/JsonLdScript";
+import { lineOaHref, marketingMetadata, marketingOrigin, ownerHref } from "@/features/owner/marketing/seo";
+import { breadcrumbSchema, faqSchema, softwareSchema } from "@/features/owner/marketing/structured-data";
+import { getPathname } from "@/i18n/navigation";
 import { formatTHB } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
 import type { Schemas } from "@/lib/api/types";
@@ -90,8 +93,20 @@ export default async function Pricing({ params }: Params) {
   const line = lineOaHref();
   const start = line ?? signIn;
   const external = line ? { rel: "noopener noreferrer", target: "_blank" } : {};
+  const origin = marketingOrigin();
+  const nav = await getTranslations("owner.marketing.nav");
   return (
     <>
+      <JsonLdScript
+        graphs={[
+          breadcrumbSchema([
+            { name: nav("home"), url: `${origin}${getPathname({ href: "/", locale })}` },
+            { name: nav("pricing") },
+          ]),
+          softwareSchema(origin, t("body"), `${origin}${getPathname({ href: "/pricing", locale })}`),
+          faqSchema(FAQ_KEYS.map((key) => ({ question: t(`faq.items.${key}.q`), answer: t(`faq.items.${key}.a`) }))),
+        ]}
+      />
       <section className="bg-surface-subtle">
         <div className="mx-auto flex max-w-6xl flex-col items-center gap-4 px-4 pt-14 pb-10 text-center md:pt-20">
           <p className="text-primary text-sm font-semibold">{t("eyebrow")}</p>

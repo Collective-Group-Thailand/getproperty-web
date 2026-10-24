@@ -3,10 +3,9 @@ import { getTranslations } from "next-intl/server";
 import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { Wordmark } from "@/ui/brand";
-import { Button } from "@/ui/components/Button";
 
-import { MarketingLanguageLink } from "./MarketingLanguageLink";
-import { lineOaHref, ownerHref } from "./seo";
+import { MarketingNav } from "./MarketingNav";
+import { lineOaHref } from "./seo";
 
 /** The public pages' frame (public site, or the owner host): header with pricing and sign-in, footer with the legal pages. */
 export async function MarketingFrame({ locale, children }: { locale: Locale; children: React.ReactNode }) {
@@ -21,49 +20,7 @@ export async function MarketingFrame({ locale, children }: { locale: Locale; chi
       <a href="#main" className="skip-link">
         {shell("skipToContent")}
       </a>
-      <header className="border-border bg-bg/90 sticky top-0 z-30 border-b backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4">
-          <a href={href("/")} aria-label={t("nav.home")} className="rounded-control inline-flex shrink-0 items-center">
-            <Wordmark size="sm" decorative className="max-[419px]:hidden" />
-            <Wordmark compact size="sm" decorative className="min-[420px]:hidden" />
-          </a>
-          <nav aria-label={t("nav.label")} className="ms-auto flex items-center gap-1 md:gap-2">
-            <ul className="me-2 hidden items-center gap-1 lg:flex">
-              {sections.map((section) => (
-                <li key={section}>
-                  <a className="hover:text-primary px-2 text-sm font-medium" href={`${href("/")}#${section}`}>
-                    {t(`nav.${section}`)}
-                  </a>
-                </li>
-              ))}
-            </ul>
-            <a className="hover:text-primary px-2 text-sm font-medium max-md:hidden" href={href("/landlords")}>
-              {t("nav.landlords")}
-            </a>
-            <a className="hover:text-primary px-2 text-sm font-medium" href={href("/pricing")}>
-              {t("nav.pricing")}
-            </a>
-            <MarketingLanguageLink />
-            {line ? (
-              <a
-                className="hover:text-primary px-2 text-sm font-medium max-sm:hidden"
-                href={ownerHref("/login", locale)}
-              >
-                {t("nav.signIn")}
-              </a>
-            ) : null}
-            <Button asChild size="sm">
-              {line ? (
-                <a href={line} rel="noopener noreferrer" target="_blank">
-                  {t("nav.start")}
-                </a>
-              ) : (
-                <a href={ownerHref("/login", locale)}>{t("nav.signIn")}</a>
-              )}
-            </Button>
-          </nav>
-        </div>
-      </header>
+      <MarketingNav locale={locale} />
       <main id="main" tabIndex={-1} className="flex-1">
         {children}
       </main>
@@ -76,6 +33,11 @@ export async function MarketingFrame({ locale, children }: { locale: Locale; chi
           </div>
           <nav aria-label={t("nav.label")} className="text-sm md:col-span-3">
             <ul className="flex flex-col gap-2">
+              <li>
+                <a className="hover:text-primary" href={href("/rent")}>
+                  {t("nav.rent")}
+                </a>
+              </li>
               <li>
                 <a className="hover:text-primary" href={href("/landlords")}>
                   {t("nav.landlords")}

@@ -10,6 +10,7 @@ export const MARKETING_PATHS = [
   "/",
   "/pricing",
   "/landlords",
+  "/rent",
   "/legal/terms",
   "/legal/privacy",
   "/legal/pdpa",
@@ -22,5 +23,6 @@ export function isMarketingPath(zone: Zone, pathname: string): boolean {
   if (zone !== "owner") return false;
   const withoutLocale = pathname.replace(/^\/(th|en)(?=\/|$)/, "") || "/";
   const normalised = withoutLocale.length > 1 ? withoutLocale.replace(/\/+$/, "") : withoutLocale;
-  return (MARKETING_PATHS as readonly string[]).includes(normalised);
+  // A listing page (D-252) is public and indexable too: `/rent/<slug>`.
+  return (MARKETING_PATHS as readonly string[]).includes(normalised) || /^\/rent\/[a-z0-9-]{1,120}$/.test(normalised);
 }

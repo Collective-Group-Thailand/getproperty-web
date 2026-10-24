@@ -16,7 +16,13 @@
     "features": "Features",
     "faq": "FAQ",
     "start": "Start free",
-    "landlords": "Landlords"
+    "landlords": "Landlords",
+    "rent": "Find a home",
+    "apartments": "For dormitories",
+    "owners": "For owners",
+    "menu": "Menu",
+    "close": "Close menu",
+    "list": "List for free"
   },
   "hero": {
     "eyebrow": "Free for apartments, dormitories and landlords",
@@ -441,6 +447,10 @@
     "title": "Questions before you start",
     "more": "Can't find your answer? Message us on LINE",
     "items": {
+      "what": {
+        "q": "What is getproperty?",
+        "a": "getproperty is free rental-management software for apartments, dormitories and owners who rent out houses or condos. It reads meters, bills the whole building, sends bills with a QR in LINE, confirms payments and issues receipts automatically, takes repair requests to your technician, and lists homes for rent. It is run by Collective Group (Thailand)."
+      },
       "meters": {
         "q": "Do I have to replace every meter?",
         "a": "No. Start with your existing meters by photo or by hand. If you want meters that report themselves, we assess and install smart meters floor by floor."
@@ -669,10 +679,10 @@
     }
   },
   "rent": {
-    "eyebrow": "Coming soon",
+    "eyebrow": "New",
     "title": "Find a home from the real owner",
     "body": "Homes from verified owners. Chat and book a viewing in LINE, then sign and pay in one place — no agent in between.",
-    "cta": "Get notified on LINE"
+    "cta": "See all homes"
   },
   "photos": {
     "living": "Condo living room with morning sun through the curtains",
@@ -706,6 +716,109 @@
         "3": "Record who pays, with the receipt kept in one place",
         "4": "The year's repair costs land in your income-and-expense summary"
       }
+    }
+  },
+  "listings": {
+    "meta": {
+      "title": "Rooms, condos and houses for rent from real owners · getproperty",
+      "description": "Find rooms, condos, townhouses and houses for rent. Talk to the owner directly in LINE — no agent — then sign and pay in one place."
+    },
+    "search": {
+      "title": "Find your next home, from the real owner",
+      "body": "Rooms, condos, townhouses and houses. Talk to the owner directly in LINE, then sign and pay in one place.",
+      "q": "Area, station or project",
+      "qPlaceholder": "e.g. Ari, On Nut, Lat Phrao",
+      "kind": "Type",
+      "kinds": {
+        "any": "Any type",
+        "condo_unit": "Condo",
+        "house": "House",
+        "townhouse": "Townhouse",
+        "room": "Room"
+      },
+      "minRent": "Min rent",
+      "maxRent": "Max rent",
+      "bedrooms": "Bedrooms",
+      "bedroomOptions": {
+        "any": "Any",
+        "0": "Studio or more",
+        "1": "1 or more",
+        "2": "2 or more",
+        "3": "3 or more"
+      },
+      "pets": "Pets allowed",
+      "sort": "Sort by",
+      "sorts": {
+        "newest": "Newest",
+        "rent_asc": "Rent: low to high",
+        "rent_desc": "Rent: high to low"
+      },
+      "submit": "Search",
+      "reset": "Clear filters",
+      "filters": "Filters",
+      "count": "{count, plural, =0 {No homes found} one {# home} other {# homes}}"
+    },
+    "empty": {
+      "title": "Nothing matches your search yet",
+      "body": "Try a wider rent range or another area — owners add new homes all the time."
+    },
+    "unavailable": {
+      "title": "Rental listings are opening",
+      "body": "We are taking listings from verified owners. If you have a place to rent out, you can list it for free today."
+    },
+    "ownerCta": {
+      "title": "Have a place to rent out?",
+      "body": "List it for free, with no agent fee. Enquiries reach you in LINE, then the lease and the rent run in the same system.",
+      "cta": "List for free"
+    },
+    "card": {
+      "perMonth": "/month",
+      "sqm": "{size} m²",
+      "bedrooms": "{count, plural, =0 {Studio} one {# bedroom} other {# bedrooms}}",
+      "bathrooms": "{count, plural, one {# bathroom} other {# bathrooms}}",
+      "verified": "Verified owner",
+      "transit": "{distance} m from {name}",
+      "availableFrom": "Available {date}",
+      "pets": "Pets OK"
+    },
+    "detail": {
+      "back": "All homes",
+      "photos": "Photos",
+      "rentLabel": "Rent",
+      "deposit": "{months, plural, one {# month} other {# months}} deposit",
+      "advance": "{months, plural, one {# month} other {# months}} in advance",
+      "minTerm": "Minimum lease {months, plural, one {# month} other {# months}}",
+      "facts": "About the home",
+      "size": "Size",
+      "floor": "Floor",
+      "furnishing": "Furnishing",
+      "furnishings": {
+        "furnished": "Fully furnished",
+        "partly_furnished": "Partly furnished",
+        "unfurnished": "Unfurnished"
+      },
+      "available": "Available from",
+      "availableNow": "Available now",
+      "petsLabel": "Pets",
+      "smokingLabel": "Smoking",
+      "yes": "Yes",
+      "no": "No",
+      "about": "Description",
+      "facilities": "Facilities",
+      "location": "Location",
+      "transit": "{distance} m walk to {name} ({line})",
+      "openMap": "Open in Google Maps",
+      "owner": "Owner",
+      "verified": "Ownership verified",
+      "notVerified": "Ownership not verified yet",
+      "contact": "Ask or book a viewing in LINE",
+      "contactSignIn": "Sign in to contact the owner",
+      "contactNote": "Talk to the owner directly, no agent fee. Sign the lease and pay the deposit right here.",
+      "report": "Report this listing",
+      "similar": "More homes you may like",
+      "lineMessage": "I'm interested in this home: {title} ({url})",
+      "notFound": "This listing was not found; it may have been closed.",
+      "bathrooms": "Bathrooms"
     }
   }
 }

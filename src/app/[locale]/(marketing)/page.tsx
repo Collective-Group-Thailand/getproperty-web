@@ -1,10 +1,16 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { headers } from "next/headers";
 
 import { Photo } from "@/features/owner/marketing/Photo";
 import { PHOTOS } from "@/features/owner/marketing/photos";
 import { ProductPreview } from "@/features/owner/marketing/ProductPreview";
-import { lineOaHref, marketingMetadata, organizationJsonLd, ownerHref } from "@/features/owner/marketing/seo";
+import { JsonLdScript } from "@/features/owner/marketing/JsonLdScript";
+import { lineOaHref, marketingMetadata, marketingOrigin, ownerHref } from "@/features/owner/marketing/seo";
+import {
+  faqSchema,
+  organizationSchema,
+  softwareSchema,
+  websiteSchema,
+} from "@/features/owner/marketing/structured-data";
 import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { Badge } from "@/ui/components/Badge";
@@ -39,7 +45,7 @@ const MORE_FEATURES: { key: string; soon?: boolean }[] = [
   { key: "rateGuard" },
 ];
 const TABLE_ROWS = ["cost", "read", "pay", "app", "docs", "grow"] as const;
-const FAQ_KEYS = ["meters", "money", "residents", "import", "data"] as const;
+const FAQ_KEYS = ["what", "meters", "money", "residents", "import", "data"] as const;
 const SERVICE_STEPS = ["1", "2", "3", "4"] as const;
 
 /** A section's running head: a number, a hairline and a short label, like a magazine's. */
@@ -62,7 +68,7 @@ export default async function Landing({ params }: Params) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("owner.marketing");
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const origin = marketingOrigin();
   const signIn = ownerHref("/login", locale);
   const line = lineOaHref();
   const pricing = getPathname({ href: "/pricing", locale });
@@ -72,10 +78,13 @@ export default async function Landing({ params }: Params) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        nonce={nonce}
-        dangerouslySetInnerHTML={{ __html: organizationJsonLd(t("meta.description")) }}
+      <JsonLdScript
+        graphs={[
+          organizationSchema(origin, t("meta.description")),
+          websiteSchema(origin, getPathname({ href: "/rent", locale }), locale === "th" ? "th-TH" : "en"),
+          softwareSchema(origin, t("meta.description"), `${origin}${getPathname({ href: "/", locale })}`),
+          faqSchema(FAQ_KEYS.map((key) => ({ question: t(`faq.items.${key}.q`), answer: t(`faq.items.${key}.a`) }))),
+        ]}
       />
 
       {/* Hero: words on the left, a real room on the right with this morning's queue laid over it */}
@@ -352,13 +361,9 @@ export default async function Landing({ params }: Params) {
             </Badge>
             <h2 className="text-4xl">{t("rent.title")}</h2>
             <p className="text-muted text-lg leading-relaxed">{t("rent.body")}</p>
-            {line ? (
-              <Button asChild variant="secondary" iconStart={IconChat} className="self-start">
-                <a href={line} {...external}>
-                  {t("rent.cta")}
-                </a>
-              </Button>
-            ) : null}
+            <Button asChild variant="secondary" className="self-start">
+              <a href={getPathname({ href: "/rent", locale })}>{t("rent.cta")}</a>
+            </Button>
           </div>
         </div>
       </section>

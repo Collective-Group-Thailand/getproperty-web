@@ -9,17 +9,26 @@ const get = (request: import("@playwright/test").APIRequestContext, host: string
   return request.get(`http://127.0.0.1:${url.port}${path}`, { headers: { host: url.host } });
 };
 
+/** Every JSON-LD graph on the page, flattened (a script may hold one graph or an array of them). */
+async function jsonLdGraphs(page: import("@playwright/test").Page): Promise<Record<string, unknown>[]> {
+  const bodies = await page.locator('script[type="application/ld+json"]').allTextContents();
+  return bodies.flatMap((body) => [JSON.parse(body)].flat() as Record<string, unknown>[]);
+}
+
 test("landing: hero, repair-request section, Organization JSON-LD, indexable", async ({ page }) => {
   const response = await page.goto(`${HOSTS.owner}/`);
   expect(response!.headers()["x-robots-tag"]).toBeUndefined();
   await expect(page.getByRole("heading", { level: 1 })).toContainText("สิ้นเดือนนี้ ไม่ต้องเดินจดมิเตอร์");
   await expect(page.getByRole("heading", { level: 2, name: "แจ้งซ่อมผ่าน LINE ไม่ต้องรับโทรศัพท์" })).toBeVisible();
-  const jsonLd = JSON.parse((await page.locator('script[type="application/ld+json"]').textContent())!);
-  expect(jsonLd).toMatchObject({
-    "@type": "Organization",
+  // Organization, WebSite (with the listings search), SoftwareApplication (free) and FAQPage, for search and answer engines.
+  const graphs = await jsonLdGraphs(page);
+  expect(graphs.find((g) => g["@type"] === "Organization")).toMatchObject({
     name: "getproperty",
-    logo: /\/brand\/getproperty-logo\.png$/,
+    logo: expect.stringMatching(/\/brand\/getproperty-logo\.png$/),
   });
+  expect(graphs.find((g) => g["@type"] === "WebSite")).toHaveProperty("potentialAction");
+  expect(graphs.find((g) => g["@type"] === "SoftwareApplication")).toMatchObject({ offers: { price: "0" } });
+  expect(graphs.find((g) => g["@type"] === "FAQPage")).toBeTruthy();
   // The founder's logo in the header (drawn, not set in a font), and the Open Graph card.
   await expect(page.locator("header svg[data-brand='wordmark']")).toBeVisible();
   const og = await page.locator('meta[property="og:image"]').getAttribute("content");
@@ -73,10 +82,49 @@ test("sitemap lists only the marketing pages, robots points at it", async ({ req
   expect(sitemap).toContain(`<loc>${HOSTS.owner}/</loc>`);
   expect(sitemap).toContain("/pricing</loc>");
   expect(sitemap).toContain("/landlords</loc>");
+  expect(sitemap).toContain("/rent</loc>");
+  expect(sitemap).toContain("/rent/condo-ari-1br-sunlit</loc>");
   expect(sitemap).toContain(`hreflang="en" href="${HOSTS.owner}/en/legal/dpa"`);
   expect(sitemap).not.toContain("dashboard");
   const robots = await (await get(request, HOSTS.owner, "/robots.txt")).text();
   expect(robots).toContain(`Sitemap: ${HOSTS.owner}/sitemap.xml`);
   expect(robots).toContain("Disallow: /");
+  expect(robots).toContain("Allow: /rent/");
+  expect(robots).toContain("Allow: /llms.txt$");
   expect((await get(request, HOSTS.staff, "/sitemap.xml")).status()).toBe(404);
+});
+
+test("llms.txt: a markdown statement for answer engines, on the indexed host only", async ({ request }) => {
+  const response = await get(request, HOSTS.owner, "/llms.txt");
+  expect(response.status()).toBe(200);
+  expect(response.headers()["content-type"]).toContain("text/markdown");
+  const body = await response.text();
+  expect(body.startsWith("# getproperty\n")).toBe(true);
+  expect(body).toContain("getproperty คืออะไร");
+  expect(body).toContain("/rent/condo-ari-1br-sunlit");
+  expect((await get(request, HOSTS.staff, "/llms.txt")).status()).toBe(404);
+});
+
+test("rent: published listings, filters in the URL, no axe violations (D-252)", async ({ page }) => {
+  const response = await page.goto(`${HOSTS.owner}/rent`);
+  expect(response!.headers()["x-robots-tag"]).toBeUndefined();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("หาที่อยู่ใหม่ จากเจ้าของตัวจริง");
+  await expect(page.getByTestId("listings-count")).toHaveText("พบ 6 ห้อง");
+  await expect(page.locator('link[rel="alternate"][hreflang="en"]')).toHaveAttribute("href", /\/en\/rent$/);
+  expect((await jsonLdGraphs(page)).some((g) => g["@type"] === "ItemList")).toBe(true);
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
+  expect(results.violations).toEqual([]);
+  await page.goto(`${HOSTS.owner}/rent?kind=house`);
+  await expect(page.getByTestId("listings-count")).toHaveText("พบ 1 ห้อง");
+});
+
+test("rent detail: full address, rent, owner contact, Offer JSON-LD; unknown slug is 404", async ({ page }) => {
+  await page.goto(`${HOSTS.owner}/rent/condo-ari-1br-sunlit`);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("คอนโดแสงดีใกล้ BTS อารีย์ 1 ห้องนอน วิวสวน");
+  await expect(page.getByTestId("listing-rent")).toHaveText("฿16,500");
+  await expect(page.getByTestId("listing-gallery")).toBeVisible();
+  expect((await jsonLdGraphs(page)).some((g) => g["@type"] === "Offer")).toBe(true);
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
+  expect(results.violations).toEqual([]);
+  expect((await page.goto(`${HOSTS.owner}/rent/no-such-listing`))?.status()).toBe(404);
 });
