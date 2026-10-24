@@ -97,8 +97,10 @@
 - ⬜ ลบโฟลเดอร์ชั่วคราว `_xfer`
 
 ## 11. แพ็กเกจกลาง และคิดเงินตามพื้นที่ (D-275, D-276)
-- ⬜ repo `collective-shared`: `@collective/integrations`, `@collective/web-kit`, `@collective/documents` (ยกจาก getpack + getproperty)
-- ⬜ prompt ให้ getpack และ getproperty เปลี่ยนมาใช้แพ็กเกจ (รันบน Mac)
+- ✅ repo `collective-shared` (`~/Collective/collective-shared`): `@collective/integrations`, `@collective/documents`, `@collective/content`, `@collective/web-kit` 0.1 — 59 tests ผ่าน
+- ✅ prompt ให้ getpack และ getproperty เปลี่ยนมาใช้แพ็กเกจ (`collective-shared/docs/adoption/`)
+- ⬜ รัน adoption บน Mac: getproperty-api → getproperty-web → getpack-api → getpack-web
+- ⬜ push repo ขึ้น GitHub (private) + ตั้ง GitHub Packages ⛔ คุณ
 - ⬜ นับพื้นที่ต่อเจ้าของ + ใบแจ้งค่าพื้นที่ ⛔ คุณกำหนดพื้นที่ฟรีและราคา
 
 ## 12. ทำงานต่อข้าม account
