@@ -46,4 +46,11 @@ You are a senior frontend engineer on **`getproperty-web`**. Decisions **D-250 �
 3. Admin: messaging rates versions (maker-checker), usage per tenant, failing channels.
 4. Acceptance: e2e connect wizard against MSW (verify ok / bad token), usage meter, admin rate publish.
 
+## Deliverable 6.7 — Owner side of the blue-ocean features (D-265–D-270, D-273, D-274; api B7.9–7.12)
+1. Listing editor: utility block preview and toggle (D-265), comparables band with sample size (D-269), share kit (copy caption, download card, LINE share; enquiries per channel) (D-268).
+2. Condition reports (D-266): room/item checklist with photos in the console and the staff PWA, confirmation status of both sides, move-out side-by-side, deduction lines tied to items in the deposit settlement.
+3. Verification (D-267): identity (e-KYC handoff) and ownership evidence upload; badge level shown on listings and the profile; admin review queue in F5.
+4. Renewal & re-list (D-261), referral invites and credits on the fee invoice (D-273), public profile switch (D-274), juristic invitation for condo units (D-270), partner offers only when their settings are on (D-257–D-259).
+5. Public site: owner profile page `/owners/[slug]`, area pages `/rent/area/[slug]` (D-272), utility block and verification on the listing page, "pay only through getproperty" notice (D-267).
+
 After each deliverable: `docs/PROGRESS.md`, `docs/contract-requests.md`, commit.
