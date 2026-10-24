@@ -9,6 +9,7 @@ import type { Zone } from "./index";
 export const MARKETING_PATHS = [
   "/",
   "/pricing",
+  "/landlords",
   "/legal/terms",
   "/legal/privacy",
   "/legal/pdpa",

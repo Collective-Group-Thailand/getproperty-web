@@ -1,6 +1,6 @@
 # CLAUDE.md — getproperty-web
 
-**getproperty — บิลทำเอง เก็บเงินเอง ถูกกฎหมาย** · operated by Collective Group (Thailand) · Collective Group's Building Operations platform (D-150; no legacy; `getpack-web` is a conventions reference only, D-003)
+**getproperty — ให้เช่าง่าย อยู่สบาย** · operated by Collective Group (Thailand) · Collective Group's Building Operations platform (D-150; no legacy; `getpack-web` is a conventions reference only, D-003)
 This repository is the **Next.js 16 application for operators and the platform**. It serves three zones from one codebase and one deployment:
 - **owner zone** (`OWNER_HOST`, default host, `[locale]`) — the operator's console for a **tenant** (the SaaS customer organisation, D-151: apartment first; condo juristic, PM company and landlord portfolio views later): morning dashboard, buildings & units, parties & leases & deposits, billing cycles & invoices, payments & arrears, meters & loss, service requests, settings, subscription
 - **staff zone** (`STAFF_HOST`) — mobile-first PWA for building staff (caretakers / in-house technicians / installers): reading rounds with camera + OCR, inspections, device provisioning, work orders, parcels

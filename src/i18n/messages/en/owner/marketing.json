@@ -1,9 +1,9 @@
 {
   "meta": {
-    "title": "getproperty — billing you run yourself, collected lawfully",
-    "description": "Apartment operations: meter readings, invoices at the lawful utility rate, bills sent through LINE, payment by QR and receipts issued automatically",
+    "title": "getproperty — easy to let, easy to live",
+    "description": "Free management for apartments, dormitories and rental homes: automatic meter readings, bills with a QR in LINE, payments confirmed and receipts issued for you, repair requests straight to your technician",
     "pricingTitle": "Pricing",
-    "pricingDescription": "getproperty plans for apartments, condominium juristic persons, property management companies and landlords"
+    "pricingDescription": "getproperty is free with no monthly fee; we charge only a fee per payment collected through the platform"
   },
   "nav": {
     "label": "Site menu",
@@ -11,52 +11,73 @@
     "pricing": "Pricing",
     "signIn": "Sign in",
     "legal": "Terms and policies",
-    "contact": "Contact us on LINE"
+    "contact": "Contact us on LINE",
+    "how": "How it works",
+    "features": "Features",
+    "faq": "FAQ",
+    "start": "Start free",
+    "landlords": "Landlords"
   },
   "hero": {
-    "eyebrow": "For apartments of 30–300 units",
-    "title": "Billing you run yourself, collected lawfully",
-    "body": "Meters report themselves, utilities are charged at the lawful rate, residents get their bill in LINE with a QR to pay, and the receipt goes out the moment the bank confirms.",
-    "primary": "Sign in",
-    "secondary": "See pricing"
+    "eyebrow": "Free for apartments, dormitories and landlords",
+    "title": "Close the month without walking the meters <hl>or chasing slips</hl>",
+    "body": "getproperty reads the meters, bills the whole building, sends each bill with a QR to the resident's LINE, issues the receipt the moment the payment is confirmed, and sends repair requests straight to your technician. You just approve.",
+    "primary": "Start free — message us on LINE",
+    "signIn": "Sign in",
+    "secondary": "See pricing",
+    "points": {
+      "free": "No monthly fee, nothing per unit",
+      "noApp": "No app for residents to install",
+      "checked": "Repair requests to your technician in LINE"
+    },
+    "landlordLink": "Renting out a house or condo? See the page for you",
+    "kicker": "Rental management · free",
+    "caption": "Illustrative photo"
   },
   "features": {
-    "title": "Every morning, only the decisions are left",
+    "eyebrow": "Why getproperty",
+    "title": "More than billing: the whole building, looked after",
+    "highlight": "Highlight",
+    "soon": "Coming soon",
     "items": {
-      "readings": {
-        "title": "Readings without the walk",
-        "body": "Smart meters report on their own, or a photo is read for you — every number shows where it came from"
+      "rateGuard": {
+        "title": "Your own utility rates",
+        "body": "Each building sets its own water, electricity and service rates; every unit is billed automatically"
       },
-      "billing": {
-        "title": "Invoices at the right rate",
-        "body": "Utilities never above the provider's rate under the consumer protection rules; you are warned before you issue"
+      "meters": {
+        "title": "Three kinds of meter reading in one system",
+        "body": "Start with your existing meters by photo or by hand, then move to smart meters floor by floor when you are ready — no big outlay on day one"
+      },
+      "bank": {
+        "title": "Confirmed automatically, no slips",
+        "body": "Residents pay through a licensed payment provider, so every payment is confirmed and matched to its bill at once — no fake slips"
       },
       "line": {
-        "title": "Bills in LINE",
-        "body": "Residents open their bill and pay by PromptPay QR from the chat"
+        "title": "Residents use LINE",
+        "body": "Bills, payment, receipts and the lease, all in LINE with no extra app"
       },
-      "receipts": {
-        "title": "Receipts issue themselves",
-        "body": "When the bank confirms the payment, the receipt is issued and the invoice closed"
+      "lease": {
+        "title": "Leases under the consumer protection rules",
+        "body": "Lease templates without prohibited terms, with reminders for deposit refunds and notice periods"
+      },
+      "tm30": {
+        "title": "TM.30 and e-Tax",
+        "body": "Foreign-resident notifications prepared for you, and electronic tax invoices from the same bill"
+      },
+      "portfolio": {
+        "title": "Every building on one screen",
+        "body": "Vacancies, arrears and monthly income per building, from your phone, wherever you are"
+      },
+      "service": {
+        "title": "Repair requests in LINE, straight to your technician",
+        "body": "Residents send a photo in LINE and the job lands in your technician's queue at once — no phone calls, nothing forgotten. Residents follow the status to the end and rate the work."
       }
-    }
-  },
-  "loss": {
-    "title": "Are you charging above the lawful electricity rate?",
-    "body": "The 2025 contract-control announcement caps what you may charge residents for electricity at the provider's rate. Pick your provider to see the current maximum per unit.",
-    "provider": "Electricity provider",
-    "mea": "Metropolitan Electricity Authority (MEA)",
-    "pea": "Provincial Electricity Authority (PEA)",
-    "ceiling": "Charge at most",
-    "perUnit": "THB per unit (before VAT)",
-    "tariff": "{name}, effective {date}",
-    "source": "Source",
-    "cta": "Let every invoice be checked for you",
-    "unavailable": "The latest rate cannot be shown right now"
+    },
+    "more": "And everything else that makes it complete"
   },
   "pricing": {
-    "title": "Pricing",
-    "body": "Pay for the units you actually use. No software set-up fee; residents and technicians use it free.",
+    "title": "Free to use. Pay only when you collect.",
+    "body": "No monthly fee, nothing per unit, no software set-up fee. getproperty charges a fee only on payments it confirms for you — paid by QR through the platform, or transferred directly and verified from the slip.",
     "perUnitMonth": "{price} / unit / month",
     "perBuildingMonth": "{price} / building / month",
     "perBuildingYear": "{price} / building / year",
@@ -64,7 +85,7 @@
     "minimum": "Minimum {count} units",
     "contact": "Ask for a quote",
     "vat": "Prices exclude VAT",
-    "unavailable": "Prices cannot be shown right now. Contact us on LINE for a quote.",
+    "unavailable": "Message us on LINE for a quote for your building within one business day",
     "choose": "Get started",
     "perMeterPointMonth": "{price} / meter point / month",
     "perReport": "{price} / report",
@@ -87,6 +108,91 @@
       "D2": "Landlord tier",
       "resident_liff": "Resident app in LINE",
       "promptpay": "PromptPay payments"
+    },
+    "eyebrow": "Pricing",
+    "unavailableTitle": "Plans and prices are being updated",
+    "contactLine": "Get a quote on LINE",
+    "included": {
+      "title": "What you don't pay for",
+      "items": {
+        "monthly": "No monthly fee",
+        "units": "Nothing per unit",
+        "setup": "No software set-up fee",
+        "export": "Export your data at any time"
+      }
+    },
+    "faq": {
+      "title": "Pricing questions",
+      "items": {
+        "when": {
+          "q": "When is the fee charged?",
+          "a": "Only on payments the platform confirms: QR payments through the platform, or direct transfers verified from the slip. Billing, LINE delivery and everything else are free."
+        },
+        "who": {
+          "q": "Who bears the fee?",
+          "a": "The building owner by default; it can be set per building within what the law and the lease allow."
+        },
+        "settle": {
+          "q": "When does the money reach my account?",
+          "a": "On the payment provider's settlement schedule; every payment shows its settlement status in the system."
+        },
+        "meter": {
+          "q": "How are smart meters charged?",
+          "a": "Buy them outright or rent them monthly per meter point. We survey the site and quote before installing."
+        },
+        "invoice": {
+          "q": "Do you issue tax invoices?",
+          "a": "Yes, for the fees, in the name of Collective Group (Thailand), every month."
+        },
+        "line": {
+          "q": "Can I use my own LINE Official Account?",
+          "a": "Yes. Connect it in settings; we set up the menu and link your residents to it. No account yet? Start on getproperty's and switch later — nothing is lost."
+        }
+      }
+    },
+    "free": {
+      "title": "getproperty",
+      "price": "Free",
+      "summary": "Every feature for apartments, dormitories and landlords",
+      "cta": "Start free",
+      "items": {
+        "billing": "Meter readings, whole-building billing and repair requests",
+        "line": "QR bills and receipts in LINE",
+        "lease": "Leases, deposits and TM.30",
+        "staff": "Unlimited staff, residents and technicians",
+        "buildings": "Many buildings in one account"
+      }
+    },
+    "fee": {
+      "title": "Payment collection fee",
+      "body": "Charged per payment the platform confirms: QR payments are settled to your account net of the fee; directly transferred payments verified from the slip are billed monthly. Nothing else is charged.",
+      "rateUnavailable": "The fee rate will be published on this page; ask us on LINE for details",
+      "items": {
+        "split": "Money goes through a licensed payment provider and is settled to your account",
+        "who": "Choose per building who bears the fee, within what the law allows",
+        "invoice": "A tax invoice for the fees every month",
+        "slip": "Residents may transfer straight to your account; the slip is verified and the payment confirmed for you"
+      }
+    },
+    "addons": {
+      "title": "Add-ons",
+      "body": "Buy separately when you are ready — never required"
+    },
+    "enterprise": {
+      "title": "Condominium juristic persons and property management companies",
+      "body": "Common fees, online general meetings and multi-building portfolios — talk to us to shape a package",
+      "cta": "Talk to us on LINE"
+    },
+    "line": {
+      "title": "Bills in LINE: two ways",
+      "own": {
+        "title": "Use your own LINE Official Account",
+        "body": "Bills and messages go out under your name and logo. getproperty charges nothing for messaging; your LINE plan and quota apply."
+      },
+      "shared": {
+        "title": "Use getproperty's LINE Official Account",
+        "body": "Start straight away with no setup. A free message allowance every month; messages beyond it are charged at cost on your monthly invoice."
+      }
     }
   },
   "legal": {
@@ -177,6 +283,429 @@
   },
   "footer": {
     "company": "Operated by Collective Group (Thailand)",
-    "rights": "© {year} Collective Group (Thailand)"
+    "rights": "© {year} Collective Group (Thailand)",
+    "photos": "Photos from Unsplash",
+    "tagline": "Rental management for people who want to look after their homes well, without wearing themselves out"
+  },
+  "preview": {
+    "label": "Sample screen",
+    "cycle": "October billing · sample",
+    "building": "Building A · 48 units",
+    "readings": "Meters reported 48/48",
+    "paid": "Paid",
+    "pending": "Awaiting payment",
+    "decide": "Need a decision",
+    "review": "Review",
+    "view": "View",
+    "spikeTitle": "Unit 305 used 3× its usual electricity",
+    "spikeBody": "Check the meter photo before issuing",
+    "rateTitle": "Unit 204: air-con not cooling",
+    "rateBody": "Technician accepted · visit at 14:00",
+    "paidTitle": "Unit 112 paid {amount}",
+    "paidBody": "Payment confirmed · receipt issued automatically",
+    "chat": "LINE · Building A",
+    "bill": "Unit 207 bill · Oct",
+    "rent": "Rent",
+    "electric": "Electricity 142 units",
+    "water": "Water 6 units",
+    "pay": "Scan PromptPay QR"
+  },
+  "trust": {
+    "label": "Works with what residents already use",
+    "items": {
+      "line": "LINE Official Account",
+      "qr": "Thai QR PromptPay",
+      "bank": "Automatic payment confirmation",
+      "etax": "e-Tax Invoice",
+      "tm30": "TM.30",
+      "pdpa": "PDPA"
+    }
+  },
+  "compare": {
+    "eyebrow": "Month-end for an apartment owner",
+    "title": "A week of month-end work becomes one approval",
+    "before": "The old way",
+    "after": "With getproperty",
+    "beforeItems": {
+      "1": "Walk every floor to read each meter",
+      "2": "Type readings into Excel and work out each bill",
+      "3": "Send bills one by one from your own LINE",
+      "4": "Match transfer slips against your bank app",
+      "5": "Write receipts and chase the late payers"
+    },
+    "afterItems": {
+      "1": "Meters report themselves, or a photo is read for you",
+      "2": "Bills for the whole building, with unusual numbers flagged",
+      "3": "Approve once and every unit gets its bill and QR in LINE",
+      "4": "Residents pay by QR; payments are confirmed and matched to bills for you",
+      "5": "Receipts issue themselves and late payers get reminders"
+    }
+  },
+  "steps": {
+    "eyebrow": "How it works",
+    "title": "From meter to receipt in four steps",
+    "items": {
+      "read": {
+        "title": "Read the meters",
+        "body": "Smart meters report on their own, a photo is read for you, or you type the number — every reading shows where it came from"
+      },
+      "check": {
+        "title": "Check before issuing",
+        "body": "Usage is compared with last month, unusual numbers are flagged, and you review the whole building before sending"
+      },
+      "send": {
+        "title": "Send in LINE",
+        "body": "Every resident gets the bill with a PromptPay QR in LINE, with no app to install"
+      },
+      "close": {
+        "title": "Close automatically",
+        "body": "The payment is confirmed instantly; the receipt is issued, the bill closed, and the money settled to your account"
+      }
+    }
+  },
+  "segments": {
+    "eyebrow": "Who it's for",
+    "title": "Grows with you, from one unit to many buildings",
+    "items": {
+      "landlord": {
+        "title": "Landlords",
+        "size": "1–20 condo units or houses",
+        "body": "Bills, payments and leases in one place, even when your units are in different projects",
+        "cta": "See the page for landlords"
+      },
+      "apartment": {
+        "title": "Apartments and dormitories",
+        "size": "20–300 units",
+        "body": "Close the whole building's billing without walking the meters, checking slips or worrying about utility rates",
+        "cta": "See how charges work"
+      },
+      "juristic": {
+        "title": "Condominium juristic persons",
+        "size": "Condos and property management companies",
+        "body": "Common fees, online general meetings and voting, and many buildings in one account",
+        "cta": "Talk to us on LINE"
+      }
+    }
+  },
+  "table": {
+    "eyebrow": "Side by side",
+    "title": "What changes compared with the usual way",
+    "caption": "Comparison of ways to run rental billing",
+    "cols": {
+      "topic": "Task",
+      "manual": "Excel / notebook",
+      "typical": "Typical dormitory software",
+      "us": "getproperty"
+    },
+    "rows": {
+      "read": {
+        "topic": "Meter readings",
+        "manual": "Walk and write",
+        "typical": "Type into an app",
+        "us": "Self-reporting · photo · by hand"
+      },
+      "pay": {
+        "topic": "Payment confirmation",
+        "manual": "Check the bank app",
+        "typical": "Check slips",
+        "us": "Confirmed automatically"
+      },
+      "app": {
+        "topic": "Residents install an app",
+        "manual": "—",
+        "typical": "Some require it",
+        "us": "No, they use LINE"
+      },
+      "docs": {
+        "topic": "TM.30 · e-Tax",
+        "manual": "Done separately",
+        "typical": "Some systems",
+        "us": "Built in"
+      },
+      "grow": {
+        "topic": "Grow into condos and juristic persons",
+        "manual": "—",
+        "typical": "Switch systems",
+        "us": "Same platform"
+      },
+      "cost": {
+        "topic": "Cost",
+        "manual": "Your own time",
+        "typical": "Monthly, per unit or per building",
+        "us": "Free; a fee only on payments the platform confirms"
+      }
+    }
+  },
+  "faq": {
+    "eyebrow": "FAQ",
+    "title": "Questions before you start",
+    "more": "Can't find your answer? Message us on LINE",
+    "items": {
+      "meters": {
+        "q": "Do I have to replace every meter?",
+        "a": "No. Start with your existing meters by photo or by hand. If you want meters that report themselves, we assess and install smart meters floor by floor."
+      },
+      "money": {
+        "q": "Is it really free? How does getproperty make money?",
+        "a": "Yes — no monthly fee and nothing per unit. We earn a fee per payment the platform confirms. Money goes through a licensed payment provider and is settled to your building's account; getproperty never holds your funds."
+      },
+      "residents": {
+        "q": "What do residents need to do?",
+        "a": "Add your building's LINE account and link their unit once. After that, bills, QR codes and receipts arrive in LINE every month."
+      },
+      "import": {
+        "q": "Can I move my data from Excel or my current software?",
+        "a": "Yes. Units, residents and rates can be imported from a file, and our team will look over the file with you before you start."
+      },
+      "data": {
+        "q": "How safe is my residents' data?",
+        "a": "Sensitive data is encrypted, backups run daily, and we sign a PDPA data processing agreement with every building owner."
+      }
+    }
+  },
+  "cta": {
+    "title": "Close next month's billing with getproperty",
+    "body": "Free, no monthly fee; our team helps you set up your first building",
+    "primary": "Start free",
+    "secondary": "See pricing"
+  },
+  "landlords": {
+    "meta": {
+      "title": "Rent out your house or condo yourself, free · getproperty",
+      "description": "For owners renting out houses and condos: online leases, deposits, rent bills in your tenant's LINE, automatic payment confirmation and receipts — free, for any number of units"
+    },
+    "hero": {
+      "eyebrow": "For owners renting out houses and condos",
+      "title": "Rent out like a professional <hl>and never chase rent again</hl>",
+      "body": "Sign leases online, keep track of deposits, and send rent bills to your tenant's LINE every month. Payments are confirmed and receipts issued for you — every unit on one phone, wherever it is.",
+      "primary": "Start free on LINE",
+      "signIn": "Sign in",
+      "secondary": "See how charges work",
+      "points": {
+        "free": "Free for any number of units",
+        "anywhere": "Units in different projects are fine",
+        "foreign": "Thai and foreign tenants"
+      },
+      "kicker": "For house and condo owners · free"
+    },
+    "preview": {
+      "label": "Sample landlord screen",
+      "title": "My units · sample",
+      "summary": "4 units · rent this month",
+      "units": {
+        "a": {
+          "name": "Condo A · unit 1205",
+          "status": "Paid"
+        },
+        "b": {
+          "name": "Townhouse B",
+          "status": "Bill sent · due 5 Nov"
+        },
+        "c": {
+          "name": "Condo C · unit 803",
+          "status": "Lease ends in 45 days"
+        },
+        "d": {
+          "name": "House D",
+          "status": "Vacant"
+        }
+      }
+    },
+    "pains": {
+      "eyebrow": "Renting out on your own",
+      "title": "The same problems owners face every year",
+      "items": {
+        "chase": "Messaging tenants every month to chase rent, never sure who has paid",
+        "slip": "Checking transfer slips against your bank app one by one",
+        "contract": "A lease copied from the internet that may be missing things",
+        "deposit": "Arguments over deposit deductions at move-out, with no record of the unit's condition",
+        "tax": "Gathering a year of rent income yourself at tax time",
+        "foreign": "Foreign tenants who need a TM.30 notification and an English lease"
+      }
+    },
+    "journey": {
+      "eyebrow": "The whole tenancy",
+      "title": "From finding a tenant to move-out day",
+      "soon": "Coming soon",
+      "items": {
+        "list": {
+          "title": "Find a tenant",
+          "body": "Post photos, rent and terms once, share them in LINE and on listing sites, and collect enquiries in one place"
+        },
+        "lease": {
+          "title": "Sign the lease, take the deposit",
+          "body": "A standard Thai/English lease signed online by both sides; deposit and advance rent recorded"
+        },
+        "rent": {
+          "title": "Collect rent automatically",
+          "body": "Rent, utilities and services billed to your tenant's LINE with a QR; reminders before the due date and when late"
+        },
+        "receipt": {
+          "title": "Confirmed and receipted",
+          "body": "Payments are confirmed automatically, receipts go to the tenant, and you see every unit's income on one screen"
+        },
+        "repair": {
+          "title": "Repairs",
+          "body": "Tenants send a photo in LINE and you hear about it at once. Decide whether you call a technician, let the tenant arrange it, and who pays; every repair cost is kept for your year-end summary."
+        },
+        "moveout": {
+          "title": "Move-out and deposit refund",
+          "body": "Compare the unit with move-in day, work out the refund with itemised deductions, and get reminded of the refund deadline"
+        },
+        "tax": {
+          "title": "Income summary for tax",
+          "body": "A year of rent income per unit, ready for your personal income tax return"
+        }
+      }
+    },
+    "table": {
+      "eyebrow": "Side by side",
+      "title": "Do it yourself, use an agent, or use getproperty",
+      "caption": "Comparison of ways to manage a rental unit",
+      "cols": {
+        "topic": "Task",
+        "self": "All by yourself",
+        "agent": "Agent or management company",
+        "us": "getproperty"
+      },
+      "rows": {
+        "cost": {
+          "topic": "Cost",
+          "self": "Your time",
+          "agent": "Commission per lease or a monthly management fee",
+          "us": "Free; a fee only when rent is confirmed through the platform"
+        },
+        "rent": {
+          "topic": "Chasing rent",
+          "self": "You message tenants",
+          "agent": "The agent follows up",
+          "us": "Bills and reminders sent automatically"
+        },
+        "proof": {
+          "topic": "Payment confirmation",
+          "self": "Check slips",
+          "agent": "Depends on the agent",
+          "us": "Confirmed automatically"
+        },
+        "contract": {
+          "topic": "Lease",
+          "self": "Write your own",
+          "agent": "The agent's lease",
+          "us": "Standard Thai/English lease, signed online"
+        },
+        "control": {
+          "topic": "Data and decisions",
+          "self": "Yours, but scattered",
+          "agent": "With the agent",
+          "us": "Yours, every unit in real time"
+        }
+      }
+    },
+    "foreign": {
+      "eyebrow": "Foreign tenants?",
+      "title": "Ready for foreign tenants from day one",
+      "items": {
+        "contract": {
+          "title": "Bilingual lease",
+          "body": "Thai and English in one lease that tenants can read and sign themselves"
+        },
+        "tm30": {
+          "title": "TM.30 prepared",
+          "body": "Reminders and prepared data for the foreign-resident notification whenever a new tenant moves in"
+        },
+        "language": {
+          "title": "Bills in their language",
+          "body": "Tenants open bills and receipts in LINE in their own language"
+        }
+      },
+      "photoCaption": "Foreign tenants read their bills in their own language"
+    },
+    "price": {
+      "title": "Free for any number of units",
+      "body": "No monthly fee and no sign-up fee. getproperty charges only a fee per payment the platform confirms — by QR, or a direct transfer verified from the slip.",
+      "cta": "See how charges work"
+    },
+    "faq": {
+      "eyebrow": "FAQ",
+      "title": "Questions from owners",
+      "items": {
+        "person": {
+          "q": "Do I need a company?",
+          "a": "No. Use it as an individual; receipts are issued in your name."
+        },
+        "one": {
+          "q": "I have just one unit — can I use it?",
+          "a": "Yes. It is free from one unit with no limit, and your units can be in different projects or provinces."
+        },
+        "tenant": {
+          "q": "What does my tenant need to do?",
+          "a": "Add the LINE account and link their unit once from the link you send. After that, bills, QR codes and receipts arrive in LINE every month — no app to install."
+        },
+        "agent": {
+          "q": "Can I still use an agent to find tenants?",
+          "a": "Yes. Once you have a tenant, bring the lease, deposit and rent collection into getproperty straight away."
+        },
+        "existing": {
+          "q": "I already have tenants — can I move them over?",
+          "a": "Yes. Record the existing lease, rent and deposit, and start billing from the next period."
+        }
+      }
+    },
+    "cta": {
+      "title": "Collect next month's rent with getproperty",
+      "body": "Free; add your first unit in a few minutes",
+      "primary": "Start free"
+    }
+  },
+  "audience": {
+    "label": "Start from what you have",
+    "apartment": {
+      "title": "Apartments and dormitories",
+      "body": "Close the whole building's billing in one morning"
+    },
+    "landlord": {
+      "title": "House and condo owners",
+      "body": "Rent out on your own, like a professional"
+    }
+  },
+  "rent": {
+    "eyebrow": "Coming soon",
+    "title": "Find a home from the real owner",
+    "body": "Homes from verified owners. Chat and book a viewing in LINE, then sign and pay in one place — no agent in between.",
+    "cta": "Get notified on LINE"
+  },
+  "photos": {
+    "living": "Condo living room with morning sun through the curtains",
+    "livingGreen": "Warm living room with a green sofa",
+    "bedroom": "Condo bedroom with a wooden bed by the window",
+    "bedroomWarm": "Bright bedroom with a white bed",
+    "kitchen": "Kitchen in a condo unit with white cabinets",
+    "tower": "Residential towers among trees",
+    "skyline": "High-rises beside a city park",
+    "townhouse": "Modern townhouses with timber louvres",
+    "keys": "Handing over the keys at the door"
+  },
+  "service": {
+    "eyebrow": "Repairs",
+    "title": "Repair requests in LINE, not on the phone",
+    "body": "Nothing slips through: every request has photos, a status and someone responsible",
+    "dorm": {
+      "title": "Apartments and dormitories",
+      "items": {
+        "1": "The resident sends photos and a description in LINE",
+        "2": "The job lands in your technician's queue with a due time",
+        "3": "The resident sees the status and the visit time — no calls to chase",
+        "4": "When it is fixed, the resident confirms and rates the work"
+      }
+    },
+    "owner": {
+      "title": "Rented houses and condos",
+      "items": {
+        "1": "The tenant reports it with photos; you are told at once in LINE",
+        "2": "Call your own technician or let the tenant arrange it",
+        "3": "Record who pays, with the receipt kept in one place",
+        "4": "The year's repair costs land in your income-and-expense summary"
+      }
+    }
   }
 }

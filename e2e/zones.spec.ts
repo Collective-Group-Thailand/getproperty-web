@@ -125,7 +125,7 @@ test("admin responses carry noindex; the owner landing does not", async ({ reque
 test("the owner host serves English under /en", async ({ page }) => {
   await page.goto(`${HOSTS.owner}/en`);
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Billing you run yourself, collected lawfully");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Close the month without walking the meters");
 });
 
 test("the theme choice stamps data-theme and the gp_theme cookie", async ({ page, context }) => {

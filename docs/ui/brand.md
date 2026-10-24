@@ -8,7 +8,7 @@ correction of the chimney gradient). It replaces the D-100 placeholder mark. The
 | | Value | Where |
 |---|---|---|
 | Name | **getproperty** — lower case (D-001), Latin name kept in Thai copy | `BRAND_NAME`, `src/ui/brand/config.ts` |
-| Tagline | **บิลทำเอง เก็บเงินเอง ถูกกฎหมาย** | `BRAND_TAGLINE`; `shared.brand.tagline` in `src/i18n` |
+| Tagline | **ให้เช่าง่าย อยู่สบาย** | `BRAND_TAGLINE`; `shared.brand.tagline` in `src/i18n` |
 | Company | **Collective Group (Thailand)** | `BRAND_COMPANY` |
 | Domain | `getproperty.co` | `BRAND_DOMAIN` |
 | Logo | "getproper" navy `#21365B`, the house "ty" blue `#1A4BA3`, the chimney a **vertical gradient `#62AEF9` → `#2E69F5`** (part of the logo — never flatten it) | `docs/brand/getproperty-logo.svg` → `<Wordmark />` |

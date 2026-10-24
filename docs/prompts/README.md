@@ -1,6 +1,6 @@
 # Prompt pack v1 — getproperty-web (frontend: owner · staff · admin)
 
-**getproperty — บิลทำเอง เก็บเงินเอง ถูกกฎหมาย** · Collective Group (Thailand)
+**getproperty — ให้เช่าง่าย อยู่สบาย** · Collective Group (Thailand)
 
 ## ลำดับการรัน และข้อความ kickoff (Plan Mode ทีละ session แล้ว `/clear` ก่อน session ถัดไป)
 คำนำหน้ามาตรฐาน: `Read CLAUDE.md, docs/prompts/00-master-plan.md, docs/decisions.md, docs/contract/api-conventions.md and docs/prompts/design-system.md.`
@@ -16,6 +16,7 @@
 | F4.1–4.3 | `Then read docs/prompts/F4-staff-pwa.md. Do Deliverable 4.N only. Plan first.` | R1 |
 | F4.4 | `Then read docs/prompts/F4-staff-pwa.md. Do Deliverable 4.4 only. Plan first.` | R2 |
 | F5.1–5.3 | `Then read docs/prompts/F5-admin.md. Do Deliverable 5.N only. Plan first.` | R1 |
+| F6.1–6.6 | `Then read docs/prompts/F6-landlord-listings.md. Do Deliverable 6.N only. Plan first.` | R3 (D-250–D-253, Proposed; needs api B7.N or MSW) |
 
 ขนานได้: F2, F4, F5 หลัง F1 ใน git worktree แยก (รันกับ MSW จนกว่า backend จะมี) · ต้อง `pnpm gen:api` ทุกครั้งที่ `getproperty-api` tag release ใหม่
 

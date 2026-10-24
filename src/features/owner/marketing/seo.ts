@@ -77,3 +77,9 @@ export function organizationJsonLd(description: string): string {
     description,
   }).replace(/</g, "\\u003c");
 }
+
+/** The platform's LINE Official Account ("add friend" link), the public pages' sales channel; null when not configured. */
+export function lineOaHref(): string | null {
+  const id = serverEnv().NEXT_PUBLIC_LINE_OA_ID;
+  return id ? `https://line.me/R/ti/p/${encodeURIComponent(id)}` : null;
+}

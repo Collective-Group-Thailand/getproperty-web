@@ -14,6 +14,13 @@ const nextConfig: NextConfig = {
   output: "standalone",
   // Node-only metrics client (`/api/metrics`): loaded from node_modules at run time rather than bundled.
   serverExternalPackages: ["@prometheus-io/client"],
+  // Marketing photography (2026-10-24 redesign): Unsplash-licensed photos, fetched and re-encoded by this
+  // server's image optimiser, so visitors' browsers only ever talk to our origin (CSP `img-src 'self'`).
+  // Replace with photos of customers' own buildings as they come in (src/features/owner/marketing/photos.ts).
+  images: {
+    remotePatterns: [{ protocol: "https", hostname: "images.unsplash.com", pathname: "/photo-**" }],
+    formats: ["image/avif", "image/webp"],
+  },
   // Responses the proxy never sees (public files, Next's static assets) still get the baseline that
   // does not depend on the zone; pages get the full per-zone set from src/proxy.ts.
   async headers() {

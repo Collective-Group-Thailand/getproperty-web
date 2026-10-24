@@ -8,6 +8,6 @@
  * (D-001: the Latin name is kept in Thai copy); it is also exposed through `src/i18n` for screens.
  */
 export const BRAND_NAME = "getproperty";
-export const BRAND_TAGLINE = "บิลทำเอง เก็บเงินเอง ถูกกฎหมาย";
+export const BRAND_TAGLINE = "ให้เช่าง่าย อยู่สบาย";
 export const BRAND_COMPANY = "Collective Group (Thailand)";
 export const BRAND_DOMAIN = "getproperty.co";

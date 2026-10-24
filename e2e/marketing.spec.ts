@@ -9,13 +9,11 @@ const get = (request: import("@playwright/test").APIRequestContext, host: string
   return request.get(`http://127.0.0.1:${url.port}${path}`, { headers: { host: url.host } });
 };
 
-test("landing: hero, lawful-rate teaser from the API, Organization JSON-LD, indexable", async ({ page }) => {
+test("landing: hero, repair-request section, Organization JSON-LD, indexable", async ({ page }) => {
   const response = await page.goto(`${HOSTS.owner}/`);
   expect(response!.headers()["x-robots-tag"]).toBeUndefined();
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText("บิลทำเอง เก็บเงินเอง ถูกกฎหมาย");
-  await expect(page.getByTestId("loss-ceiling")).toContainText("4.6189");
-  await page.getByRole("radio", { name: "การไฟฟ้าส่วนภูมิภาค (กฟภ.)" }).click();
-  await expect(page.getByTestId("loss-ceiling")).toContainText("4.6189");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("สิ้นเดือนนี้ ไม่ต้องเดินจดมิเตอร์");
+  await expect(page.getByRole("heading", { level: 2, name: "แจ้งซ่อมผ่าน LINE ไม่ต้องรับโทรศัพท์" })).toBeVisible();
   const jsonLd = JSON.parse((await page.locator('script[type="application/ld+json"]').textContent())!);
   expect(jsonLd).toMatchObject({
     "@type": "Organization",
@@ -38,12 +36,26 @@ test("landing: hero, lawful-rate teaser from the API, Organization JSON-LD, inde
   expect(results.violations).toEqual([]);
 });
 
-test("pricing shows the plans the API publishes, formatted", async ({ page }) => {
+test("pricing: free to use, fee per collected payment, hardware add-ons from the API (D-250)", async ({ page }) => {
   await page.goto(`${HOSTS.owner}/pricing`);
-  const plans = page.getByTestId("pricing-plans");
-  await expect(plans.getByRole("heading", { name: "Apartment Starter" })).toBeVisible();
-  await expect(plans).toContainText("฿25.00 / ห้อง / เดือน");
-  await expect(plans).toContainText("ขั้นต่ำ 20 ห้อง");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("ใช้ฟรี จ่ายเฉพาะเมื่อรับเงินผ่านระบบ");
+  const model = page.getByTestId("pricing-model");
+  await expect(model.getByRole("heading", { name: "ค่าธรรมเนียมการรับชำระ" })).toBeVisible();
+  // Per-unit subscription plans are no longer sold; only add-ons from the API are listed.
+  const addons = page.getByTestId("pricing-plans");
+  await expect(addons.getByRole("heading", { name: "Access Add-on" })).toBeVisible();
+  await expect(addons).not.toContainText("Apartment Starter");
+});
+
+test("landlords page: house and condo owners, indexable, no axe violations", async ({ page }) => {
+  await page.goto(`${HOSTS.owner}/landlords`);
+  await expect(page.getByTestId("landlords-hero").getByRole("heading", { level: 1 })).toContainText(
+    "ปล่อยเช่าเองได้แบบมืออาชีพ",
+  );
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "index, follow");
+  await expect(page.locator('link[rel="alternate"][hreflang="en"]')).toHaveAttribute("href", /\/en\/landlords$/);
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
+  expect(results.violations).toEqual([]);
 });
 
 test("legal pages in both languages; an unknown one is 404", async ({ page }) => {
@@ -60,6 +72,7 @@ test("sitemap lists only the marketing pages, robots points at it", async ({ req
   const sitemap = await (await get(request, HOSTS.owner, "/sitemap.xml")).text();
   expect(sitemap).toContain(`<loc>${HOSTS.owner}/</loc>`);
   expect(sitemap).toContain("/pricing</loc>");
+  expect(sitemap).toContain("/landlords</loc>");
   expect(sitemap).toContain(`hreflang="en" href="${HOSTS.owner}/en/legal/dpa"`);
   expect(sitemap).not.toContain("dashboard");
   const robots = await (await get(request, HOSTS.owner, "/robots.txt")).text();
