@@ -91,5 +91,39 @@
     "monthly": "Per month",
     "requested": "Requested",
     "scheduled": "Scheduled"
+  },
+  "storage": {
+    "title": "Storage",
+    "description": "Every file and record of this account, counted at the file's real size and a standard size per record.",
+    "ofAllowance": "of {allowance}",
+    "noAllowance": "No limit yet",
+    "left": "{percent}% used · {bytes} left",
+    "overBy": "{percent}% used · {bytes} over",
+    "files": "Files",
+    "filesHint": "Meter photos, slips, repair photos, contracts and uploads",
+    "recordsLabel": "Records",
+    "recordCount": "{count} records",
+    "recordItem": "{label} {count}",
+    "records": {
+      "invoice": "Invoices",
+      "receipt": "Receipts",
+      "payment": "Payments",
+      "meter_reading": "Meter readings",
+      "lease": "Leases",
+      "service_request": "Repair requests"
+    },
+    "level": {
+      "ok": "Healthy",
+      "warning": "Nearly full",
+      "full": "Full",
+      "over": "Over",
+      "unmetered": "No limit"
+    },
+    "note": {
+      "unmetered": "Storage has no limit at the moment; keep working as usual.",
+      "safe": "Your data is never deleted or locked, even when storage is full. Documents the law requires, such as receipts and leases, are always produced.",
+      "full": "Everything you stored stays. Documents the law requires are produced as usual; only some optional uploads wait until you remove files you no longer need or add space.",
+      "billed": "Extra storage is {price} per GB per month, on your monthly getproperty invoice. All your data stays."
+    }
   }
 }

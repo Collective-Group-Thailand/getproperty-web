@@ -881,6 +881,11 @@
       "warning": "Watch out",
       "product": "How getproperty helps"
     },
+    "affiliate": {
+      "label": "Related product",
+      "at": "View at {merchant}",
+      "disclosure": "Affiliate link — we may earn a commission at no extra cost to you."
+    },
     "cta": {
       "landlord": {
         "title": "Let the paperwork do itself",

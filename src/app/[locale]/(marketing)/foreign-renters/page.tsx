@@ -45,7 +45,7 @@ export default async function ForeignRenters({ params }: Params) {
       <section className="mx-auto grid max-w-7xl gap-10 px-4 pt-14 pb-16 md:pt-20 lg:grid-cols-12 lg:items-end">
         <div className="flex flex-col gap-5 lg:col-span-6">
           <p className="text-primary text-sm font-semibold">{t("eyebrow")}</p>
-          <h1 className="text-5xl leading-tight">{t("title")}</h1>
+          <h1 className="text-display leading-tight">{t("title")}</h1>
           <p className="text-muted text-xl leading-relaxed">{t("lead")}</p>
           <div className="flex flex-wrap gap-3">
             <Button asChild size="lg">

@@ -4,6 +4,7 @@ import type { Guide } from "./types";
 export const GUIDES_EN: Guide[] = [
   {
     slug: "rental-income-tax",
+    locale: "en",
     category: "tax",
     title: "Tax on rental income in Thailand: when to file and what you can deduct",
     summary:
@@ -11,6 +12,7 @@ export const GUIDES_EN: Guide[] = [
     answer:
       "Rent from a house or condo is type-5 income under Section 40(5) of the Revenue Code. Owners deduct either a flat 30% or actual, documented expenses. Income for January–June is filed on PND 94 by 30 September; the whole year on PND 90 by 31 March of the following year.",
     reviewed: "2026-10-24",
+    published: "2026-10-24",
     readMinutes: 6,
     audience: "landlord",
     general: true,
@@ -123,6 +125,7 @@ export const GUIDES_EN: Guide[] = [
   },
   {
     slug: "tm30",
+    locale: "en",
     category: "law",
     title: "TM30 for landlords: reporting a foreign tenant's address",
     summary:
@@ -130,6 +133,7 @@ export const GUIDES_EN: Guide[] = [
     answer:
       "TM30 is the report of where a foreigner stays, required by Section 38 of the Immigration Act B.E. 2522. The householder, occupier or hotel manager must file it within 24 hours after a foreign tenant moves in, online or at an immigration office. A householder who does not file can be fined up to 2,000 baht.",
     reviewed: "2026-10-24",
+    published: "2026-10-24",
     readMinutes: 4,
     audience: "landlord",
     general: true,
@@ -196,6 +200,7 @@ export const GUIDES_EN: Guide[] = [
   },
   {
     slug: "security-deposit",
+    locale: "en",
     category: "law",
     title: "Security deposits in Thailand: what you may deduct and when to return it",
     summary:
@@ -203,6 +208,7 @@ export const GUIDES_EN: Guide[] = [
     answer:
       "Under the Contract Committee notification of 2025 (in force since 4 September 2025), businesses letting three or more residential units must return the deposit within 7 days when the lease ends without dispute, may deduct only unpaid rent or proven damage, and may not charge for normal wear and tear.",
     reviewed: "2026-10-24",
+    published: "2026-10-24",
     readMinutes: 5,
     audience: "landlord",
     general: true,
@@ -286,6 +292,7 @@ export const GUIDES_EN: Guide[] = [
   },
   {
     slug: "lease-essentials",
+    locale: "en",
     category: "landlord",
     title: "What a Thai residential lease should contain",
     summary:
@@ -293,6 +300,7 @@ export const GUIDES_EN: Guide[] = [
     answer:
       "A sound lease names the parties, the unit and its contents, the term, the rent and due date, the deposit and how it is returned, utilities and service charges, house rules, repairs, renewal and termination, with a move-in inspection attached — and stamp duty paid within 15 days.",
     reviewed: "2026-10-24",
+    published: "2026-10-24",
     readMinutes: 5,
     audience: "landlord",
     general: true,
@@ -360,6 +368,7 @@ export const GUIDES_EN: Guide[] = [
   },
   {
     slug: "first-time-landlord",
+    locale: "en",
     category: "landlord",
     title: "Renting out your condo for the first time: a checklist",
     summary:
@@ -367,6 +376,7 @@ export const GUIDES_EN: Guide[] = [
     answer:
       "Work in order: get the unit ready, price it against similar units nearby, take at least five daylight photos, list it with the address and full terms, screen tenants and arrange viewings, sign the lease with a move-in inspection, then set up automatic bills and receipts.",
     reviewed: "2026-10-24",
+    published: "2026-10-24",
     readMinutes: 5,
     audience: "landlord",
     general: false,

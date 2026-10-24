@@ -23,7 +23,19 @@ ENV PNPM_HOME=/pnpm PATH=/pnpm:$PATH CI=true NEXT_TELEMETRY_DISABLED=1
 RUN corepack enable
 WORKDIR /app
 
+# @collective/web-kit + @collective/content (D-275): installed from the sibling checkout
+# (`file:../../collective-shared/packages/*`, i.e. /collective-shared from /app) until they are on GitHub Packages.
+#   docker build --build-context collective-shared-src=../../collective-shared .
+# UNVERIFIED: written without a Docker daemon (Cowork sandbox, 2026-10-25).
+FROM base AS collective-shared
+WORKDIR /collective-shared
+COPY --from=collective-shared-src package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
+COPY --from=collective-shared-src packages ./packages
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --ignore-scripts \
+  && pnpm --filter @collective/web-kit --filter @collective/content build
+
 FROM base AS deps
+COPY --from=collective-shared /collective-shared /collective-shared
 COPY package.json pnpm-lock.yaml ./
 # `postinstall` copies the font files from the installed packages (they are committed too).
 COPY scripts/copy-fonts.ts ./scripts/copy-fonts.ts

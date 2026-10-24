@@ -1,3 +1,5 @@
+import { articlesLlmsSection } from "@collective/content";
+import { type LlmsSection, renderLlmsTxt } from "@collective/web-kit";
 import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 
@@ -22,7 +24,7 @@ const FAQ = {
 
 /**
  * `/llms.txt` (llmstxt.org): a plain markdown statement of what getproperty is, for answer engines and AI assistants
- * (GEO/AEO, same pattern as getpack). Built only from the marketing copy and the published listings, so it never says
+ * (GEO/AEO, same pattern as getpack; rendered by @collective/web-kit). Built only from the marketing copy and the published listings, so it never says
  * anything the pages do not; served on the indexed host only (the one `robots.txt` opens), 404 elsewhere.
  */
 export async function GET(): Promise<Response> {
@@ -34,77 +36,90 @@ export async function GET(): Promise<Response> {
   const origin = marketingOrigin();
   const url = (path: string, locale: Locale) => `${origin}${getPathname({ href: path, locale })}`;
 
-  const sections: string[] = [];
+  const sections: LlmsSection[] = [];
   for (const locale of [routing.defaultLocale, ...routing.locales.filter((l) => l !== routing.defaultLocale)]) {
     const t = await getTranslations({ locale, namespace: "owner.marketing" });
     const faq = (group: keyof typeof FAQ) =>
-      FAQ[group].map((key) => `### ${t(`${group}.${key}.q`)}\n\n${t(`${group}.${key}.a`)}`).join("\n\n");
-    sections.push(
-      [
-        `## ${locale === "th" ? "ภาษาไทย" : "English"}`,
-        `> ${t("meta.description")}`,
-        [
-          `- [${t("nav.home")}](${url("/", locale)}): ${t("meta.description")}`,
-          `- [${t("nav.landlords")}](${url("/landlords", locale)}): ${t("landlords.meta.description")}`,
-          `- [${t("nav.rent")}](${url("/rent", locale)}): ${t("listings.meta.description")}`,
-          `- [${t("nav.pricing")}](${url("/pricing", locale)}): ${t("meta.pricingDescription")}`,
-          `- [${t("guides.title")}](${url("/guides", locale)}): ${t("guides.meta.description")}`,
-          `- [${t("tools.title")}](${url("/tools", locale)}): ${t("tools.intro")}`,
-          ...(["utility", "receipt", "yield"] as const).map(
-            (key) => `  - [${t(`tools.${key}.title`)}](${url(TOOL_PATH[key], locale)}): ${t(`tools.${key}.card`)}`,
-          ),
-          `- [${t("nav.foreignRenters")}](${url("/foreign-renters", locale)}): ${t("foreign.meta.description")}`,
-          `- [${t("nav.help")}](${url("/help", locale)}): ${t("help.meta.description")}`,
-          `- [${t("nav.security")}](${url("/security", locale)}): ${t("security.meta.description")}`,
-          `- [${t("nav.about")}](${url("/about", locale)}): ${t("about.meta.description")}`,
-          `- [${t("nav.contactPage")}](${url("/contact", locale)}): ${t("contact.meta.description")}`,
-          `- [${t("nav.legal")}](${url("/legal/terms", locale)})`,
-        ].join("\n"),
-        // Guides: the short answer of each, which is what an answer engine quotes (D-271).
-        guidesFor(locale)
-          .map((guide) => `### [${guide.title}](${url(`/guides/${guide.slug}`, locale)})\n\n${guide.answer}`)
-          .join("\n\n"),
-        faq("faq.items"),
-        faq("landlords.faq.items"),
-        faq("pricing.faq.items"),
-      ].join("\n\n"),
-    );
+      FAQ[group].map((key) => ({ question: t(`${group}.${key}.q`), answer: t(`${group}.${key}.a`) }));
+    sections.push({
+      heading: locale === "th" ? "ภาษาไทย" : "English",
+      summary: t("meta.description"),
+      links: [
+        { title: t("nav.home"), url: url("/", locale), description: t("meta.description") },
+        { title: t("nav.landlords"), url: url("/landlords", locale), description: t("landlords.meta.description") },
+        { title: t("nav.rent"), url: url("/rent", locale), description: t("listings.meta.description") },
+        { title: t("nav.pricing"), url: url("/pricing", locale), description: t("meta.pricingDescription") },
+        { title: t("guides.title"), url: url("/guides", locale), description: t("guides.meta.description") },
+        {
+          title: t("tools.title"),
+          url: url("/tools", locale),
+          description: t("tools.intro"),
+          children: (["utility", "receipt", "yield"] as const).map((key) => ({
+            title: t(`tools.${key}.title`),
+            url: url(TOOL_PATH[key], locale),
+            description: t(`tools.${key}.card`),
+          })),
+        },
+        {
+          title: t("nav.foreignRenters"),
+          url: url("/foreign-renters", locale),
+          description: t("foreign.meta.description"),
+        },
+        { title: t("nav.help"), url: url("/help", locale), description: t("help.meta.description") },
+        { title: t("nav.security"), url: url("/security", locale), description: t("security.meta.description") },
+        { title: t("nav.about"), url: url("/about", locale), description: t("about.meta.description") },
+        { title: t("nav.contactPage"), url: url("/contact", locale), description: t("contact.meta.description") },
+        { title: t("nav.legal"), url: url("/legal/terms", locale) },
+      ],
+      qa: [
+        // Guides: the short answer of each, which is what an answer engine quotes (D-271, D-277).
+        ...articlesLlmsSection(
+          t("guides.title"),
+          guidesFor(locale).map((guide) => ({ article: guide, url: url(`/guides/${guide.slug}`, locale) })),
+        ).qa!,
+        ...faq("faq.items"),
+        ...faq("landlords.faq.items"),
+        ...faq("pricing.faq.items"),
+      ],
+    });
   }
 
   const listings = await publicListings({ sort: "newest" });
-  const listingLines = (listings?.data ?? []).map(
-    (l) =>
-      `- [${l.title}](${url(`/rent/${l.slug}`, routing.defaultLocale)}): ${l.district}, ${l.province} · ${l.rent} THB/month`,
-  );
+  const listingLinks = (listings?.data ?? []).map((l) => ({
+    title: l.title,
+    url: url(`/rent/${l.slug}`, routing.defaultLocale),
+    description: `${l.district}, ${l.province} · ${l.rent} THB/month`,
+  }));
 
   const areas = (await publicListingAreas()).filter((area) => area.indexable);
-  const areaLines = areas.map(
-    (a) => `- [${a.nameEn} / ${a.name}](${url(`/rent/area/${a.slug}`, routing.defaultLocale)}): ${a.count} listings`,
-  );
+  const areaLinks = areas.map((a) => ({
+    title: `${a.nameEn} / ${a.name}`,
+    url: url(`/rent/area/${a.slug}`, routing.defaultLocale),
+    description: `${a.count} listings`,
+  }));
 
   const tEn = await getTranslations({ locale: "en", namespace: "owner.marketing" });
-  const body = [
-    "# getproperty",
-    `> ${tEn("meta.description")}`,
-    [
-      "Key facts:",
-      "- Operator: Collective Group (Thailand)",
-      "- Market: Thailand; Thai and English",
-      "- For: apartment and dormitory operators, and owners renting out houses and condos",
-      "- Price: free to use — no monthly or per-room fee; a fee applies only to payments confirmed through the platform",
-      "- Money: paid through a licensed payment provider and settled to the owner's account; getproperty never holds funds",
-      "- Residents: bills with a QR, receipts and repair requests in LINE",
-      "- Listings: owners list rooms, condos and houses for rent free, with the full address shown",
-    ].join("\n"),
-    ...sections,
-    areaLines.length ? ["## Areas", ...areaLines].join("\n") : "",
-    listingLines.length ? ["## Listings (latest)", ...listingLines].join("\n") : "",
-    `## More\n\n- [Sitemap](${origin}/sitemap.xml)`,
-  ]
-    .filter(Boolean)
-    .join("\n\n");
+  const body = renderLlmsTxt({
+    name: "getproperty",
+    summary: tEn("meta.description"),
+    facts: [
+      "Operator: Collective Group (Thailand)",
+      "Market: Thailand; Thai and English",
+      "For: apartment and dormitory operators, and owners renting out houses and condos",
+      "Price: free to use — no monthly or per-room fee; a fee applies only to payments confirmed through the platform",
+      "Money: paid through a licensed payment provider and settled to the owner's account; getproperty never holds funds",
+      "Residents: bills with a QR, receipts and repair requests in LINE",
+      "Listings: owners list rooms, condos and houses for rent free, with the full address shown",
+    ],
+    sections: [
+      ...sections,
+      ...(areaLinks.length ? [{ heading: "Areas", links: areaLinks }] : []),
+      ...(listingLinks.length ? [{ heading: "Listings (latest)", links: listingLinks }] : []),
+      { heading: "More", links: [{ title: "Sitemap", url: `${origin}/sitemap.xml` }] },
+    ],
+  });
 
-  return new Response(`${body}\n`, {
+  return new Response(body, {
     headers: { "content-type": "text/markdown; charset=utf-8", "cache-control": "public, max-age=3600" },
   });
 }

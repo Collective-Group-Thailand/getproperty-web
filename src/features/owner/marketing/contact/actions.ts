@@ -1,5 +1,6 @@
 "use server";
 
+import { toE164Thai } from "@collective/web-kit";
 import { z } from "zod";
 
 import { serverEnv } from "@/lib/env/server";
@@ -12,10 +13,19 @@ import { inboundEdgeHeaders } from "@/lib/http/server";
  */
 const contactSchema = z.object({
   name: z.string().trim().min(1).max(120),
+  // A Thai mobile or landline number in any common spelling, sent to the API as E.164 (@collective/web-kit).
   phone: z
     .string()
     .trim()
-    .regex(/^\+?[0-9 -]{9,15}$/),
+    .max(20)
+    .transform((value, ctx) => {
+      const e164 = toE164Thai(value);
+      if (e164 === null) {
+        ctx.addIssue({ code: "custom", message: "phone" });
+        return z.NEVER;
+      }
+      return e164;
+    }),
   email: z.union([z.literal(""), z.email().max(200)]),
   role: z.enum(["dorm", "landlord", "renter", "partner"]),
   units: z.union([z.literal(""), z.string().regex(/^\d{1,5}$/)]),

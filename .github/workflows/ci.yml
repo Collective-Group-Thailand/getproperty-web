@@ -30,6 +30,14 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: pnpm
+      # @collective/web-kit + @collective/content (D-275): `file:../../collective-shared/packages/*` until they are on
+      # GitHub Packages — checked out two levels up and built before the install copies them in.
+      - name: Check out and build collective-shared
+        env:
+          TOKEN: ${{ secrets.ASSET_CORE_READ_TOKEN }}
+        run: |
+          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/collective-group/collective-shared.git" ../../collective-shared
+          (cd ../../collective-shared && pnpm install --frozen-lockfile && pnpm build)
       - run: pnpm install --frozen-lockfile
 
       - name: Formatting
@@ -73,6 +81,14 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: pnpm
+      # @collective/web-kit + @collective/content (D-275): `file:../../collective-shared/packages/*` until they are on
+      # GitHub Packages — checked out two levels up and built before the install copies them in.
+      - name: Check out and build collective-shared
+        env:
+          TOKEN: ${{ secrets.ASSET_CORE_READ_TOKEN }}
+        run: |
+          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/collective-group/collective-shared.git" ../../collective-shared
+          (cd ../../collective-shared && pnpm install --frozen-lockfile && pnpm build)
       - run: pnpm install --frozen-lockfile
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
@@ -96,6 +112,14 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: pnpm
+      # @collective/web-kit + @collective/content (D-275): `file:../../collective-shared/packages/*` until they are on
+      # GitHub Packages — checked out two levels up and built before the install copies them in.
+      - name: Check out and build collective-shared
+        env:
+          TOKEN: ${{ secrets.ASSET_CORE_READ_TOKEN }}
+        run: |
+          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/collective-group/collective-shared.git" ../../collective-shared
+          (cd ../../collective-shared && pnpm install --frozen-lockfile && pnpm build)
       - run: pnpm install --frozen-lockfile
       - name: Build Storybook
         run: pnpm build-storybook
@@ -120,10 +144,15 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: docker/setup-buildx-action@v3
+      - name: Check out collective-shared for the image (named build context, D-275)
+        env:
+          TOKEN: ${{ secrets.ASSET_CORE_READ_TOKEN }}
+        run: git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/collective-group/collective-shared.git" ../../collective-shared
       - name: docker build
         uses: docker/build-push-action@v6
         with:
           context: .
+          build-contexts: collective-shared-src=../../collective-shared
           load: true
           tags: getproperty/web:ci
           cache-from: type=gha
@@ -163,6 +192,14 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: pnpm
+      # @collective/web-kit + @collective/content (D-275): `file:../../collective-shared/packages/*` until they are on
+      # GitHub Packages — checked out two levels up and built before the install copies them in.
+      - name: Check out and build collective-shared
+        env:
+          TOKEN: ${{ secrets.ASSET_CORE_READ_TOKEN }}
+        run: |
+          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/collective-group/collective-shared.git" ../../collective-shared
+          (cd ../../collective-shared && pnpm install --frozen-lockfile && pnpm build)
       - run: pnpm install --frozen-lockfile
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
@@ -211,6 +248,14 @@ jobs:
           node-version-file: getproperty-web/.nvmrc
       - run: pnpm install --frozen-lockfile && pnpm build
         working-directory: collective-asset-core
+      # @collective/web-kit + @collective/content (D-275): `file:../../collective-shared/packages/*` until they are on
+      # GitHub Packages — checked out two levels up and built before the install copies them in.
+      - name: Check out and build collective-shared
+        env:
+          TOKEN: ${{ secrets.ASSET_CORE_READ_TOKEN }}
+        run: |
+          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/collective-group/collective-shared.git" ../../collective-shared
+          (cd ../../collective-shared && pnpm install --frozen-lockfile && pnpm build)
       - run: pnpm install --frozen-lockfile
         working-directory: getproperty-api
       - run: pnpm install --frozen-lockfile && pnpm exec playwright install --with-deps chromium

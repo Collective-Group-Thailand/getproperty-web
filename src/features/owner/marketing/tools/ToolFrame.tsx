@@ -73,7 +73,7 @@ export async function ToolFrame({
         </a>
         <header className="mt-8 mb-12 flex max-w-3xl flex-col gap-4 print:hidden">
           <p className="text-primary text-sm font-semibold">{shared("eyebrow")}</p>
-          <h1 className="text-4xl md:text-5xl">{t("title")}</h1>
+          <h1 className="text-display">{t("title")}</h1>
           <p className="text-muted text-lg">{t("intro")}</p>
         </header>
 

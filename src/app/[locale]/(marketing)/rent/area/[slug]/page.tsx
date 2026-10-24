@@ -80,7 +80,7 @@ export default async function AreaPage({ params }: Params) {
               <p className="text-primary text-sm font-semibold">
                 {area.kind === "station" && area.line ? area.line : area.province}
               </p>
-              <h1 className="text-5xl">{t(`area.title.${area.kind}`, { name })}</h1>
+              <h1 className="text-display">{t(`area.title.${area.kind}`, { name })}</h1>
               <p className="text-muted text-lg">{t("area.count", { count: area.count })}</p>
             </div>
             {area.band ? (

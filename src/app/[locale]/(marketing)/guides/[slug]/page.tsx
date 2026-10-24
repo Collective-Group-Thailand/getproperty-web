@@ -1,3 +1,4 @@
+import { articleGraphs, hasAffiliateLinks } from "@collective/content";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
@@ -5,7 +6,6 @@ import { GuideBlocks } from "@/features/owner/marketing/guides/GuideBlocks";
 import { GUIDE_SLUGS, guideBySlug, guidesFor } from "@/features/owner/marketing/guides";
 import { JsonLdScript } from "@/features/owner/marketing/JsonLdScript";
 import { marketingMetadata, marketingOrigin, ownerHref } from "@/features/owner/marketing/seo";
-import { articleSchema, breadcrumbSchema, faqSchema } from "@/features/owner/marketing/structured-data";
 import { formatDate } from "@/i18n/format";
 import { getPathname } from "@/i18n/navigation";
 import { routing, type Locale } from "@/i18n/routing";
@@ -53,29 +53,26 @@ export default async function GuidePage({ params }: Params) {
     .sort((a, b) => Number(b.category === guide.category) - Number(a.category === guide.category))
     .slice(0, 3);
   const noteLabels = { info: t("notes.info"), warning: t("notes.warning"), product: t("notes.product") };
-  const cta = guide.audience === "landlord" ? "landlord" : "apartment";
+  const affiliateLabels = {
+    label: t("affiliate.label"),
+    at: (merchant: string) => t("affiliate.at", { merchant }),
+  };
+  const { audience, ...article } = guide;
+  // Article (with the category's label as its section), breadcrumb and FAQ graphs from @collective/content (D-277).
+  const [articleGraph, ...otherGraphs] = articleGraphs(
+    article,
+    { name: "getproperty", origin, logo: `${origin}/brand/getproperty-logo.png`, url },
+    [
+      { name: nav("home"), url: `${origin}${href("/")}` },
+      { name: t("title"), url: `${origin}${href("/guides")}` },
+      { name: guide.title },
+    ],
+  );
+  const cta = audience === "landlord" ? "landlord" : "apartment";
 
   return (
     <>
-      <JsonLdScript
-        graphs={[
-          articleSchema({
-            origin,
-            url,
-            headline: guide.title,
-            description: guide.summary,
-            reviewed: guide.reviewed,
-            inLanguage: locale,
-            section: t(`categories.${guide.category}`),
-          }),
-          breadcrumbSchema([
-            { name: nav("home"), url: `${origin}${href("/")}` },
-            { name: t("title"), url: `${origin}${href("/guides")}` },
-            { name: guide.title },
-          ]),
-          ...(guide.faq.length > 0 ? [faqSchema(guide.faq.map((f) => ({ question: f.q, answer: f.a })))] : []),
-        ]}
-      />
+      <JsonLdScript graphs={[{ ...articleGraph, articleSection: t(`categories.${guide.category}`) }, ...otherGraphs]} />
       <article className="mx-auto max-w-7xl px-4 pt-8 pb-20">
         <a href={href("/guides")} className="text-muted hover:text-fg inline-flex items-center gap-1 text-sm">
           <Icon icon={IconChevronLeft} />
@@ -90,7 +87,7 @@ export default async function GuidePage({ params }: Params) {
             <span aria-hidden="true">·</span>
             <span>{t("reviewed", { date: formatDate(guide.reviewed, locale, { style: "long" }) })}</span>
           </p>
-          <h1 className="text-4xl leading-tight md:text-5xl">{guide.title}</h1>
+          <h1 className="text-display">{guide.title}</h1>
         </header>
 
         <div className="mt-10 grid gap-12 lg:grid-cols-12">
@@ -125,13 +122,14 @@ export default async function GuidePage({ params }: Params) {
             </section>
 
             {guide.general ? <p className="text-muted text-sm">{t("general")}</p> : null}
+            {hasAffiliateLinks(article) ? <p className="text-muted text-sm">{t("affiliate.disclosure")}</p> : null}
 
             {guide.sections.map((section) => (
               <section key={section.id} id={section.id} aria-labelledby={`${section.id}-h`} className="scroll-mt-24">
                 <h2 id={`${section.id}-h`} className="mb-5 text-3xl">
                   {section.heading}
                 </h2>
-                <GuideBlocks blocks={section.blocks} noteLabels={noteLabels} />
+                <GuideBlocks blocks={section.blocks} noteLabels={noteLabels} affiliateLabels={affiliateLabels} />
               </section>
             ))}
 

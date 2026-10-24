@@ -4,10 +4,19 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  '@collective/web-kit': file:../../collective-shared/packages/web-kit
+
 importers:
 
   .:
     dependencies:
+      '@collective/content':
+        specifier: file:../../collective-shared/packages/content
+        version: file:../../collective-shared/packages/content
+      '@collective/web-kit':
+        specifier: file:../../collective-shared/packages/web-kit
+        version: file:../../collective-shared/packages/web-kit
       '@opentelemetry/api':
         specifier: ^1.9.1
         version: 1.9.1
@@ -311,6 +320,14 @@ packages:
   '@bramus/specificity@2.4.3':
     resolution: {integrity: sha512-0GEz8qJWokkUVYQYRukmkSHIFNoBH8QTreeHrAFbvz1XFYc3Y+puhMs8PQ5x8GNugiC2l5jvDBXKLbBIByeSBw==}
     hasBin: true
+
+  '@collective/content@file:../../collective-shared/packages/content':
+    resolution: {directory: ../../collective-shared/packages/content, type: directory}
+    engines: {node: '>=22'}
+
+  '@collective/web-kit@file:../../collective-shared/packages/web-kit':
+    resolution: {directory: ../../collective-shared/packages/web-kit, type: directory}
+    engines: {node: '>=22'}
 
   '@csstools/color-helpers@6.1.2':
     resolution: {integrity: sha512-grhRy3OKmniaAEKXMjua5z/EODX0MSqBGjunw8+j/3HQjOnahs2AGhvEOIYVUWcU6ScApbhLhVrQTX8XqrMrow==}
@@ -6460,6 +6477,13 @@ snapshots:
   '@bramus/specificity@2.4.3':
     dependencies:
       css-tree: 3.2.1
+
+  '@collective/content@file:../../collective-shared/packages/content':
+    dependencies:
+      '@collective/web-kit': file:../../collective-shared/packages/web-kit
+      zod: 4.6.7
+
+  '@collective/web-kit@file:../../collective-shared/packages/web-kit': {}
 
   '@csstools/color-helpers@6.1.2': {}
 

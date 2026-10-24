@@ -48,7 +48,7 @@ export function RentalYieldTool() {
         <div className="bg-fg text-fg-inverse rounded-photo flex flex-col gap-6 p-7">
           <div>
             <p className="text-sm opacity-80">{t("net")}</p>
-            <p className="text-6xl font-semibold tabular-nums">
+            <p className="text-display font-semibold tabular-nums">
               {ok ? t("percent", { value: formatDecimal(ok.netYield, locale, 2) }) : "—"}
             </p>
           </div>

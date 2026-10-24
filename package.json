@@ -43,6 +43,8 @@
     "e2e:visual": "playwright test --config playwright.visual.config.ts"
   },
   "dependencies": {
+    "@collective/content": "file:../../collective-shared/packages/content",
+    "@collective/web-kit": "file:../../collective-shared/packages/web-kit",
     "@opentelemetry/api": "^1.9.1",
     "@opentelemetry/api-logs": "^0.223.0",
     "@opentelemetry/instrumentation": "^0.223.0",
@@ -120,6 +122,9 @@
       "msw",
       "esbuild",
       "sharp"
-    ]
+    ],
+    "overrides": {
+      "@collective/web-kit": "file:../../collective-shared/packages/web-kit"
+    }
   }
 }

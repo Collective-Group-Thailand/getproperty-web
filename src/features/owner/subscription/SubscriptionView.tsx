@@ -27,13 +27,14 @@ import { IconRoom } from "@/ui/icons/glyphs/room";
 
 import { ownerPath } from "../shared/links";
 import { ownerCan, readOnly, section, type OwnerContext } from "../shared/server";
+import { StorageCard } from "./StorageCard";
 import { UpgradeToSmart } from "./UpgradeAction";
 
 /**
  * The subscription (F2 2.6, D-082, D-156): the plan and its state (trial end, past due, suspended →
  * read-only with what to do), what is counted today and this month's estimate, monthly usage, the
  * invoices from getproperty with their Thai QR and PDF, the platform hardware at the tenant's buildings,
- * and Starter → Smart through a site survey. Every figure is the API's.
+ * and Starter → Smart through a site survey; storage against its allowance (D-276). Every figure is the API's.
  */
 export async function SubscriptionView({
   context,
@@ -44,12 +45,13 @@ export async function SubscriptionView({
   const t = await getTranslations("owner.subscription");
   const kinds = await getTranslations("owner.subscription.hardwareKind");
   const { api, locale, me, buildings } = context;
-  const [overview, usage, invoices, hardware, surveys] = await Promise.all([
+  const [overview, usage, invoices, hardware, surveys, storage] = await Promise.all([
     section(unwrap(api.GET("/v1/owner/subscription"))),
     section(unwrap(api.GET("/v1/owner/subscription/usage"))),
     section(unwrap(api.GET("/v1/owner/subscription/invoices"))),
     section(unwrap(api.GET("/v1/owner/subscription/hardware"))),
     section(unwrap(api.GET("/v1/owner/subscription/site-surveys"))),
+    section(unwrap(api.GET("/v1/owner/storage"))),
   ]);
   const sub = overview.data?.subscription ?? null;
   const buildingName = (id: string | null) =>
@@ -198,6 +200,8 @@ export async function SubscriptionView({
           ) : null}
         </>
       )}
+
+      <StorageCard storage={storage.data ?? null} error={storage.error} locale={locale} />
 
       <Card as="section" aria-labelledby="sub-invoices">
         <CardHeader title={<span id="sub-invoices">{t("invoices")}</span>} description={t("invoicesHint")} />

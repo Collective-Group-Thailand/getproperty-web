@@ -46,7 +46,7 @@ export default async function Tools({ params }: Params) {
       />
       <header className="mx-auto flex max-w-7xl flex-col gap-4 px-4 pt-14 pb-12 md:pt-20">
         <p className="text-primary text-sm font-semibold">{t("eyebrow")}</p>
-        <h1 className="max-w-3xl text-5xl">{t("title")}</h1>
+        <h1 className="text-display max-w-3xl">{t("title")}</h1>
         <p className="text-muted max-w-2xl text-lg">{t("intro")}</p>
       </header>
       <ul className="m-0 mx-auto grid max-w-7xl list-none gap-6 px-4 pb-24 md:grid-cols-3">

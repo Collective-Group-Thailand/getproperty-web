@@ -910,6 +910,38 @@ function subscriptionOf(tenantId: string) {
 }
 
 const subscriptionHandlers: HttpHandler[] = [
+  // D-276: storage against the allowance (the mock shows a metered tenant so the console bar can be reviewed)
+  http.get("*/v1/owner/storage", ({ request }) => {
+    const ok = owner(request, "owner.storage.get");
+    if (ok instanceof Response) return ok;
+    const records = ok.own
+      ? { invoice: 1203, receipt: 1150, payment: 1150, lease: 40, meter_reading: 8800, service_request: 35 }
+      : { invoice: 0, receipt: 0, payment: 0, lease: 0, meter_reading: 0, service_request: 0 };
+    const fileBytes = ok.own ? 1_210_000_000 : 0;
+    const recordBytes =
+      (records.invoice + records.receipt + records.service_request) * 2048 +
+      records.payment * 1024 +
+      records.lease * 4096 +
+      records.meter_reading * 256;
+    const used = fileBytes + recordBytes;
+    const allowance = 5 * 1024 ** 3;
+    return json({
+      asOf: iso(0),
+      metered: true,
+      usedBytes: String(used),
+      fileBytes: String(fileBytes),
+      records,
+      allowanceBytes: String(allowance),
+      usedPercent: Math.floor((used / allowance) * 100),
+      level: used / allowance >= 0.8 ? "warning" : "ok",
+      freeGb: "5",
+      pricePerGbMonth: null,
+      history: Array.from({ length: 30 }, (_, i) => ({
+        day: day(i - 30),
+        countedBytes: String(Math.round(used * (0.9 + i / 300))),
+      })),
+    } satisfies Schemas["OwnerStorageDto"]);
+  }),
   http.get("*/v1/owner/subscription", ({ request }) => {
     const ok = owner(request, "owner.subscription.get");
     if (ok instanceof Response) return ok;
