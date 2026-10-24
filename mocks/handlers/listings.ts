@@ -3,7 +3,11 @@
 // until real owners publish.
 import { http, HttpResponse, type HttpHandler } from "msw";
 
-import type { PublicListingDetail, PublicListingSummary } from "../../src/features/owner/marketing/listings/contract";
+import type {
+  PublicListingArea,
+  PublicListingDetail,
+  PublicListingSummary,
+} from "../../src/features/owner/marketing/listings/contract";
 
 const photo = (id: string, caption: string | null = null) => ({
   url: `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1600&q=80`,
@@ -185,7 +189,81 @@ const summary = ({
   return rest;
 };
 
+/** Areas (D-272): districts and transit stations with published listings. CONTRACT-REQUEST `/v1/public/listings/areas`. */
+const AREAS: (Omit<PublicListingArea, "count" | "band" | "indexable"> & {
+  match: (l: PublicListingDetail) => boolean;
+})[] = [
+  {
+    slug: "ari",
+    kind: "station",
+    name: "อารีย์",
+    nameEn: "Ari",
+    province: "กรุงเทพมหานคร",
+    line: "BTS สายสุขุมวิท",
+    match: (l) => l.nearestTransit?.name === "อารีย์",
+  },
+  {
+    slug: "on-nut",
+    kind: "station",
+    name: "อ่อนนุช",
+    nameEn: "On Nut",
+    province: "กรุงเทพมหานคร",
+    line: "BTS สายสุขุมวิท",
+    match: (l) => l.nearestTransit?.name === "อ่อนนุช",
+  },
+  {
+    slug: "lat-phrao",
+    kind: "station",
+    name: "ลาดพร้าว",
+    nameEn: "Lat Phrao",
+    province: "กรุงเทพมหานคร",
+    line: "MRT สายสีน้ำเงิน",
+    match: (l) => l.nearestTransit?.name === "ลาดพร้าว",
+  },
+  {
+    slug: "phaya-thai",
+    kind: "district",
+    name: "พญาไท",
+    nameEn: "Phaya Thai",
+    province: "กรุงเทพมหานคร",
+    line: null,
+    match: (l) => l.district === "พญาไท",
+  },
+  {
+    slug: "chatuchak",
+    kind: "district",
+    name: "จตุจักร",
+    nameEn: "Chatuchak",
+    province: "กรุงเทพมหานคร",
+    line: null,
+    match: (l) => l.district === "จตุจักร",
+  },
+  {
+    slug: "nonthaburi",
+    kind: "district",
+    name: "นนทบุรี",
+    nameEn: "Nonthaburi",
+    province: "นนทบุรี",
+    line: null,
+    match: (l) => l.province === "นนทบุรี",
+  },
+];
+
+function band(rents: number[]): PublicListingArea["band"] {
+  if (rents.length < 2) return null;
+  const sorted = [...rents].sort((a, b) => a - b);
+  const at = (q: number) => sorted[Math.min(sorted.length - 1, Math.round(q * (sorted.length - 1)))]!.toFixed(2);
+  return { p25: at(0.25), p50: at(0.5), p75: at(0.75) };
+}
+
+const areaRows = (): PublicListingArea[] =>
+  AREAS.map(({ match, ...area }) => {
+    const rows = LISTINGS.filter(match);
+    return { ...area, count: rows.length, indexable: rows.length >= 2, band: band(rows.map((l) => Number(l.rent))) };
+  }).filter((area) => area.count > 0);
+
 export const listingHandlers: HttpHandler[] = [
+  http.get("*/v1/public/listings/areas", () => HttpResponse.json({ data: areaRows() })),
   http.get("*/v1/public/listings/sitemap", () =>
     HttpResponse.json({ data: LISTINGS.map((l) => ({ slug: l.slug, updatedAt: l.publishedAt })) }),
   ),
@@ -201,8 +279,10 @@ export const listingHandlers: HttpHandler[] = [
   http.get("*/v1/public/listings", ({ request }) => {
     const p = new URL(request.url).searchParams;
     const q = (p.get("q") ?? "").trim();
+    const area = AREAS.find((a) => a.slug === p.get("area"));
     let rows = LISTINGS.filter(
       (l) =>
+        (!p.get("area") || (area?.match(l) ?? false)) &&
         (!q || [l.title, l.district, l.province, l.address, l.nearestTransit?.name ?? ""].some((v) => v.includes(q))) &&
         (!p.get("kind") || l.unitKind === p.get("kind")) &&
         (!p.get("minRent") || Number(l.rent) >= Number(p.get("minRent"))) &&

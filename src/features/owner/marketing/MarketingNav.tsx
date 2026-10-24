@@ -34,7 +34,7 @@ export async function MarketingNav({ locale }: { locale: Locale }) {
   const listing = path === "/landlords" || path === "/rent" || path.startsWith("/rent/");
 
   return (
-    <header className="bg-bg/95 border-border sticky top-0 z-30 border-b backdrop-blur">
+    <header className="bg-bg/95 border-border sticky top-0 z-30 border-b backdrop-blur print:hidden">
       <div className="mx-auto flex h-[4.5rem] max-w-7xl items-center gap-6 px-4">
         <a href={href("/")} aria-label={t("nav.home")} className="rounded-control inline-flex shrink-0 items-center">
           <Wordmark size="sm" decorative className="max-[419px]:hidden" />

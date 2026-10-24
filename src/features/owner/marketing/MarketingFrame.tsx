@@ -16,15 +16,15 @@ export async function MarketingFrame({ locale, children }: { locale: Locale; chi
   const sections = ["how", "features", "faq"] as const;
   const legal = ["terms", "privacy", "pdpa", "dpa"] as const;
   return (
-    <div data-type-scale="marketing" className="bg-bg flex min-h-dvh flex-col">
-      <a href="#main" className="skip-link">
+    <div data-type-scale="marketing" className="bg-bg print:bg-surface flex min-h-dvh flex-col">
+      <a href="#main" className="skip-link print:hidden">
         {shell("skipToContent")}
       </a>
       <MarketingNav locale={locale} />
       <main id="main" tabIndex={-1} className="flex-1">
         {children}
       </main>
-      <footer className="border-fg mt-10 border-t-2">
+      <footer className="border-fg mt-10 border-t-2 print:hidden">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 md:grid-cols-12">
           <div className="flex flex-col gap-4 md:col-span-5">
             <Wordmark size="md" decorative />

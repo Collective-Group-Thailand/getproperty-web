@@ -93,3 +93,41 @@ export function itemListSchema(urls: string[]): JsonLd {
 export function jsonLd(...graphs: JsonLd[]): string {
   return JSON.stringify(graphs.length === 1 ? graphs[0] : graphs).replace(/</g, "\\u003c");
 }
+
+/** A guide (D-271) as an Article by the organisation, with its review date. */
+export function articleSchema(input: {
+  origin: string;
+  url: string;
+  headline: string;
+  description: string;
+  reviewed: string;
+  inLanguage: string;
+  section: string;
+}): JsonLd {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: input.headline,
+    description: input.description,
+    url: input.url,
+    mainEntityOfPage: input.url,
+    inLanguage: input.inLanguage,
+    articleSection: input.section,
+    dateModified: input.reviewed,
+    datePublished: input.reviewed,
+    author: { "@type": "Organization", name: "getproperty", url: input.origin },
+    publisher: {
+      "@type": "Organization",
+      name: "getproperty",
+      logo: { "@type": "ImageObject", url: `${input.origin}/brand/getproperty-logo.png` },
+    },
+  };
+}
+
+/** A plain web page of a given type (AboutPage, ContactPage, CollectionPage, WebApplication…). */
+export function webPageSchema(
+  type: string,
+  input: { url: string; name: string; description: string; inLanguage: string },
+): JsonLd {
+  return { "@context": "https://schema.org", "@type": type, ...input };
+}

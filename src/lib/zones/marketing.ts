@@ -11,6 +11,16 @@ export const MARKETING_PATHS = [
   "/pricing",
   "/landlords",
   "/rent",
+  "/guides",
+  "/tools",
+  "/tools/utility-bill",
+  "/tools/rent-receipt",
+  "/tools/rental-yield",
+  "/about",
+  "/contact",
+  "/security",
+  "/help",
+  "/foreign-renters",
   "/legal/terms",
   "/legal/privacy",
   "/legal/pdpa",
@@ -23,6 +33,18 @@ export function isMarketingPath(zone: Zone, pathname: string): boolean {
   if (zone !== "owner") return false;
   const withoutLocale = pathname.replace(/^\/(th|en)(?=\/|$)/, "") || "/";
   const normalised = withoutLocale.length > 1 ? withoutLocale.replace(/\/+$/, "") : withoutLocale;
-  // A listing page (D-252) is public and indexable too: `/rent/<slug>`.
-  return (MARKETING_PATHS as readonly string[]).includes(normalised) || /^\/rent\/[a-z0-9-]{1,120}$/.test(normalised);
+  return (
+    (MARKETING_PATHS as readonly string[]).includes(normalised) ||
+    MARKETING_PATTERNS.some((pattern) => pattern.test(normalised))
+  );
 }
+
+/**
+ * Public pages with a slug: a listing (D-252) `/rent/<slug>`, an area or station page (D-272) `/rent/area/<slug>`, a
+ * guide (D-271) `/guides/<slug>`.
+ */
+export const MARKETING_PATTERNS: readonly RegExp[] = [
+  /^\/rent\/[a-z0-9-]{1,120}$/,
+  /^\/rent\/area\/[a-z0-9-]{1,80}$/,
+  /^\/guides\/[a-z0-9-]{1,80}$/,
+];

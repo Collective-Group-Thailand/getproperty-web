@@ -819,6 +819,401 @@
       "lineMessage": "I'm interested in this home: {title} ({url})",
       "notFound": "This listing was not found; it may have been closed.",
       "bathrooms": "Bathrooms"
+    },
+    "area": {
+      "metaTitle": {
+        "station": "Rooms and condos for rent near {name} · getproperty",
+        "district": "Rooms, condos and houses for rent in {name} · getproperty"
+      },
+      "metaDescription": "{count} rooms, condos and houses for rent in {name} from real owners — see the address and rent, and chat with the owner in LINE.",
+      "title": {
+        "station": "Homes for rent near {name}",
+        "district": "Homes for rent in {name}"
+      },
+      "count": "{count} listings from real owners",
+      "band": "Most rents here",
+      "median": "Median {amount} a month",
+      "nearby": "Nearby areas",
+      "popular": "Popular areas",
+      "back": "All rentals",
+      "ownerCta": "Own a place in {name}? List it free — no agent fee."
     }
+  },
+  "guides": {
+    "meta": {
+      "title": "Guides for landlords: tax, leases, deposits and TM30 · getproperty",
+      "description": "Plain guides for house, condo and apartment owners in Thailand: rental income tax, leases, security deposits, TM30 and renting out for the first time — with sources."
+    },
+    "eyebrow": "Guides",
+    "title": "Know before you let",
+    "intro": "The questions owners ask us most, written to be read in a few minutes, with sources and a review date.",
+    "articleTitle": "{title} · getproperty",
+    "categories": {
+      "landlord": "Letting",
+      "law": "Law",
+      "tax": "Tax",
+      "operations": "Running a building"
+    },
+    "readMinutes": "{count} min read",
+    "reviewed": "Reviewed {date}",
+    "back": "All guides",
+    "contents": "On this page",
+    "answer": "The short answer",
+    "general": "General information, not legal or tax advice for your situation. Laws and practice change; check with the authority or an adviser before you decide.",
+    "faq": "Questions",
+    "sources": "Sources",
+    "related": "Read next",
+    "notes": {
+      "info": "Example",
+      "warning": "Watch out",
+      "product": "How getproperty helps"
+    },
+    "cta": {
+      "landlord": {
+        "title": "Let the paperwork do itself",
+        "body": "Leases, bills, receipts, deposits and your year's income summary in one place — free, with no monthly fee.",
+        "button": "Start free"
+      },
+      "apartment": {
+        "title": "Close the month for the whole building in minutes",
+        "body": "Meter readings, bills in LINE, confirmed payments and receipts, automatically — free, with no monthly fee.",
+        "button": "Start free"
+      },
+      "more": "See what it does"
+    }
+  },
+  "tools": {
+    "metaTitle": "Free tools for landlords · getproperty",
+    "eyebrow": "Free tools",
+    "title": "Free tools, ready to use",
+    "intro": "Work out utility bills, make rent receipts and check your rental yield — in your browser, no sign-up, nothing stored.",
+    "back": "All tools",
+    "faqTitle": "Questions",
+    "start": "Start free",
+    "utility": {
+      "title": "Utility bill per room",
+      "metaTitle": "Free utility bill calculator for rental rooms · getproperty",
+      "card": "Enter last and this month's meter readings for the room's whole bill with rent.",
+      "intro": "Enter the electricity and water readings, the unit rates and other charges, and get the room's bill at once. Your numbers stay in your browser.",
+      "room": "Rent",
+      "rent": "Room rent (THB)",
+      "rentHint": "Leave empty to work out utilities only",
+      "electric": "Electricity",
+      "water": "Water",
+      "kwh": "kWh",
+      "cubic": "m³",
+      "previous": "Last reading",
+      "current": "This reading",
+      "rate": "Rate per {unit} (THB)",
+      "minimum": "Monthly minimum (THB)",
+      "minimumHint": "Leave empty if none",
+      "otherTitle": "Other charges",
+      "other": "Other charges total (THB)",
+      "otherHint": "Common fee, internet, waste…",
+      "preview": "This room's bill",
+      "usage": "{units} {unit} used",
+      "total": "Total",
+      "estimate": "An estimate from the numbers you entered; the real bill follows the rates and terms of your lease.",
+      "errors": {
+        "invalid": "Enter numbers with at most 2 decimals",
+        "backwards": "This reading is lower than the last one — the meter may have been replaced or rolled over. Check again."
+      },
+      "faq": {
+        "0": {
+          "q": "How is a room's electricity charged?",
+          "a": "This reading minus the last one gives the units used; multiply by the rate per unit in the lease. If there is a monthly minimum and the result is lower, the minimum is charged."
+        },
+        "1": {
+          "q": "Do I have to read the meters myself every month?",
+          "a": "With getproperty you photograph the meter and the reading is read for you, or a smart meter sends it — then the whole building's bills go out together in minutes."
+        }
+      },
+      "cta": {
+        "title": "Let the system read meters and bill the whole building",
+        "body": "Photo readings or smart meters, and bills with a QR in every resident's LINE — free."
+      }
+    },
+    "receipt": {
+      "title": "Rent receipt maker",
+      "metaTitle": "Free rent receipt maker — print or save as PDF · getproperty",
+      "card": "Fill in, check the preview, then print or save as PDF.",
+      "intro": "Make a complete rent receipt, with the amount in words, and print it or save it as PDF from your browser — no sign-up.",
+      "heading": "Receipt",
+      "headingAlt": "ใบเสร็จรับเงิน",
+      "number": "No.",
+      "date": "Date",
+      "landlord": "Received by (owner)",
+      "landlordHint": "The person or company name the tenant needs",
+      "tenant": "Received from (tenant)",
+      "property": "Property",
+      "propertyHint": "e.g. ABC Condo, unit 1203",
+      "period": "Rent for",
+      "periodHint": "e.g. October 2026",
+      "amounts": "Items (THB)",
+      "lines": {
+        "rent": "Rent",
+        "electric": "Electricity",
+        "water": "Water",
+        "other": "Other"
+      },
+      "otherLabel": "Name of the other item (optional)",
+      "method": "Paid by",
+      "methods": {
+        "transfer": "Bank transfer",
+        "promptpay": "PromptPay",
+        "cash": "Cash",
+        "cheque": "Cheque"
+      },
+      "print": "Print / save as PDF",
+      "privacy": "Your data stays in your browser and is gone when you close this page.",
+      "invalid": "Amounts must be numbers with at most 2 decimals",
+      "preview": "Receipt preview",
+      "receivedFrom": "Received from",
+      "receivedBy": "Received by",
+      "item": "Item",
+      "amount": "Amount",
+      "empty": "Enter amounts on the left to start",
+      "total": "Total",
+      "paidBy": "Paid by",
+      "signature": "Received by",
+      "faq": {
+        "0": {
+          "q": "What should a rent receipt show?",
+          "a": "Number and date, who paid and who received, the property and period, the items and amounts, the total in figures and words, how it was paid, and the receiver's signature."
+        },
+        "1": {
+          "q": "Should I issue one every month?",
+          "a": "Every time you are paid — it protects both sides and adds up your income at tax time. getproperty issues receipts automatically when a payment is confirmed."
+        }
+      },
+      "cta": {
+        "title": "Stop writing receipts one by one",
+        "body": "getproperty confirms payments and sends the receipt to your tenant's LINE the moment the money arrives, with a yearly income summary — free."
+      },
+      "inWords": "({words})"
+    },
+    "yield": {
+      "title": "Rental yield calculator",
+      "metaTitle": "Rental yield calculator for condos and houses in Thailand · getproperty",
+      "card": "Gross and net yield, and how many years to pay back.",
+      "intro": "Enter the price, rent, yearly costs and expected empty months to see net yield and payback.",
+      "price": "Purchase price (THB)",
+      "priceHint": "Include furnishing and transfer costs if you like",
+      "rent": "Monthly rent (THB)",
+      "costs": "Yearly costs (THB)",
+      "costsHint": "Common fee, insurance, repairs, land & building tax",
+      "vacant": "Empty months per year",
+      "vacantHint": "0 to 12",
+      "invalid": "Check the numbers: the price must be above 0 and empty months at most 12",
+      "net": "Net yield per year",
+      "gross": "Gross yield",
+      "payback": "Payback",
+      "yearlyRent": "Rent per year",
+      "netIncome": "Net income per year",
+      "percent": "{value}%",
+      "years": "{value} years",
+      "estimate": "An estimate before income tax and opportunity cost.",
+      "faq": {
+        "0": {
+          "q": "What is rental yield?",
+          "a": "Yearly rent compared with the price. Gross yield uses a full year's rent; net yield takes out empty months and yearly costs."
+        },
+        "1": {
+          "q": "How do I improve it?",
+          "a": "Fewer empty months with early renewals and listings, rent paid on time, and less time on paperwork — getproperty helps with all three."
+        }
+      },
+      "cta": {
+        "title": "No empty months, rent on time",
+        "body": "Free listings, renewal reminders ahead of time, and rent collected through LINE automatically."
+      }
+    }
+  },
+  "about": {
+    "meta": {
+      "title": "About getproperty · Easy to let, easy to live",
+      "description": "getproperty is free rental management by Collective Group (Thailand), built so owners let with ease and residents live in comfort."
+    },
+    "eyebrow": "About",
+    "title": "We built getproperty because renting a home shouldn't be this tiring",
+    "lead": "Owners walk the meters, chase slips and write bills room by room; residents wait for bills, transfer, and send slips back and forth. We built one system that does this work for both sides.",
+    "principlesTitle": "What we stand for",
+    "principles": {
+      "free": {
+        "title": "Free, really",
+        "body": "No monthly fee and nothing per room. We earn a fee per payment the platform confirms, and every fee is shown before it is paid."
+      },
+      "honest": {
+        "title": "Straightforward",
+        "body": "Listings show the real address, bills show units and unit prices, and there are no hidden charges or tricks that leave anyone worse off."
+      },
+      "money": {
+        "title": "We never hold your money",
+        "body": "Rent goes through a licensed payment provider straight to the owner's account. getproperty is not an intermediary that holds funds."
+      },
+      "data": {
+        "title": "Your data is yours",
+        "body": "Sensitive data is encrypted, isolated from every other owner and exportable at any time. We sign a PDPA data processing agreement with every owner."
+      }
+    },
+    "companyTitle": "Operator",
+    "company": "getproperty is operated by Collective Group (Thailand), a team building practical technology that makes Thai businesses easier to run.",
+    "cta": "Start free",
+    "contact": "Contact us"
+  },
+  "contact": {
+    "meta": {
+      "title": "Contact getproperty",
+      "description": "Talk to the getproperty team in LINE or leave a message — we reply on working days."
+    },
+    "eyebrow": "Contact",
+    "title": "Talk to a real person",
+    "lead": "Moving from Excel, a smart-meter survey, or a question before you start — get in touch.",
+    "line": "Chat in LINE",
+    "lineNote": "Fastest during office hours",
+    "formTitle": "Leave a message",
+    "name": "Name",
+    "phone": "Phone",
+    "email": "Email (optional)",
+    "role": "You are",
+    "roles": {
+      "dorm": "Dormitory / apartment owner",
+      "landlord": "House / condo owner",
+      "renter": "Renter / looking for a place",
+      "partner": "Partner / other"
+    },
+    "units": "Approximate number of units (optional)",
+    "message": "Message",
+    "consent": "I agree that getproperty may use this information to reply to my question, under the privacy policy",
+    "submit": "Send message",
+    "sent": "Message received — we'll get back to you on the next working day",
+    "failed": "Couldn't send. Try again, or chat with us in LINE",
+    "required": "Required",
+    "invalidPhone": "That phone number doesn't look right",
+    "company": "Collective Group (Thailand)",
+    "hours": "Working days 09:00–18:00",
+    "privacy": "Read the privacy policy",
+    "hoursLabel": "Hours"
+  },
+  "security": {
+    "meta": {
+      "title": "Security and PDPA · getproperty",
+      "description": "How getproperty protects owners' and residents' data: encryption, per-owner isolation, backups, access logs and PDPA compliance."
+    },
+    "eyebrow": "Security",
+    "title": "We look after your residents' data as if it were ours",
+    "lead": "A system that keeps ID cards, leases and payments has to be secure by design. Here is what we do.",
+    "items": {
+      "encryption": {
+        "title": "Sensitive data encrypted",
+        "body": "ID numbers, phone numbers and personal data are encrypted with per-owner keys (AES-256-GCM), and every connection uses HTTPS."
+      },
+      "isolation": {
+        "title": "Each owner isolated",
+        "body": "The database enforces row-level access: an owner sees only their own data, even if application code made a mistake."
+      },
+      "access": {
+        "title": "Role-based access and audit logs",
+        "body": "Owners decide what each staff member sees, and every important change records who did it and when."
+      },
+      "money": {
+        "title": "No funds held, no card numbers stored",
+        "body": "Payments go through a licensed provider; getproperty never sees or stores residents' card details."
+      },
+      "backup": {
+        "title": "Daily backups",
+        "body": "Automatic daily backups, with restores tested regularly."
+      },
+      "pdpa": {
+        "title": "PDPA",
+        "body": "We process data for owners under a data processing agreement with each of them; residents can see, correct or delete their data as the law allows."
+      }
+    },
+    "docs": "Related documents",
+    "report": "Found a vulnerability or a security problem? Tell us in LINE or through the contact page."
+  },
+  "help": {
+    "meta": {
+      "title": "getproperty help centre",
+      "description": "Answers on getting started, bills and payments, meters, residents in LINE, listings and pricing — with guides and free tools."
+    },
+    "eyebrow": "Help",
+    "title": "How can we help?",
+    "lead": "Pick a topic, or talk to the team.",
+    "topics": {
+      "start": {
+        "title": "Getting started",
+        "body": "Sign up, set up a building, import units and residents"
+      },
+      "billing": {
+        "title": "Bills and payments",
+        "body": "Billing, QR payments, slip checks, receipts"
+      },
+      "meters": {
+        "title": "Meters",
+        "body": "Photo readings, smart meters, fixing a wrong reading"
+      },
+      "residents": {
+        "title": "Residents and LINE",
+        "body": "Linking units, your own LINE OA, repair requests"
+      },
+      "listings": {
+        "title": "Listings",
+        "body": "Free listings, enquiries, viewings"
+      },
+      "pricing": {
+        "title": "Pricing",
+        "body": "Free to use, fee per payment, who pays it"
+      }
+    },
+    "faqTitle": "Top questions",
+    "resources": "Resources",
+    "guides": "Guides",
+    "guidesBody": "Tax, leases, deposits, TM30",
+    "tools": "Free tools",
+    "toolsBody": "Utility bills, receipts, yield",
+    "person": "Still need an answer?",
+    "personBody": "The team replies in LINE during office hours, or leave a message and we'll get back to you.",
+    "contact": "Go to contact"
+  },
+  "foreign": {
+    "meta": {
+      "title": "Renting in Thailand as a foreigner · getproperty",
+      "description": "Find rooms, condos and houses in Thailand from real owners. Chat in LINE, sign a bilingual lease, TM30 handled by the owner, pay rent and get receipts in one place."
+    },
+    "eyebrow": "For foreign residents",
+    "title": "Rent a home in Thailand without guessing the next step",
+    "lead": "From finding a place to moving out, every step is clear, in English, with no hidden costs.",
+    "steps": {
+      "find": {
+        "title": "Find a place from real owners",
+        "body": "Listings show the real address, rent, deposit and minimum term. Chat with the owner in LINE right away."
+      },
+      "lease": {
+        "title": "A bilingual lease",
+        "body": "Thai and English side by side, understood before you sign, signed online."
+      },
+      "tm30": {
+        "title": "TM30, sorted",
+        "body": "The owner is reminded to report your address within 24 hours, and you get the receipt for visa extensions."
+      },
+      "pay": {
+        "title": "Pay rent in LINE",
+        "body": "An English bill with a QR in LINE every month, and a receipt the moment you pay."
+      },
+      "move": {
+        "title": "A fair move-out",
+        "body": "The unit's condition is photographed on move-in; any deposit deduction needs evidence."
+      }
+    },
+    "tipsTitle": "Good to know before you rent",
+    "tips": {
+      "deposit": "Two months' deposit and one month in advance is common",
+      "scam": "Always view the place before transferring money, and only pay an account in the owner's name",
+      "utilities": "Ask the water and electricity rates per unit before signing",
+      "tm30": "Ask the owner for the TM30 receipt"
+    },
+    "browse": "Browse rentals",
+    "guide": "Read the TM30 guide"
   }
 }

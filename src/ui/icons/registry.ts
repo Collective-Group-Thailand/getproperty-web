@@ -108,6 +108,11 @@ import { IconPackageCheck } from "./glyphs/package-check";
 import { IconReceipt } from "./glyphs/receipt";
 import { IconCalendarCheck } from "./glyphs/calendar-check";
 import { IconArchive } from "./glyphs/archive";
+import { IconPrinter } from "./glyphs/printer";
+import { IconCalculator } from "./glyphs/calculator";
+import { IconBook } from "./glyphs/book";
+import { IconGlobe } from "./glyphs/globe";
+import { IconPercent } from "./glyphs/percent";
 import { IconThemeSystem } from "./glyphs/theme-system";
 import { IconThemeLight } from "./glyphs/theme-light";
 import { IconThemeDark } from "./glyphs/theme-dark";
@@ -220,6 +225,11 @@ export const ICONS: { readonly [N in IconName]: IconGlyph<N> } = {
   receipt: IconReceipt,
   "calendar-check": IconCalendarCheck,
   archive: IconArchive,
+  printer: IconPrinter,
+  calculator: IconCalculator,
+  book: IconBook,
+  globe: IconGlobe,
+  percent: IconPercent,
   "theme-system": IconThemeSystem,
   "theme-light": IconThemeLight,
   "theme-dark": IconThemeDark,

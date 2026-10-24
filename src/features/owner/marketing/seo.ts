@@ -37,16 +37,21 @@ export function ogImage(origin: string) {
 
 /** Indexable metadata of a marketing page: canonical, th/en alternates, Open Graph. */
 export function marketingMetadata(
-  path: MarketingPath,
+  path: MarketingPath | `/${string}`,
   locale: Locale,
-  { title, description }: { title: string; description: string },
+  {
+    title,
+    description,
+    type = "website",
+    noindex = false,
+  }: { title: string; description: string; type?: "website" | "article"; noindex?: boolean },
 ): Metadata {
   const origin = marketingOrigin();
   const url = (lang: Locale) => `${origin}${getPathname({ href: path, locale: lang })}`;
   return {
     title: { absolute: title },
     description,
-    robots: { index: true, follow: true },
+    robots: { index: !noindex, follow: true },
     alternates: {
       canonical: url(locale),
       languages: Object.fromEntries([...routing.locales.map((lang) => [lang, url(lang)]), ["x-default", url("th")]]),
@@ -57,7 +62,7 @@ export function marketingMetadata(
       url: url(locale),
       siteName: "getproperty",
       locale: locale === "th" ? "th_TH" : "en_US",
-      type: "website",
+      type,
       images: [ogImage(origin)],
     },
     twitter: { card: "summary_large_image", title, description, images: [ogImage(origin)] },

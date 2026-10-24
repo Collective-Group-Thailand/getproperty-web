@@ -55,8 +55,27 @@ export interface PublicListingsPage {
 }
 
 /** The search the `/rent` page sends, from its URL (every filter is a plain GET parameter, so the page needs no JS). */
+/** A district or transit station with published listings (D-272, `GET /v1/public/listings/areas`). */
+export interface PublicListingArea {
+  slug: string;
+  kind: "district" | "station";
+  /** Thai name, and the English one for `/en`. */
+  name: string;
+  nameEn: string;
+  province: string;
+  /** The transit line of a station. */
+  line: string | null;
+  count: number;
+  /** Whether the page may be indexed (the API's setting `listing.area.index_min`, D-272). */
+  indexable: boolean;
+  /** Rent band of the area's listings (D-269), decimal strings; null below the comparables threshold. */
+  band: { p25: string; p50: string; p75: string } | null;
+}
+
 export interface ListingQuery {
   q?: string;
+  /** An area slug (D-272). */
+  area?: string;
   kind?: ListingUnitKind;
   minRent?: string;
   maxRent?: string;

@@ -70,7 +70,10 @@ export default async function Rent({ params, searchParams }: Props) {
             <p className="text-muted mb-6 text-sm" data-testid="listings-count">
               {t("search.count", { count: page.total })}
             </p>
-            <ul className="m-0 grid list-none gap-x-6 gap-y-10 p-0 sm:grid-cols-2 lg:grid-cols-3" data-testid="listings">
+            <ul
+              className="m-0 grid list-none gap-x-6 gap-y-10 p-0 sm:grid-cols-2 lg:grid-cols-3"
+              data-testid="listings"
+            >
               {page.data.map((listing) => (
                 <li key={listing.slug}>
                   <ListingCard listing={listing} locale={locale} />

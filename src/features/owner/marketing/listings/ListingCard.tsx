@@ -44,9 +44,7 @@ export async function ListingCard({ listing, locale }: { listing: PublicListingS
         ].join(" · ")}
       </p>
       <p className="flex items-baseline gap-1">
-        <span className="text-lg font-semibold tabular-nums">
-          {formatTHB(listing.rent, locale, { decimals: 0 })}
-        </span>
+        <span className="text-lg font-semibold tabular-nums">{formatTHB(listing.rent, locale, { decimals: 0 })}</span>
         <span className="text-muted text-sm">{t("card.perMonth")}</span>
         {listing.availableFrom ? (
           <span className="text-muted ms-auto text-xs">

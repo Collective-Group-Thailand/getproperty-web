@@ -6,6 +6,7 @@ import { serverEnv } from "@/lib/env/server";
 import {
   listingQueryString,
   type ListingQuery,
+  type PublicListingArea,
   type PublicListingDetail,
   type PublicListingsPage,
 } from "./listings/contract";
@@ -52,5 +53,11 @@ export async function publicListing(slug: string): Promise<PublicListingDetail |
 
 export async function publicListingSlugs(): Promise<{ slug: string; updatedAt: string }[]> {
   const body = await getJson<{ data: { slug: string; updatedAt: string }[] }>("/v1/public/listings/sitemap");
+  return Array.isArray(body?.data) ? body.data : [];
+}
+
+/** Areas and stations with published listings (D-272); empty when the API is down. */
+export async function publicListingAreas(): Promise<PublicListingArea[]> {
+  const body = await getJson<{ data: PublicListingArea[] }>("/v1/public/listings/areas");
   return Array.isArray(body?.data) ? body.data : [];
 }
