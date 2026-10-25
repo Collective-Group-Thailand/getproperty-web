@@ -28,6 +28,13 @@ jobs:
       image: getproperty/web
       environment: uat
       moving_tag: uat
+      # @collective/web-kit + @collective/content (D-275) until they are on GitHub Packages: the Dockerfile's
+      # `collective-shared-src` named build context (without it buildx tries to pull it from Docker Hub).
+      extra_repository: Collective-Group-Thailand/collective-shared
+      extra_path: .collective-shared
+      build_contexts: collective-shared-src=.collective-shared
+    secrets:
+      extra_repository_token: ${{ secrets.ASSET_CORE_READ_TOKEN }}
 
   deploy-uat:
     needs: build-uat
@@ -46,6 +53,13 @@ jobs:
       image: getproperty/web
       environment: production
       moving_tag: prod
+      # @collective/web-kit + @collective/content (D-275) until they are on GitHub Packages: the Dockerfile's
+      # `collective-shared-src` named build context (without it buildx tries to pull it from Docker Hub).
+      extra_repository: Collective-Group-Thailand/collective-shared
+      extra_path: .collective-shared
+      build_contexts: collective-shared-src=.collective-shared
+    secrets:
+      extra_repository_token: ${{ secrets.ASSET_CORE_READ_TOKEN }}
 
   deploy-prod:
     needs: build-prod

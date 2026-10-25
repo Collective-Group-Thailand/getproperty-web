@@ -21,21 +21,22 @@ ARG NODE_IMAGE=node:24-bookworm-slim
 FROM ${NODE_IMAGE} AS base
 ENV PNPM_HOME=/pnpm PATH=/pnpm:$PATH CI=true NEXT_TELEMETRY_DISABLED=1
 RUN corepack enable
-WORKDIR /app
+# Two levels deep, like the checkout (Collective/getproperty/getproperty-web): from /app, `../../collective-shared`
+# would climb past / and pnpm would rewrite the specifier, failing `--frozen-lockfile` against pnpm-lock.yaml.
+WORKDIR /src/getproperty/getproperty-web
 
 # @collective/web-kit + @collective/content (D-275): installed from the sibling checkout
-# (`file:../../collective-shared/packages/*`, i.e. /collective-shared from /app) until they are on GitHub Packages.
+# (`file:../../collective-shared/packages/*`, i.e. /src/collective-shared) until they are on GitHub Packages.
 #   docker build --build-context collective-shared-src=../../collective-shared .
-# UNVERIFIED: written without a Docker daemon (Cowork sandbox, 2026-10-25).
 FROM base AS collective-shared
-WORKDIR /collective-shared
+WORKDIR /src/collective-shared
 COPY --from=collective-shared-src package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
 COPY --from=collective-shared-src packages ./packages
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile --ignore-scripts \
   && pnpm --filter @collective/web-kit --filter @collective/content build
 
 FROM base AS deps
-COPY --from=collective-shared /collective-shared /collective-shared
+COPY --from=collective-shared /src/collective-shared /src/collective-shared
 COPY package.json pnpm-lock.yaml ./
 # `postinstall` copies the font files from the installed packages (they are committed too).
 COPY scripts/copy-fonts.ts ./scripts/copy-fonts.ts
@@ -51,9 +52,9 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends tini wget ca-certificates tzdata \
   && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY --from=build --chown=node:node /app/.next/standalone ./
-COPY --from=build --chown=node:node /app/.next/static ./.next/static
-COPY --from=build --chown=node:node /app/public ./public
+COPY --from=build --chown=node:node /src/getproperty/getproperty-web/.next/standalone ./
+COPY --from=build --chown=node:node /src/getproperty/getproperty-web/.next/static ./.next/static
+COPY --from=build --chown=node:node /src/getproperty/getproperty-web/public ./public
 USER node
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \

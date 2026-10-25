@@ -128,6 +128,13 @@ jobs:
       # Visual baselines of the zone shells (e2e/visual/*-snapshots, updated deliberately).
       - name: Shell visual snapshots
         run: pnpm e2e:visual
+      # The runner's renders (*-actual.png beside *-diff.png): reviewed, they become the new baselines.
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: visual-results
+          path: test-results
+          retention-days: 7
       - uses: actions/upload-artifact@v4
         with:
           name: storybook-static
@@ -209,8 +216,12 @@ jobs:
           OWNER_HOST: "localhost:3200"
           STAFF_HOST: "staff.localhost:3200"
           ADMIN_HOST: "admin.localhost:3200"
+      # ubuntu-24.04 restricts unprivileged user namespaces (AppArmor): Chrome's sandbox cannot start there
+      # ("No usable sandbox!"), so the throwaway runner runs it unsandboxed, as Playwright does.
       - name: Lighthouse CI (owner-marketing, owner, staff, admin)
         run: CHROME_PATH="$(node -e 'console.log(require("@playwright/test").chromium.executablePath())')" pnpm lhci
+        env:
+          LHCI_CHROME_FLAGS: "--headless=new --no-sandbox"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

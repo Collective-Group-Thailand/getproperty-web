@@ -266,7 +266,8 @@ test("subscription: plan, usage, invoices with Thai QR and PDF, hardware, upgrad
   await expect(page.getByTestId("qr-image")).toBeVisible();
   const popup = page.waitForEvent("popup");
   await page.getByTestId("platform-invoice-pdf").click();
-  expect((await popup).url()).toContain("/__files/");
+  // A `noopener` popup is reported while still on about:blank; wait for it to reach the signed URL.
+  await (await popup).waitForURL(/\/__files\//);
   await expectAxeClean(page);
 });
 

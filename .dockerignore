@@ -12,6 +12,7 @@ test-results
 .lighthouseci
 lighthouse/.port-*.json
 .integration
+.collective-shared
 docs
 *.tsbuildinfo
 .env
