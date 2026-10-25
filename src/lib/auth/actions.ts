@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import type { z } from "zod";
 
 import {
+  landlordSignUpSchema,
   otpRequestSchema,
   otpVerifySchema,
   passwordLoginSchema,
@@ -274,4 +275,54 @@ export async function signOut(): Promise<ActionResult<null>> {
   }
   await clearSession();
   return { ok: true, data: null };
+}
+
+/** Landlord self sign-up, step 1 (B7.1, D-251): an SMS code to any phone — no account or invitation needed. */
+export async function requestLandlordSignUpOtp(
+  input: z.input<typeof otpRequestSchema>,
+): Promise<ActionResult<{ challengeId: string; expiresAt: string; resendAvailableAt: string }>> {
+  const parsed = otpRequestSchema.safeParse(input);
+  if (!parsed.success) return invalid(parsed.error);
+  try {
+    const lang = await language();
+    const data = await unwrap(
+      (await apiClient(lang)).POST("/v1/public/signup/landlord/otp", {
+        body: { phone: parsed.data.phone, language: lang },
+      }),
+    );
+    return { ok: true, data };
+  } catch (error) {
+    return failure(error);
+  }
+}
+
+/**
+ * Landlord self sign-up, step 2: the API creates the landlord tenant (free, D-250) and answers operator tokens —
+ * written to the httpOnly cookies here with the new tenant as the current one. Signing up again with the same phone
+ * answers the landlord tenant it already owns (`created: false`), so a double submit never makes two accounts.
+ */
+export async function signUpLandlord(
+  input: z.input<typeof landlordSignUpSchema>,
+): Promise<ActionResult<{ created: boolean }>> {
+  const parsed = landlordSignUpSchema.safeParse(input);
+  if (!parsed.success) return invalid(parsed.error);
+  try {
+    const lang = await language();
+    const result = await unwrap(
+      (await apiClient(lang)).POST("/v1/public/signup/landlord", {
+        body: {
+          provider: "phone_otp",
+          challengeId: parsed.data.challengeId,
+          code: parsed.data.code,
+          displayName: parsed.data.displayName,
+          language: isLocale(lang) ? lang : "th",
+        },
+      }),
+    );
+    await writeSession(result.tokens);
+    await writeTenant(result.tenant.id);
+    return { ok: true, data: { created: result.created } };
+  } catch (error) {
+    return failure(error);
+  }
 }

@@ -338,5 +338,10 @@
     "pending": "รอยืนยัน",
     "confirmed": "ยืนยันแล้ว",
     "rejected": "ปฏิเสธแล้ว"
+  },
+  "portfolioUnit": {
+    "vacant": "ว่าง",
+    "leased": "มีผู้เช่า",
+    "notice_given": "แจ้งย้ายออกแล้ว"
   }
 }

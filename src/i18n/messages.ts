@@ -34,6 +34,7 @@ export const MESSAGE_FILES = {
     "nav",
     "parties",
     "payments",
+    "portfolio",
     "rates",
     "reports",
     "service",

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { toE164 } from "@/ui/lib/phone";
 
-import { isEmail, isOptionalOtpCode, isOtpCode, isPassword, isPhone, type Rule } from "./auth-rules";
+import { isDisplayName, isEmail, isOptionalOtpCode, isOtpCode, isPassword, isPhone, type Rule } from "./auth-rules";
 
 /**
  * Sign-in input schemas of the Server Actions (`src/lib/auth/actions.ts`). The rules are the ones the
@@ -56,3 +56,13 @@ export const totpActivateSchema = totpEnrollSchema.extend({ code: otpCodeSchema 
 export const tenantChoiceSchema = z.object({ tenantId: z.uuid() });
 
 export { safeNextPath } from "./safe-next";
+
+/** Landlord self sign-up by phone (B7.1, D-251): the SMS code of `signup/landlord/otp` and the name. */
+export const landlordSignUpSchema = z.object({
+  challengeId: z.uuid(),
+  code: otpCodeSchema,
+  displayName: z
+    .string()
+    .superRefine(rule(isDisplayName))
+    .transform((value) => value.trim()),
+});

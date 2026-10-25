@@ -28,7 +28,24 @@ export default async function OwnerLogin({ params, searchParams }: Props) {
 
   const t = await getTranslations("auth.signIn");
   return (
-    <AuthFrame zone="owner" title={t("title")}>
+    <AuthFrame
+      zone="owner"
+      title={t("title")}
+      footer={
+        invitation ? undefined : (
+          <p>
+            {t("newHere")}{" "}
+            <a
+              className="text-primary font-semibold"
+              href={getPathname({ href: "/signup", locale })}
+              data-testid="login-to-signup"
+            >
+              {t("createAccount")}
+            </a>
+          </p>
+        )
+      }
+    >
       <OperatorSignIn
         zone="owner"
         consoleHref={consoleHref}

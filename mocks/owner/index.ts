@@ -10,6 +10,8 @@ import { leaseHandlers, residentSigns } from "./leases";
 import { meteringHandlers } from "./metering";
 import { partyHandlers } from "./parties";
 import { paymentHandlers, providerPays } from "./payments";
+import { portfolioHandlers } from "./portfolio";
+import { initialPortfolios } from "./portfolio-world";
 import { releaseHandlers } from "./release";
 import { settingsHandlers } from "./settings";
 import { initialOwnerWorld, type OwnerWorld } from "./world";
@@ -27,6 +29,7 @@ export const ownerHandlers: HttpHandler[] = [
   ...paymentHandlers,
   ...meteringHandlers,
   ...settingsHandlers,
+  ...portfolioHandlers,
 ];
 
 /**
@@ -95,6 +98,12 @@ const PARTS: Record<string, (keyof OwnerWorld)[]> = {
 
 export function resetOwnerWorld(part: string | null): boolean {
   const fresh = initialOwnerWorld();
+  if (!part || part === "portfolio") {
+    // Landlord portfolios and the sign-up (B7.1) live beside the owner world.
+    state.portfolio = initialPortfolios();
+    state.landlordSignedUp = false;
+    if (part) return true;
+  }
   if (!part) {
     state.owner = fresh;
     return true;

@@ -56,9 +56,9 @@ export default async function Landlords({ params }: Params) {
   setRequestLocale(locale);
   const t = await getTranslations("owner.marketing.landlords");
   const shared = await getTranslations("owner.marketing");
+  // Owners sign themselves up now (B7.1, D-251); the LINE OA stays the place to ask a question.
   const line = lineOaHref();
-  const start = line ?? ownerHref("/login", locale);
-  const external = line ? { rel: "noopener noreferrer", target: "_blank" } : {};
+  const start = ownerHref("/signup", locale);
   const pricing = getPathname({ href: "/pricing", locale });
 
   const origin = marketingOrigin();
@@ -84,9 +84,9 @@ export default async function Landlords({ params }: Params) {
           </h1>
           <p className="text-muted max-w-lg text-lg leading-relaxed">{t("hero.body")}</p>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-            <Button asChild size="lg" iconStart={line ? IconChat : undefined}>
-              <a href={start} {...external}>
-                {line ? t("hero.primary") : t("hero.signIn")}
+            <Button asChild size="lg">
+              <a href={start} data-testid="landlords-signup">
+                {t("hero.signUp")}
               </a>
             </Button>
             <a
@@ -255,11 +255,22 @@ export default async function Landlords({ params }: Params) {
           <div className="text-fg-inverse flex min-h-[24rem] flex-col justify-end gap-6 p-8 md:p-14">
             <h2 className="text-display max-w-2xl">{t("cta.title")}</h2>
             <p className="max-w-xl text-lg opacity-90">{t("cta.body")}</p>
-            <Button asChild size="lg" variant="secondary" className="self-start">
-              <a href={start} {...external}>
-                {line ? t("cta.primary") : t("hero.signIn")}
-              </a>
-            </Button>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+              <Button asChild size="lg" variant="secondary">
+                <a href={start}>{t("hero.signUp")}</a>
+              </Button>
+              {line ? (
+                <a
+                  className="inline-flex items-center gap-2 font-semibold underline decoration-1 underline-offset-[6px] hover:decoration-2"
+                  href={line}
+                  rel="noopener noreferrer"
+                  target="_blank"
+                >
+                  <Icon icon={IconChat} className="size-5" />
+                  {t("cta.ask")}
+                </a>
+              ) : null}
+            </div>
           </div>
         </div>
       </section>

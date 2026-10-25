@@ -1,0 +1,114 @@
+{
+  "title": "My portfolio",
+  "description": "Every house and unit you rent out, this month's rent and what needs you — on one page.",
+  "add": "Add unit",
+  "welcome": {
+    "title": "Welcome to getproperty",
+    "body": "Start by adding your first house or condo unit. Leases, invoices and payments all start from here."
+  },
+  "empty": {
+    "title": "Your portfolio is empty",
+    "description": "Add a condo unit, house, townhouse or room you rent out. It takes less than a minute.",
+    "action": "Add your first unit"
+  },
+  "summary": {
+    "label": "{month} summary",
+    "expected": "Rent invoiced for {month}",
+    "collected": "Collected",
+    "overdue": "Overdue",
+    "overdueHint": "Past-due balance, all months",
+    "occupancy": "Leased",
+    "occupancyValue": "{leased} of {total} units"
+  },
+  "units": {
+    "title": "All units ({count})"
+  },
+  "unit": {
+    "unitNo": "Unit {unitNo}",
+    "kind": {
+      "condo_unit": "Condo unit",
+      "house": "House",
+      "townhouse": "Townhouse",
+      "room": "Room"
+    },
+    "area": "{area} m²",
+    "bedrooms": "{count, plural, one {# bedroom} other {# bedrooms}}",
+    "bathrooms": "{count, plural, one {# bathroom} other {# bathrooms}}",
+    "floor": "Floor {floor}",
+    "rent": "Rent",
+    "perMonth": "{amount}/month",
+    "rentNotSet": "Not set",
+    "lease": "Lease",
+    "leaseUntil": "Until {date}",
+    "noLease": "None yet",
+    "invoice": "This month's invoice",
+    "balance": "{amount} due",
+    "noInvoice": "Not issued",
+    "repairs": "Repairs",
+    "repairsOpen": "{count, plural, one {# open request} other {# open requests}}",
+    "repairsNone": "None",
+    "external": "This condo's juristic person is not on getproperty yet. Your unit's data is visible to you only."
+  },
+  "form": {
+    "title": "Add a unit",
+    "description": "Fill in what you know now — you can add the rest later.",
+    "required": "Fill in this field",
+    "kind": {
+      "title": "What do you rent out?",
+      "description": "Pick the closest match.",
+      "condo_unit": {
+        "label": "Condo unit",
+        "description": "A unit in a condominium project"
+      },
+      "house": {
+        "label": "House",
+        "description": "A whole detached house"
+      },
+      "townhouse": {
+        "label": "Townhouse",
+        "description": "A townhome or shophouse"
+      },
+      "room": {
+        "label": "Room",
+        "description": "A room in your own house or building"
+      }
+    },
+    "place": {
+      "title": "Where is it?",
+      "condoDescription": "Units of one project share a building, but your data is visible to you only.",
+      "houseDescription": "This address is used on leases and receipts.",
+      "project": "Project name",
+      "projectHint": "For example, Ideo Mobi Ari",
+      "houseName": "Name",
+      "houseNameHint": "Optional, for example Nonthaburi garden house",
+      "unitNo": "Unit number",
+      "unitNoHint": "As written on the title deed or the door",
+      "line1": "House number, soi, road",
+      "line1Hint": "For a condo, the project's address",
+      "subdistrict": "Subdistrict",
+      "district": "District",
+      "province": "Province",
+      "postcode": "Postcode"
+    },
+    "details": {
+      "title": "What is it like?",
+      "description": "Helps you make listings and leases faster.",
+      "area": "Area",
+      "areaUnit": "m²",
+      "bedrooms": "Bedrooms",
+      "bathrooms": "Bathrooms",
+      "floor": "Floor",
+      "furnishing": "Furniture",
+      "furnishingValue": {
+        "unfurnished": "None",
+        "partly_furnished": "Partly",
+        "fully_furnished": "Fully furnished"
+      },
+      "rent": "Monthly rent",
+      "rentHint": "The default for new leases and listings",
+      "rentUnit": "THB"
+    },
+    "cancel": "Cancel",
+    "submit": "Save unit"
+  }
+}

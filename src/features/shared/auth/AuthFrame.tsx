@@ -10,11 +10,17 @@ import { Card } from "@/ui/components/Card";
 export async function AuthFrame({
   zone,
   title,
+  subtitle,
   children,
   aside,
+  footer,
 }: {
   zone: "owner" | "staff" | "admin";
   title: string;
+  /** Replaces the zone's default line under the title. */
+  subtitle?: string;
+  /** Under the card (e.g. the link between sign-in and sign-up). */
+  footer?: React.ReactNode;
   children: React.ReactNode;
   aside?: React.ReactNode;
 }) {
@@ -31,8 +37,9 @@ export async function AuthFrame({
       <main id="main" tabIndex={-1} className="flex flex-1 items-start justify-center px-4 py-8 sm:items-center">
         <Card className="w-full max-w-md" padding="lg" data-testid="auth-card">
           <h1 className="text-2xl font-semibold">{title}</h1>
-          <p className="text-muted mt-1 text-sm">{t(`auth.signIn.subtitle.${zone}`)}</p>
+          <p className="text-muted mt-1 text-sm">{subtitle ?? t(`auth.signIn.subtitle.${zone}`)}</p>
           <div className="mt-6">{children}</div>
+          {footer ? <div className="border-border text-muted mt-6 border-t pt-4 text-sm">{footer}</div> : null}
         </Card>
       </main>
     </div>

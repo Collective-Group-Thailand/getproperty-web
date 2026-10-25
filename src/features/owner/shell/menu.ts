@@ -9,6 +9,7 @@ import { IconChat } from "@/ui/icons/glyphs/chat";
 import { IconDashboard } from "@/ui/icons/glyphs/dashboard";
 import { IconGateway } from "@/ui/icons/glyphs/gateway";
 import { IconHistory } from "@/ui/icons/glyphs/history";
+import { IconHome } from "@/ui/icons/glyphs/home";
 import { IconKey } from "@/ui/icons/glyphs/key";
 import { IconLease } from "@/ui/icons/glyphs/lease";
 import { IconLock } from "@/ui/icons/glyphs/lock";
@@ -27,6 +28,7 @@ import { IconWallet } from "@/ui/icons/glyphs/wallet";
 
 /** Owner console routes per menu key (F2 builds the pages; groups follow the morning-dashboard flow). */
 export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
+  portfolio: { href: "/portfolio", icon: IconHome, group: "operations" },
   dashboard: { href: "/dashboard", icon: IconDashboard, group: "operations" },
   buildings: { href: "/buildings", icon: IconBuilding, group: "operations" },
   units: { href: "/units", icon: IconRoom, group: "operations" },
@@ -57,8 +59,12 @@ export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
 
 export const OWNER_MENU_GROUPS = ["operations", "money", "settings"] as const;
 
-/** The phone bottom nav (F1 1.3): Today, Units, Invoices, Money, More — each shown only when entitled. */
+/**
+ * The phone bottom nav (F1 1.3): Today, Units, Invoices, Money, More — each shown only when entitled. Landlords
+ * (B7.1) have no building dashboard: their first tab is the portfolio.
+ */
 export const OWNER_BOTTOM_NAV = [
+  { key: "portfolio", labelKey: "portfolio" },
   { key: "dashboard", labelKey: "today" },
   { key: "units", labelKey: "units" },
   { key: "invoices", labelKey: "invoices" },

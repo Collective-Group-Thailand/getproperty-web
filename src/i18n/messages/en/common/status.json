@@ -338,5 +338,10 @@
     "pending": "Waiting for you",
     "confirmed": "Confirmed",
     "rejected": "Rejected"
+  },
+  "portfolioUnit": {
+    "vacant": "Vacant",
+    "leased": "Leased",
+    "notice_given": "Moving out"
   }
 }

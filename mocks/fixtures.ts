@@ -49,6 +49,28 @@ export const TENANTS = {
     },
     subscription: { plan: "apartment_starter", state: "suspended", readOnly: true },
   },
+  /** A landlord with a few units (B7.1): the portfolio-first console. */
+  landlord: {
+    profile: {
+      id: "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c44",
+      displayName: "มาลี มีสุข",
+      type: "landlord",
+      status: "active",
+      role: "owner",
+    },
+    subscription: { plan: null, state: "active", readOnly: false },
+  },
+  /** The landlord tenant `POST /v1/public/signup/landlord` creates in the mock (empty portfolio). */
+  fresh: {
+    profile: {
+      id: "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c55",
+      displayName: "เจ้าของใหม่",
+      type: "landlord",
+      status: "active",
+      role: "owner",
+    },
+    subscription: { plan: null, state: "active", readOnly: false },
+  },
 } as const satisfies Record<string, MockTenant>;
 
 export type TenantKey = keyof typeof TENANTS;
@@ -112,8 +134,26 @@ const STAFF_MENU_BY_ROLE: Record<Schemas["TenantRole"], Schemas["StaffMenuKey"][
   staff: ["readings", "reading_rounds", "inspections", "installs", "service_requests", "parcels"],
 };
 
-export function menuFor(surface: "owner" | "staff", role: Schemas["TenantRole"]): string[] {
-  return (surface === "owner" ? OWNER_MENU_BY_ROLE : STAFF_MENU_BY_ROLE)[role];
+/** Owner menu keys only building operators get (`BUILDING_OPERATORS` in the API's menu.ts, B7.1). */
+const BUILDING_OPERATOR_ONLY = new Set([
+  "dashboard",
+  "buildings",
+  "units",
+  "devices",
+  "utility_loss",
+  "access",
+  "parcels",
+  "announcements",
+]);
+
+export function menuFor(
+  surface: "owner" | "staff",
+  role: Schemas["TenantRole"],
+  tenantType: Schemas["OperatorTenantDto"]["type"] = "apartment",
+): string[] {
+  const menu = (surface === "owner" ? OWNER_MENU_BY_ROLE : STAFF_MENU_BY_ROLE)[role];
+  if (surface !== "owner" || tenantType !== "landlord") return menu;
+  return ["portfolio", ...menu.filter((key) => !BUILDING_OPERATOR_ONLY.has(key))];
 }
 
 export interface OperatorPersona {
@@ -191,6 +231,31 @@ export const OPERATORS: OperatorPersona[] = [
     memberships: [{ tenant: "sample", role: "manager" }],
     password: MOCK_PASSWORD,
     totp: true,
+  },
+  {
+    key: "landlord",
+    user: {
+      id: "3b241101-e2bb-4255-8caf-4136c566a906",
+      displayName: "มาลี มีสุข",
+      phone: "+66810000006",
+      email: null,
+      language: "th",
+      lineLinked: false,
+    },
+    memberships: [{ tenant: "landlord", role: "owner" }],
+  },
+  {
+    // Whoever signs up as a landlord in the mock becomes this persona (phone and name from the sign-up).
+    key: "signup",
+    user: {
+      id: "3b241101-e2bb-4255-8caf-4136c566a907",
+      displayName: "เจ้าของใหม่",
+      phone: "+66810000007",
+      email: null,
+      language: "th",
+      lineLinked: false,
+    },
+    memberships: [{ tenant: "fresh", role: "owner" }],
   },
 ];
 

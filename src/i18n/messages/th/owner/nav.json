@@ -1,4 +1,5 @@
 {
+  "portfolio": "พอร์ตของฉัน",
   "dashboard": "เช้านี้",
   "buildings": "อาคาร",
   "units": "ห้อง",
@@ -31,6 +32,7 @@
     "settings": "องค์กร"
   },
   "bottom": {
+    "portfolio": "พอร์ต",
     "today": "วันนี้",
     "units": "ห้อง",
     "invoices": "บิล",
