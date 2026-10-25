@@ -1728,6 +1728,8 @@ export interface OwnerWorld {
   /** Every saved version per setting key (`GET /settings/{key}/versions`), seeded from the value in force. */
   settingHistory: (Schemas["SettingHistoryEntryDto"] & { key: string })[];
   bankAccounts: Schemas["BankAccountDto"][];
+  /** The tenant's own LINE Official Accounts (D-254): none at start (the shared getproperty OA). */
+  messagingChannels: Schemas["MessagingChannelDto"][];
   /** Open OTP challenges of bank account changes: account id → challenge (the fake SMS code is 123456). */
   bankOtps: Map<string, Schemas["OtpChallengeDto"]>;
   ratePlans: Schemas["RatePlanDto"][];
@@ -2145,6 +2147,7 @@ export function initialOwnerWorld(): OwnerWorld {
     propertySettings: {},
     settingHistory: [],
     bankAccounts: initialBankAccounts(),
+    messagingChannels: [],
     bankOtps: new Map(),
     ratePlans: initialRatePlans(),
     invitations: [

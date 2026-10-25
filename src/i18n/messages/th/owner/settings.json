@@ -9,7 +9,8 @@
     "support_access": "สิทธิ์ทีมซัพพอร์ต",
     "access_grants": "สิทธิ์เข้าถึงอาคาร",
     "audit_log": "บันทึกการใช้งาน",
-    "sign_in": "วิธีเข้าสู่ระบบ"
+    "sign_in": "วิธีเข้าสู่ระบบ",
+    "line_oa": "LINE OA"
   },
   "general": {
     "title": "การตั้งค่า",
@@ -500,5 +501,47 @@
     "removed": "เอา {provider} ออกแล้ว",
     "linked": "เพิ่ม {provider} แล้ว ครั้งหน้าเข้าสู่ระบบด้วย {provider} ได้เลย",
     "footnote": "getproperty ไม่เคยรวมบัญชีจากอีเมลเอง ถ้าเพิ่มบัญชีที่เป็นของคนอื่นอยู่แล้ว ระบบจะไม่ย้ายให้"
+  },
+  "lineOa": {
+    "title": "LINE OA ของคุณ",
+    "description": "ส่งบิล การแจ้งซ่อม และประกาศถึงผู้เช่าจากบัญชี LINE ทางการของคุณเอง แทน LINE ของ getproperty",
+    "how": {
+      "title": "วิธีเชื่อม",
+      "step1": "ใน LINE Developers สร้าง Messaging API channel ให้บัญชี LINE ทางการของคุณ",
+      "step2": "คัดลอก Channel ID, Channel secret และ Channel access token (long-lived) มาใส่ที่นี่",
+      "step3": "นำ Webhook URL ที่ได้ไปใส่ใน channel แล้วเปิด “Use webhook”",
+      "step4": "ผู้เช่าที่กดติดตาม OA จะได้ลิงก์ยืนยันบัญชี เมื่อยืนยันแล้วข้อความจะส่งจาก OA ของคุณ"
+    },
+    "shared": "ระหว่างที่ผู้เช่ายังไม่ยืนยัน ข้อความยังส่งผ่าน LINE ของ getproperty ตามเดิม ไม่มีบิลตกหล่น",
+    "empty": "ยังไม่ได้เชื่อม LINE OA",
+    "emptyHint": "ตอนนี้ข้อความทั้งหมดส่งจาก LINE ของ getproperty",
+    "connect": "เชื่อม LINE OA",
+    "connectTitle": "เชื่อม LINE OA",
+    "connectHint": "ข้อมูลทั้งหมดอยู่ใน LINE Developers ที่ channel ของ OA นั้น เราเก็บแบบเข้ารหัส และจะไม่แสดงอีก",
+    "scope": "ใช้กับ",
+    "scopeAll": "ทุกอาคาร",
+    "scopeHint": "เลือกอาคารเดียวถ้าแต่ละอาคารมี OA ของตัวเอง อาคารที่ไม่มี OA เฉพาะจะใช้ OA ที่ตั้งไว้สำหรับทุกอาคาร",
+    "channelId": "Channel ID",
+    "channelSecret": "Channel secret",
+    "accessToken": "Channel access token (long-lived)",
+    "replaceNote": "ถ้ามี OA สำหรับขอบเขตนี้อยู่แล้ว อันเดิมจะถูกแทนที่",
+    "submit": "เชื่อมและตรวจสอบ",
+    "connected": "เชื่อม {name} แล้ว",
+    "failedConnect": "บันทึกแล้วแต่ LINE ยังไม่ยอมรับ ตรวจ access token แล้วลองตรวจสอบอีกครั้ง",
+    "webhook": "Webhook URL",
+    "webhookHint": "ใส่ใน LINE Developers › Messaging API › Webhook URL แล้วเปิด “Use webhook”",
+    "copy": "คัดลอก",
+    "copied": "คัดลอก Webhook URL แล้ว",
+    "linked": "{count, plural, other {ผู้เช่ายืนยันแล้ว # คน}}",
+    "checkedAt": "ตรวจล่าสุด {date}",
+    "channel": "Channel ID {id}",
+    "unnamed": "ยังไม่รู้ชื่อบัญชี",
+    "verify": "ตรวจสอบอีกครั้ง",
+    "verified": "LINE ตอบรับแล้ว",
+    "stillFailing": "LINE ยังไม่ตอบรับ",
+    "revoke": "ยกเลิกการเชื่อม",
+    "revokeTitle": "ยกเลิกการเชื่อม {name}?",
+    "revokeBody": "ข้อความจะกลับไปส่งจาก LINE ของ getproperty ทันที ผู้เช่าที่ยืนยันไว้ต้องยืนยันใหม่ถ้าเชื่อมกลับมา",
+    "revoked": "ยกเลิกการเชื่อมแล้ว"
   }
 }

@@ -9,7 +9,8 @@
     "support_access": "Support access",
     "access_grants": "Access grants",
     "audit_log": "Audit log",
-    "sign_in": "Ways to sign in"
+    "sign_in": "Ways to sign in",
+    "line_oa": "LINE OA"
   },
   "general": {
     "title": "Settings",
@@ -500,5 +501,47 @@
     "removed": "{provider} removed",
     "linked": "{provider} added — you can sign in with {provider} next time.",
     "footnote": "getproperty never merges accounts by e-mail; an account that already belongs to someone else is not moved."
+  },
+  "lineOa": {
+    "title": "Your LINE OA",
+    "description": "Send bills, repair updates and announcements to residents from your own LINE Official Account instead of getproperty’s",
+    "how": {
+      "title": "How to connect",
+      "step1": "In LINE Developers, create a Messaging API channel for your LINE Official Account",
+      "step2": "Copy its Channel ID, Channel secret and long-lived Channel access token here",
+      "step3": "Paste the Webhook URL you get into the channel and turn on “Use webhook”",
+      "step4": "Residents who follow the OA get a link to confirm; once they do, messages come from your OA"
+    },
+    "shared": "Until a resident confirms, their messages keep coming through getproperty’s LINE, so no bill is missed",
+    "empty": "No LINE OA connected",
+    "emptyHint": "All messages are sent from getproperty’s LINE for now",
+    "connect": "Connect LINE OA",
+    "connectTitle": "Connect a LINE OA",
+    "connectHint": "Everything is in LINE Developers on that OA’s channel. We store it encrypted and never show it again",
+    "scope": "Use for",
+    "scopeAll": "All buildings",
+    "scopeHint": "Pick one building if each building has its own OA; buildings without one use the OA set for all buildings",
+    "channelId": "Channel ID",
+    "channelSecret": "Channel secret",
+    "accessToken": "Channel access token (long-lived)",
+    "replaceNote": "An OA already connected for this scope is replaced",
+    "submit": "Connect and check",
+    "connected": "{name} is connected",
+    "failedConnect": "Saved, but LINE does not accept it yet. Check the access token and run the check again",
+    "webhook": "Webhook URL",
+    "webhookHint": "Paste it in LINE Developers › Messaging API › Webhook URL and turn on “Use webhook”",
+    "copy": "Copy",
+    "copied": "Webhook URL copied",
+    "linked": "{count, plural, one {# resident confirmed} other {# residents confirmed}}",
+    "checkedAt": "Last checked {date}",
+    "channel": "Channel ID {id}",
+    "unnamed": "Account name not known yet",
+    "verify": "Check again",
+    "verified": "LINE accepted it",
+    "stillFailing": "LINE still refuses it",
+    "revoke": "Disconnect",
+    "revokeTitle": "Disconnect {name}?",
+    "revokeBody": "Messages go back to getproperty’s LINE at once. Residents who confirmed must confirm again if you reconnect",
+    "revoked": "Disconnected"
   }
 }
