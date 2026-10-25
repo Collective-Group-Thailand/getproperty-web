@@ -53,7 +53,7 @@
 - ✅ การ์ดพื้นที่จัดเก็บในหน้าค่าบริการ getproperty (ใช้ไป/พื้นที่ฟรี, ไฟล์ vs ข้อมูล, ย้ำว่าไม่ลบ/ไม่ล็อกข้อมูล) (D-276)
 - ⬜ เอาหน้า /subscription ออกหรือเปลี่ยนเป็น "ค่าธรรมเนียมรายเดือน" (ใบแจ้ง fee จาก verify slip) ⛔ API B7.2
 - ✅ F6.1 สมัครเองสำหรับเจ้าของบ้าน/คอนโด (เบอร์โทร OTP) + หน้า portfolio + เพิ่มยูนิต (web fd76e99) — Google/Apple/LINE บนเว็บรอ B7.8
-- ⬜ F6.2 แก้ไขประกาศ (รูป ≥ 5, ราคา, เงื่อนไข), กล่องคนสนใจ, นัดดูห้อง ⛔ API B7.2–7.4
+- 🟡 F6.2 แก้ไขประกาศ (รูป ≥ 5, ราคา, เงื่อนไข) — API พร้อมแล้ว (`/v1/owner/listings`); กล่องคนสนใจ, นัดดูห้อง ⛔ API 7.3 ส่วนที่ 2 (prospect, enquiry, viewing)
 - ⬜ F6.4 เอกสารครบชุด: สัญญาเช่า, ใบแจ้งหนี้, ใบเสร็จ, หนังสือแจ้ง, ใบตรวจสภาพห้อง, สรุปภาษีรายปี ⛔ API B7.5
 - ⬜ F6.6 ตั้งค่า LINE OA ของตัวเอง / ใช้ของ getproperty + ดูยอดข้อความ ⛔ API B7.7
 - ⬜ ตั้งค่ากฎ fee และผู้รับภาระ fee ต่อตึก, หน้าตรวจสลิป ⛔ API B7.2
@@ -61,7 +61,7 @@
 - ⬜ Blue ocean: rent record (D-256), deposit alternative (D-257), rent advance (D-258), รองรับผู้เช่าต่างชาติ (D-260), ไม่มีเดือนว่าง (D-261) ⛔ API + พาร์ทเนอร์
 
 ## 5. Admin (web)
-- ⬜ F6.5 ตรวจ/ซ่อนประกาศ, ยืนยันเจ้าของ, ตั้งค่า fee ของแพลตฟอร์ม ⛔ API B7.3/B7.2
+- 🟡 F6.5 ตรวจ/ซ่อนประกาศ, ยืนยันเจ้าของ — API พร้อมแล้ว (`/v1/admin/listings/queue`, `/v1/admin/listing-verifications`); ตั้งค่า fee ของแพลตฟอร์ม ⛔ API B7.2 (fee)
 
 ## 6. Login (D-255)
 - ⬜ เบอร์โทร OTP, Google, Apple, LINE สำหรับ owner/landlord (web) และผู้เช่า (LIFF) ⛔ API B7.8 + คุณสร้าง OAuth client ของ Google/Apple
@@ -70,7 +70,7 @@
 - ✅ B7.0 ปิด subscription (`platform.subscriptions.enabled=false`), error `subscription.disabled`, runbook SQL (commit 219b3dc, branch `feat/b7-landlords-free-pricing`)
 - ✅ B7.1 landlord tenant สมัครเอง (เบอร์โทร OTP, LINE, Google, Apple) + portfolio + ส่งมอบตึก stub ให้นิติ (D-280) (api 040ebaf, asset-core v0.5.0)
 - ⬜ B7.2 กฎ fee แบบยืดหยุ่น (%, flat, min, cap, tier, MDR), split settlement, verify slip → บิล fee รายเดือน ⛔ เลือก payment gateway (O-020)
-- ⬜ B7.3 listings API: `/v1/public/listings`, `/{slug}`, `/sitemap` (หน้าเว็บใช้ mock ตาม contract ที่ผมส่งไว้)
+- ✅ B7.3 listings API: `/v1/public/listings`, `/{slug}`, `/sitemap` + ประกาศฝั่งเจ้าของ, ยืนยันเจ้าของ, คิวตรวจประกาศ, รายงานประกาศ (api 13a2562 = prompt 7.2 + public read ของ 7.3; หน้า /rent ใช้ contract จริงแล้ว web f7bda0f)
 - ⬜ B7.4 คนสนใจ, นัดดูห้อง
 - ⬜ B7.5 เอกสารครบชุดสำหรับ landlord
 - ⬜ B7.6 แจ้งซ่อมตามประเภท tenant
