@@ -354,6 +354,35 @@ export const listingHandlers: HttpHandler[] = [
     });
     return json(withUrls(request, l.dto));
   }),
+  // B7.4: re-open a closed listing as a new draft (texts, terms, photos and viewing times copied).
+  http.post(`${LISTING_PATH}/actions/relist`, ({ request, params }) => {
+    const op = "owner.listings.relist";
+    const ok = mutating(request, op);
+    if (ok instanceof Response) return ok;
+    const l = find(ok.tenantId, String(params.listingId));
+    if (!l) return problem(op, "http.not_found");
+    if (l.dto.state !== "closed") return problem(op, "listing.invalid_state");
+    const id = crypto.randomUUID();
+    const copy: MockListing = {
+      tenantId: l.tenantId,
+      reports: [],
+      dto: {
+        ...l.dto,
+        id,
+        slug: `${l.dto.slug.split("-").slice(0, 2).join("-")}-${id.replace(/-/g, "").slice(-10)}`,
+        state: "draft",
+        publishedAt: null,
+        closedReason: null,
+        reviewReasons: [],
+        rejectedReason: null,
+        hidden: false,
+        reportCount: 0,
+        version: 1,
+      },
+    };
+    state.listingWorld.listings.push(copy);
+    return json(withUrls(request, copy.dto), 201);
+  }),
   http.post(`${LISTING_PATH}/actions/:action`, ({ request, params }) => {
     const action = String(params.action);
     const op = `owner.listings.${action}`;

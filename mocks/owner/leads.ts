@@ -76,6 +76,7 @@ function lead(input: {
     lostNote: null,
     messages,
     viewings: input.viewings ?? [],
+    leaseId: null,
     version: 1,
     ...input.extra,
   };
@@ -244,6 +245,19 @@ export const leadHandlers: HttpHandler[] = [
           )
         : l.dto.viewings,
     });
+  }),
+  // B7.4: a lease draft from the enquiry (the mock owner world keeps leases of the sample apartment only).
+  http.post("*/v1/owner/leads/:leadId/lease-draft", ({ request, params }) => {
+    const op = "owner.leads.leaseDraft";
+    const ok = mutating(request, op);
+    if (ok instanceof Response) return ok;
+    const l = find(ok.tenantId, String(params.leadId));
+    if (!l) return problem(op, "http.not_found");
+    if (CLOSED.has(l.dto.state)) return problem(op, "listing.lead_invalid_state");
+    if (l.dto.leaseId) return problem(op, "listing.lease_exists");
+    const leaseId = crypto.randomUUID();
+    save(l, { leaseId, state: "applied" });
+    return json({ leaseId, lead: l.dto }, 201);
   }),
   http.get("*/v1/owner/listing-viewings", ({ request }) => {
     const ok = owner(request, "owner.listingViewings.list");

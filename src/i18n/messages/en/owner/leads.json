@@ -121,5 +121,12 @@
       "unit_leased": "Unit already rented",
       "other": "Other"
     }
+  },
+  "lease": {
+    "draft": "Draft a lease",
+    "title": "Draft a lease for {name}",
+    "body": "Rent, deposit, advance and term come from the listing; the start is the prospect's move-in date. You can edit it before sending it to sign. When the lease takes effect the listing closes and the other prospects get a thank-you message in LINE.",
+    "done": "Lease drafted",
+    "open": "Open the lease"
   }
 }

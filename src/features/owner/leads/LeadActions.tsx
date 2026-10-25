@@ -1,6 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { VIEWING_STATUS } from "@/domain/status/lead";
@@ -19,6 +20,7 @@ import { Textarea } from "@/ui/components/Input";
 import { NativeSelect } from "@/ui/components/NativeSelect";
 import { IconCalendarCheck } from "@/ui/icons/glyphs/calendar-check";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
+import { IconLease } from "@/ui/icons/glyphs/lease";
 import { IconXCircle } from "@/ui/icons/glyphs/x-circle";
 
 type Lead = Schemas["OwnerLeadDto"];
@@ -215,6 +217,8 @@ export function LeadNotes({ leadId, notes }: { leadId: string; notes: string | n
  */
 export function LeadStateActions({ lead }: { lead: Lead }) {
   const t = useTranslations("owner.leads.state");
+  const lease = useTranslations("owner.leads.lease");
+  const router = useRouter();
   const action = useApiAction();
   const [reason, setReason] = useState<LostReason>("chose_other");
   const name = lead.prospect.name;
@@ -231,6 +235,32 @@ export function LeadStateActions({ lead }: { lead: Lead }) {
 
   return (
     <div className="flex flex-col gap-3" data-testid="lead-state-actions">
+      {lead.leaseId ? (
+        <Button asChild variant="secondary" iconStart={IconLease}>
+          <a href={`../leases/${lead.leaseId}`} data-testid="lead-lease-open">
+            {lease("open")}
+          </a>
+        </Button>
+      ) : (
+        <ConfirmAction
+          label={lease("draft")}
+          icon={IconLease}
+          testId="lead-lease-draft"
+          title={lease("title", { name })}
+          description={lease("body")}
+          confirmLabel={lease("draft")}
+          successMessage={lease("done")}
+          onConfirm={(_key, ackIds) =>
+            unwrap(
+              browserApi().POST("/v1/owner/leads/{leadId}/lease-draft", {
+                params: { path: { leadId: lead.id } },
+                body: ackIds.length ? { acknowledgementIds: ackIds } : {},
+              }),
+            )
+          }
+          onDone={(result) => router.push(`../leases/${(result as { leaseId: string }).leaseId}`)}
+        />
+      )}
       <div className="flex flex-wrap gap-2">
         {steps.map((step) => (
           <Button

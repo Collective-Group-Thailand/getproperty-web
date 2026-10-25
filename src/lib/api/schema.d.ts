@@ -5972,6 +5972,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/owner/leads/{leadId}/lease-draft": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Draft a lease from an enquiry
+         * @description A B2 lease draft from the listing's terms with the prospect as lessee: rent, deposit and advance months, the term (the prospect's, at least the listing's minimum), the start (given, else the prospect's move-in, else the listing's available date, else today). The enquiry becomes `applied`; when the lease is activated the listing closes (`leased`), this enquiry is won and the others are lost with a polite LINE message (B7.4, D-252, D-253). Compliance warnings of the terms answer as for any draft.
+         *
+         *     Implements: D-252, D-253, D-020.
+         */
+        post: operations["owner.leads.leaseDraft"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/owner/leads/{leadId}/messages": {
         parameters: {
             query?: never;
@@ -6546,6 +6568,28 @@ export interface paths {
          *     Implements: D-252.
          */
         post: operations["owner.listings.pause"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/listings/{listingId}/actions/relist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Re-open a closed listing
+         * @description One tap before a lease ends (B7.4, D-253): a new draft copied from a closed listing of the unit — texts, terms, facilities, transit, photos in order and viewing times — with the unit's facts refreshed. Submit it as usual (one live listing per unit).
+         *
+         *     Implements: D-252, D-253.
+         */
+        post: operations["owner.listings.relist"];
         delete?: never;
         options?: never;
         head?: never;
@@ -19317,6 +19361,30 @@ export interface components {
          * @enum {string}
          */
         Language: "th" | "en";
+        LeadLeaseDraftCreateDto: {
+            /** @description Acknowledged compliance warnings of the lease terms (D-021a), as for any lease draft. */
+            acknowledgementIds?: string[];
+            /**
+             * @description Default: the prospect's term, at least the listing's minimum.
+             * @example 12
+             */
+            months?: number;
+            /**
+             * Format: date
+             * @description Default: the prospect's move-in date, else the listing's available date, else today.
+             * @example 2026-12-01
+             */
+            startDate?: string;
+        };
+        LeadLeaseDraftDto: {
+            lead: components["schemas"]["OwnerLeadDto"];
+            /**
+             * Format: uuid
+             * @description The new lease draft (`GET /v1/owner/leases/{id}`).
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            leaseId: string;
+        };
         LeadListingDto: {
             /**
              * Format: uuid
@@ -22060,6 +22128,12 @@ export interface components {
              * @example 2026-11-01T09:15:00+07:00
              */
             lastProspectAt: string;
+            /**
+             * Format: uuid
+             * @description The lease drafted from this enquiry (B7.4), when there is one.
+             * @example null
+             */
+            leaseId: string | null;
             listing: components["schemas"]["LeadListingDto"];
             /** @example null */
             lostNote: string | null;
@@ -67636,6 +67710,7 @@ export interface operations {
                      *       "lastMessageBy": "prospect",
                      *       "lastOwnerAt": null,
                      *       "lastProspectAt": "2026-11-01T09:15:00+07:00",
+                     *       "leaseId": null,
                      *       "listing": {
                      *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *         "slug": "condo-1br-0193f2a4b1",
@@ -67804,6 +67879,7 @@ export interface operations {
                      *       "lastMessageBy": "prospect",
                      *       "lastOwnerAt": null,
                      *       "lastProspectAt": "2026-11-01T09:15:00+07:00",
+                     *       "leaseId": null,
                      *       "listing": {
                      *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *         "slug": "condo-1br-0193f2a4b1",
@@ -67972,6 +68048,7 @@ export interface operations {
                      *       "lastMessageBy": "prospect",
                      *       "lastOwnerAt": null,
                      *       "lastProspectAt": "2026-11-01T09:15:00+07:00",
+                     *       "leaseId": null,
                      *       "listing": {
                      *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *         "slug": "condo-1br-0193f2a4b1",
@@ -68111,6 +68188,188 @@ export interface operations {
             };
         };
     };
+    "owner.leads.leaseDraft": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadLeaseDraftCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Drafted */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "lead": {
+                     *         "awaitingReply": true,
+                     *         "createdAt": "2026-11-01T09:15:00+07:00",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "lastMessage": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
+                     *         "lastMessageBy": "prospect",
+                     *         "lastOwnerAt": null,
+                     *         "lastProspectAt": "2026-11-01T09:15:00+07:00",
+                     *         "leaseId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "listing": {
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "slug": "condo-1br-0193f2a4b1",
+                     *           "title": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์",
+                     *           "unitId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *         },
+                     *         "lostNote": null,
+                     *         "lostReason": null,
+                     *         "messages": [
+                     *           {
+                     *             "author": "prospect",
+                     *             "body": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
+                     *             "createdAt": "2026-11-01T09:15:00+07:00",
+                     *             "id": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *           }
+                     *         ],
+                     *         "moveInDate": "2026-12-01",
+                     *         "nationality": null,
+                     *         "nextViewing": {
+                     *           "cancelledBy": null,
+                     *           "endsAt": "2026-11-07T10:30:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "note": null,
+                     *           "reason": null,
+                     *           "rescheduledTo": null,
+                     *           "startsAt": "2026-11-07T10:00:00+07:00",
+                     *           "state": "requested"
+                     *         },
+                     *         "notes": null,
+                     *         "occupants": 2,
+                     *         "prospect": {
+                     *           "lineLinked": true,
+                     *           "name": "สมศรี ใจดี",
+                     *           "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "phone": null
+                     *         },
+                     *         "state": "applied",
+                     *         "termMonths": 12,
+                     *         "version": 2,
+                     *         "viewings": [
+                     *           {
+                     *             "cancelledBy": null,
+                     *             "endsAt": "2026-11-07T10:30:00+07:00",
+                     *             "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *             "note": null,
+                     *             "reason": null,
+                     *             "rescheduledTo": null,
+                     *             "startsAt": "2026-11-07T10:00:00+07:00",
+                     *             "state": "requested"
+                     *           }
+                     *         ]
+                     *       },
+                     *       "leaseId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["LeadLeaseDraftDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `asset.read_only`, `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `compliance.acknowledgement_required`, `lease.unit_unavailable`, `listing.lead_invalid_state`, `listing.lease_exists` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `compliance.bill_disclosure`, `compliance.deposit_cap`, `compliance.forbidden_clause`, `compliance.late_fee_policy`, `compliance.no_midterm_increase`, `compliance.no_renewal_fee`, `compliance.water_minimum`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "owner.leads.reply": {
         parameters: {
             query?: never;
@@ -68150,6 +68409,7 @@ export interface operations {
                      *       "lastMessageBy": "prospect",
                      *       "lastOwnerAt": null,
                      *       "lastProspectAt": "2026-11-01T09:15:00+07:00",
+                     *       "leaseId": null,
                      *       "listing": {
                      *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *         "slug": "condo-1br-0193f2a4b1",
@@ -71813,6 +72073,7 @@ export interface operations {
                      *       "lastMessageBy": "prospect",
                      *       "lastOwnerAt": null,
                      *       "lastProspectAt": "2026-11-01T09:15:00+07:00",
+                     *       "leaseId": null,
                      *       "listing": {
                      *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *         "slug": "condo-1br-0193f2a4b1",
@@ -71987,6 +72248,7 @@ export interface operations {
                      *       "lastMessageBy": "prospect",
                      *       "lastOwnerAt": null,
                      *       "lastProspectAt": "2026-11-01T09:15:00+07:00",
+                     *       "leaseId": null,
                      *       "listing": {
                      *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *         "slug": "condo-1br-0193f2a4b1",
@@ -72165,6 +72427,7 @@ export interface operations {
                      *       "lastMessageBy": "prospect",
                      *       "lastOwnerAt": null,
                      *       "lastProspectAt": "2026-11-01T09:15:00+07:00",
+                     *       "leaseId": null,
                      *       "listing": {
                      *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *         "slug": "condo-1br-0193f2a4b1",
@@ -73248,6 +73511,185 @@ export interface operations {
                      *       "slug": "condo-1br-0a1b2c3d4e",
                      *       "smokingAllowed": false,
                      *       "state": "paused",
+                     *       "titleEn": null,
+                     *       "titleTh": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์",
+                     *       "transit": {
+                     *         "distanceM": 350,
+                     *         "line": "BTS สายสุขุมวิท",
+                     *         "name": "BTS อารีย์"
+                     *       },
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "unitKind": "condo_unit",
+                     *       "verifiedOwner": true,
+                     *       "version": 3
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ListingDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `listing.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.listings.relist": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                listingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description New draft */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "address": "ถนนพหลโยธิน, พญาไท, กรุงเทพมหานคร 10400",
+                     *       "advanceMonths": 1,
+                     *       "availability": {
+                     *         "exceptions": [],
+                     *         "slotMinutes": 30,
+                     *         "weekly": [
+                     *           {
+                     *             "from": "10:00",
+                     *             "to": "16:00",
+                     *             "weekday": 6
+                     *           }
+                     *         ]
+                     *       },
+                     *       "availableFrom": "2026-12-01",
+                     *       "bathrooms": 1,
+                     *       "bedrooms": 1,
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "closedReason": null,
+                     *       "depositMonths": 2,
+                     *       "descriptionEn": null,
+                     *       "descriptionTh": "ห้องมุม แสงดี เฟอร์นิเจอร์ครบ",
+                     *       "district": "พญาไท",
+                     *       "facilities": [
+                     *         "pool",
+                     *         "fitness"
+                     *       ],
+                     *       "floorLabel": "12",
+                     *       "furnishing": "fully_furnished",
+                     *       "hidden": false,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "minTermMonths": 12,
+                     *       "petsAllowed": false,
+                     *       "photos": [
+                     *         {
+                     *           "caption": null,
+                     *           "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "sortOrder": 0,
+                     *           "url": "https://storage.invalid/p.w480.webp"
+                     *         }
+                     *       ],
+                     *       "province": "กรุงเทพมหานคร",
+                     *       "publishedAt": "2026-11-01T00:15:00+07:00",
+                     *       "rejectedReason": null,
+                     *       "rent": "15000.00",
+                     *       "reportCount": 0,
+                     *       "reviewReasons": [],
+                     *       "showUnitNo": false,
+                     *       "sizeSqm": "28.50",
+                     *       "slug": "condo-1br-0a1b2c3d4e",
+                     *       "smokingAllowed": false,
+                     *       "state": "draft",
                      *       "titleEn": null,
                      *       "titleTh": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์",
                      *       "transit": {

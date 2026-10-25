@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 import { ProblemNotice, useApiAction } from "@/features/shared/console/useApiAction";
@@ -14,6 +15,7 @@ import { IconArchive } from "@/ui/icons/glyphs/archive";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 import { IconHide } from "@/ui/icons/glyphs/hide";
 import { IconPlay } from "@/ui/icons/glyphs/play";
+import { IconRefresh } from "@/ui/icons/glyphs/refresh";
 
 type Action = "submit" | "pause" | "resume";
 const PATH = {
@@ -29,6 +31,7 @@ const PATH = {
 export function ListingActions({ listing }: { listing: Schemas["ListingDto"] }) {
   const t = useTranslations("owner.listings.editor");
   const action = useApiAction<Schemas["ListingDto"]>();
+  const router = useRouter();
   const params = { params: { path: { listingId: listing.id } } };
   const run = (which: Action) => action.run(() => unwrap(browserApi().POST(PATH[which], params)));
   const incomplete =
@@ -61,6 +64,21 @@ export function ListingActions({ listing }: { listing: Schemas["ListingDto"] }) 
         {listing.state === "paused" && !listing.hidden ? (
           <Button iconStart={IconPlay} loading={action.busy} onClick={() => run("resume")} data-testid="listing-resume">
             {t("resume")}
+          </Button>
+        ) : null}
+        {listing.state === "closed" ? (
+          <Button
+            iconStart={IconRefresh}
+            loading={action.busy}
+            onClick={() =>
+              action.run(
+                () => unwrap(browserApi().POST("/v1/owner/listings/{listingId}/actions/relist", params)),
+                (fresh) => router.push(`../listings/${fresh.id}`),
+              )
+            }
+            data-testid="listing-relist"
+          >
+            {t("relist")}
           </Button>
         ) : null}
         {listing.state !== "closed" ? (
