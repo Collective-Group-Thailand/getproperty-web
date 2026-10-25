@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { AuthFrame } from "@/features/shared/auth/AuthFrame";
 import { LandlordSignUp } from "@/features/shared/auth/LandlordSignUp";
 import { getOperatorActor } from "@/lib/auth/actor";
+import { oauthProviders } from "@/lib/auth/oauth/enabled";
 import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 
@@ -14,10 +15,17 @@ export async function generateMetadata() {
 
 /**
  * Self sign-up for owners of a house or condo unit (B7.1, F6.1, D-251): free (D-250), no invitation. Signed-in
- * operators go straight to their console. Google, Apple and LINE join with B7.8 on the web.
+ * operators go straight to their console. Phone, or Google / Apple / LINE (D-255, D-283).
  */
-export default async function LandlordSignUpPage({ params }: { params: Promise<{ locale: Locale }> }) {
+export default async function LandlordSignUpPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: Locale }>;
+  searchParams: Promise<{ oauthError?: string }>;
+}) {
   const { locale } = await params;
+  const { oauthError } = await searchParams;
   setRequestLocale(locale);
   const actor = await getOperatorActor("owner");
   if (actor?.me.currentTenant) redirect(getPathname({ href: "/dashboard", locale }));
@@ -54,7 +62,12 @@ export default async function LandlordSignUpPage({ params }: { params: Promise<{
         </div>
       }
     >
-      <LandlordSignUp portfolioHref={href("/portfolio")} />
+      <LandlordSignUp
+        portfolioHref={href("/portfolio")}
+        locale={locale}
+        providers={oauthProviders()}
+        oauthError={oauthError?.slice(0, 64)}
+      />
     </AuthFrame>
   );
 }

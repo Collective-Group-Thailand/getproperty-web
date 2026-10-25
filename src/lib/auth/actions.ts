@@ -12,14 +12,21 @@ import {
   totpActivateSchema,
   totpEnrollSchema,
 } from "@/domain/forms/auth";
-import { createApiClient, unwrap } from "@/lib/api/client";
+import { unwrap } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/errors";
-import type { OperatorMe, Problem, TokenPair } from "@/lib/api/types";
-import { serverEnv } from "@/lib/env/server";
-import { inboundEdgeHeaders } from "@/lib/http/server";
-import { isLocale, LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE } from "@/i18n/routing";
+import type { Problem, TokenPair } from "@/lib/api/types";
+import { isLocale } from "@/i18n/routing";
 
-import { clearSession, readRefreshToken, readTenant, writeSession, writeTenant } from "./session";
+import {
+  afterOperatorSignIn,
+  authApiClient,
+  operatorMe,
+  rememberLanguage,
+  requestLanguage,
+  type OperatorNext,
+  type OperatorZone,
+} from "./operator-session";
+import { clearSession, readRefreshToken, writeSession, writeTenant } from "./session";
 
 /**
  * Sign-in, tenant choice and sign-out as Server Actions (00-master-plan.md §4: Server Actions only for
@@ -33,23 +40,9 @@ export type ActionProblem = Pick<Problem, "code" | "status" | "title" | "detail"
 
 export type ActionResult<T> = { ok: true; data: T } | { ok: false; problem: ActionProblem };
 
-/** Where an operator goes after signing in: the console, or the tenant picker. */
-export type OperatorNext = { next: "console" | "select-tenant" };
+export type { OperatorNext } from "./operator-session";
 
-type OperatorZone = "owner" | "staff";
-
-/**
- * Every call of a Server Action carries the end user's address as our edge saw it (review H1): the API's sign-in
- * throttle, session rows, audit and D-021a acknowledgements record it instead of this server's egress address.
- */
-async function apiClient(language?: string, extra: Record<string, string | undefined> = {}) {
-  const edge = await inboundEdgeHeaders();
-  return createApiClient({
-    baseUrl: serverEnv().API_INTERNAL_URL,
-    headers: () => ({ ...edge, "Accept-Language": language, ...extra }),
-    fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }),
-  });
-}
+const apiClient = authApiClient;
 
 function invalid(error: z.ZodError): ActionResult<never> {
   return {
@@ -88,44 +81,7 @@ function failure(error: unknown): ActionResult<never> {
   };
 }
 
-async function language(): Promise<string> {
-  const value = (await cookies()).get(LOCALE_COOKIE)?.value;
-  return isLocale(value) ? value : "th";
-}
-
-async function rememberLanguage(value: string | undefined): Promise<void> {
-  if (!isLocale(value)) return;
-  (await cookies()).set(LOCALE_COOKIE, value, {
-    path: "/",
-    maxAge: LOCALE_COOKIE_MAX_AGE,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-  });
-}
-
-async function operatorMe(zone: OperatorZone, accessToken: string, tenantId?: string): Promise<OperatorMe> {
-  const api = await apiClient(undefined, { authorization: `Bearer ${accessToken}`, "x-tenant-id": tenantId });
-  return zone === "owner" ? unwrap(api.GET("/v1/owner/me")) : unwrap(api.GET("/v1/staff/me"));
-}
-
-/**
- * After an operator sign-in: keep a remembered tenant only if it is still one of theirs, and send
- * operators of several tenants without a valid choice to the picker. Staff and admin zones take the
- * user's language from `/me` (owner pages carry it in the URL).
- */
-async function afterOperatorSignIn(zone: OperatorZone, pair: TokenPair): Promise<OperatorNext> {
-  await writeSession(pair);
-  const remembered = await readTenant();
-  const me = await operatorMe(zone, pair.accessToken);
-  if (zone === "staff") await rememberLanguage(me.user.language);
-  const active = me.tenants.filter((tenant) => tenant.status !== "deactivated");
-  if (remembered && active.some((tenant) => tenant.id === remembered)) return { next: "console" };
-  if (active.length === 1) {
-    await writeTenant(active[0]!.id);
-    return { next: "console" };
-  }
-  return { next: "select-tenant" };
-}
+const language = requestLanguage;
 
 export async function requestOperatorOtp(
   input: z.input<typeof otpRequestSchema>,

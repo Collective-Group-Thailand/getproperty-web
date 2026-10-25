@@ -35,6 +35,8 @@ const zoneEnv = {
   // One proxy hop, as behind the platform's Caddy (D-230): the BFFs and Server Actions forward the right-most X-Forwarded-For entry
   // (review H1), so the suite runs that path rather than the "forward nothing" default.
   TRUSTED_HOPS: "1",
+  // Google / Apple / LINE through the local test page (D-283): the production build runs the fake provider.
+  OAUTH_MODE: "fake",
 };
 
 /**

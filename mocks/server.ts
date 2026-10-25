@@ -24,7 +24,8 @@
  *   POST /__mock/staff/ocr?mode=    the fake OCR reads (`ok`) or reads nothing (`unreadable`)
  *   POST /__mock/staff/devices/online?serial=  a gateway bootstraps and comes online (realtime events)
  *   POST /__mock/owner/reset?part=  reset the owner world (assets | leases | money | metering | settings |
- *                                   release | portfolio: landlord portfolios + sign-up), or all of it
+ *                                   release | portfolio: landlord portfolios + sign-up | identities: linked
+ *                                   Google / Apple / LINE), or all of it
  *   POST /__mock/owner/leases/<id>/resident-sign      the resident signs in getproperty-liff
  *   POST /__mock/owner/deposits/<id>/resident-response?answer=accepted|disputed
  *   POST /__mock/owner/payments/webhook?invoice=<number>  the payment provider pays an invoice's QR

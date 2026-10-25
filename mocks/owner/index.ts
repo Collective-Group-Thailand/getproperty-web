@@ -1,6 +1,6 @@
 import type { HttpHandler } from "msw";
 
-import { state } from "../state";
+import { initialIdentities, state } from "../state";
 import { assetHandlers } from "./assets";
 import { billingHandlers } from "./billing";
 import { dashboardHandlers } from "./dashboard";
@@ -104,6 +104,10 @@ const PARTS: Record<string, (keyof OwnerWorld)[]> = {
 
 export function resetOwnerWorld(part: string | null): boolean {
   const fresh = initialOwnerWorld();
+  if (!part || part === "identities") {
+    state.identities = initialIdentities();
+    if (part) return true;
+  }
   if (!part || part === "portfolio") {
     // Landlord portfolios and the sign-up (B7.1) live beside the owner world.
     state.portfolio = initialPortfolios();

@@ -1,12 +1,13 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState, useTransition } from "react";
+import { useState, useSyncExternalStore, useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { isDisplayName, isOtpCode, isPhone } from "@/domain/forms/auth-rules";
 import { requestLandlordSignUpOtp, signUpLandlord, type ActionProblem } from "@/lib/auth/actions";
 import { formatPhone } from "@/i18n/format";
+import type { Locale } from "@/i18n/routing";
 import { Button } from "@/ui/components/Button";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
@@ -14,7 +15,11 @@ import { OTPInput } from "@/ui/components/OTPInput";
 import { PhoneInput } from "@/ui/components/PhoneInput";
 import { Stepper } from "@/ui/components/Stepper";
 
+import { OAuthButtons, type OAuthProviderKey } from "./OAuthButtons";
+import { OAuthError } from "./OAuthError";
 import { ProblemCallout, useSecondsUntil } from "./OperatorSignIn";
+
+const noSubscription = () => () => {};
 
 interface Challenge {
   challengeId: string;
@@ -25,10 +30,21 @@ interface Challenge {
 
 /**
  * Landlord self sign-up (B7.1, F6.1, D-251): a name and a phone, then the SMS code — two short steps, no
- * invitation, no company data (that comes later in settings). The tokens are set by the Server Action; the
+ * invitation, no company data (that comes later in settings). Or the name and Google / Apple / LINE (D-255, D-283). The tokens are set by the Server Action; the
  * page then opens the portfolio, where the first thing to do is add a unit.
  */
-export function LandlordSignUp({ portfolioHref }: { portfolioHref: string }) {
+export function LandlordSignUp({
+  portfolioHref,
+  locale,
+  providers = [],
+  oauthError,
+}: {
+  portfolioHref: string;
+  locale: Locale;
+  /** Google / Apple / LINE as the server offers them (D-255, D-283): the name typed here goes along. */
+  providers?: readonly OAuthProviderKey[];
+  oauthError?: string;
+}) {
   const t = useTranslations("auth");
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [problem, setProblem] = useState<ActionProblem | null>(null);
@@ -37,6 +53,12 @@ export function LandlordSignUp({ portfolioHref }: { portfolioHref: string }) {
   const details = useForm<{ displayName: string; phone: string }>({ defaultValues: { displayName: "", phone: "" } });
   const code = useForm<{ code: string }>({ defaultValues: { code: "" } });
   const message = (key: string | undefined) => (key ? t(`errors.${key}`) : undefined);
+  // Hydrated: the provider buttons check the name before leaving (a plain link before that).
+  const ready = useSyncExternalStore(
+    noSubscription,
+    () => true,
+    () => false,
+  );
 
   const send = (displayName: string, phone: string) =>
     startTransition(async () => {
@@ -70,7 +92,8 @@ export function LandlordSignUp({ portfolioHref }: { portfolioHref: string }) {
     });
 
   return (
-    <div className="flex flex-col gap-6" data-testid="landlord-signup">
+    <div className="flex flex-col gap-6" data-testid="landlord-signup" data-ready={ready ? "true" : "false"}>
+      <OAuthError code={oauthError} />
       <Stepper
         label={t("signUp.steps.label")}
         steps={[
@@ -118,6 +141,20 @@ export function LandlordSignUp({ portfolioHref }: { portfolioHref: string }) {
           <Button type="submit" size="lg" block loading={pending}>
             {t("signIn.sendCode")}
           </Button>
+          <OAuthButtons
+            providers={providers}
+            intent="signup"
+            locale={locale}
+            beforeNavigate={() => {
+              const name = details.getValues("displayName").trim();
+              const valid = isDisplayName(name);
+              if (valid !== true) {
+                details.setError("displayName", { message: typeof valid === "string" ? valid : "nameRequired" });
+                return false;
+              }
+              return name;
+            }}
+          />
         </form>
       ) : (
         <form
