@@ -364,6 +364,7 @@ function incomeOf(tenantId: string, year: number): Schemas["IncomeYearDto"] {
       const rent = Number(unit.defaultRent);
       const received = (rent * months).toFixed(2);
       const charge = 1200;
+      const items = repairExpenses(tenantId, unit.unitId, year);
       return {
         unitId: unit.unitId,
         unitNo: unit.unitNo,
@@ -373,9 +374,12 @@ function incomeOf(tenantId: string, year: number): Schemas["IncomeYearDto"] {
         charges: (charge * months).toFixed(2),
         retained: "0.00",
         gross: received,
+        expenses: items.reduce((sum, item) => sum + Number(item.amount), 0).toFixed(2),
+        expenseItems: items,
       };
     });
   const gross = units.reduce((sum, unit) => sum + Number(unit.gross), 0);
+  const expenses = units.reduce((sum, unit) => sum + Number(unit.expenses), 0);
   return {
     year,
     deductionPercent: "30",
@@ -387,6 +391,35 @@ function incomeOf(tenantId: string, year: number): Schemas["IncomeYearDto"] {
       gross: gross.toFixed(2),
       deduction: (gross * 0.3).toFixed(2),
       net: (gross * 0.7).toFixed(2),
+      expenses: expenses.toFixed(2),
+      netActual: (gross - expenses).toFixed(2),
     },
   };
+}
+
+/** The owner's share of the year's repair receipts on a unit (D-263), per category — the R2 mock's landlord requests. */
+function repairExpenses(tenantId: string, unitId: string, year: number): Schemas["IncomeExpenseItemDto"][] {
+  const byCategory = new Map<string, Schemas["IncomeExpenseItemDto"]>();
+  for (const sr of state.r2.requests) {
+    if (sr.tenantId !== tenantId || sr.unitId !== unitId || !sr.repair || !sr.decision) continue;
+    const tenantShare =
+      sr.decision.costBearer === "tenant"
+        ? 1
+        : sr.decision.costBearer === "shared"
+          ? Number(sr.decision.tenantSharePercent) / 100
+          : 0;
+    for (const cost of sr.repair.costs) {
+      if (cost.kind !== "receipt" || cost.voidedAt || !cost.issuedOn.startsWith(String(year))) continue;
+      const amount = Math.round(Number(cost.amount) * (1 - tenantShare) * 100) / 100;
+      const item = byCategory.get(sr.category.key) ?? {
+        categoryKey: sr.category.key,
+        nameTh: sr.category.nameTh,
+        nameEn: sr.category.nameEn,
+        amount: "0.00",
+      };
+      item.amount = (Number(item.amount) + amount).toFixed(2);
+      byCategory.set(sr.category.key, item);
+    }
+  }
+  return [...byCategory.values()].filter((item) => item.amount !== "0.00");
 }

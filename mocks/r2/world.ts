@@ -1,6 +1,11 @@
 import type { components } from "../../src/lib/api/schema";
 import { BUILDING_A, BUILDING_B, FLOORS, UNITS } from "../staff-world";
+import { TENANTS } from "../fixtures";
 import { id, iso, day, PARTY } from "../owner/world";
+
+/** The landlord persona's tenant and the condo project of unit 12/345 (mocks/owner/portfolio-world.ts). */
+const LANDLORD_TENANT = TENANTS.landlord.profile.id;
+const LANDLORD_BUILDING = "6a1f0c3e-2b4d-4e5f-8a9b-0c1d2e3f4a01";
 
 type Schemas = components["schemas"];
 
@@ -22,6 +27,7 @@ export const TECHNICIAN = { id: PARTY.company, name: "บริษัท ตั�
 export const R2 = {
   sr: {
     leakA201: id("5e700000", 1),
+    landlordLeak: id("5e700000", 6),
     powerA202: id("5e700000", 2),
     autoMeter: id("5e700000", 3),
     doneA302: id("5e700000", 4),
@@ -76,6 +82,14 @@ export const categoryId = (key: string) => id("ca7e0000", CATEGORY_DEFAULTS.find
 
 export type MockRequest = Schemas["ServiceRequestDto"] & {
   timeline: Schemas["ServiceTimelineEntryDto"][];
+  /** A landlord's request (D-263) lives in that tenant, not the sample apartment. */
+  tenantId?: string;
+  /** Who fixes, who pays: decisions, quotations / receipts and settlements (landlords, D-263). */
+  repair?: {
+    decisions: Schemas["ServiceDecisionDto"][];
+    costs: Schemas["ServiceCostDto"][];
+    settlements: Schemas["ServiceSettlementDto"][];
+  };
 };
 
 const OPEN_REQUEST: Schemas["ServiceRequestStatus"][] = ["new", "triaged", "assigned", "in_progress", "waiting_parts"];
@@ -162,6 +176,7 @@ function request(
     cancelReason: null,
     cancelledAt: null,
     closedAt: null,
+    decision: null,
     createdAt: hours(-3),
     doneAt: null,
     inWarranty: false,
@@ -290,6 +305,22 @@ export function initialR2World(): R2World {
   const unitA301 = UNITS.a301;
 
   const requests: MockRequest[] = [
+    // The landlord persona's tenant reported a leak in condo 12/345 (D-263: the owner decides who fixes, who pays).
+    request(list, {
+      id: R2.sr.landlordLeak,
+      ref: "SR-2610-0101",
+      status: "new",
+      category: "plumbing",
+      description: "ท่อน้ำใต้ซิงก์ห้องครัวแตก น้ำซึมออกมาที่พื้น",
+      tenantId: LANDLORD_TENANT,
+      buildingId: LANDLORD_BUILDING,
+      unitId: "7b2e1d4f-3c5a-4f6b-9c0d-1e2f3a4b5c01",
+      unitNo: "12/345",
+      requesterName: "Alex Example",
+      requesterPartyId: "3b241101-e2bb-4255-8caf-4136c566b101",
+      createdAt: hours(-5),
+      repair: { decisions: [], costs: [], settlements: [] },
+    }),
     request(list, {
       id: R2.sr.leakA201,
       ref: "SR-2610-0001",

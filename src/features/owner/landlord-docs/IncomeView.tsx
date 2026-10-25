@@ -66,6 +66,19 @@ export async function IncomeView({ context, year: asked }: { context: OwnerConte
             <dd className="text-lg font-medium tabular-nums">{money(data.totals.net)}</dd>
           </div>
         </dl>
+        {data.totals.expenses !== "0.00" ? (
+          <dl className="border-border mt-4 grid gap-4 border-t pt-4 sm:grid-cols-3" data-testid="income-expenses">
+            <div>
+              <dt className="text-muted text-sm">{t("expenses")}</dt>
+              <dd className="text-lg font-medium tabular-nums">{money(data.totals.expenses)}</dd>
+              <p className="text-muted text-xs">{t("expensesHint")}</p>
+            </div>
+            <div>
+              <dt className="text-muted text-sm">{t("netActual")}</dt>
+              <dd className="text-lg font-medium tabular-nums">{money(data.totals.netActual)}</dd>
+            </div>
+          </dl>
+        ) : null}
       </Card>
       <Callout tone="info" title={t("noteTitle")}>
         {t("noteBody")}
@@ -95,6 +108,19 @@ export async function IncomeView({ context, year: asked }: { context: OwnerConte
                   </div>
                 </dl>
                 <p className="text-muted text-sm">{t("charges", { amount: money(unit.charges) })}</p>
+                {unit.expenseItems.length ? (
+                  <ul
+                    className="text-muted m-0 flex list-none flex-col gap-1 p-0 text-sm"
+                    data-testid="income-unit-expenses"
+                  >
+                    {unit.expenseItems.map((item) => (
+                      <li key={item.categoryKey} className="flex justify-between gap-2">
+                        <span>{locale === "en" ? item.nameEn : item.nameTh}</span>
+                        <span className="tabular-nums">{money(item.amount)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
                 <IncomeSummaryButton year={year} unitId={unit.unitId} unitNo={unit.unitNo} />
               </Card>
             </li>

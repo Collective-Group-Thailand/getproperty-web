@@ -19,5 +19,8 @@
   "openPdf": "Open PDF",
   "pdfTitle": "Income summary {unit} {number}",
   "rent": "Rent",
-  "charges": "Utilities and service charges {amount}, shown apart and not counted as 40(5) income"
+  "charges": "Utilities and service charges {amount}, shown apart and not counted as 40(5) income",
+  "expenses": "Repairs borne by the owner",
+  "expensesHint": "From the receipts on repair requests (owner's share)",
+  "netActual": "After the recorded actual expenses (estimate)"
 }
