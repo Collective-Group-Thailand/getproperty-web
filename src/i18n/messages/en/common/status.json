@@ -343,5 +343,18 @@
     "vacant": "Vacant",
     "leased": "Leased",
     "notice_given": "Moving out"
+  },
+  "listing": {
+    "draft": "Draft",
+    "pending_review": "In review",
+    "published": "Published",
+    "paused": "Paused",
+    "closed": "Closed",
+    "rejected": "Rejected"
+  },
+  "listingVerification": {
+    "pending": "In review",
+    "approved": "Verified",
+    "rejected": "Rejected"
   }
 }

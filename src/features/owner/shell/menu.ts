@@ -29,6 +29,7 @@ import { IconWallet } from "@/ui/icons/glyphs/wallet";
 /** Owner console routes per menu key (F2 builds the pages; groups follow the morning-dashboard flow). */
 export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
   portfolio: { href: "/portfolio", icon: IconHome, group: "operations" },
+  listings: { href: "/listings", icon: IconMegaphone, group: "operations" },
   dashboard: { href: "/dashboard", icon: IconDashboard, group: "operations" },
   buildings: { href: "/buildings", icon: IconBuilding, group: "operations" },
   units: { href: "/units", icon: IconRoom, group: "operations" },

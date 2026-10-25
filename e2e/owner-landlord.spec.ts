@@ -3,6 +3,7 @@ import { expect, test } from "@playwright/test";
 import { HOSTS, MOCK_API } from "../playwright.config";
 import { CODE, signInWithOtp } from "./support/auth";
 import { hydrated } from "./support/owner";
+import { signInPlatform } from "./support/admin";
 import { expectAxeClean } from "./support/staff";
 
 /** B7.1 / F6.1 — landlord self sign-up, the portfolio home and the one-step unit wizard (D-251). */
@@ -79,5 +80,72 @@ test("a landlord signs in to the portfolio, not the building dashboard", async (
   const nav = page.getByRole("navigation").first();
   await expect(nav.getByRole("link", { name: "พอร์ตของฉัน" })).toBeVisible();
   await expect(nav.getByRole("link", { name: "อาคาร", exact: true })).toHaveCount(0);
+  await expectAxeClean(page);
+});
+
+/** A tiny PNG (1×1) — enough for the mock's upload, scan and attach. */
+const PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+  "base64",
+);
+
+test("a landlord lists a vacant house: draft, photos, publish (F6.2)", async ({ page }) => {
+  await signInWithOtp(page, HOSTS.owner, "0810000006");
+  await expect(page).toHaveURL(`${HOSTS.owner}/portfolio`);
+  await hydrated(page);
+  await page.locator('[data-testid="portfolio-unit"][data-unit-no="1"]').getByTestId("portfolio-list-unit").click();
+  await expect(page.getByTestId("listing-create")).toBeVisible();
+  await hydrated(page);
+  await page.getByTestId("listing-headline").fill("บ้านเดี่ยว 3 ห้องนอน มีสวน นนทบุรี");
+  await page.getByTestId("listing-create-submit").click();
+
+  await expect(page.getByTestId("listing-editor")).toBeVisible();
+  await hydrated(page);
+  await page.getByTestId("listing-submit").click();
+  await expect(page.getByTestId("listing-missing")).toContainText("รูป");
+
+  await page
+    .getByTestId("listing-photo-input")
+    .setInputFiles(
+      Array.from({ length: 5 }, (_, i) => ({ name: `house-${i + 1}.png`, mimeType: "image/png", buffer: PNG })),
+    );
+  await expect(page.getByTestId("listing-photo")).toHaveCount(5);
+  await expect(page.getByTestId("listing-photo").first()).toContainText("รูปปก");
+
+  await page.getByTestId("listing-description").fill("บ้านพร้อมสวน ใกล้ทางด่วน นัดดูได้ทุกเสาร์");
+  await page.getByTestId("listing-details-save").click();
+  await expect(page.getByTestId("listing-details")).toContainText("บันทึกแล้ว");
+
+  await page.getByTestId("listing-submit").click();
+  await expect(page.getByTestId("listing-state-hint")).toContainText("เผยแพร่อยู่บนหน้า /rent");
+  await expect(page.getByTestId("listing-view")).toBeVisible();
+  await expectAxeClean(page);
+
+  await page.goto(`${HOSTS.owner}/listings`);
+  await expect(page.getByTestId("listing-card")).toHaveCount(3);
+});
+
+test("support reviews listings: approves, restores a reported one and verifies an owner (F6.5)", async ({ page }) => {
+  await signInPlatform(page, "support");
+  await page.goto(`${HOSTS.admin}/listings`);
+  const queue = page.getByTestId("moderation-row");
+  await expect(queue).toHaveCount(1);
+  await queue.first().getByTestId("moderation-approve").click();
+  await page.getByRole("alertdialog").getByRole("button", { name: "Approve" }).click();
+  await expect(page.getByTestId("moderation-row")).toHaveCount(0);
+
+  await page.getByTestId("listings-tab-reported").click();
+  const reported = page.getByTestId("moderation-row");
+  await expect(reported).toHaveCount(1);
+  await expect(reported).toContainText("3 reports");
+  await reported.getByTestId("moderation-restore").click();
+  await page.getByRole("alertdialog").getByRole("button", { name: "Restore" }).click();
+  await expect(page.getByTestId("moderation-row")).toHaveCount(0);
+
+  await page.getByTestId("listings-tab-verifications").click();
+  await page.getByTestId("verification-open").click();
+  await expect(page.getByTestId("verification-evidence")).toBeVisible();
+  await page.getByTestId("verification-approve").click();
+  await expect(page.getByTestId("verification-row")).toHaveCount(0);
   await expectAxeClean(page);
 });

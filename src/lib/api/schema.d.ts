@@ -13289,7 +13289,7 @@ export interface components {
             user: components["schemas"]["MeUserDto"];
         };
         /** @enum {string} */
-        AdminMenuKey: "tenants" | "platform_users" | "utility_tariffs" | "settings" | "feature_flags" | "devices" | "ota_releases" | "support_grants" | "subscriptions" | "notification_templates" | "outbox" | "ingest_dead_letters" | "data_subject_requests" | "integration_events" | "audit_log" | "ai_usage";
+        AdminMenuKey: "tenants" | "listings" | "platform_users" | "utility_tariffs" | "settings" | "feature_flags" | "devices" | "ota_releases" | "support_grants" | "subscriptions" | "notification_templates" | "outbox" | "ingest_dead_letters" | "data_subject_requests" | "integration_events" | "audit_log" | "ai_usage";
         AdminStorageOverviewDto: {
             data: components["schemas"]["AdminStorageTenantDto"][];
             totals: components["schemas"]["AdminStorageTotalsDto"];
@@ -21451,7 +21451,7 @@ export interface components {
          * @description Menu entitlements of the owner console (keys of the web routes).
          * @enum {string}
          */
-        OwnerMenuKey: "portfolio" | "dashboard" | "buildings" | "units" | "parties" | "leases" | "deposits" | "readings" | "devices" | "rate_plans" | "invoices" | "payments" | "reports" | "utility_loss" | "service_requests" | "access" | "parcels" | "announcements" | "members" | "bank_accounts" | "settings" | "notifications" | "privacy" | "access_grants" | "support_access" | "audit_log" | "subscription";
+        OwnerMenuKey: "portfolio" | "listings" | "dashboard" | "buildings" | "units" | "parties" | "leases" | "deposits" | "readings" | "devices" | "rate_plans" | "invoices" | "payments" | "reports" | "utility_loss" | "service_requests" | "access" | "parcels" | "announcements" | "members" | "bank_accounts" | "settings" | "notifications" | "privacy" | "access_grants" | "support_access" | "audit_log" | "subscription";
         /** @enum {string} */
         OwnershipEvidence: "title_deed" | "condo_title" | "sale_contract";
         OwnerStorageDto: {

@@ -47,7 +47,8 @@
     "repairs": "Repairs",
     "repairsOpen": "{count, plural, one {# open request} other {# open requests}}",
     "repairsNone": "None",
-    "external": "This condo's juristic person is not on getproperty yet. Your unit's data is visible to you only."
+    "external": "This condo's juristic person is not on getproperty yet. Your unit's data is visible to you only.",
+    "listIt": "List it for rent"
   },
   "form": {
     "title": "Add a unit",

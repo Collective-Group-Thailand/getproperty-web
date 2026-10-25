@@ -18,6 +18,7 @@ import { IconWallet } from "@/ui/icons/glyphs/wallet";
 /** Platform admin routes per menu key (F5 builds the pages). */
 export const ADMIN_MENU: MenuRegistry<Schemas["AdminMenuKey"]> = {
   tenants: { href: "/tenants", icon: IconBuilding, group: "customers" },
+  listings: { href: "/listings", icon: IconFlag, group: "customers" },
   subscriptions: { href: "/subscriptions", icon: IconWallet, group: "customers" },
   support_grants: { href: "/support", icon: IconChat, group: "customers" },
   data_subject_requests: { href: "/privacy", icon: IconShield, group: "customers" },

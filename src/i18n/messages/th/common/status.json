@@ -343,5 +343,18 @@
     "vacant": "ว่าง",
     "leased": "มีผู้เช่า",
     "notice_given": "แจ้งย้ายออกแล้ว"
+  },
+  "listing": {
+    "draft": "ร่าง",
+    "pending_review": "รอตรวจ",
+    "published": "เผยแพร่แล้ว",
+    "paused": "หยุดชั่วคราว",
+    "closed": "ปิดแล้ว",
+    "rejected": "ไม่ผ่าน"
+  },
+  "listingVerification": {
+    "pending": "รอตรวจ",
+    "approved": "ยืนยันแล้ว",
+    "rejected": "ไม่ผ่าน"
   }
 }
