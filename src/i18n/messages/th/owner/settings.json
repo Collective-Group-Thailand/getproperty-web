@@ -542,6 +542,17 @@
     "revoke": "ยกเลิกการเชื่อม",
     "revokeTitle": "ยกเลิกการเชื่อม {name}?",
     "revokeBody": "ข้อความจะกลับไปส่งจาก LINE ของ getproperty ทันที ผู้เช่าที่ยืนยันไว้ต้องยืนยันใหม่ถ้าเชื่อมกลับมา",
-    "revoked": "ยกเลิกการเชื่อมแล้ว"
+    "revoked": "ยกเลิกการเชื่อมแล้ว",
+    "usage": {
+      "title": "ข้อความเดือนนี้",
+      "shared": "ผ่าน LINE ของ getproperty",
+      "counted": "{counted, number} จาก {allowance, number} ข้อความฟรี",
+      "left": "เหลือ {left, number} ข้อความ",
+      "notCharged": "ส่งไปแล้ว {counted, number} ข้อความ ยังไม่คิดค่าข้อความ",
+      "beyond": "เกินโควตา {count, number} ข้อความ ประมาณ {amount} + VAT {vat}",
+      "own": "ผ่าน OA ของคุณ {count, number} ข้อความ — LINE เป็นผู้เรียกเก็บ getproperty ไม่คิดเพิ่ม",
+      "fallbacks": "{count, plural, other {LINE ปฏิเสธเพราะเกินโควตา # ครั้ง ส่ง SMS แทนเมื่อมีเบอร์}}",
+      "repliesFree": "ข้อความตอบกลับไม่นับ"
+    }
   }
 }

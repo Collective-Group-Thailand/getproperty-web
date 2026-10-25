@@ -289,6 +289,54 @@ const tariffHandlers: HttpHandler[] = [
 ];
 
 const settingHandlers: HttpHandler[] = [
+  // D-254: the shared LINE OA's rates — entered by one platform user, published by another
+  http.get("*/v1/admin/messaging-rates", ({ request }) => {
+    const ok = platform(request, "admin.messagingRates.list", "admin.setting.manage");
+    if (ok instanceof Response) return ok;
+    return json([...w().messagingRates].sort((a, b) => b.effectiveFrom.localeCompare(a.effectiveFrom)));
+  }),
+  http.post("*/v1/admin/messaging-rates", async ({ request }) => {
+    const op = "admin.messagingRates.enter";
+    const ok = platform(request, op, "admin.setting.manage");
+    if (ok instanceof Response) return ok;
+    return idempotent(request, op, (payload) => {
+      const input = payload as unknown as Schemas["MessagingRateCreateDto"];
+      const today = new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 10);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(input.effectiveFrom ?? "")) return validation(op, "effectiveFrom", "a date");
+      if (input.effectiveFrom < today) return problem(op, "messaging_rate.in_the_past");
+      if (!/^\d{1,5}(\.\d{1,4})?$/.test(input.pricePerMessage ?? "")) return validation(op, "pricePerMessage", "THB");
+      const rate: Schemas["MessagingRateDto"] = {
+        id: crypto.randomUUID(),
+        effectiveFrom: input.effectiveFrom,
+        freePerTenant: input.freePerTenant,
+        freePerUnit: input.freePerUnit ?? 0,
+        pricePerMessage: Number(input.pricePerMessage).toFixed(4),
+        vatPercent: Number(input.vatPercent).toFixed(2),
+        notes: input.notes ?? null,
+        state: "entered",
+        enteredBy: ok.userId,
+        enteredAt: new Date().toISOString(),
+        publishedBy: null,
+        publishedAt: null,
+      };
+      w().messagingRates.push(rate);
+      return { status: 201, body: rate };
+    });
+  }),
+  http.post("*/v1/admin/messaging-rates/:rateId/actions/publish", ({ request, params }) => {
+    const op = "admin.messagingRates.publish";
+    const ok = platform(request, op, "admin.setting.manage");
+    if (ok instanceof Response) return ok;
+    const rate = w().messagingRates.find((r) => r.id === params.rateId);
+    if (!rate) return notFound(op);
+    if (rate.state !== "entered") return problem(op, "messaging_rate.invalid_state");
+    if (rate.enteredBy === ok.userId) return problem(op, "messaging_rate.same_checker");
+    for (const other of w().messagingRates)
+      if (other.state === "published" && other.effectiveFrom === rate.effectiveFrom) other.state = "withdrawn";
+    Object.assign(rate, { state: "published", publishedBy: ok.userId, publishedAt: new Date().toISOString() });
+    return json(rate);
+  }),
+
   // D-279: every tenant's latest storage snapshot (the mock shows a spread of levels for review)
   http.get("*/v1/admin/storage/tenants", ({ request }) => {
     const ok = platform(request, "admin.storage.tenants", ["admin.tenant.read"]);

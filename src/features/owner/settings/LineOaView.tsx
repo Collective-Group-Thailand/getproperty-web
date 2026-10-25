@@ -4,11 +4,14 @@ import { MESSAGING_CHANNEL_STATUS } from "@/domain/status/messagingChannel";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { SectionError } from "@/features/shared/console/SectionError";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
-import { formatDateTime } from "@/i18n/format";
+import { formatDateTime, formatTHB } from "@/i18n/format";
+import type { Locale } from "@/i18n/routing";
 import { unwrap } from "@/lib/api/client";
+import type { Schemas } from "@/lib/api/types";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { Progress } from "@/ui/components/Progress";
 
 import { ownerCan, readOnly, section, type OwnerContext } from "../shared/server";
 import { ConnectLineOa, CopyWebhookUrl, RevokeLineOa, VerifyLineOa } from "./LineOaActions";
@@ -22,7 +25,10 @@ import { SettingsNav } from "./SettingsNav";
 export async function LineOaView({ context }: { context: OwnerContext }) {
   const t = await getTranslations("owner.settings.lineOa");
   const { api, locale, me, buildings } = context;
-  const channels = await section(unwrap(api.GET("/v1/owner/messaging/channels")));
+  const [channels, usage] = await Promise.all([
+    section(unwrap(api.GET("/v1/owner/messaging/channels"))),
+    section(unwrap(api.GET("/v1/owner/messaging/usage"))),
+  ]);
   const manage = ownerCan(me, "tenant.settings.update") && !readOnly(me);
   const scope = (id: string | null) =>
     id ? (buildings.find((building) => building.id === id)?.name ?? id.slice(0, 8)) : t("scopeAll");
@@ -38,6 +44,7 @@ export async function LineOaView({ context }: { context: OwnerContext }) {
         }
       />
       <SettingsNav me={me} current="/settings/line-oa" locale={locale} />
+      {usage.data ? <UsageCard usage={usage.data} locale={locale} t={t} /> : null}
       {!channels.data ? (
         <SectionError error={channels.error} />
       ) : channels.data.length === 0 ? (
@@ -110,5 +117,63 @@ export async function LineOaView({ context }: { context: OwnerContext }) {
         <p className="text-muted text-sm">{t("shared")}</p>
       </Card>
     </OwnerPage>
+  );
+}
+
+/** This month's messages (D-254): the shared OA against its free messages, the charge beyond, the own OA's count. */
+function UsageCard({
+  usage,
+  locale,
+  t,
+}: {
+  usage: Schemas["MessagingUsageDto"];
+  locale: Locale;
+  t: Awaited<ReturnType<typeof getTranslations<"owner.settings.lineOa">>>;
+}) {
+  const { shared, own } = usage;
+  const tone =
+    shared.usedPercent === null
+      ? "primary"
+      : shared.usedPercent >= 100
+        ? "danger"
+        : shared.usedPercent >= 80
+          ? "warning"
+          : "primary";
+  return (
+    <Card className="flex flex-col gap-4" data-testid="line-oa-usage">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="font-display text-lg font-semibold">{t("usage.title")}</h2>
+        <span className="text-muted text-sm">{t("usage.repliesFree")}</span>
+      </div>
+      <div className="flex flex-col gap-2">
+        <span className="text-sm font-medium">{t("usage.shared")}</span>
+        {shared.allowance === null ? (
+          <p data-testid="line-oa-usage-shared">{t("usage.notCharged", { counted: shared.counted })}</p>
+        ) : (
+          <>
+            <Progress
+              value={shared.counted}
+              max={shared.allowance}
+              tone={tone}
+              label={t("usage.shared")}
+              valueText={t("usage.counted", { counted: shared.counted, allowance: shared.allowance })}
+            />
+            <p className="text-muted text-sm" data-testid="line-oa-usage-shared">
+              {shared.chargeable > 0 && shared.estimatedCharge !== null
+                ? t("usage.beyond", {
+                    count: shared.chargeable,
+                    amount: formatTHB(shared.estimatedCharge, locale),
+                    vat: formatTHB(shared.estimatedVat ?? "0", locale),
+                  })
+                : t("usage.left", { left: shared.left ?? 0 })}
+            </p>
+          </>
+        )}
+      </div>
+      {own.counted > 0 ? <p className="text-sm">{t("usage.own", { count: own.counted })}</p> : null}
+      {usage.quotaFallbacks > 0 ? (
+        <Callout tone="warning">{t("usage.fallbacks", { count: usage.quotaFallbacks })}</Callout>
+      ) : null}
+    </Card>
   );
 }

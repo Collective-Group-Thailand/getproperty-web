@@ -223,6 +223,8 @@ export interface PlatformWorld {
   members: Record<string, Schemas["MemberDto"][]>;
   health: Record<string, Omit<Schemas["TenantHealthDto"], "subscriptionState" | "status" | "planKey" | "tenantId">>;
   plans: Schemas["PricePlanDto"][];
+  /** The shared LINE OA's message rates (D-254): one published at start. */
+  messagingRates: Schemas["MessagingRateDto"][];
   subscriptions: Schemas["SubscriptionDto"][];
   subscriptionEvents: Record<string, Schemas["SubscriptionEventDto"][]>;
   invoices: Schemas["PlatformInvoiceDto"][];
@@ -751,6 +753,22 @@ export function initialPlatformWorld(): PlatformWorld {
       },
     },
     plans: pricePlans(),
+    messagingRates: [
+      {
+        id: "3b241101-e2bb-4255-8caf-4136c566a7a1",
+        effectiveFrom: "2026-10-01",
+        freePerTenant: 500,
+        freePerUnit: 10,
+        pricePerMessage: "0.1000",
+        vatPercent: "7.00",
+        notes: null,
+        state: "published",
+        enteredBy: "3b241101-e2bb-4255-8caf-4136c566a9b3",
+        enteredAt: "2026-09-20T10:00:00+07:00",
+        publishedBy: "3b241101-e2bb-4255-8caf-4136c566a9b4",
+        publishedAt: "2026-09-21T10:00:00+07:00",
+      },
+    ],
     subscriptions,
     subscriptionEvents: {
       [subscriptions[0]!.id]: [
