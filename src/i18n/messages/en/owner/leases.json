@@ -333,5 +333,58 @@
     "deposit": "Deposit the API applies",
     "advance": "Advance rent the API applies",
     "endDate": "Lease ends"
+  },
+  "notices": {
+    "title": "Notices to the tenant",
+    "description": "Letters sent to the tenant in LINE, with a PDF in your name",
+    "empty": "No notice sent yet",
+    "open": "Open",
+    "send": "Send a notice",
+    "sendTitle": "Send a notice to the tenant",
+    "sendBody": "We number it, make it a PDF in your name and send it to the tenant in LINE right away.",
+    "sendSubmit": "Send notice",
+    "sent": "Notice sent",
+    "kind": "Type of notice",
+    "kinds": {
+      "rent_increase": "Rent change",
+      "renewal_offer": "Renewal offer",
+      "non_renewal": "Non-renewal",
+      "termination": "Termination",
+      "late_payment": "Overdue rent"
+    },
+    "hints": {
+      "rent_increase": "A new rent can only apply after the current lease ends, with the required notice.",
+      "renewal_offer": "Offer the rent and term of the next lease, starting the day after this one ends; the tenant can answer in the app.",
+      "non_renewal": "The lease ends as agreed, and the notice is recorded on the lease too.",
+      "termination": "Only for a legal ground, with the required notice; a breach needs evidence.",
+      "late_payment": "The overdue invoices of this lease are listed for you. This is not a termination."
+    },
+    "newRent": "Monthly rent (THB)",
+    "currentRent": "Current rent {amount}",
+    "months": "New term (months)",
+    "rentFrom": "New rent from",
+    "rentFromHint": "After {date}, when the current lease ends",
+    "endsOn": "Lease ends on",
+    "reason": "Ground",
+    "reasons": {
+      "lessee_breach": "Breach not remedied in time",
+      "disturbance": "Endangers the safety or peace of others",
+      "unlawful_use": "Unlawful use of the premises",
+      "mutual_agreement": "Both parties agree to end"
+    },
+    "evidence": "Attach evidence",
+    "evidenceHint": "For example an earlier warning letter or photos; not needed for a mutual agreement",
+    "language": "Letter language",
+    "message": "Additional note",
+    "messageHint": "Printed in the letter under \"Note from the Lessor\"",
+    "summary": {
+      "rent": "Rent {amount}",
+      "due": "Overdue {amount}",
+      "effective": "From {date}",
+      "by": {
+        "answer": "Answer by {date}",
+        "pay": "Pay by {date}"
+      }
+    }
   }
 }
