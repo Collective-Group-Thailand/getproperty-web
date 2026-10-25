@@ -24,7 +24,7 @@ function operatorMe(surface: "owner" | "staff") {
       currentTenant: current ? { ...current.profile, role: context.role!, buildingIds: null } : null,
       roles: context.role ? [context.role] : [],
       permissions: context.role ? tenantPermissions(context.role) : [],
-      menu: context.role ? menuFor(surface, context.role) : [],
+      menu: context.role ? menuFor(surface, context.role, current?.profile.type) : [],
       featureFlags: { "channel.web_push": true, "module.service_requests": false },
       subscription: current ? current.subscription : null,
       scopes: persona.memberships.map((m) => `tenant:${TENANTS[m.tenant].profile.id}`),

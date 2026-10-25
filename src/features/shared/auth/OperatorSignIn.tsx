@@ -81,7 +81,7 @@ export function OperatorSignIn({
   );
 }
 
-function ProblemCallout({ problem }: { problem: ActionProblem | null }) {
+export function ProblemCallout({ problem }: { problem: ActionProblem | null }) {
   const t = useTranslations("auth");
   const common = useTranslations("common");
   if (!problem) return null;
@@ -105,7 +105,7 @@ interface Challenge {
   resendAvailableAt: number;
 }
 
-function useSecondsUntil(at: number | undefined): number {
+export function useSecondsUntil(at: number | undefined): number {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (!at) return;

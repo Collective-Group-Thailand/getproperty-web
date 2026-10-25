@@ -59,6 +59,8 @@ export async function OwnerShell({
   const focus = jar.get(BUILDING_COOKIE)?.value;
   const readOnly = me.subscription?.readOnly ?? false;
   const subscription = items.find((item) => item.key === "subscription");
+  // A landlord's "buildings" are its houses and the condo stubs it shares (B7.1): the portfolio is the switch.
+  const landlord = me.currentTenant.type === "landlord";
 
   return (
     <ReadOnlyProvider initial={readOnly}>
@@ -70,8 +72,8 @@ export async function OwnerShell({
           roleLabel={t(`glossary.tenantRole.${me.currentTenant.role}`)}
           groups={groups}
           bottomNav={bottomNav}
-          buildings={list}
-          currentBuildingId={list.some((building) => building.id === focus) ? focus! : null}
+          buildings={landlord ? [] : list}
+          currentBuildingId={!landlord && list.some((building) => building.id === focus) ? focus! : null}
           envBadge={serverEnv().NEXT_PUBLIC_ENV_BADGE}
           localePrefix={locale === "th" ? "" : `/${locale}`}
           loginHref={prefix("/login")}

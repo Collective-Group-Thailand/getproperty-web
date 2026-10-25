@@ -13,3 +13,6 @@ export const isOptionalOtpCode: Rule = (value) => value.trim() === "" || /^\d{6}
 export const isEmail: Rule = (value) =>
   (value.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) || "emailInvalid";
 export const isPassword: Rule = (value) => (value.length >= 1 && value.length <= 1024) || "passwordRequired";
+/** A landlord's name as residents will see it on documents (the API takes 1–200 characters). */
+export const isDisplayName: Rule = (value) =>
+  (value.trim().length >= 1 && value.trim().length <= 200) || "nameRequired";

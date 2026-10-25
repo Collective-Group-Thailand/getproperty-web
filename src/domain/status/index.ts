@@ -53,6 +53,7 @@ export { PARCEL_STATUS, PARCEL_VALUES, type ParcelStatus } from "./parcel";
 export { ETAX_STATUS, ETAX_VALUES, type EtaxStatus } from "./etax";
 export { TM30_STATUS, TM30_VALUES, TM30_OPEN, type Tm30Status } from "./tm30";
 export { LINK_REQUEST_STATUS, LINK_REQUEST_VALUES, type PartyLinkRequestState } from "./linkRequest";
+export { PORTFOLIO_UNIT_STATUS, type PortfolioUnitState } from "./portfolioUnit";
 
 import { COMMAND_STATUS } from "./command";
 import { DEPOSIT_STATUS } from "./deposit";
@@ -102,11 +103,13 @@ import { PARCEL_STATUS } from "./parcel";
 import { ETAX_STATUS } from "./etax";
 import { TM30_STATUS } from "./tm30";
 import { LINK_REQUEST_STATUS } from "./linkRequest";
+import { PORTFOLIO_UNIT_STATUS } from "./portfolioUnit";
 
 /** Every status map by its domain key (the `status.<domain>` namespace of its labels). */
 export const STATUS_MAPS = {
   invoice: INVOICE_STATUS,
   lease: LEASE_STATUS,
+  portfolioUnit: PORTFOLIO_UNIT_STATUS,
   payment: PAYMENT_STATUS,
   deposit: DEPOSIT_STATUS,
   reading: READING_STATUS,

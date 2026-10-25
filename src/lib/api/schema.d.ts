@@ -66,6 +66,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/buildings/{buildingId}/actions/claim-stub": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Hand a condo stub over to its juristic person
+         * @description A condo whose landlords added units before its juristic person joined lives in a stub building (status `external`, D-251). When the juristic tenant signs up, the platform hands the stub over: owner = the condo juristic tenant, operator = itself or its PM company, status `active`, an operator period `juristic_formed` opens. The landlords keep their units, leases and invoices — nothing is copied or moved (D-280). Audited and evented (`building.operator_changed`).
+         *
+         *     Implements: D-251, D-280.
+         */
+        post: operations["admin.buildings.claimStub"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/compliance/rules": {
         parameters: {
             query?: never;
@@ -7194,6 +7216,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/owner/portfolio": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My portfolio
+         * @description Every unit of the landlord across projects with its state (vacant / leased / notice given), lease end, this month’s invoice and open repairs, and the month’s totals (expected, collected, overdue) as decimal strings (D-251).
+         *
+         *     Implements: D-251.
+         */
+        get: operations["owner.portfolio.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/portfolio/units": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Add a unit to my portfolio
+         * @description A house, townhouse or room becomes a one-unit property + building of the landlord; a condo unit joins the shared stub building of its project (found by project name + postcode, created when new) — two landlords in one condo share the stub and each sees only its own units. The landlord is recorded as the owner (`self_declared`, verified later, D-252). `portfolio.unit_claimed` when another owner already registered that unit number in the project (D-251).
+         *
+         *     Implements: D-251.
+         */
+        post: operations["owner.portfolio.addUnit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/owner/properties": {
         parameters: {
             query?: never;
@@ -9056,6 +9122,50 @@ export interface paths {
         get: operations["public.plans.list"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/public/signup/landlord": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign up as a landlord
+         * @description Verifies the identity (phone OTP, LINE, Google or Apple through Firebase — D-255) and creates a tenant of type `landlord` (active, free per D-250) with its data key, the person as its legal party and an Owner membership; answers operator tokens. Idempotent per identity: the same identity again answers `200` with the landlord tenant it already owns. Identities are never merged by e-mail: a Google / Apple sign-up whose e-mail already has an account answers `auth.identity_email_in_use`, one without a verified e-mail `auth.identity_contact_required`. Company landlords add legal form, tax id and VAT later in settings.
+         *
+         *     Implements: D-250, D-251, D-255.
+         */
+        post: operations["public.landlordSignup.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/public/signup/landlord/otp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send a sign-up code by SMS
+         * @description A 6-digit code for a landlord signing up by phone (any phone: no account or invitation is needed, D-251). Same limits as sign-in codes: one per OTP_RESEND_SECONDS, at most OTP_MAX_PER_HOUR per hour, expiry OTP_TTL_SECONDS.
+         *
+         *     Implements: D-251, D-255.
+         */
+        post: operations["public.landlordSignup.otp"];
         delete?: never;
         options?: never;
         head?: never;
@@ -13934,9 +14044,10 @@ export interface components {
             name: string;
             /**
              * Format: uuid
+             * @description Null for an external stub (a condo not on getproperty yet, D-251).
              * @example 0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11
              */
-            operatorTenantId: string;
+            operatorTenantId: string | null;
             /**
              * Format: uuid
              * @example 0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11
@@ -14015,7 +14126,7 @@ export interface components {
          */
         BuildingTenantRole: "owner" | "operator";
         /** @enum {string} */
-        BuildingType: "apartment" | "condo" | "house_cluster" | "mixed_use";
+        BuildingType: "apartment" | "condo" | "house_cluster" | "mixed_use" | "house";
         BuildingUpdateDto: {
             /** @example 6 */
             floorsCount?: number;
@@ -16390,6 +16501,8 @@ export interface components {
             /** @example 3 */
             sortOrder?: number;
         };
+        /** @enum {string} */
+        Furnishing: "unfurnished" | "partly_furnished" | "fully_furnished";
         GatewayConfigVersionDto: {
             /**
              * Format: date-time
@@ -18065,6 +18178,44 @@ export interface components {
         };
         /** @enum {string} */
         KpiWindow: "30d" | "90d";
+        LandlordSignupDto: {
+            /**
+             * Format: uuid
+             * @description `phone_otp`: the challenge of `POST …/signup/landlord/otp`.
+             */
+            challengeId?: string;
+            /**
+             * @description `phone_otp`: the 6-digit SMS code.
+             * @example 123456
+             */
+            code?: string;
+            /**
+             * @description The landlord’s name as residents will see it on documents.
+             * @example สมชาย ใจดี
+             */
+            displayName: string;
+            /**
+             * @description `line`: the LINE id token; `firebase_google` / `firebase_apple`: the Firebase ID token.
+             * @example eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJVMDAwMCJ9.c2lnbmF0dXJl
+             */
+            idToken?: string;
+            /** @example th */
+            language?: components["schemas"]["Language"];
+            /**
+             * @description How the landlord proves who they are (D-255): phone OTP, LINE Login / LIFF, Google or Apple (Firebase).
+             * @example line
+             */
+            provider: components["schemas"]["SignupProvider"];
+        };
+        LandlordSignupResultDto: {
+            /**
+             * @description False when this identity already owned a landlord tenant (idempotent).
+             * @example true
+             */
+            created: boolean;
+            tenant: components["schemas"]["SignupTenantDto"];
+            tokens: components["schemas"]["TokenPairDto"];
+        };
         /**
          * @description Language of the text shown.
          * @enum {string}
@@ -20420,7 +20571,7 @@ export interface components {
          * @description Menu entitlements of the owner console (keys of the web routes).
          * @enum {string}
          */
-        OwnerMenuKey: "dashboard" | "buildings" | "units" | "parties" | "leases" | "deposits" | "readings" | "devices" | "rate_plans" | "invoices" | "payments" | "reports" | "utility_loss" | "service_requests" | "access" | "parcels" | "announcements" | "members" | "bank_accounts" | "settings" | "notifications" | "privacy" | "access_grants" | "support_access" | "audit_log" | "subscription";
+        OwnerMenuKey: "portfolio" | "dashboard" | "buildings" | "units" | "parties" | "leases" | "deposits" | "readings" | "devices" | "rate_plans" | "invoices" | "payments" | "reports" | "utility_loss" | "service_requests" | "access" | "parcels" | "announcements" | "members" | "bank_accounts" | "settings" | "notifications" | "privacy" | "access_grants" | "support_access" | "audit_log" | "subscription";
         OwnerStorageDto: {
             /**
              * @description Free allowance + packs (bytes).
@@ -21572,6 +21723,168 @@ export interface components {
             /** @example true */
             totpEnabled: boolean;
         };
+        PortfolioAddressDto: {
+            /** @example พญาไท */
+            district?: string;
+            /** @example 99/12 ซอยอารีย์ 4 ถนนพหลโยธิน */
+            line1: string;
+            /** @example 10400 */
+            postcode: string;
+            /** @example กรุงเทพมหานคร */
+            province: string;
+            /** @example สามเสนใน */
+            subdistrict?: string;
+        };
+        PortfolioBuildingRefDto: {
+            /**
+             * @description A stub of a condo whose juristic person is not on getproperty yet.
+             * @example true
+             */
+            external: boolean;
+            /** Format: uuid */
+            id: string;
+            /** @example ไอดีโอ โมบิ อารีย์ */
+            name: string;
+        };
+        PortfolioDto: {
+            totals: components["schemas"]["PortfolioTotalsDto"];
+            units: components["schemas"]["PortfolioUnitDto"][];
+        };
+        PortfolioInvoiceRefDto: {
+            /**
+             * @description Still to pay. Unit: THB, decimal string (D-046).
+             * @example 15000.00
+             */
+            balance: string;
+            /** Format: uuid */
+            id: string;
+            /** @example issued */
+            status: string;
+            /**
+             * @description Invoice total. Unit: THB, decimal string (D-046).
+             * @example 15000.00
+             */
+            total: string;
+        };
+        PortfolioTotalsDto: {
+            /**
+             * @description Paid on this month’s invoices. Unit: THB, decimal string (D-046).
+             * @example 15000.00
+             */
+            collected: string;
+            /**
+             * @description Invoiced this month (issued, not void). Unit: THB, decimal string (D-046).
+             * @example 30000.00
+             */
+            expected: string;
+            /** @example 2026-10 */
+            month: string;
+            /**
+             * @description Open balance of overdue invoices, any month. Unit: THB, decimal string (D-046).
+             * @example 0.00
+             */
+            overdue: string;
+        };
+        PortfolioUnitCreatedDto: {
+            /** Format: uuid */
+            buildingId: string;
+            /** Format: uuid */
+            propertyId: string;
+            /**
+             * @description The unit sits in the stub building of a condo not on getproperty yet.
+             * @example true
+             */
+            stub: boolean;
+            /** Format: uuid */
+            unitId: string;
+        };
+        PortfolioUnitCreateDto: {
+            address: components["schemas"]["PortfolioAddressDto"];
+            /**
+             * @description Area in m². Decimal string.
+             * @example 28.50
+             */
+            areaSqm?: string;
+            /** @example 1 */
+            bathrooms?: number;
+            /** @example 1 */
+            bedrooms?: number;
+            /**
+             * @description Default monthly rent for new leases and listings. Unit: THB, decimal string (D-046).
+             * @example 15000.00
+             */
+            defaultRent?: string;
+            /**
+             * @description Floor as written by the owner (e.g. 12, G, M).
+             * @example 12
+             */
+            floorLabel?: string;
+            /** @example fully_furnished */
+            furnishing?: components["schemas"]["Furnishing"];
+            /** @example condo_unit */
+            kind: components["schemas"]["PortfolioUnitKind"];
+            /** @example 13.7799 */
+            lat?: number;
+            /** @example 100.5446 */
+            lng?: number;
+            /**
+             * @description Condo project (required for a condo unit: units of one project share one building) or a house name.
+             * @example ไอดีโอ โมบิ อารีย์
+             */
+            projectName?: string;
+            /**
+             * @description Unit number (required for a condo unit).
+             * @example 12/345
+             */
+            unitNo?: string;
+        };
+        PortfolioUnitDto: {
+            /**
+             * @example {
+             *       "province": "กรุงเทพมหานคร"
+             *     }
+             */
+            address: {
+                [key: string]: unknown;
+            } | null;
+            /** @example 28.50 */
+            areaSqm: string | null;
+            /** @example 1 */
+            bathrooms: number | null;
+            /** @example 1 */
+            bedrooms: number | null;
+            building: components["schemas"]["PortfolioBuildingRefDto"];
+            /**
+             * @description Default monthly rent. Unit: THB, decimal string (D-046).
+             * @example 15000.00
+             */
+            defaultRent: string | null;
+            /** @example 12 */
+            floorLabel: string | null;
+            furnishing: components["schemas"]["Furnishing"] | null;
+            /** @description This month’s invoice of the unit. */
+            invoice: components["schemas"]["PortfolioInvoiceRefDto"] | null;
+            kind: components["schemas"]["PortfolioUnitKind"] | null;
+            /**
+             * Format: date
+             * @example 2027-05-31
+             */
+            leaseEndDate: string | null;
+            /** Format: uuid */
+            leaseId: string | null;
+            /** @example 0 */
+            openServiceRequests: number;
+            /** @example leased */
+            state: components["schemas"]["PortfolioUnitState"];
+            /** Format: uuid */
+            unitId: string;
+            /** @example 12/345 */
+            unitNo: string;
+        };
+        /** @enum {string} */
+        PortfolioUnitKind: "condo_unit" | "house" | "townhouse" | "room";
+        /** @enum {string} */
+        PortfolioUnitState: "vacant" | "leased" | "notice_given";
         PricePlanDto: {
             /**
              * Format: uuid
@@ -25058,6 +25371,21 @@ export interface components {
         SignatureMethod: "draw_liff" | "draw_web" | "scan_upload";
         /** @enum {string} */
         SignerRole: "lessee" | "co_tenant" | "lessor" | "witness";
+        /**
+         * @description How the landlord proves who they are (D-255): phone OTP, LINE Login / LIFF, Google or Apple (Firebase).
+         * @enum {string}
+         */
+        SignupProvider: "phone_otp" | "line" | "firebase_google" | "firebase_apple";
+        SignupTenantDto: {
+            /** @example สมชาย ใจดี */
+            displayName: string;
+            /** Format: uuid */
+            id: string;
+            /** @example landlord-0a1b2c3d4e */
+            slug: string;
+            /** @example landlord */
+            type: string;
+        };
         /** @enum {string} */
         SiteSurveyAction: "schedule" | "complete" | "cancel";
         SiteSurveyActionDto: {
@@ -25612,6 +25940,20 @@ export interface components {
         };
         /** @enum {string} */
         StorageLevel: "ok" | "warning" | "full" | "over";
+        StubClaimDto: {
+            /**
+             * Format: uuid
+             * @description The operator: the juristic tenant itself (default) or its PM company.
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            operatorTenantId?: string;
+            /**
+             * Format: uuid
+             * @description The condo juristic tenant that owns the building.
+             * @example 0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11
+             */
+            ownerTenantId: string;
+        };
         SubjectDto: {
             /** @example operator */
             audience: components["schemas"]["TokenAudience"];
@@ -28330,6 +28672,130 @@ export interface operations {
                 };
             };
             /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.buildings.claimStub": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                buildingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StubClaimDto"];
+            };
+        };
+        responses: {
+            /** @description Handed over */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "operatorTenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11",
+                     *       "ownerTenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["OperatorChangedDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.conflict`, `idempotency.in_progress`, `portfolio.not_a_stub` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `portfolio.claimant_invalid`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -75184,6 +75650,240 @@ export interface operations {
             };
         };
     };
+    "owner.portfolio.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Portfolio */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "totals": {
+                     *         "collected": "0.00",
+                     *         "expected": "15000.00",
+                     *         "month": "2026-10",
+                     *         "overdue": "0.00"
+                     *       },
+                     *       "units": [
+                     *         {
+                     *           "address": {
+                     *             "postcode": "10400",
+                     *             "province": "กรุงเทพมหานคร"
+                     *           },
+                     *           "areaSqm": "28.50",
+                     *           "bathrooms": 1,
+                     *           "bedrooms": 1,
+                     *           "building": {
+                     *             "external": true,
+                     *             "id": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *             "name": "ไอดีโอ โมบิ อารีย์"
+                     *           },
+                     *           "defaultRent": "15000.00",
+                     *           "floorLabel": "12",
+                     *           "furnishing": "fully_furnished",
+                     *           "invoice": {
+                     *             "balance": "15000.00",
+                     *             "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *             "status": "issued",
+                     *             "total": "15000.00"
+                     *           },
+                     *           "kind": "condo_unit",
+                     *           "leaseEndDate": "2027-05-31",
+                     *           "leaseId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "openServiceRequests": 0,
+                     *           "state": "leased",
+                     *           "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "unitNo": "12/345"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PortfolioDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.portfolio.addUnit": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PortfolioUnitCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Unit added */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "propertyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "stub": true,
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PortfolioUnitCreatedDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.conflict`, `portfolio.unit_claimed` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "owner.properties.list": {
         parameters: {
             query?: never;
@@ -88301,6 +89001,284 @@ export interface operations {
             };
             /** @description Problem: `internal.unexpected` */
             500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "public.landlordSignup.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LandlordSignupDto"];
+            };
+        };
+        responses: {
+            /** @description Already signed up: the existing landlord tenant */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "created": false,
+                     *       "tenant": {
+                     *         "displayName": "สมชาย ใจดี",
+                     *         "id": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11",
+                     *         "slug": "landlord-0a1b2c3d4e",
+                     *         "type": "landlord"
+                     *       },
+                     *       "tokens": {
+                     *         "accessToken": "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCIsImtpZCI6ImdwLWRldi0xIn0.eyJzdWIiOiIuLi4ifQ.c2ln",
+                     *         "accessTokenExpiresAt": "2026-11-01T00:30:00+07:00",
+                     *         "refreshToken": "q2r8XoT1Vb9mJ0yPz4LkWnE6aGs3dHf5Q2r8XoT1Vb9",
+                     *         "refreshTokenExpiresAt": "2026-12-01T00:15:00+07:00",
+                     *         "subject": {
+                     *           "audience": "operator",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "permissions": [
+                     *             "tenant.read",
+                     *             "tenant.update"
+                     *           ],
+                     *           "roles": [
+                     *             "owner"
+                     *           ],
+                     *           "scopes": [
+                     *             "tenant:0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11"
+                     *           ],
+                     *           "type": "user"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["LandlordSignupResultDto"];
+                };
+            };
+            /** @description Landlord tenant created */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "created": true,
+                     *       "tenant": {
+                     *         "displayName": "สมชาย ใจดี",
+                     *         "id": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11",
+                     *         "slug": "landlord-0a1b2c3d4e",
+                     *         "type": "landlord"
+                     *       },
+                     *       "tokens": {
+                     *         "accessToken": "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCIsImtpZCI6ImdwLWRldi0xIn0.eyJzdWIiOiIuLi4ifQ.c2ln",
+                     *         "accessTokenExpiresAt": "2026-11-01T00:30:00+07:00",
+                     *         "refreshToken": "q2r8XoT1Vb9mJ0yPz4LkWnE6aGs3dHf5Q2r8XoT1Vb9",
+                     *         "refreshTokenExpiresAt": "2026-12-01T00:15:00+07:00",
+                     *         "subject": {
+                     *           "audience": "operator",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "permissions": [
+                     *             "tenant.read",
+                     *             "tenant.update"
+                     *           ],
+                     *           "roles": [
+                     *             "owner"
+                     *           ],
+                     *           "scopes": [
+                     *             "tenant:0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11"
+                     *           ],
+                     *           "type": "user"
+                     *         }
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["LandlordSignupResultDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.identity_token_invalid`, `auth.line_token_invalid`, `auth.otp_expired`, `auth.otp_invalid` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.account_disabled` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.identity_email_in_use` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.identity_contact_required`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.otp_attempts_exceeded`, `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `provider.unavailable` */
+            503: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "public.landlordSignup.otp": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OtpRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Code sent */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "challengeId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "expiresAt": "2026-11-01T00:20:00+07:00",
+                     *       "resendAvailableAt": "2026-11-01T00:16:00+07:00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["OtpChallengeDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.otp_rate_limited`, `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `provider.unavailable` */
+            503: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;

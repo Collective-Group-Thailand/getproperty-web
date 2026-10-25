@@ -509,7 +509,8 @@
         "anywhere": "Units in different projects are fine",
         "foreign": "Thai and foreign tenants"
       },
-      "kicker": "For house and condo owners · free"
+      "kicker": "For house and condo owners · free",
+      "signUp": "Sign up free"
     },
     "preview": {
       "label": "Sample landlord screen",
@@ -677,7 +678,8 @@
     "cta": {
       "title": "Collect next month's rent with getproperty",
       "body": "Free; add your first unit in a few minutes",
-      "primary": "Start free"
+      "primary": "Start free",
+      "ask": "Questions? Message us on LINE"
     }
   },
   "audience": {
