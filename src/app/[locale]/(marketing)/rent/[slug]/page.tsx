@@ -28,10 +28,10 @@ const url = (slug: string, locale: Locale) => `${marketingOrigin()}${getPathname
 export async function generateMetadata({ params }: Props) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
-  const listing = await publicListing(slug);
+  const listing = await publicListing(slug, locale);
   if (!listing) return { title: "getproperty", robots: { index: false } };
   const description = listing.description.slice(0, 160);
-  const image = listing.cover.url;
+  const image = listing.cover?.url ?? listing.photos[0]?.url;
   return {
     title: { absolute: `${listing.title} · getproperty` },
     description,
@@ -81,7 +81,7 @@ function listingSchema(listing: PublicListingDetail, href: string): JsonLd {
 export default async function ListingPage({ params }: Props) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
-  const listing = await publicListing(slug);
+  const listing = await publicListing(slug, locale);
   if (!listing) notFound();
   const t = await getTranslations("owner.marketing.listings");
   const nav = await getTranslations("owner.marketing.nav");
@@ -89,25 +89,29 @@ export default async function ListingPage({ params }: Props) {
   const contact = lineOaMessageHref(t("detail.lineMessage", { title: listing.title, url: href }));
   const contactHref = contact ?? ownerHref("/login", locale);
   const similar =
-    (await publicListings({ kind: listing.unitKind }))?.data.filter((l) => l.slug !== slug).slice(0, 3) ?? [];
-  const photos = listing.photos.length > 0 ? listing.photos : [listing.cover];
+    (await publicListings({ kind: listing.unitKind ?? undefined }, locale))?.data
+      .filter((l) => l.slug !== slug)
+      .slice(0, 3) ?? [];
+  const photos = listing.photos.length > 0 ? listing.photos : listing.cover ? [listing.cover] : [];
   const map = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    listing.geo ? `${listing.geo.lat},${listing.geo.lng}` : listing.address,
+    listing.geo ? `${listing.geo.lat},${listing.geo.lng}` : (listing.address ?? listing.title),
   )}`;
   const yesNo = (value: boolean) => (value ? t("detail.yes") : t("detail.no"));
-  const facts: [string, string][] = [
-    [t("detail.size"), t("card.sqm", { size: formatDecimal(listing.sizeSqm, locale, 1) })],
-    [t("search.bedrooms"), t("card.bedrooms", { count: listing.bedrooms })],
-    [t("detail.bathrooms"), String(listing.bathrooms)],
-    ...(listing.floor ? ([[t("detail.floor"), listing.floor]] as [string, string][]) : []),
-    [t("detail.furnishing"), t(`detail.furnishings.${listing.furnishing}`)],
+  const facts = (
     [
-      t("detail.available"),
-      listing.availableFrom ? formatDate(listing.availableFrom, locale) : t("detail.availableNow"),
-    ],
-    [t("detail.petsLabel"), yesNo(listing.petsAllowed)],
-    [t("detail.smokingLabel"), yesNo(listing.smokingAllowed)],
-  ];
+      listing.sizeSqm ? [t("detail.size"), t("card.sqm", { size: formatDecimal(listing.sizeSqm, locale, 1) })] : null,
+      listing.bedrooms !== null ? [t("search.bedrooms"), t("card.bedrooms", { count: listing.bedrooms })] : null,
+      listing.bathrooms !== null ? [t("detail.bathrooms"), String(listing.bathrooms)] : null,
+      listing.floor ? [t("detail.floor"), listing.floor] : null,
+      listing.furnishing ? [t("detail.furnishing"), t(`detail.furnishings.${listing.furnishing}`)] : null,
+      [
+        t("detail.available"),
+        listing.availableFrom ? formatDate(listing.availableFrom, locale) : t("detail.availableNow"),
+      ],
+      [t("detail.petsLabel"), yesNo(listing.petsAllowed)],
+      [t("detail.smokingLabel"), yesNo(listing.smokingAllowed)],
+    ] as ([string, string] | null)[]
+  ).filter((fact): fact is [string, string] => fact !== null);
 
   return (
     <>
@@ -158,7 +162,12 @@ export default async function ListingPage({ params }: Props) {
         <div className="flex flex-col gap-10 lg:col-span-8">
           <header className="flex flex-col gap-3">
             <p className="text-muted text-sm">
-              {t(`search.kinds.${listing.unitKind}`)} · {listing.district}, {listing.province}
+              {[
+                listing.unitKind ? t(`search.kinds.${listing.unitKind}`) : null,
+                [listing.district, listing.province].filter(Boolean).join(", "),
+              ]
+                .filter(Boolean)
+                .join(" · ")}
             </p>
             <h1 className="text-3xl">{listing.title}</h1>
             {listing.nearestTransit ? (
@@ -166,7 +175,7 @@ export default async function ListingPage({ params }: Props) {
                 {t("detail.transit", {
                   distance: formatDecimal(String(listing.nearestTransit.distanceM), locale, 0),
                   name: listing.nearestTransit.name,
-                  line: listing.nearestTransit.line,
+                  line: listing.nearestTransit.line ?? "",
                 })}
               </p>
             ) : null}

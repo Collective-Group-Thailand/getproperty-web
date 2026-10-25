@@ -49,7 +49,7 @@ export default async function AreaPage({ params }: Params) {
   if (!area) notFound();
   const t = await getTranslations("owner.marketing.listings");
   const nav = await getTranslations("owner.marketing.nav");
-  const page = await publicListings({ area: slug });
+  const page = await publicListings({ area: slug }, locale);
   const origin = marketingOrigin();
   const href = (path: string) => getPathname({ href: path, locale });
   const name = areaName(area, locale);

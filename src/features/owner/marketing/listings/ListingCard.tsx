@@ -15,12 +15,16 @@ export async function ListingCard({ listing, locale }: { listing: PublicListingS
   const href = getPathname({ href: `/rent/${listing.slug}`, locale });
   return (
     <article className="group relative flex flex-col gap-3">
-      <ListingImage
-        photo={listing.cover}
-        alt={listing.cover.caption ?? listing.title}
-        className="rounded-photo aspect-[4/3]"
-        sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-      />
+      {listing.cover ? (
+        <ListingImage
+          photo={listing.cover}
+          alt={listing.cover.caption ?? listing.title}
+          className="rounded-photo aspect-[4/3]"
+          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+        />
+      ) : (
+        <div className="rounded-photo bg-bg-subtle aspect-[4/3]" aria-hidden="true" />
+      )}
       <div className="flex items-start justify-between gap-3">
         <h3 className="text-base leading-snug font-semibold">
           <a href={href} className="after:absolute after:inset-0">
@@ -33,15 +37,17 @@ export async function ListingCard({ listing, locale }: { listing: PublicListingS
       </div>
       <p className="text-muted -mt-2 text-sm">
         {[
-          t("card.bedrooms", { count: listing.bedrooms }),
-          t("card.sqm", { size: formatDecimal(listing.sizeSqm, locale, 0) }),
+          listing.bedrooms !== null ? t("card.bedrooms", { count: listing.bedrooms }) : null,
+          listing.sizeSqm ? t("card.sqm", { size: formatDecimal(listing.sizeSqm, locale, 0) }) : null,
           listing.nearestTransit
             ? t("card.transit", {
                 distance: formatDecimal(String(listing.nearestTransit.distanceM), locale, 0),
                 name: listing.nearestTransit.name,
               })
             : listing.district,
-        ].join(" · ")}
+        ]
+          .filter(Boolean)
+          .join(" · ")}
       </p>
       <p className="flex items-baseline gap-1">
         <span className="text-lg font-semibold tabular-nums">{formatTHB(listing.rent, locale, { decimals: 0 })}</span>

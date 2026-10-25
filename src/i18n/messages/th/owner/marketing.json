@@ -808,7 +808,7 @@
       "floor": "ชั้น",
       "furnishing": "เฟอร์นิเจอร์",
       "furnishings": {
-        "furnished": "ครบ",
+        "fully_furnished": "ครบ",
         "partly_furnished": "บางส่วน",
         "unfurnished": "ไม่มี"
       },

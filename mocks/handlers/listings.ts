@@ -41,7 +41,7 @@ const base = (
   sizeSqm: "30.00",
   bedrooms: 1,
   bathrooms: 1,
-  furnishing: "furnished",
+  furnishing: "fully_furnished",
   petsAllowed: false,
   smokingAllowed: false,
   availableFrom: "2026-11-01",
@@ -283,11 +283,14 @@ export const listingHandlers: HttpHandler[] = [
     let rows = LISTINGS.filter(
       (l) =>
         (!p.get("area") || (area?.match(l) ?? false)) &&
-        (!q || [l.title, l.district, l.province, l.address, l.nearestTransit?.name ?? ""].some((v) => v.includes(q))) &&
+        (!q ||
+          [l.title, l.district, l.province, l.address, l.nearestTransit?.name ?? ""].some((v) =>
+            (v ?? "").includes(q),
+          )) &&
         (!p.get("kind") || l.unitKind === p.get("kind")) &&
         (!p.get("minRent") || Number(l.rent) >= Number(p.get("minRent"))) &&
         (!p.get("maxRent") || Number(l.rent) <= Number(p.get("maxRent"))) &&
-        (!p.get("bedrooms") || l.bedrooms >= Number(p.get("bedrooms"))) &&
+        (!p.get("bedrooms") || (l.bedrooms ?? 0) >= Number(p.get("bedrooms"))) &&
         (p.get("pets") !== "1" || l.petsAllowed),
     );
     const sort = p.get("sort");
