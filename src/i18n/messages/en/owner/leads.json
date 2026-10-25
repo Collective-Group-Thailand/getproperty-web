@@ -1,0 +1,125 @@
+{
+  "title": "Enquiries",
+  "description": "Messages and viewing requests from people interested in your listings. Reply here and it reaches them in LINE.",
+  "tabs": {
+    "awaiting": "Waiting for you",
+    "open": "In progress",
+    "closed": "Closed"
+  },
+  "upcoming": {
+    "title": "Upcoming viewings",
+    "empty": "No viewings yet",
+    "more": "{count} more",
+    "with": "with {name}"
+  },
+  "row": {
+    "awaiting": "Waiting for you",
+    "you": "You: {text}",
+    "viewing": "Viewing {date}",
+    "noMessage": "Asked for a viewing"
+  },
+  "empty": {
+    "awaiting": {
+      "title": "You have answered everyone",
+      "description": "New messages and viewing requests show up here, and you are told in LINE."
+    },
+    "open": {
+      "title": "No enquiries yet",
+      "description": "Listings with full photos, a clear price and viewing times tend to get questions sooner."
+    },
+    "closed": {
+      "title": "Nothing closed yet",
+      "description": "Enquiries you win or close move here."
+    }
+  },
+  "detail": {
+    "back": "All enquiries",
+    "about": "About {listing}",
+    "since": "First contact {date}",
+    "openListing": "View listing"
+  },
+  "prospect": {
+    "title": "About the prospect",
+    "moveIn": "Wants to move in",
+    "term": "Lease length",
+    "termValue": "{count} months",
+    "occupants": "Occupants",
+    "occupantsValue": "{count} people",
+    "nationality": "Nationality",
+    "phone": "Phone",
+    "line": "LINE",
+    "lineYes": "Your replies reach them in LINE",
+    "lineNo": "LINE not linked",
+    "notGiven": "Not given"
+  },
+  "thread": {
+    "title": "Messages",
+    "hint": "Your messages reach the prospect in LINE. Never ask for money before a viewing.",
+    "empty": "No messages yet",
+    "you": "You",
+    "prospect": "Prospect",
+    "write": "Reply",
+    "writeHint": "{count}/{max} characters",
+    "tooLong": "Longer than {max} characters",
+    "send": "Send",
+    "closed": "This enquiry is closed; no more messages."
+  },
+  "viewings": {
+    "title": "Viewings",
+    "empty": "No viewings yet. When the prospect picks one of your viewing times, it shows up here.",
+    "note": "Note to you: {note}",
+    "reason": "Reason: {reason}",
+    "rescheduled": "Moved to a new time",
+    "confirm": "Confirm",
+    "confirmTitle": "Confirm the viewing on {date}",
+    "confirmBody": "The prospect gets a confirmation in LINE, and both of you are reminded before the time.",
+    "confirmed": "Viewing confirmed",
+    "decline": "Decline",
+    "declineTitle": "Decline the viewing on {date}",
+    "declineHint": "Give a short reason or suggest another time. The prospect reads this in LINE.",
+    "declineReason": "Reason",
+    "declined": "Viewing declined",
+    "viewed": "Viewed",
+    "noShow": "No show",
+    "outcomeTitle": "How did the viewing on {date} go?",
+    "viewedBody": "The prospect came to the viewing. The enquiry becomes “Viewed”.",
+    "noShowBody": "The prospect did not come.",
+    "recorded": "Outcome saved"
+  },
+  "notes": {
+    "title": "Your notes",
+    "hint": "Only you see these, never the prospect.",
+    "save": "Save notes",
+    "saved": "Saved"
+  },
+  "state": {
+    "title": "Status",
+    "hint": "Keep track of where each prospect is.",
+    "contacted": "Contacted",
+    "viewed": "Viewed",
+    "applied": "Applied",
+    "moved": "Status updated",
+    "won": "Won",
+    "wonTitle": "Rent to {name}",
+    "wonBody": "The enquiry closes and any pending viewing is cancelled.",
+    "wonDone": "Congratulations on your new tenant",
+    "lost": "Close as lost",
+    "lostTitle": "Close {name}’s enquiry",
+    "lostHint": "The reason helps you see what to improve. The prospect never sees it.",
+    "lostReason": "Reason",
+    "lostNote": "More detail",
+    "lostDone": "Enquiry closed",
+    "closedWon": "You rented to this prospect",
+    "closedLost": "Closed: {reason}",
+    "reasons": {
+      "price": "Price outside budget",
+      "location": "Location",
+      "unit_unsuitable": "Not the right place",
+      "chose_other": "Chose another place",
+      "no_response": "Stopped replying",
+      "not_qualified": "Not a fit",
+      "unit_leased": "Unit already rented",
+      "other": "Other"
+    }
+  }
+}

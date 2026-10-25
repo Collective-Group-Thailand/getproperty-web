@@ -27,6 +27,7 @@ export const MESSAGE_FILES = {
     "etax",
     "insights",
     "invoices",
+    "leads",
     "leases",
     "listings",
     "loss",

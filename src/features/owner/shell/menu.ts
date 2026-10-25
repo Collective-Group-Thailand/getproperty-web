@@ -10,6 +10,7 @@ import { IconDashboard } from "@/ui/icons/glyphs/dashboard";
 import { IconGateway } from "@/ui/icons/glyphs/gateway";
 import { IconHistory } from "@/ui/icons/glyphs/history";
 import { IconHome } from "@/ui/icons/glyphs/home";
+import { IconInbox } from "@/ui/icons/glyphs/inbox";
 import { IconKey } from "@/ui/icons/glyphs/key";
 import { IconLease } from "@/ui/icons/glyphs/lease";
 import { IconLock } from "@/ui/icons/glyphs/lock";
@@ -30,6 +31,7 @@ import { IconWallet } from "@/ui/icons/glyphs/wallet";
 export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
   portfolio: { href: "/portfolio", icon: IconHome, group: "operations" },
   listings: { href: "/listings", icon: IconMegaphone, group: "operations" },
+  leads: { href: "/leads", icon: IconInbox, group: "operations" },
   dashboard: { href: "/dashboard", icon: IconDashboard, group: "operations" },
   buildings: { href: "/buildings", icon: IconBuilding, group: "operations" },
   units: { href: "/units", icon: IconRoom, group: "operations" },
@@ -66,6 +68,7 @@ export const OWNER_MENU_GROUPS = ["operations", "money", "settings"] as const;
  */
 export const OWNER_BOTTOM_NAV = [
   { key: "portfolio", labelKey: "portfolio" },
+  { key: "leads", labelKey: "leads" },
   { key: "dashboard", labelKey: "today" },
   { key: "units", labelKey: "units" },
   { key: "invoices", labelKey: "invoices" },

@@ -1,6 +1,7 @@
 {
   "portfolio": "My portfolio",
   "listings": "Listings",
+  "leads": "Enquiries",
   "dashboard": "This morning",
   "buildings": "Buildings",
   "units": "Units",
@@ -34,6 +35,7 @@
   },
   "bottom": {
     "portfolio": "Portfolio",
+    "leads": "Enquiries",
     "today": "Today",
     "units": "Units",
     "invoices": "Invoices",

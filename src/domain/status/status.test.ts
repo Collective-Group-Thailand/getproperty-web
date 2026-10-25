@@ -38,6 +38,8 @@ const CONTRACT_ENUM: Partial<Record<keyof typeof STATUS_MAPS, string>> = {
   billingCycle: "BillingCycleStatus",
   slip: "SlipStatus",
   settlement: "SettlementStatus",
+  lead: "ListingLeadState",
+  listingViewing: "ListingViewingState",
   platformInvoice: "PlatformInvoiceStatus",
   creditNote: "PlatformCreditNoteState",
   haas: "HaasState",
