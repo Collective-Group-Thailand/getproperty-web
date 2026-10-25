@@ -1714,6 +1714,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/storage/tenants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Storage of every tenant
+         * @description The latest daily storage snapshot of each tenant (counted bytes, files, allowance, percent, level) and totals (D-276, D-279). Tenants without a snapshot yet are not listed.
+         *
+         *     Implements: D-276, D-279.
+         */
+        get: operations["admin.storage.tenants"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/subscriptions": {
         parameters: {
             query?: never;
@@ -12603,6 +12625,54 @@ export interface components {
         };
         /** @enum {string} */
         AdminMenuKey: "tenants" | "platform_users" | "utility_tariffs" | "settings" | "feature_flags" | "devices" | "ota_releases" | "support_grants" | "subscriptions" | "notification_templates" | "outbox" | "ingest_dead_letters" | "data_subject_requests" | "integration_events" | "audit_log" | "ai_usage";
+        AdminStorageOverviewDto: {
+            data: components["schemas"]["AdminStorageTenantDto"][];
+            totals: components["schemas"]["AdminStorageTotalsDto"];
+        };
+        AdminStorageTenantDto: {
+            /**
+             * @description null = not metered.
+             * @example 5368709120
+             */
+            allowanceBytes: string | null;
+            /**
+             * Format: date
+             * @description Day of the latest snapshot.
+             * @example 2026-10-25
+             */
+            day: string;
+            /** @example หอพักตัวอย่าง */
+            displayName: string;
+            /** @example 650000000 */
+            fileBytes: string;
+            /** @example ok */
+            level: components["schemas"]["StorageLevel"] | null;
+            /** Format: uuid */
+            tenantId: string;
+            /**
+             * @description Tenant type (core.tenant_type).
+             * @example apartment
+             */
+            type: string;
+            /**
+             * @description Counted bytes (files + records), decimal string.
+             * @example 734003200
+             */
+            usedBytes: string;
+            /** @example 13 */
+            usedPercent: number | null;
+        };
+        AdminStorageTotalsDto: {
+            /**
+             * @description Tenants at or above 80 % of their allowance.
+             * @example 1
+             */
+            nearOrOver: number;
+            /** @example 12 */
+            tenants: number;
+            /** @example 8808038400 */
+            usedBytes: string;
+        };
         /** @enum {string} */
         AgingBucket: "current" | "d1_30" | "d31_60" | "d61_90" | "d90p";
         AgingDto: {
@@ -37973,6 +38043,106 @@ export interface operations {
             };
             /** @description Problem: `install_order.invalid_transition` */
             409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.storage.tenants": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Storage per tenant */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "allowanceBytes": "5368709120",
+                     *           "day": "2026-10-25",
+                     *           "displayName": "หอพักตัวอย่าง",
+                     *           "fileBytes": "650000000",
+                     *           "level": "ok",
+                     *           "tenantId": "0199f2a0-0000-7000-8000-000000000001",
+                     *           "type": "apartment",
+                     *           "usedBytes": "734003200",
+                     *           "usedPercent": 13
+                     *         }
+                     *       ],
+                     *       "totals": {
+                     *         "nearOrOver": 0,
+                     *         "tenants": 1,
+                     *         "usedBytes": "734003200"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminStorageOverviewDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;

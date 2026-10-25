@@ -120,6 +120,39 @@ test("platform settings: a new effective-dated version with a reason", async ({ 
   await expect(page.getByTestId("setting-value-support.grant_max_hours")).toHaveText("12");
 });
 
+test("storage (D-279): 5 GB free per type, an overage price and a pack set here; every tenant's usage", async ({
+  page,
+}) => {
+  await signInPlatform(page, "ops");
+  await gotoAdmin(page, "/subscriptions/storage");
+  const landlord = page.locator('[data-testid="storage-type-row"][data-type="landlord"]');
+  await expect(landlord).toContainText("5 GB");
+  await expect(landlord).toContainText("Not sold"); // platform users read the admin console in English
+  await expect(page.getByTestId("storage-usage-row")).toHaveCount(4);
+  await expect(page.getByTestId("storage-near-or-over")).toHaveText("2");
+  await expectAxeClean(page);
+
+  await page.getByTestId("edit-storage-allowance").click();
+  let dialog = page.getByRole("dialog");
+  await dialog.getByTestId("storage-price-landlord").fill("2.50");
+  await dialog.getByTestId("storage-reason").fill("Sell extra space to landlords");
+  await dialog.getByTestId("form-submit").click();
+  await expect(dialog).toHaveCount(0);
+  await expect(landlord).toContainText("2.50");
+  const sent = (await platformReceived("admin.settings.update")).at(-1)?.body;
+  expect(sent?.value).toEqual({ apartment: null, condo_juristic: null, pm_company: null, landlord: "2.50" });
+
+  await page.getByTestId("edit-storage-packs").click();
+  dialog = page.getByRole("dialog");
+  await dialog.getByLabel("Pack code 1").fill("plus-20");
+  await dialog.getByLabel("GB 1", { exact: true }).fill("20");
+  await dialog.getByLabel("THB/month 1").fill("49");
+  await dialog.getByTestId("storage-reason").fill("First pack");
+  await dialog.getByTestId("form-submit").click();
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByTestId("storage-packs")).toContainText("+20 GB");
+});
+
 test("templates: preview a draft with sample data, send a test, publish", async ({ page }) => {
   await signInPlatform(page, "ops");
   await gotoAdmin(page, "/notification-templates");

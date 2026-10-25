@@ -18,16 +18,17 @@ import { enumParam, pageParam, param, section, type AdminContext } from "../shar
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
-export type BillingTab = "subscriptions" | "invoices" | "hardware" | "field-work" | "plans";
+export type BillingTab = "subscriptions" | "invoices" | "hardware" | "field-work" | "plans" | "storage";
 const TAB_HREF: Record<BillingTab, string> = {
   subscriptions: "/subscriptions",
   invoices: "/subscriptions/invoices",
   hardware: "/subscriptions/hardware",
   "field-work": "/subscriptions/field-work",
   plans: "/subscriptions/plans",
+  storage: "/subscriptions/storage",
 };
 
-/** The subscriptions section's pages (F5 5.1): subscriptions · invoices · rented hardware · field work · price plans. */
+/** The subscriptions section's pages (F5 5.1): subscriptions · invoices · rented hardware · field work · price plans · storage. */
 export async function BillingFrame({
   current,
   title,

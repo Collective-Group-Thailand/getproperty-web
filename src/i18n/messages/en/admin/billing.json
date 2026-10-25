@@ -5,13 +5,15 @@
     "invoices": "Platform invoices",
     "hardware": "Rented hardware",
     "field-work": "Field work",
-    "plans": "Price plans"
+    "plans": "Price plans",
+    "storage": "Storage"
   },
   "description": {
     "invoices": "Collective Group's invoices to its tenants, with payments, receipts and credit notes.",
     "hardware": "Platform-owned devices placed at tenants (hardware as a service) with term and book value.",
     "field-work": "Install and de-install orders, and the site surveys owners asked for to upgrade to Smart.",
-    "plans": "Price plans and their effective-dated versions. Published versions never change."
+    "plans": "Price plans and their effective-dated versions. Published versions never change.",
+    "storage": "Free allowance, overage price, add-on packs and each tenant's usage — every value effective-dated with a reason."
   },
   "subscriptions": {
     "title": "Subscriptions",
@@ -249,5 +251,62 @@
     "publishTitle": "Publish {label}?",
     "publishBody": "The version applies from its date and can no longer be edited.",
     "published": "Version published"
+  },
+  "storage": {
+    "edit": "Edit",
+    "save": "Save",
+    "saved": "Saved — takes effect from the date set",
+    "noLimit": "No limit",
+    "notSold": "Not sold",
+    "invalidNumber": "Enter a number, such as 5 or 1.50",
+    "perGbMonth": "{price} / GB / month",
+    "perMonth": "{price} / month",
+    "stats": {
+      "tenants": "Tenants measured",
+      "used": "Storage used",
+      "nearOrOver": "Near or over",
+      "nearOrOverHint": "At {percent}% of their allowance or more"
+    },
+    "allowance": {
+      "title": "Free allowance and overage price",
+      "description": "Per tenant type. For a custom deal with one tenant, set an override on that tenant's settings.",
+      "dialog": "Leave the free allowance empty for no limit on that type; leave the price empty to not sell extra space (only optional uploads are then held — legal documents are always stored).",
+      "type": "Tenant type",
+      "freeGb": "Free (GB)",
+      "price": "Overage (THB/GB/month)",
+      "hint": "Charged on the month's average overage, on the monthly getproperty invoice."
+    },
+    "packs": {
+      "title": "Add-on packs",
+      "description": "Extra space a tenant can buy by the month",
+      "none": "No packs yet",
+      "dialog": "Empty rows are not saved.",
+      "key": "Pack code",
+      "gb": "GB",
+      "price": "THB/month",
+      "hint": "Codes use lowercase letters, digits and hyphens, e.g. plus-20.",
+      "invalid": "Check the pack codes, sizes and prices.",
+      "size": "+{gb} GB"
+    },
+    "notices": {
+      "title": "Notify at",
+      "description": "The owner is told in LINE and in the console, once per crossing.",
+      "label": "Percent of the allowance",
+      "hint": "Comma-separated, e.g. 80, 100",
+      "invalid": "Enter percentages from 1 to 1000, comma-separated."
+    },
+    "usage": {
+      "title": "Tenants' usage",
+      "description": "Latest daily snapshot, most used first.",
+      "empty": "No usage yet",
+      "emptyHint": "Usage is summed up every day after midnight.",
+      "tenant": "Tenant",
+      "used": "Used",
+      "allowance": "Allowance",
+      "level": "Level",
+      "day": "As of",
+      "percent": "{percent}%"
+    },
+    "gb": "{gb} GB"
   }
 }

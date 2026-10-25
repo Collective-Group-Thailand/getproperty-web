@@ -1056,6 +1056,25 @@ export function initialPlatformWorld(): PlatformWorld {
       },
     ],
     settings: [
+      // D-276 / D-279 storage (5 GB free per tenant type; price and packs set by the platform admin)
+      ...(
+        [
+          ["storage.free_gb", { apartment: "5", condo_juristic: "5", pm_company: "5", landlord: "5" }],
+          ["storage.price_per_gb_month", { apartment: null, condo_juristic: null, pm_company: null, landlord: null }],
+          ["storage.packs", []],
+          ["storage.notice_at_percent", [80, 100]],
+          ["storage.record_bytes", { _default: 1024, invoice: 2048, receipt: 2048, meter_reading: 256 }],
+        ] as const
+      ).map(([key, value]) => ({
+        key,
+        valueType: "json" as const,
+        value: value as Schemas["SettingDefinitionDto"]["value"],
+        scopeAllowed:
+          key === "storage.free_gb" || key === "storage.price_per_gb_month" ? ["platform", "tenant"] : ["platform"],
+        editableBy: ["admin.setting.manage"],
+        effectiveFrom: "2026-10-25T00:00:00+07:00",
+        description: `D-276 / D-279: ${key}`,
+      })),
       {
         key: "subscription.trial_days",
         valueType: "int",

@@ -36,7 +36,7 @@ jobs:
         env:
           TOKEN: ${{ secrets.ASSET_CORE_READ_TOKEN }}
         run: |
-          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/collective-group/collective-shared.git" ../../collective-shared
+          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/Collective-Group-Thailand/collective-shared.git" ../../collective-shared
           (cd ../../collective-shared && pnpm install --frozen-lockfile && pnpm build)
       - run: pnpm install --frozen-lockfile
 
@@ -87,7 +87,7 @@ jobs:
         env:
           TOKEN: ${{ secrets.ASSET_CORE_READ_TOKEN }}
         run: |
-          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/collective-group/collective-shared.git" ../../collective-shared
+          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/Collective-Group-Thailand/collective-shared.git" ../../collective-shared
           (cd ../../collective-shared && pnpm install --frozen-lockfile && pnpm build)
       - run: pnpm install --frozen-lockfile
       - name: Install Chromium
@@ -118,7 +118,7 @@ jobs:
         env:
           TOKEN: ${{ secrets.ASSET_CORE_READ_TOKEN }}
         run: |
-          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/collective-group/collective-shared.git" ../../collective-shared
+          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/Collective-Group-Thailand/collective-shared.git" ../../collective-shared
           (cd ../../collective-shared && pnpm install --frozen-lockfile && pnpm build)
       - run: pnpm install --frozen-lockfile
       - name: Build Storybook
@@ -147,7 +147,7 @@ jobs:
       - name: Check out collective-shared for the image (named build context, D-275)
         env:
           TOKEN: ${{ secrets.ASSET_CORE_READ_TOKEN }}
-        run: git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/collective-group/collective-shared.git" ../../collective-shared
+        run: git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/Collective-Group-Thailand/collective-shared.git" ../../collective-shared
       - name: docker build
         uses: docker/build-push-action@v6
         with:
@@ -198,7 +198,7 @@ jobs:
         env:
           TOKEN: ${{ secrets.ASSET_CORE_READ_TOKEN }}
         run: |
-          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/collective-group/collective-shared.git" ../../collective-shared
+          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/Collective-Group-Thailand/collective-shared.git" ../../collective-shared
           (cd ../../collective-shared && pnpm install --frozen-lockfile && pnpm build)
       - run: pnpm install --frozen-lockfile
       - name: Install Chromium
@@ -254,7 +254,7 @@ jobs:
         env:
           TOKEN: ${{ secrets.ASSET_CORE_READ_TOKEN }}
         run: |
-          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/collective-group/collective-shared.git" ../../collective-shared
+          git clone --depth 1 "https://x-access-token:${TOKEN}@github.com/Collective-Group-Thailand/collective-shared.git" ../../collective-shared
           (cd ../../collective-shared && pnpm install --frozen-lockfile && pnpm build)
       - run: pnpm install --frozen-lockfile
         working-directory: getproperty-api

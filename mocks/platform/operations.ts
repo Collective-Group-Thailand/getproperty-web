@@ -289,6 +289,44 @@ const tariffHandlers: HttpHandler[] = [
 ];
 
 const settingHandlers: HttpHandler[] = [
+  // D-279: every tenant's latest storage snapshot (the mock shows a spread of levels for review)
+  http.get("*/v1/admin/storage/tenants", ({ request }) => {
+    const ok = platform(request, "admin.storage.tenants", ["admin.tenant.read"]);
+    if (ok instanceof Response) return ok;
+    const GB = 1024 ** 3;
+    const rows = [
+      ["0199f2a0-0000-7000-8000-000000000001", "หอพักตัวอย่าง", "apartment", 4.4 * GB],
+      ["0199f2a0-0000-7000-8000-000000000101", "บ้านเช่าคุณสมชาย", "landlord", 0.3 * GB],
+      ["0199f2a0-0000-7000-8000-000000000102", "เดอะวิว คอนโด", "condo_juristic", 5.6 * GB],
+      ["0199f2a0-0000-7000-8000-000000000103", "พรอพเพอร์ตี้ พลัส", "pm_company", 1.9 * GB],
+    ] as const;
+    const data = rows
+      .map(([tenantId, displayName, type, used]) => {
+        const allowance = 5 * GB;
+        const usedPercent = Math.floor((used / allowance) * 100);
+        return {
+          tenantId,
+          displayName,
+          type,
+          day: new Date(Date.now() + 7 * 3600_000).toISOString().slice(0, 10),
+          usedBytes: String(Math.round(used)),
+          fileBytes: String(Math.round(used * 0.92)),
+          allowanceBytes: String(allowance),
+          usedPercent,
+          level: (usedPercent > 100 ? "over" : usedPercent === 100 ? "full" : usedPercent >= 80 ? "warning" : "ok") as
+            "ok" | "warning" | "full" | "over",
+        };
+      })
+      .sort((a, b) => Number(b.usedBytes) - Number(a.usedBytes));
+    return json({
+      data,
+      totals: {
+        tenants: data.length,
+        usedBytes: String(data.reduce((sum, r) => sum + Number(r.usedBytes), 0)),
+        nearOrOver: data.filter((r) => r.level !== "ok").length,
+      },
+    } satisfies Schemas["AdminStorageOverviewDto"]);
+  }),
   http.get("*/v1/admin/settings", ({ request }) => {
     const ok = platform(request, "admin.settings.list", ["admin.setting.manage", "admin.compliance.manage"]);
     if (ok instanceof Response) return ok;
