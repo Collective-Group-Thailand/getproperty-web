@@ -181,6 +181,26 @@ test("record a notice: short notice asks for the acknowledgement, then the lease
   await expectAxeClean(page);
 });
 
+test("stamp duty: the lease shows the duty and the owner records a payment by hand (B7.5)", async ({ page }) => {
+  await signInOwner(page);
+  await gotoOwner(page, `/leases/${LEASE_A302}`);
+  const card = page.getByTestId("lease-stamp-duty");
+  await expect(card.getByTestId("stamp-duty-amount")).toHaveText("฿78.00");
+  await expect(card.getByTestId("stamp-duty-unpaid")).toBeVisible();
+  await expect(card.getByTestId("stamp-duty-pay-online")).toHaveCount(0);
+  await expect(page.getByTestId("lease-language")).toContainText("ไทย");
+  await hydrated(page);
+  await card.getByTestId("stamp-duty-record").click();
+  const dialog = page.getByRole("dialog", { name: "บันทึกการชำระอากรแสตมป์" });
+  await dialog.getByTestId("stamp-duty-reference").fill("อ.ส.4 0012345");
+  await dialog.getByTestId("form-submit").click();
+  await expect(card.getByTestId("stamp-duty-paid")).toContainText("อ.ส.4 0012345");
+  const records = await received("owner.leases.recordStampDuty");
+  expect(records.at(-1)?.idempotencyKey).toBeTruthy();
+  expect(records.at(-1)?.body.reference).toBe("อ.ส.4 0012345");
+  await expectAxeClean(page);
+});
+
 test("deposits: countdown and late refunds; settlement with comparison, deductions, proposal and refund", async ({
   page,
 }) => {

@@ -197,3 +197,22 @@ test("a landlord answers enquiries: reply in LINE, confirm a viewing, close one 
   await page.goto(`${HOSTS.owner}/leads?view=closed`);
   await expect(page.getByTestId("lead-row")).toHaveCount(2);
 });
+
+test("a landlord opens the documents of one unit from the portfolio (B7.5)", async ({ page }) => {
+  await signInWithOtp(page, HOSTS.owner, "0810000006");
+  await expect(page).toHaveURL(`${HOSTS.owner}/portfolio`);
+  await hydrated(page);
+  const leased = page.locator('[data-testid="portfolio-unit"][data-unit-no="12/345"]');
+  await leased.getByTestId("portfolio-documents").click();
+  await expect(page).toHaveURL(/\/documents\?unit=/);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("เอกสารของห้องนี้");
+  const rows = page.getByTestId("document-row");
+  await expect(rows).toHaveCount(2);
+  await expect(rows.first()).toHaveAttribute("data-kind", "pdf_receipt");
+  await expect(page.getByTestId("documents-zip")).toHaveCount(0);
+  await expectAxeClean(page);
+
+  await page.getByTestId("filter-kind").selectOption("contract");
+  await expect(rows).toHaveCount(1);
+  await expect(rows.first()).toContainText("สัญญาเช่า 12/345");
+});

@@ -141,6 +141,8 @@ export interface MockState {
   listingWorld: { listings: MockListing[]; verifications: MockVerification[] };
   /** Enquiries and viewings of the landlord's listings (B7.3): see owner/leads.ts. */
   leads: MockLead[];
+  /** Stamp duty payments recorded on leases (B7.5), by lease id: see owner/landlord-documents.ts. */
+  stampDuty: Record<string, Schemas["StampDutyPaymentDto"]>;
   webVitals: unknown[];
   log: LoggedRequest[];
   /** Access token lifetime; the suite shortens it to exercise refresh. */
@@ -167,6 +169,7 @@ function initial(): MockState {
     landlordSignedUp: false,
     listingWorld: initialListings(),
     leads: initialLeads(),
+    stampDuty: {},
     webVitals: [],
     log: [],
     // 15 minutes like the API; a long Lighthouse run sets MOCK_ACCESS_TTL_MS so its fixed session cookie lasts.

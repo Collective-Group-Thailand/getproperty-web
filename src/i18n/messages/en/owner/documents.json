@@ -10,7 +10,13 @@
     "pdf_tax_invoice": "Tax invoice",
     "pdf_note": "Credit / debit note",
     "pdf_statement": "Statement",
-    "contract": "Lease"
+    "contract": "Lease",
+    "inspection_report": "Inspection report",
+    "pdf_report": "Report",
+    "pdf_notice": "Notice",
+    "pdf_certificate": "Certificate",
+    "pdf_summary": "Income summary",
+    "other": "Other document"
   },
   "filter": {
     "period": "Month",
@@ -23,5 +29,12 @@
     "title": "No documents this month",
     "body": "Choose another month or kind."
   },
-  "contractRestricted": "Owner / Manager only (carries the lessee's ID number)"
+  "contractRestricted": "Owner / Manager only (carries the lessee's ID number)",
+  "unit": {
+    "title": "Documents of this unit",
+    "description": "Leases, receipts, invoices and other documents issued for this unit, newest first",
+    "empty": "No documents for this unit yet",
+    "emptyBody": "Documents appear here once a lease, invoice or receipt is issued",
+    "more": "{count} more documents"
+  }
 }

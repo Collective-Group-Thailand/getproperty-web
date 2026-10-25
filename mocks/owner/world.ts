@@ -304,6 +304,8 @@ function leaseDto(
 ): Schemas["LeaseDto"] {
   return {
     addendum: [],
+    template: { key: "ocpb_2568_residential_th", version: 1, language: "th" },
+    stampDutyPayer: "lessor",
     advanceRentAmount: "4500.00",
     billingDay: null,
     buildingName: partial.buildingId === BUILDING_B ? "อาคาร B" : "อาคาร A",

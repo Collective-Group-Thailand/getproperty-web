@@ -3,6 +3,7 @@ import QRCode from "qrcode";
 
 import type { components } from "../../src/lib/api/schema";
 import { placeholderPdf } from "../handlers/staff";
+import { TENANTS } from "../fixtures";
 import { state } from "../state";
 import { add, mul, satang } from "./money";
 import {
@@ -196,6 +197,11 @@ function leaseFromInput(input: Schemas["LeaseCreateDto"]): Schemas["LeaseDto"] |
     addendum: input.addendum ?? [],
     rentIncreases: input.rentIncreases ?? [],
     terms: input.terms ?? {},
+    // B7.5: a language only reaches the API from a landlord (the standard contract is Thai only)
+    template: input.language
+      ? { key: "landlord_condo_unit", version: 1, language: input.language }
+      : { key: "ocpb_2568_residential_th", version: 1, language: "th" },
+    stampDutyPayer: input.stampDutyPayer ?? "lessor",
     parties,
     signatures: [],
     compliance: {
@@ -236,6 +242,28 @@ export const leaseHandlers: HttpHandler[] = [
   http.get("*/v1/owner/lease-templates", ({ request }) => {
     const ok = owner(request, "owner.leaseTemplates.list");
     if (ok instanceof Response) return ok;
+    // B7.5: a landlord writes on the landlord templates of each unit kind, in Thai or English
+    if (
+      Object.values(TENANTS).some((tenant) => tenant.profile.id === ok.tenantId && tenant.profile.type === "landlord")
+    )
+      return json(
+        (["condo_unit", "house", "room"] as const).map((kind, index) => ({
+          id: `7e3a0000-0000-4000-8000-00000000010${index}`,
+          key: `landlord_${kind}`,
+          name: { condo_unit: "สัญญาเช่าห้องชุด", house: "สัญญาเช่าบ้าน", room: "สัญญาเช่าห้องพัก" }[kind],
+          platform: true,
+          versions: (["th", "en"] as const).map((language, n) => ({
+            id: `7e3a0000-0000-4000-8000-0000000001${index}${n}`,
+            version: 1,
+            language,
+            state: "published" as const,
+            effectiveFrom: "2026-10-25",
+            legalRef: "ประมวลกฎหมายแพ่งและพาณิชย์ มาตรา 537–571",
+            allowedClauseTypes: [...ALLOWED_CLAUSES],
+            forbiddenClauseTypes: ["renewal_fee", "lockout_or_removal"],
+          })),
+        })) satisfies Schemas["LeaseTemplateDto"][],
+      );
     return json([
       {
         id: TEMPLATE_STANDARD,
@@ -429,8 +457,10 @@ export const leaseHandlers: HttpHandler[] = [
     }
     const refusal = checkTerms(op, next, input.acknowledgementIds);
     if (refusal) return refusal;
+    const { language, ...rest } = input;
+    if (language) lease.template = { ...lease.template, language };
     Object.assign(lease, {
-      ...input,
+      ...rest,
       rent: Number(next.rent).toFixed(2),
       depositAmount: Number(next.depositAmount).toFixed(2),
       advanceRentAmount: Number(next.advanceRentAmount).toFixed(2),

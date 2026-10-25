@@ -72,6 +72,8 @@ interface Form {
   parkingSlots: string;
   lines: { kind: Schemas["LeaseLineKind"]; description: string; amount: string }[];
   addendum: Schemas["AddendumClauseDto"][];
+  language?: Schemas["Language"];
+  stampDutyPayer?: Schemas["StampDutyPayer"];
   savedAt?: string;
 }
 
@@ -91,7 +93,10 @@ const EMPTY: Form = {
   parkingSlots: "0",
   lines: [],
   addendum: [],
+  language: "th",
+  stampDutyPayer: "lessor",
 };
+const PAYERS: Schemas["StampDutyPayer"][] = ["lessor", "lessee", "shared"];
 
 function readDraft(): string {
   try {
@@ -224,6 +229,15 @@ export function LeaseWizard({
   const template = templates.find((candidate) => candidate.platform) ?? templates[0];
   const version = template?.versions.find((candidate) => candidate.state === "published") ?? template?.versions[0];
   const allowedClauses = version?.allowedClauseTypes ?? [];
+  // B7.5: a landlord writes on the templates of their kind, in Thai or English; the standard contract is Thai only
+  const languages = [
+    ...new Set(
+      templates.flatMap((candidate) =>
+        candidate.versions.filter((v) => v.state === "published").map((v) => v.language),
+      ),
+    ),
+  ];
+  const landlord = templates.some((candidate) => candidate.key.startsWith("landlord_"));
   const index = STEPS.indexOf(step);
 
   const termsValid =
@@ -252,6 +266,8 @@ export function LeaseWizard({
     lines: form.lines.map((line) => ({ ...line, recurrence: "monthly" })),
     addendum: form.addendum,
     acknowledgementIds: acknowledgementIds.length ? acknowledgementIds : undefined,
+    ...(languages.length > 1 ? { language: form.language ?? "th" } : {}),
+    ...(landlord ? { stampDutyPayer: form.stampDutyPayer ?? "lessor" } : {}),
   });
 
   const createBody = (ackIds: string[]): Schemas["LeaseCreateDto"] => ({
@@ -616,6 +632,35 @@ export function LeaseWizard({
               </Callout>
             </div>
           ) : null}
+          {languages.length > 1 || landlord ? (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {languages.length > 1 ? (
+                <div className="flex flex-col gap-2" data-testid="lease-language">
+                  <span className="font-medium">{t("language")}</span>
+                  <SegmentedControl
+                    label={t("language")}
+                    value={form.language ?? "th"}
+                    onValueChange={(value) => update({ language: value as Schemas["Language"] })}
+                    options={[
+                      { value: "th", label: t("langTh") },
+                      { value: "en", label: t("langEn") },
+                    ]}
+                  />
+                  <p className="text-muted text-sm">{t("languageHint")}</p>
+                </div>
+              ) : null}
+              {landlord ? (
+                <Field label={t("stampDutyPayer")} hint={t("stampDutyHint")}>
+                  <NativeSelect
+                    value={form.stampDutyPayer ?? "lessor"}
+                    onChange={(event) => update({ stampDutyPayer: event.target.value as Schemas["StampDutyPayer"] })}
+                    options={PAYERS.map((value) => ({ value, label: t(`payer.${value}`) }))}
+                    data-testid="lease-stamp-duty-payer"
+                  />
+                </Field>
+              ) : null}
+            </div>
+          ) : null}
           <div className="flex flex-col gap-2">
             <span className="font-medium">{t("utilities")}</span>
             <SegmentedControl
@@ -845,6 +890,24 @@ export function LeaseWizard({
                 description: form.advanceRentAmount ? formatTHB(form.advanceRentAmount, locale) : t("defaultApi"),
               },
               { id: "utilities", term: t("utilities"), description: t(form.utilityBillingMode) },
+              ...(languages.length > 1
+                ? [
+                    {
+                      id: "language",
+                      term: t("language"),
+                      description: t(form.language === "en" ? "langEn" : "langTh"),
+                    },
+                  ]
+                : []),
+              ...(landlord
+                ? [
+                    {
+                      id: "payer",
+                      term: t("stampDutyPayer"),
+                      description: t(`payer.${form.stampDutyPayer ?? "lessor"}`),
+                    },
+                  ]
+                : []),
               {
                 id: "lines",
                 term: t("linesTitle"),
