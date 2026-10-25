@@ -55,7 +55,9 @@ export type AdminPermission =
   | "admin.outbox.manage"
   | "admin.notification_template.manage"
   | "admin.feature_flag.manage"
-  | "admin.building.manage";
+  | "admin.building.manage"
+  | "admin.listing.moderate"
+  | "admin.listing.verify";
 
 export function can(me: AdminMe, permission: AdminPermission): boolean {
   return me.permissions.includes(permission);

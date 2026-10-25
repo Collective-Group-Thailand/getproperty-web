@@ -153,7 +153,7 @@ export function menuFor(
 ): string[] {
   const menu = (surface === "owner" ? OWNER_MENU_BY_ROLE : STAFF_MENU_BY_ROLE)[role];
   if (surface !== "owner" || tenantType !== "landlord") return menu;
-  return ["portfolio", ...menu.filter((key) => !BUILDING_OPERATOR_ONLY.has(key))];
+  return ["portfolio", "listings", ...menu.filter((key) => !BUILDING_OPERATOR_ONLY.has(key))];
 }
 
 export interface OperatorPersona {
@@ -338,8 +338,16 @@ export const PLATFORM_PERMISSIONS: Record<Schemas["PlatformRole"], string[]> = {
     "admin.notification_template.manage",
     "admin.feature_flag.manage",
     "admin.building.manage",
+    "admin.listing.moderate",
+    "admin.listing.verify",
   ],
-  support: ["admin.tenant.read", "admin.support_grant.request", "admin.integration_event.read"],
+  support: [
+    "admin.tenant.read",
+    "admin.support_grant.request",
+    "admin.integration_event.read",
+    "admin.listing.moderate",
+    "admin.listing.verify",
+  ],
   field_engineer: ["admin.tenant.read", "admin.device.manage"],
   finance: [
     "admin.tenant.read",
@@ -353,6 +361,7 @@ export const PLATFORM_PERMISSIONS: Record<Schemas["PlatformRole"], string[]> = {
 /** The admin menu and the permission that opens each entry (getproperty-api `src/core/rbac/menu.ts`). */
 const ADMIN_MENU_RULES: [Schemas["AdminMenuKey"], string[]][] = [
   ["tenants", ["admin.tenant.read"]],
+  ["listings", ["admin.listing.moderate", "admin.listing.verify"]],
   ["platform_users", ["admin.user.manage"]],
   ["utility_tariffs", ["admin.utility_tariff.enter", "admin.utility_tariff.verify"]],
   ["settings", ["admin.setting.manage", "admin.compliance.manage"]],
@@ -399,6 +408,8 @@ const TENANT_KEYS = [
   "property.manage",
   "unit.read",
   "unit.manage",
+  "listing.read",
+  "listing.manage",
   "party.read",
   "party.manage",
   "party.pii.decrypt",

@@ -28,6 +28,7 @@ export const MESSAGE_FILES = {
     "insights",
     "invoices",
     "leases",
+    "listings",
     "loss",
     "marketing",
     "meters",
@@ -56,7 +57,19 @@ export const MESSAGE_FILES = {
     "today",
     "work",
   ],
-  admin: ["billing", "credentials", "fleet", "nav", "operations", "platform", "shell", "support", "tariffs", "tenants"],
+  admin: [
+    "billing",
+    "credentials",
+    "fleet",
+    "listings",
+    "nav",
+    "operations",
+    "platform",
+    "shell",
+    "support",
+    "tariffs",
+    "tenants",
+  ],
 } as const satisfies Record<"common" | Zone, readonly string[]>;
 
 type Messages = Record<string, unknown>;

@@ -1,0 +1,83 @@
+{
+  "title": "Listings",
+  "description": "Review listings before they go public, handle viewers' reports and verify owners (D-252).",
+  "tab": {
+    "queue": "Review queue",
+    "hidden": "Hidden",
+    "reported": "Reported",
+    "verifications": "Owner verification"
+  },
+  "col": {
+    "listing": "Listing",
+    "owner": "Owner",
+    "why": "Why",
+    "rent": "Rent",
+    "actions": "Actions",
+    "unit": "Unit",
+    "evidence": "Document",
+    "submitted": "Submitted",
+    "state": "State"
+  },
+  "reasons": {
+    "first_listing": "First listing, owner not verified",
+    "price_outlier": "Unusual rent",
+    "flagged_words": "Flagged wording"
+  },
+  "reportReasons": {
+    "scam": "Possible scam",
+    "wrong_info": "Wrong information",
+    "not_available": "No longer available",
+    "duplicate": "Duplicate",
+    "offensive": "Offensive",
+    "other": "Other"
+  },
+  "reports": "{count, plural, one {# report} other {# reports}}",
+  "hiddenSince": "Hidden since {date}",
+  "hiddenReason": "Reason: {reason}",
+  "hiddenByReports": "report threshold reached",
+  "empty": {
+    "queue": "Nothing waiting for review",
+    "hidden": "No hidden listings",
+    "reported": "No open reports",
+    "verifications": "No verifications waiting"
+  },
+  "emptyHint": "New items will show up here.",
+  "approve": "Approve",
+  "approveTitle": "Publish \"{title}\"?",
+  "approveBody": "The listing goes live on the /rent pages at once.",
+  "approved": "Published",
+  "reject": "Reject",
+  "rejectTitle": "Reject \"{title}\"",
+  "rejectHint": "The owner reads this reason and can fix the listing and send it again.",
+  "reason": "Reason",
+  "rejected": "Owner informed",
+  "hide": "Hide",
+  "hideTitle": "Hide \"{title}\"",
+  "hideHint": "The listing leaves the /rent pages until restored.",
+  "hidden": "Hidden",
+  "restore": "Restore",
+  "restoreTitle": "Restore \"{title}\"?",
+  "restoreBody": "The listing returns to the /rent pages and its open reports are dismissed.",
+  "restored": "Restored",
+  "verification": {
+    "kinds": {
+      "title_deed": "Title deed",
+      "condo_title": "Condominium title",
+      "sale_contract": "Sale and purchase contract"
+    },
+    "open": "Review documents",
+    "title": "Owner verification: {unit}",
+    "evidence": "Evidence",
+    "evidenceHint": "Links work for 5 minutes; every opening is logged.",
+    "file": "File {index}",
+    "noEvidence": "The files were deleted after the retention period.",
+    "makerDone": "First reviewer approved — waiting for a second reviewer",
+    "approve": "Verify",
+    "reject": "Reject",
+    "note": "Note to the owner",
+    "noteRequired": "A reason is required to reject",
+    "decided": "Decision saved",
+    "note_": "Owner's note"
+  },
+  "tabsLabel": "Listing tabs"
+}
