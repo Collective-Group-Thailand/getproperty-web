@@ -8,7 +8,8 @@
     "privacy": "Privacy",
     "support_access": "Support access",
     "access_grants": "Access grants",
-    "audit_log": "Audit log"
+    "audit_log": "Audit log",
+    "sign_in": "Ways to sign in"
   },
   "general": {
     "title": "Settings",
@@ -474,5 +475,30 @@
       "valid": "Valid",
       "actions": "Actions"
     }
+  },
+  "signIn": {
+    "title": "Ways to sign in",
+    "description": "How you can open this console. They belong to your own account, not to the organisation.",
+    "phone": "Mobile phone (OTP)",
+    "phoneNone": "No verified phone yet",
+    "verified": "Verified",
+    "password": "E-mail and password",
+    "passwordSet": "Password set",
+    "passwordNone": "Not set",
+    "providers": {
+      "google": "Google",
+      "apple": "Apple",
+      "line": "LINE"
+    },
+    "notLinked": "Not linked",
+    "since": "linked {date}",
+    "kept": "Carries your LINE notifications, so it stays",
+    "add": "Add {provider}",
+    "remove": "Remove",
+    "removeTitle": "Remove {provider} from your ways to sign in?",
+    "removeBody": "You will no longer sign in with {provider}; use one of the other ways. You can add it again any time.",
+    "removed": "{provider} removed",
+    "linked": "{provider} added — you can sign in with {provider} next time.",
+    "footnote": "getproperty never merges accounts by e-mail; an account that already belongs to someone else is not moved."
   }
 }

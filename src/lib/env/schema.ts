@@ -163,6 +163,26 @@ function serverSchema(production: boolean) {
      * answers 404 for the path on every public host.
      */
     METRICS_ALLOWED_CIDRS: cidrList,
+    /**
+     * Sign-in with Google, Apple and LINE on the owner console (D-255, D-283). `live` (production default): a provider
+     * button shows only when its OAuth client is configured below; `fake` (default outside production, and for a UAT
+     * against an API with `INTEGRATIONS_MODE=fake`): every button shows and opens a local test page instead of the
+     * provider, which hands back the readable fake tokens getproperty-api's fake verifiers accept.
+     */
+    OAUTH_MODE: production ? z.enum(["live", "fake"]).default("live") : z.enum(["live", "fake"]).default("fake"),
+    /** LINE Login channel of the web console (its id must also be in the API's `LINE_LOGIN_CHANNEL_IDS`). */
+    LINE_LOGIN_CHANNEL_ID: optionalString,
+    LINE_LOGIN_CHANNEL_SECRET: optionalString,
+    /** Google OAuth web client; the Google id token is exchanged for a Firebase ID token (`FIREBASE_WEB_API_KEY`). */
+    GOOGLE_OAUTH_CLIENT_ID: optionalString,
+    GOOGLE_OAUTH_CLIENT_SECRET: optionalString,
+    /** Sign in with Apple: the Services ID, team, key id and the `.p8` private key (PEM, `\n` allowed). */
+    APPLE_SERVICES_ID: optionalString,
+    APPLE_TEAM_ID: optionalString,
+    APPLE_KEY_ID: optionalString,
+    APPLE_PRIVATE_KEY: optionalString,
+    /** Web API key of getproperty's Firebase project (the one `FIREBASE_PROJECT_ID` names in the API). */
+    FIREBASE_WEB_API_KEY: optionalString,
     ...publicShape,
   });
 }

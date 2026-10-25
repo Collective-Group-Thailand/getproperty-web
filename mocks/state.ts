@@ -115,6 +115,17 @@ export function initialStaffWorld(): StaffWorld {
   };
 }
 
+/** A Google / Apple / LINE identity linked to an operator persona (D-255, D-283). */
+export interface MockIdentity {
+  id: string;
+  personaKey: string;
+  provider: "line" | "firebase_google" | "firebase_apple";
+  subject: string;
+  displayName: string | null;
+  email: string | null;
+  linkedAt: string;
+}
+
 export interface MockState {
   access: Map<string, AccessGrant>;
   refresh: Map<string, RefreshGrant>;
@@ -137,6 +148,8 @@ export interface MockState {
   portfolio: Record<string, Schemas["PortfolioUnitDto"][]>;
   /** Whether the landlord sign-up (`signup` persona) has happened. */
   landlordSignedUp: boolean;
+  /** Linked sign-in identities; see handlers/identities.ts. */
+  identities: MockIdentity[];
   /** Listings, their reports and owner verifications (B7.2): see owner/listings.ts. */
   listingWorld: { listings: MockListing[]; verifications: MockVerification[] };
   /** Enquiries and viewings of the landlord's listings (B7.3): see owner/leads.ts. */
@@ -151,6 +164,21 @@ export interface MockState {
   log: LoggedRequest[];
   /** Access token lifetime; the suite shortens it to exercise refresh. */
   accessTtlMs: number;
+}
+
+/** Linked identities at start: the `landlord` persona signs in with Google `landlord-google`. */
+export function initialIdentities(): MockIdentity[] {
+  return [
+    {
+      id: "3b241101-e2bb-4255-8caf-4136c566aa01",
+      personaKey: "landlord",
+      provider: "firebase_google",
+      subject: "landlord-google",
+      displayName: "Malee M.",
+      email: "malee@example.com",
+      linkedAt: "2026-10-20T10:00:00+07:00",
+    },
+  ];
 }
 
 function initial(): MockState {
@@ -171,6 +199,7 @@ function initial(): MockState {
     r2: initialR2World(),
     portfolio: initialPortfolios(),
     landlordSignedUp: false,
+    identities: initialIdentities(),
     listingWorld: initialListings(),
     leads: initialLeads(),
     stampDuty: {},

@@ -2,6 +2,7 @@ import { http, type HttpHandler } from "msw";
 
 import { MOCK_OTP_CODE, MOCK_TOTP_CODE, OPERATORS, PLATFORM_USERS, TENANTS } from "../fixtures";
 import { state } from "../state";
+import { linkSignUpIdentity, signUpIdentity } from "./identities";
 import { issueTokens, json, problem } from "./support";
 
 /** Stateful `/v1/auth/*` (contract §4): OTP challenges, password + TOTP, enrolment, rotation, logout. */
@@ -61,23 +62,35 @@ export const authHandlers: HttpHandler[] = [
       provider?: string;
       challengeId?: string;
       code?: string;
+      idToken?: string;
       displayName?: string;
     };
-    if (body.provider !== "phone_otp" || !body.displayName?.trim()) return problem(op, "validation.failed");
-    const challenge = body.challengeId ? state.challenges.get(body.challengeId) : undefined;
-    if (!challenge || challenge.expiresAt < Date.now()) return problem(op, "auth.otp_expired");
-    if (body.code !== MOCK_OTP_CODE) {
-      challenge.attempts += 1;
-      return problem(op, "auth.otp_invalid", { attemptsRemaining: Math.max(0, MAX_ATTEMPTS - challenge.attempts) });
+    if (!body.displayName?.trim()) return problem(op, "validation.failed");
+    let phone: string | null = null;
+    if (body.provider === "phone_otp") {
+      const challenge = body.challengeId ? state.challenges.get(body.challengeId) : undefined;
+      if (!challenge || challenge.expiresAt < Date.now()) return problem(op, "auth.otp_expired");
+      if (body.code !== MOCK_OTP_CODE) {
+        challenge.attempts += 1;
+        return problem(op, "auth.otp_invalid", { attemptsRemaining: Math.max(0, MAX_ATTEMPTS - challenge.attempts) });
+      }
+      state.challenges.delete(body.challengeId!);
+      phone = challenge.phone;
+    } else {
+      // Google / Apple / LINE (D-255): the fake token's identity, linked to the new landlord.
+      const identity = signUpIdentity(body.provider, body.idToken);
+      if (!identity)
+        return problem(op, body.provider === "line" ? "auth.line_token_invalid" : "auth.identity_token_invalid");
+      if (identity.provider !== "line" && !identity.email) return problem(op, "auth.identity_contact_required");
+      linkSignUpIdentity(identity);
     }
-    state.challenges.delete(body.challengeId!);
     const persona = OPERATORS.find((p) => p.key === "signup")!;
     // A second sign-up answers 200 with the landlord tenant it already owns, like the API.
     const created = !state.landlordSignedUp;
     if (created) {
       state.landlordSignedUp = true;
       persona.user.displayName = body.displayName.trim();
-      persona.user.phone = challenge.phone;
+      if (phone) persona.user.phone = phone;
       state.portfolio[TENANTS.fresh.profile.id] = [];
     }
     return json(

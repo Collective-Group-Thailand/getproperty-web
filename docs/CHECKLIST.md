@@ -1,4 +1,4 @@
-# getproperty: Master checklist (อัปเดต 26 ต.ค. 2026 02:40)
+# getproperty: Master checklist (อัปเดต 26 ต.ค. 2026 04:00)
 
 สัญลักษณ์: ✅ เสร็จและ commit แล้ว · 🟡 เสร็จบน cloud รอ commit · 🔄 กำลังทำ · ⬜ ยังไม่เริ่ม · ⛔ รออย่างอื่นก่อน (บอกไว้ว่ารออะไร)
 
@@ -64,7 +64,7 @@
 - 🟡 F6.5 ✅ ตรวจ/ซ่อน/คืนประกาศ, ยืนยันเจ้าของ (web 4ba5e2a); ⬜ ตั้งค่า fee ของแพลตฟอร์ม ⛔ API B7.2 (fee)
 
 ## 6. Login (D-255)
-- ⬜ เบอร์โทร OTP, Google, Apple, LINE สำหรับ owner/landlord (web) และผู้เช่า (LIFF) ⛔ API B7.8 + คุณสร้าง OAuth client ของ Google/Apple
+- 🟡 เบอร์โทร OTP, Google, Apple, LINE สำหรับ owner/landlord (web: หน้าเข้าสู่ระบบ, สมัคร, ตั้งค่า › วิธีเข้าสู่ระบบ) และผู้เช่า/ผู้สนใจเช่า (LIFF: SMS + Google/Apple นอก LINE) — โค้ดครบ ทดสอบกับ fake provider แล้ว (api bb9137b) ⛔ เปิดจริงต้องมี OAuth client: ดู `docs/sign-in-providers.md`
 
 ## 7. getproperty-api (Mac)
 - ✅ B7.0 ปิด subscription (`platform.subscriptions.enabled=false`), error `subscription.disabled`, runbook SQL (commit 219b3dc, branch `feat/b7-landlords-free-pricing`)
@@ -76,7 +76,7 @@
 - ✅ B7.5 เอกสารครบชุดสำหรับ landlord: ✅ ส่วน 1 สัญญาตามประเภทยูนิต ไทย/อังกฤษ, อากรแสตมป์ (migration 0045, e-Stamp ปิดไว้จนมี adapter), `GET /v1/owner/documents` (api a89c0c1 + 0565fa8, asset-core v0.6.0); ✅ ส่วน 2 หนังสือแจ้ง 5 แบบ เป็น PDF ไทย/อังกฤษ ส่งทาง LINE (migration 0046, api f640c27); ✅ ส่วน 3 หนังสือรับรองค่าเช่า (RPC) + สรุปรายได้ 40(5) รายปี (ISM, แยกค่าบริการตาม D-282, หักเหมา 30% เป็น setting) + สัญญาสองภาษาในไฟล์เดียว (migration 0047, api 0e7ec3a) — ค่าใช้จ่ายของเจ้าของรวมเมื่อทำ B7.6
 - ⬜ B7.6 แจ้งซ่อมตามประเภท tenant
 - ⬜ B7.7 LINE OA ของตัวเอง / ค่าข้อความ
-- ⬜ B7.8 login หลายช่องทาง
+- ✅ B7.8 login หลายช่องทาง: `/v1/auth/{operator|resident|prospect}/identity`, prospect SMS OTP, จัดการวิธีเข้าสู่ระบบในโปรไฟล์ (migration 0048, api bb9137b) — รัน fake verifier จนกว่าจะมี client id (D-283)
 - ✅ ใช้แพ็กเกจกลาง `@collective/integrations` + `@collective/documents` (D-278) — 358 integration test ผ่าน
 - ✅ D-276 นับพื้นที่ต่อเจ้าของ: snapshot รายวัน, แจ้งเตือน 80/100% ทาง LINE, ไม่บล็อกเอกสารตามกฎหมาย, `GET /v1/owner/storage`
 - ⬜ บรรทัดค่าพื้นที่ในใบแจ้งค่าบริการรายเดือน ⛔ API B7.2
