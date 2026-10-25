@@ -1,4 +1,4 @@
-# getproperty: Master checklist (อัปเดต 25 ต.ค. 2026 04:40)
+# getproperty: Master checklist (อัปเดต 25 ต.ค. 2026 07:30)
 
 สัญลักษณ์: ✅ เสร็จและ commit แล้ว · 🟡 เสร็จบน cloud รอ commit · 🔄 กำลังทำ · ⬜ ยังไม่เริ่ม · ⛔ รออย่างอื่นก่อน (บอกไว้ว่ารออะไร)
 
@@ -106,10 +106,13 @@
 - ✅ repo `collective-shared` (`~/Collective/collective-shared`): `@collective/integrations`, `@collective/documents`, `@collective/content`, `@collective/web-kit` 0.1 — 59 tests ผ่าน
 - ✅ prompt ให้ getpack และ getproperty เปลี่ยนมาใช้แพ็กเกจ (`collective-shared/docs/adoption/`)
 - ✅ adoption: getproperty-api, getproperty-web (+ แก้แพ็กเกจ: code splitting, safeReturnTo เข้มขึ้น)
-- ⬜ adoption: getpack-api → getpack-web ⛔ getpack-web มีงานที่คุณแก้ค้างไว้ยังไม่ commit
-- ⬜ push repo ขึ้น GitHub (private) + ตั้ง GitHub Packages ⛔ คุณ
+- ⬜ adoption: getpack-api → getpack-web — prompt พร้อมแล้วที่ `~/Collective/getpack/HANDOFF-collective-shared.md` ⛔ commit งานค้างใน getpack-web ก่อน
+- ⬜ push ทุก repo + collective-shared (private, `Collective-Group-Thailand/collective-shared`) และสร้าง secret `ASSET_CORE_READ_TOKEN` ⛔ คุณ
+- ⬜ ตั้ง GitHub Packages ⛔ คุณ
 - ✅ นับพื้นที่ต่อเจ้าของ (ค่าเริ่มต้น = ยังไม่จำกัด)
-- ⬜ กำหนดพื้นที่ฟรี/ราคาต่อ GB/แพ็กเสริม ใน settings `storage.*` ⛔ คุณ
+- ✅ พื้นที่ฟรี 5 GB ทุกประเภทลูกค้า (D-279)
+- ✅ หน้า admin → การสมัครใช้งาน → พื้นที่จัดเก็บ: ตั้งพื้นที่ฟรี/ราคาส่วนเกิน/แพ็กเสริม/ระดับแจ้งเตือน และดูการใช้งานทุกบัญชี
+- ⬜ ตั้งราคาส่วนเกินและแพ็กเสริมจริงในหน้า admin ⛔ คุณ (ตอนนี้ = ไม่ขาย)
 
 ## 12. ทำงานต่อข้าม account
 - ✅ `RESUME.md` (สถานะ + ล็อก) และ `HANDOFF-PROMPT.md` ใน `Collective/getproperty`
