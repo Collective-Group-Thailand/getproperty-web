@@ -68,8 +68,9 @@ export const fileHandlers: HttpHandler[] = [
     const op = "owner.files.get";
     const ok = owner(request, op);
     if (ok instanceof Response) return ok;
-    if (!ok.own) return notFound(op);
     const fileId = String(params.fileId);
+    // the landlord persona's generated documents (B7.5) open too; anything else of another tenant is a 404
+    if (!ok.own && !fileId.endsWith("0a4d")) return notFound(op);
     const origin = new URL(request.url).origin;
     const stored = state.staff.files.get(fileId);
     if (stored && stored.file.uploadState === "presigned") return problem(op, "document.not_uploaded");

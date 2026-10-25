@@ -21,6 +21,7 @@ import { IconBuilding } from "@/ui/icons/glyphs/building";
 import { IconDoor } from "@/ui/icons/glyphs/door";
 import { IconFloor } from "@/ui/icons/glyphs/floor";
 import { IconHome } from "@/ui/icons/glyphs/home";
+import { IconBill } from "@/ui/icons/glyphs/bill";
 import { IconMegaphone } from "@/ui/icons/glyphs/megaphone";
 import { IconWrench } from "@/ui/icons/glyphs/wrench";
 
@@ -208,13 +209,20 @@ async function UnitCard({ unit, locale }: { unit: Unit; locale: Locale }) {
       </dl>
 
       {unit.building.external ? <p className="text-muted text-xs">{t("external")}</p> : null}
-      {unit.state === "vacant" ? (
-        <Button asChild size="sm" variant="secondary" iconStart={IconMegaphone} className="self-start">
-          <a href={ownerPath(locale, `/listings/new?unit=${unit.unitId}`)} data-testid="portfolio-list-unit">
-            {t("listIt")}
+      <div className="flex flex-wrap gap-2">
+        {unit.state === "vacant" ? (
+          <Button asChild size="sm" variant="secondary" iconStart={IconMegaphone}>
+            <a href={ownerPath(locale, `/listings/new?unit=${unit.unitId}`)} data-testid="portfolio-list-unit">
+              {t("listIt")}
+            </a>
+          </Button>
+        ) : null}
+        <Button asChild size="sm" variant="ghost" iconStart={IconBill}>
+          <a href={ownerPath(locale, `/documents?unit=${unit.unitId}`)} data-testid="portfolio-documents">
+            {t("documents")}
           </a>
         </Button>
-      ) : null}
+      </div>
     </Card>
   );
 }

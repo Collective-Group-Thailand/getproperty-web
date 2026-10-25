@@ -145,7 +145,18 @@
     "send": "Send for signature",
     "sentTitle": "Lease {number} sent for signature",
     "sentBody": "The resident signs in the resident app; then you countersign.",
-    "openLease": "Open the lease"
+    "openLease": "Open the lease",
+    "language": "Lease language",
+    "languageHint": "An English lease suits foreign tenants; every clause matches the Thai version.",
+    "langTh": "ไทย",
+    "langEn": "English",
+    "stampDutyPayer": "Stamp duty paid by",
+    "stampDutyHint": "By law the lessor pays; you may agree that the tenant pays or that you share it. The agreement is printed in the lease.",
+    "payer": {
+      "lessor": "Lessor",
+      "lessee": "Tenant",
+      "shared": "Half each"
+    }
   },
   "invite": {
     "button": "Invite to the app",
@@ -271,7 +282,45 @@
     "endingBody": "Complete the move-out once the resident has handed the unit back: that closes the lease and the occupancy, the unit becomes vacant, the resident's door codes end and the 7-day deposit clock starts. Until then the resident keeps access.",
     "endingBodyNoAction": "The office completes the move-out; until then the resident keeps access.",
     "contractPiiOnly": "The stored contract carries the lessee's ID / passport number. Only an Owner or Manager (personal data access) can open it.",
-    "previewMasked": "Your preview masks the lessee's ID / passport number."
+    "previewMasked": "Your preview masks the lessee's ID / passport number.",
+    "language": "Language",
+    "languageValue": {
+      "th": "ไทย",
+      "en": "English"
+    },
+    "stampDuty": {
+      "title": "Stamp duty",
+      "description": "1 baht per 1,000 baht of rent over the whole term",
+      "amount": "Duty",
+      "estimate": "Estimate",
+      "estimateHint": "Fixed when the lease is sent for signature",
+      "payer": "Paid by",
+      "due": "Due by",
+      "dueAfterSigning": "After both parties sign",
+      "status": "Status",
+      "paid": "Paid {date}",
+      "paidVia": {
+        "e_stamp": "via e-Stamp",
+        "manual": "recorded by you"
+      },
+      "unpaid": "Not paid",
+      "overdue": "Overdue",
+      "reference": "Reference",
+      "receipt": "Duty receipt",
+      "receiptTitle": "Stamp duty receipt, lease {unit}",
+      "record": "Record payment",
+      "recordTitle": "Record the stamp duty payment",
+      "recordBody": "Paid at the Revenue Department or elsewhere? Enter the reference and attach the receipt to the lease.",
+      "paidOn": "Paid on",
+      "referenceHint": "For example the receipt number",
+      "receiptFile": "Receipt file",
+      "receiptFileHint": "PDF or image, optional",
+      "recorded": "Payment recorded",
+      "payOnline": "Pay with e-Stamp",
+      "payOnlineTitle": "Pay {amount} stamp duty with e-Stamp",
+      "payOnlineBody": "We pay the duty to the Revenue Department and keep the receipt with this lease.",
+      "payOnlineDone": "Stamp duty paid"
+    }
   },
   "preview": {
     "title": "Legal checks before the draft",
