@@ -25,6 +25,10 @@ production default).
 - Firebase console → Authentication → Sign-in method: enable **Google** and **Apple** (Apple with the same Services ID,
   team, key id and key); Settings → Authorized domains: add both hosts.
 
+**One LINE provider.** LINE user ids are per *provider* in LINE Developers: create the web console's LINE Login channel
+under the same provider as the LIFF channels (resident app), so the LINE a landlord links here is the one the LINE app's
+quick actions (`/landlord` in getproperty-liff, L5 5.3) sign in with.
+
 **Rules the code keeps** (API D-255): an operator or a resident signs in with Google / Apple / LINE only after linking
 it (Settings › Ways to sign in, or the landlord sign-up); an identity is never matched by e-mail and never moved from
 one account to another; Google and Apple can be removed while another way to sign in remains; LINE and the phone stay
