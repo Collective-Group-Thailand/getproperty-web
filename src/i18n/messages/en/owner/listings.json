@@ -68,7 +68,8 @@
       "bathrooms": "Bathrooms (edit the unit in your portfolio)",
       "address": "Unit address (edit the unit in your portfolio)"
     },
-    "facts": "{kind} · {size} · {address}"
+    "facts": "{kind} · {size} · {address}",
+    "relist": "Re-open as a new listing"
   },
   "photos": {
     "title": "Photos",

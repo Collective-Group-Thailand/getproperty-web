@@ -179,6 +179,8 @@ test("a landlord answers enquiries: reply in LINE, confirm a viewing, close one 
   await page.getByTestId("viewing-confirm").click();
   await page.getByRole("alertdialog").getByRole("button", { name: "ยืนยันนัด" }).click();
   await expect(page.getByTestId("lead-viewing")).toHaveAttribute("data-state", "confirmed");
+  // B7.4: the lease is drafted from here once the prospect wants the place.
+  await expect(page.getByTestId("lead-lease-draft")).toBeVisible();
 
   // Answered: nothing waits any more, so the inbox opens on the conversations in progress.
   await page.goto(`${HOSTS.owner}/leads?view=awaiting`);
