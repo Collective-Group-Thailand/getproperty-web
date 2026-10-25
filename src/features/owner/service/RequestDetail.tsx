@@ -24,10 +24,11 @@ import { fieldMembers } from "../shared/members";
 import { ServiceThread } from "@/features/shared/console/ServiceThread";
 import { PhotoThumb } from "../shared/PhotoThumb";
 import { ownerCan, readOnly, type OwnerContext } from "../shared/server";
+import { RepairCosts } from "./RepairCosts";
 import { RequestActions } from "./RequestActions";
 import { categoryName, serviceCategories } from "./server";
 import { SlaTimer } from "./SlaTimer";
-import { currentTime } from "@/features/shared/console/time";
+import { bangkokToday, currentTime } from "@/features/shared/console/time";
 
 /**
  * One service request (F2 2.7): what was reported (place, category, priority, reporter, photos), its SLA, the
@@ -226,6 +227,17 @@ export async function RequestDetail({
           <p className="text-muted text-sm">{t("noWorkOrders")}</p>
         )}
       </Card>
+
+      {me.currentTenant?.type === "landlord" ? (
+        <RepairCosts
+          api={api}
+          serviceRequestId={request.id}
+          unitId={request.unitId}
+          locale={locale}
+          today={bangkokToday()}
+          canHandle={canHandle}
+        />
+      ) : null}
 
       <Card data-testid="request-thread-card">
         <ServiceThread

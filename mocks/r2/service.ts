@@ -57,10 +57,18 @@ function srActions(sr: MockRequest): string[] {
   return out;
 }
 
+/** A landlord's request belongs to its tenant; the rest to the sample apartment (with the Staff building limit). */
+export function canSee(ok: R2Ok, sr: MockRequest): boolean {
+  if (sr.tenantId) return ok.tenantId === sr.tenantId;
+  return visible(ok, sr.buildingId);
+}
+
 function srDto(sr: MockRequest): Schemas["ServiceRequestDto"] {
-  const dto = omit(sr, "timeline");
+  const dto: Partial<MockRequest> = omit(sr, "timeline");
+  delete dto.tenantId;
+  delete dto.repair;
   return {
-    ...dto,
+    ...(dto as Schemas["ServiceRequestDto"]),
     slaBreached: slaBreachedOf(sr),
     nextActions: srActions(sr),
     workOrders: r2()
@@ -249,8 +257,7 @@ const messageDto = (message: MockMessage, ok: R2Ok): Schemas["ServiceMessageDto"
 function serviceHandlers(surface: Surface): HttpHandler[] {
   const base = `*/v1/${surface}`;
   const op = (name: string) => `${surface}.${name}`;
-  const findSr = (ok: R2Ok, id: unknown) =>
-    r2().requests.find((sr) => sr.id === id && visible(ok, sr.buildingId)) ?? null;
+  const findSr = (ok: R2Ok, id: unknown) => r2().requests.find((sr) => sr.id === id && canSee(ok, sr)) ?? null;
   const findWo = (ok: R2Ok, id: unknown) =>
     r2().workOrders.find((wo) => wo.id === id && visible(ok, wo.buildingId)) ?? null;
 
@@ -385,7 +392,7 @@ function serviceHandlers(surface: Surface): HttpHandler[] {
       const params = query(request);
       const q = params.get("q")?.toLowerCase();
       const list = r2()
-        .requests.filter((sr) => visible(ok, sr.buildingId))
+        .requests.filter((sr) => canSee(ok, sr))
         .filter((sr) => !params.get("buildingId") || sr.buildingId === params.get("buildingId"))
         .filter((sr) => !params.get("unitId") || sr.unitId === params.get("unitId"))
         .filter((sr) => !params.get("status") || sr.status === params.get("status"))
@@ -428,6 +435,7 @@ function serviceHandlers(surface: Surface): HttpHandler[] {
           const sr: MockRequest = {
             id: crypto.randomUUID(),
             ref: `SR-${now.slice(2, 4)}${now.slice(5, 7)}-${String(r2().requests.length + 1).padStart(4, "0")}`,
+            decision: null,
             status: "new",
             category: categoryRef(category.id, r2().categories),
             priority: input.priority ?? "normal",

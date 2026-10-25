@@ -242,3 +242,43 @@ test("a landlord issues a rent certificate a tenant asked for and makes the year
   await page.getByTestId("income-unit").first().getByTestId("income-make").click();
   await expect(page.getByTestId("income-unit").first().getByTestId("income-open")).toBeVisible();
 });
+
+test("a landlord decides who fixes a leak and who pays, bills the tenant's share and sees the repair in the year's summary (D-263)", async ({
+  page,
+}) => {
+  await fetch(`${MOCK_API}/__mock/r2/reset`, { method: "POST" });
+  await signInWithOtp(page, HOSTS.owner, "0810000006");
+  await expect(page).toHaveURL(`${HOSTS.owner}/portfolio`);
+  await page.goto(`${HOSTS.owner}/service-requests/5e700000-0000-4000-8000-000000000006`);
+  await hydrated(page);
+  const card = page.getByTestId("repair-costs");
+  await expect(card.getByTestId("repair-undecided")).toBeVisible();
+  await expectAxeClean(page);
+
+  await card.getByTestId("repair-decide").click();
+  const decide = page.getByRole("dialog");
+  await decide.getByTestId("repair-cost-bearer").selectOption("shared");
+  await decide.getByTestId("repair-share").fill("50");
+  await decide.getByRole("button", { name: "บันทึก" }).click();
+  await expect(card.getByTestId("repair-bearer")).toHaveText("แบ่งจ่าย ผู้เช่า 50%");
+  await expect(card.getByTestId("repair-handled")).toHaveText("ช่างของเจ้าของ");
+
+  await card.getByTestId("repair-add-cost").click();
+  const add = page.getByRole("dialog");
+  await add.getByTestId("repair-cost-description").fill("เปลี่ยนท่อน้ำทิ้งใต้ซิงก์");
+  await add.getByTestId("repair-cost-amount").fill("1800");
+  await add.getByRole("button", { name: "แนบใบเสนอราคา/ใบเสร็จ" }).click();
+  await expect(card.getByTestId("repair-cost")).toHaveCount(1);
+  await expect(card.getByTestId("repair-due")).toHaveText("฿900.00");
+
+  await card.getByTestId("repair-settle").click();
+  await page.getByRole("alertdialog").getByRole("button", { name: "ยืนยัน" }).click();
+  await expect(card.getByTestId("repair-due")).toHaveText("฿0.00");
+  await expect(card.getByTestId("repair-settled-row")).toContainText("เรียกเก็บ ฿900.00");
+  await expect(card.getByTestId("repair-settle")).toHaveCount(0);
+
+  await page.goto(`${HOSTS.owner}/income`);
+  await hydrated(page);
+  await expect(page.getByTestId("income-expenses")).toContainText("฿900.00");
+  await expect(page.getByTestId("income-unit-expenses")).toContainText("ประปา");
+});

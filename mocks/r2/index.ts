@@ -1,3 +1,4 @@
+import { repairCostHandlers } from "./repair-costs";
 import type { HttpHandler } from "msw";
 
 import { state } from "../state";
@@ -9,6 +10,7 @@ import { initialR2World } from "./world";
 
 /** R2 handlers (service, access, community, staff tasks) for the owner and staff surfaces. */
 export const r2Handlers: HttpHandler[] = [
+  ...repairCostHandlers,
   ...tasksR2Handlers,
   ...serviceR2Handlers,
   ...accessR2Handlers,
