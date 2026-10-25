@@ -384,5 +384,10 @@
     "verified": "ใช้งานได้",
     "failing": "เชื่อมต่อไม่ได้",
     "revoked": "ยกเลิกแล้ว"
+  },
+  "messagingRate": {
+    "entered": "รอผู้ตรวจเผยแพร่",
+    "published": "เผยแพร่แล้ว",
+    "withdrawn": "ถูกแทนที่"
   }
 }

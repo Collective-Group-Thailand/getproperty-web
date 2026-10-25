@@ -6,14 +6,16 @@
     "hardware": "Rented hardware",
     "field-work": "Field work",
     "plans": "Price plans",
-    "storage": "Storage"
+    "storage": "Storage",
+    "messaging": "LINE messages"
   },
   "description": {
     "invoices": "Collective Group's invoices to its tenants, with payments, receipts and credit notes.",
     "hardware": "Platform-owned devices placed at tenants (hardware as a service) with term and book value.",
     "field-work": "Install and de-install orders, and the site surveys owners asked for to upgrade to Smart.",
     "plans": "Price plans and their effective-dated versions. Published versions never change.",
-    "storage": "Free allowance, overage price, add-on packs and each tenant's usage — every value effective-dated with a reason."
+    "storage": "Free allowance, overage price, add-on packs and each tenant's usage — every value effective-dated with a reason.",
+    "messaging": "Free messages per month and the price per message of getproperty’s shared LINE OA. Entered by one user, published by another"
   },
   "subscriptions": {
     "title": "Subscriptions",
@@ -308,5 +310,39 @@
       "percent": "{percent}%"
     },
     "gb": "{gb} GB"
+  },
+  "messaging": {
+    "title": "LINE message rates",
+    "lead": "Only messages sent through getproperty’s LINE OA that LINE counts (push), beyond the month’s free ones, are charged. Replies are free. Owners on their own OA pay getproperty nothing for messages",
+    "current": "In force",
+    "none": "No rate published",
+    "noneHint": "Messages are not charged and have no allowance meanwhile",
+    "freePerTenant": "Free per tenant / month",
+    "freePerUnit": "Extra free per unit / month",
+    "price": "Price per message",
+    "vat": "VAT",
+    "col": {
+      "effectiveFrom": "Effective from",
+      "free": "Free messages",
+      "price": "Price / message",
+      "state": "State",
+      "entered": "Entered by",
+      "actions": "Actions"
+    },
+    "freeValue": "{tenant, number} + {unit, number}/unit",
+    "enteredAt": "Entered {date}",
+    "publishedAt": "Published {date}",
+    "enter": "Enter a new rate",
+    "enterTitle": "Enter a new message rate",
+    "enterHint": "Another user publishes it. LINE’s prices change — check the latest before setting one",
+    "effectiveFrom": "Effective from",
+    "notes": "Notes",
+    "save": "Save",
+    "saved": "Saved — waiting for a checker to publish",
+    "publish": "Publish",
+    "publishTitle": "Publish the rate effective {date}?",
+    "publishBody": "{tenant} free messages per tenant + {unit} per unit, THB {price} per message (+{vat}% VAT). Shown on the public pricing and charged from its effective date",
+    "published": "Published",
+    "empty": "No rates yet"
   }
 }

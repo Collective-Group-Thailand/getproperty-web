@@ -45,6 +45,30 @@ export const messagingHandlers: HttpHandler[] = [
     return json(ok.own ? w().messagingChannels : []);
   }),
 
+  // The month's usage (a sample near the free messages, for review): 812 of 1,000 through the shared OA.
+  http.get("*/v1/owner/messaging/usage", ({ request }) => {
+    const ok = owner(request, "owner.messagingUsage.get");
+    if (ok instanceof Response) return ok;
+    const month = new URL(request.url).searchParams.get("month") ?? new Date().toISOString().slice(0, 7);
+    const own = w().messagingChannels.some((channel) => channel.state === "verified");
+    return json({
+      month,
+      shared: {
+        counted: 812,
+        allowance: 1000,
+        left: 188,
+        usedPercent: 81,
+        chargeable: 0,
+        pricePerMessage: "0.1000",
+        vatPercent: "7.00",
+        estimatedCharge: "0.00",
+        estimatedVat: "0.00",
+      },
+      own: { counted: own ? 64 : 0, replies: own ? 9 : 0 },
+      quotaFallbacks: 0,
+    } satisfies Schemas["MessagingUsageDto"]);
+  }),
+
   http.post("*/v1/owner/messaging/channels", async ({ request }) => {
     const op = "owner.messagingChannels.connect";
     const ok = mutating(request, op);

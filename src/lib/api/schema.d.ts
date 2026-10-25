@@ -948,6 +948,56 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/messaging-rates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Rates of the shared LINE OA
+         * @description Every version (entered, published, withdrawn), newest first: free messages per tenant and per unit, price per counted message, VAT (D-254).
+         *
+         *     Implements: D-254.
+         */
+        get: operations["admin.messagingRates.list"];
+        put?: never;
+        /**
+         * Enter a rate (maker)
+         * @description A new version in state `entered`, effective from today or later (`messaging_rate.in_the_past`). Another platform user publishes it (D-254, D-091). LINE’s own prices are not hard-coded: re-check them before setting a rate.
+         *
+         *     Implements: D-254, D-091.
+         */
+        post: operations["admin.messagingRates.enter"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/messaging-rates/{rateId}/actions/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Publish a rate (checker)
+         * @description A platform user other than the one who entered it (`messaging_rate.same_checker`) publishes the version; a version already published for the same day is withdrawn. It is charged from its effective date and shown on the public pricing (D-254, D-091).
+         *
+         *     Implements: D-254, D-091.
+         */
+        post: operations["admin.messagingRates.publish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/notification-templates": {
         parameters: {
             query?: never;
@@ -7498,6 +7548,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/owner/messaging/usage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My LINE messages this month
+         * @description Messages LINE counts through the shared getproperty OA against the free ones of the published rate (80 % / 100 % notices once a month), the estimated charge beyond them (billed on the monthly platform invoice), messages through my own OA (LINE bills me; replies free) and quota refusals that went by SMS (D-254).
+         *
+         *     Implements: D-254.
+         */
+        get: operations["owner.messagingUsage.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/owner/meter-readings": {
         parameters: {
             query?: never;
@@ -10682,6 +10754,28 @@ export interface paths {
          *     Implements: D-156, D-204, D-208.
          */
         get: operations["public.plans.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/public/pricing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Published prices
+         * @description What an operator pays getproperty, as published: the shared LINE OA’s free messages and price per counted message beyond them (replies free; an own OA is never charged by getproperty) — in force today and the next published change (D-254). Payment fee rules join with the payment gateway (D-250). Anonymous and cacheable.
+         *
+         *     Implements: D-254.
+         */
+        get: operations["public.pricing.get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -22134,6 +22228,143 @@ export interface components {
         };
         /** @enum {string} */
         MessagingLinkState: "valid" | "used" | "expired";
+        MessagingOwnUsageDto: {
+            /**
+             * @description Push messages LINE counts on your own OA.
+             * @example 240
+             */
+            counted: number;
+            /**
+             * @description Replies (account-linking links): not counted by LINE.
+             * @example 31
+             */
+            replies: number;
+        };
+        MessagingRateCreateDto: {
+            /**
+             * Format: date
+             * @description Today or later (Bangkok).
+             * @example 2026-12-01
+             */
+            effectiveFrom: string;
+            /** @example 500 */
+            freePerTenant: number;
+            /** @example 10 */
+            freePerUnit?: number;
+            /** @example ตาม LINE Pro ส.ค. 2567 */
+            notes?: string | null;
+            /**
+             * @description THB, up to 4 decimals.
+             * @example 0.1000
+             */
+            pricePerMessage: string;
+            /** @example 7.00 */
+            vatPercent: string;
+        };
+        MessagingRateDto: {
+            /**
+             * Format: date
+             * @example 2026-12-01
+             */
+            effectiveFrom: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            enteredAt: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            enteredBy: string;
+            /**
+             * @description Free counted messages per tenant per month.
+             * @example 500
+             */
+            freePerTenant: number;
+            /**
+             * @description Free counted messages per active unit per month.
+             * @example 10
+             */
+            freePerUnit: number;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example null */
+            notes: string | null;
+            /**
+             * @description THB per counted message beyond the free ones.
+             * @example 0.1000
+             */
+            pricePerMessage: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            publishedAt: string | null;
+            /**
+             * Format: uuid
+             * @example null
+             */
+            publishedBy: string | null;
+            /** @example entered */
+            state: components["schemas"]["MessagingRateState"];
+            /** @example 7.00 */
+            vatPercent: string;
+        };
+        /** @enum {string} */
+        MessagingRateState: "entered" | "published" | "withdrawn";
+        MessagingSharedUsageDto: {
+            /**
+             * @description Free messages this month (per tenant + per unit); null while no rate is published (not charged).
+             * @example 1000
+             */
+            allowance: number | null;
+            /**
+             * @description Counted messages beyond the free ones.
+             * @example 0
+             */
+            chargeable: number;
+            /**
+             * @description Messages LINE counts (push; replies are free).
+             * @example 812
+             */
+            counted: number;
+            /**
+             * @description chargeable × price, ex VAT, THB — billed on the monthly platform invoice.
+             * @example 0.00
+             */
+            estimatedCharge: string | null;
+            /** @example 0.00 */
+            estimatedVat: string | null;
+            /** @example 188 */
+            left: number | null;
+            /**
+             * @description THB per counted message.
+             * @example 0.1000
+             */
+            pricePerMessage: string | null;
+            /** @example 81 */
+            usedPercent: number | null;
+            /** @example 7.00 */
+            vatPercent: string | null;
+        };
+        MessagingUsageDto: {
+            /**
+             * @description Bangkok month.
+             * @example 2026-11
+             */
+            month: string;
+            own: components["schemas"]["MessagingOwnUsageDto"];
+            /**
+             * @description LINE messages refused for quota this month (sent by SMS instead where a phone was known).
+             * @example 0
+             */
+            quotaFallbacks: number;
+            shared: components["schemas"]["MessagingSharedUsageDto"];
+        };
         MeterAssignmentHistoryDto: {
             /**
              * Format: uuid
@@ -25491,6 +25722,26 @@ export interface components {
             /** @description The unit’s owner is verified (badge "เจ้าของตัวจริง"). */
             verifiedOwner: boolean;
         };
+        PublicMessagingRateDto: {
+            /**
+             * Format: date
+             * @example 2026-12-01
+             */
+            effectiveFrom: string;
+            /** @example 500 */
+            freePerTenant: number;
+            /** @example 10 */
+            freePerUnit: number;
+            /** @example 0.1000 */
+            pricePerMessage: string;
+            /**
+             * @description Replies are never charged; only messages LINE counts (push) beyond the free ones.
+             * @example true
+             */
+            repliesFree: boolean;
+            /** @example 7.00 */
+            vatPercent: string;
+        };
         PublicPlanDto: {
             /** @example THB */
             currency: string;
@@ -25564,6 +25815,12 @@ export interface components {
         };
         PublicPlansDto: {
             data: components["schemas"]["PublicPlanDto"][];
+        };
+        PublicPricingDto: {
+            /** @description The shared getproperty LINE OA in force today; null = messaging not charged. */
+            messaging: components["schemas"]["PublicMessagingRateDto"] | null;
+            /** @description A published change that takes effect later, if any. */
+            messagingNext: components["schemas"]["PublicMessagingRateDto"] | null;
         };
         PublicSitemapDto: {
             data: components["schemas"]["PublicSitemapEntryDto"][];
@@ -37770,6 +38027,329 @@ export interface operations {
             };
             /** @description Problem: `http.not_found` */
             404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.messagingRates.list": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Rates */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "effectiveFrom": "2026-12-01",
+                     *         "enteredAt": "2026-11-01T00:15:00+07:00",
+                     *         "enteredBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "freePerTenant": 500,
+                     *         "freePerUnit": 10,
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "notes": null,
+                     *         "pricePerMessage": "0.1000",
+                     *         "publishedAt": null,
+                     *         "publishedBy": null,
+                     *         "state": "entered",
+                     *         "vatPercent": "7.00"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["MessagingRateDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.messagingRates.enter": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MessagingRateCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Entered */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "effectiveFrom": "2026-12-01",
+                     *       "enteredAt": "2026-11-01T00:15:00+07:00",
+                     *       "enteredBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "freePerTenant": 500,
+                     *       "freePerUnit": 10,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "notes": null,
+                     *       "pricePerMessage": "0.1000",
+                     *       "publishedAt": null,
+                     *       "publishedBy": null,
+                     *       "state": "entered",
+                     *       "vatPercent": "7.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["MessagingRateDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.conflict`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `messaging_rate.in_the_past`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.messagingRates.publish": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                rateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Published */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "effectiveFrom": "2026-12-01",
+                     *       "enteredAt": "2026-11-01T00:15:00+07:00",
+                     *       "enteredBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "freePerTenant": 500,
+                     *       "freePerUnit": 10,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "notes": null,
+                     *       "pricePerMessage": "0.1000",
+                     *       "publishedAt": "2026-11-01T00:15:00+07:00",
+                     *       "publishedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "state": "published",
+                     *       "vatPercent": "7.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["MessagingRateDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `messaging_rate.invalid_state`, `messaging_rate.same_checker` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `messaging_rate.in_the_past`, `validation.failed` */
+            422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -81908,6 +82488,120 @@ export interface operations {
             };
         };
     };
+    "owner.messagingUsage.get": {
+        parameters: {
+            query?: {
+                /** @description YYYY-MM (Bangkok); default this month. */
+                month?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Usage */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "month": "2026-11",
+                     *       "own": {
+                     *         "counted": 0,
+                     *         "replies": 0
+                     *       },
+                     *       "quotaFallbacks": 0,
+                     *       "shared": {
+                     *         "allowance": 1000,
+                     *         "chargeable": 0,
+                     *         "counted": 812,
+                     *         "estimatedCharge": "0.00",
+                     *         "estimatedVat": "0.00",
+                     *         "left": 188,
+                     *         "pricePerMessage": "0.1000",
+                     *         "usedPercent": 81,
+                     *         "vatPercent": "7.00"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["MessagingUsageDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "owner.meterReadings.create": {
         parameters: {
             query?: never;
@@ -103764,6 +104458,67 @@ export interface operations {
                      *     }
                      */
                     "application/json": components["schemas"]["PublicPlansDto"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "public.pricing.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Prices */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "messaging": {
+                     *         "effectiveFrom": "2026-12-01",
+                     *         "freePerTenant": 500,
+                     *         "freePerUnit": 10,
+                     *         "pricePerMessage": "0.1000",
+                     *         "repliesFree": true,
+                     *         "vatPercent": "7.00"
+                     *       },
+                     *       "messagingNext": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PublicPricingDto"];
                 };
             };
             /** @description Problem: `http.too_many_requests` */

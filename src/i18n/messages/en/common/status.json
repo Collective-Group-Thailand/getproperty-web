@@ -384,5 +384,10 @@
     "verified": "Working",
     "failing": "Not connecting",
     "revoked": "Disconnected"
+  },
+  "messagingRate": {
+    "entered": "Awaiting checker",
+    "published": "Published",
+    "withdrawn": "Replaced"
   }
 }

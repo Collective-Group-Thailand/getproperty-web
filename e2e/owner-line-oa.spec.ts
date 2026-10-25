@@ -20,6 +20,9 @@ test("LINE OA: connect, a refused token is shown with the reason, re-check, disc
   await expect(page.getByTestId("line-oa")).toBeVisible();
   await expect(page.getByTestId("line-oa-channel")).toHaveCount(0);
   await expect(page.getByTestId("line-oa-how")).toContainText("Use webhook");
+  const usage = page.getByTestId("line-oa-usage");
+  await expect(usage).toContainText("812 จาก 1,000 ข้อความฟรี");
+  await expect(usage.getByTestId("line-oa-usage-shared")).toHaveText("เหลือ 188 ข้อความ");
   await expectAxeClean(page);
 
   await page.getByTestId("line-oa-connect").click();

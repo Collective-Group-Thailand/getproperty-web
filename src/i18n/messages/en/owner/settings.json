@@ -542,6 +542,17 @@
     "revoke": "Disconnect",
     "revokeTitle": "Disconnect {name}?",
     "revokeBody": "Messages go back to getproperty’s LINE at once. Residents who confirmed must confirm again if you reconnect",
-    "revoked": "Disconnected"
+    "revoked": "Disconnected",
+    "usage": {
+      "title": "Messages this month",
+      "shared": "Through getproperty’s LINE",
+      "counted": "{counted, number} of {allowance, number} free messages",
+      "left": "{left, number} left",
+      "notCharged": "{counted, number} messages sent — not charged",
+      "beyond": "{count, number} messages over the free ones, about {amount} + VAT {vat}",
+      "own": "{count, number} messages through your OA — LINE bills you; getproperty charges nothing",
+      "fallbacks": "{count, plural, one {LINE refused # message for quota; it went by SMS where a phone was known} other {LINE refused # messages for quota; they went by SMS where a phone was known}}",
+      "repliesFree": "Replies are not counted"
+    }
   }
 }
