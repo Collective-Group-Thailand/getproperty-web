@@ -378,5 +378,11 @@
     "requested": "รอออกหนังสือ",
     "issued": "ออกแล้ว",
     "declined": "ปฏิเสธแล้ว"
+  },
+  "messagingChannel": {
+    "pending": "กำลังตรวจสอบ",
+    "verified": "ใช้งานได้",
+    "failing": "เชื่อมต่อไม่ได้",
+    "revoked": "ยกเลิกแล้ว"
   }
 }

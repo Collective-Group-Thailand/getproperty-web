@@ -11,6 +11,7 @@ import { meteringHandlers } from "./metering";
 import { partyHandlers } from "./parties";
 import { paymentHandlers, providerPays } from "./payments";
 import { landlordDocumentHandlers } from "./landlord-documents";
+import { messagingHandlers } from "./messaging";
 import { initialLeads, leadHandlers } from "./leads";
 import { initialListings, listingHandlers } from "./listings";
 import { portfolioHandlers } from "./portfolio";
@@ -36,6 +37,7 @@ export const ownerHandlers: HttpHandler[] = [
   ...listingHandlers,
   ...leadHandlers,
   ...landlordDocumentHandlers,
+  ...messagingHandlers,
 ];
 
 /**
@@ -91,6 +93,7 @@ const PARTS: Record<string, (keyof OwnerWorld)[]> = {
     "settings",
     "propertySettings",
     "bankAccounts",
+    "messagingChannels",
     "bankOtps",
     "ratePlans",
     "invitations",
