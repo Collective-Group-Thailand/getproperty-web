@@ -1,60 +1,17 @@
+import type { Schemas } from "@/lib/api/types";
+
 /*
- * CONTRACT-REQUEST (docs/contract-requests.md, 2026-10-24): the public listings read of D-252 / api B7.3 is not in the
- * contract yet. These shapes are the request we sent; when `pnpm gen:api` adopts the API's DTOs, replace every type
- * here with `Schemas["PublicListing…"]` and delete this file. Money and sizes are decimal strings, as everywhere.
+ * The public listings read of D-252 (api B7.2, `13a2562`): the shapes are the API's DTOs. Only the areas of D-272 are
+ * still a CONTRACT-REQUEST (docs/contract-requests.md, api B7.9). Money and sizes are decimal strings, as everywhere.
  */
-export type ListingUnitKind = "condo_unit" | "house" | "townhouse" | "room";
-export type ListingFurnishing = "furnished" | "partly_furnished" | "unfurnished";
+export type ListingUnitKind = Schemas["PortfolioUnitKind"];
+export type ListingFurnishing = Schemas["Furnishing"];
+export type PublicListingPhoto = Schemas["PublicListingPhotoDto"];
+export type PublicListingSummary = Schemas["PublicListingSummaryDto"];
+export type PublicListingDetail = Schemas["PublicListingDetailDto"];
+export type PublicListingsPage = Schemas["PublicListingsPageDto"];
 
-export interface PublicListingPhoto {
-  url: string;
-  width: number;
-  height: number;
-  caption: string | null;
-}
-
-export interface PublicListingSummary {
-  slug: string;
-  title: string;
-  unitKind: ListingUnitKind;
-  /** THB per month, decimal string. */
-  rent: string;
-  depositMonths: number;
-  advanceMonths: number;
-  minTermMonths: number;
-  sizeSqm: string;
-  bedrooms: number;
-  bathrooms: number;
-  furnishing: ListingFurnishing;
-  petsAllowed: boolean;
-  availableFrom: string | null;
-  province: string;
-  district: string;
-  /** Full address (D-252: nothing hidden); the unit number only when the owner chose to show it. */
-  address: string;
-  nearestTransit: { name: string; line: string; distanceM: number } | null;
-  cover: PublicListingPhoto;
-  verifiedOwner: boolean;
-  publishedAt: string;
-}
-
-export interface PublicListingDetail extends PublicListingSummary {
-  description: string;
-  facilities: string[];
-  photos: PublicListingPhoto[];
-  floor: string | null;
-  geo: { lat: number; lng: number } | null;
-  ownerDisplayName: string;
-  smokingAllowed: boolean;
-}
-
-export interface PublicListingsPage {
-  data: PublicListingSummary[];
-  total: number;
-  nextCursor: string | null;
-}
-
-/** The search the `/rent` page sends, from its URL (every filter is a plain GET parameter, so the page needs no JS). */
+// CONTRACT-REQUEST (api B7.9): not in the contract yet.
 /** A district or transit station with published listings (D-272, `GET /v1/public/listings/areas`). */
 export interface PublicListingArea {
   slug: string;

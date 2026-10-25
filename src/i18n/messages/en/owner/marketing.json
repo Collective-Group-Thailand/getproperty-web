@@ -808,7 +808,7 @@
       "floor": "Floor",
       "furnishing": "Furnishing",
       "furnishings": {
-        "furnished": "Fully furnished",
+        "fully_furnished": "Fully furnished",
         "partly_furnished": "Partly furnished",
         "unfurnished": "Unfurnished"
       },

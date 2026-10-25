@@ -33,7 +33,7 @@ export default async function Rent({ params, searchParams }: Props) {
   setRequestLocale(locale);
   const t = await getTranslations("owner.marketing.listings");
   const query = parseListingQuery(await searchParams);
-  const [page, areas] = await Promise.all([publicListings(query), publicListingAreas()]);
+  const [page, areas] = await Promise.all([publicListings(query, locale), publicListingAreas()]);
   const popular = [...areas].sort((a, b) => b.count - a.count).slice(0, 8);
   const action = getPathname({ href: "/rent", locale });
   const line = lineOaHref();
