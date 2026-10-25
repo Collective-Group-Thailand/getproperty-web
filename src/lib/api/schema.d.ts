@@ -6038,6 +6038,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/owner/lease-notices/{noticeId}/document": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Open a notice
+         * @description A 5-minute signed URL of the notice PDF (B7.5, D-253).
+         *
+         *     Implements: D-253.
+         */
+        get: operations["owner.leaseNotices.document"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/owner/lease-templates": {
         parameters: {
             query?: never;
@@ -6047,7 +6069,7 @@ export interface paths {
         };
         /**
          * Contract templates
-         * @description The platform standard residential lease (สคบ. 2568, Thai) with its versions, the clause types an addendum may use and the forbidden ones (D-020).
+         * @description The templates this tenant writes on, with their versions: the platform standard residential lease (สคบ. 2568, Thai), or for a landlord the condo unit / house / room templates in Thai and English (B7.5, D-253); the clause types an addendum may use and the forbidden ones (D-020).
          *
          *     Implements: D-020.
          */
@@ -6380,6 +6402,34 @@ export interface paths {
          *     Implements: D-025, D-061.
          */
         post: operations["owner.leases.invite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/leases/{leaseId}/notices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Notices sent on a lease
+         * @description Every written notice of the lease, newest first (B7.5, D-253).
+         *
+         *     Implements: D-253.
+         */
+        get: operations["owner.leases.notices"];
+        put?: never;
+        /**
+         * Send a notice to the lessee
+         * @description A numbered letter (NTC series) in the landlord's name and language, stored as a PDF with the unit and sent to the resident in LINE (B7.5, D-253): `rent_increase` — the new rent applies only after the lease ends and at least `lease.notice.rent_increase_days` ahead (D-020: no mid-term increase); `renewal_offer` — new rent and term from the day after the lease ends, answer within `lease.notice.renewal_response_days`; `non_renewal` and `termination` — also record the lessor's notice on the lease through the D-020 rules (legal ground, notice length, evidence; warnings need an acknowledgement); `late_payment` — the overdue invoices of the lease and a pay-by date `lease.notice.late_payment_days` ahead; it never terminates the lease nor cuts a service (D-024).
+         *
+         *     Implements: D-253, D-020, D-024.
+         */
+        post: operations["owner.leases.issueNotice"];
         delete?: never;
         options?: never;
         head?: never;
@@ -10964,6 +11014,50 @@ export interface paths {
          *     Implements: D-020, D-063, D-229.
          */
         post: operations["resident.leases.giveNotice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/leases/{leaseId}/notices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Letters from my landlord
+         * @description The written notices of my lease, newest first (B7.5, D-253); each also arrived in LINE.
+         *
+         *     Implements: D-253.
+         */
+        get: operations["resident.leases.notices"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/leases/{leaseId}/notices/{noticeId}/document": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Open a letter from my landlord
+         * @description A 5-minute signed URL of the notice PDF (B7.5, D-253).
+         *
+         *     Implements: D-253.
+         */
+        get: operations["resident.leases.noticeDocument"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -19981,6 +20075,127 @@ export interface components {
         };
         /** @enum {string} */
         LeaseLineKind: "internet" | "parking" | "cleaning" | "furniture" | "common_fee" | "water_minimum" | "other_fixed";
+        LeaseNoticeCreateDto: {
+            /**
+             * @description Acknowledged compliance warnings (D-021a).
+             * @example []
+             */
+            acknowledgementIds?: string[];
+            /**
+             * Format: date
+             * @description rent_increase: the date the new rent applies (after the lease ends, at least `lease.notice.rent_increase_days` ahead); termination: the date the lease ends. Ignored for renewal_offer (the day after the lease ends) and non_renewal (the end date).
+             * @example 2027-11-01
+             */
+            effectiveDate?: string;
+            /**
+             * @description termination: uploaded evidence (a breach needs it, D-176).
+             * @example []
+             */
+            evidenceDocumentIds?: string[];
+            /** @example renewal_offer */
+            kind: components["schemas"]["LeaseNoticeKind"];
+            /** @description Letter language; default the lease's contract language. */
+            language?: components["schemas"]["Language"];
+            /** @example ขอบคุณที่เช่ากับเรามาตลอดปี */
+            message?: string | null;
+            /**
+             * @description rent_increase (required) and renewal_offer (default the current rent): the monthly rent.
+             * @example 15500.00
+             */
+            newRent?: string;
+            /** @description termination: the legal ground (required): lessee_breach, disturbance, unlawful_use or mutual_agreement (end_of_term is the non_renewal letter). */
+            reasonCode?: components["schemas"]["LessorReason"];
+            /**
+             * @description renewal_offer: the new term (default the current one).
+             * @example 12
+             */
+            renewalMonths?: number;
+        };
+        LeaseNoticeDto: {
+            /**
+             * @description Total overdue (late payment). Unit: THB, decimal string (D-046).
+             * @example null
+             */
+            amountDue: string | null;
+            /**
+             * Format: uuid
+             * @description The PDF (pdf_notice).
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            documentId: string | null;
+            /**
+             * Format: date
+             * @example 2027-11-01
+             */
+            effectiveDate: string | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /**
+             * Format: date
+             * @example 2026-11-01
+             */
+            issuedOn: string;
+            /** @description The overdue invoices of a late-payment notice. */
+            items: components["schemas"]["LeaseNoticeItemDto"][];
+            /** @example renewal_offer */
+            kind: components["schemas"]["LeaseNoticeKind"];
+            /** @example th */
+            language: components["schemas"]["Language"];
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            leaseId: string;
+            /** @example null */
+            message: string | null;
+            /**
+             * @description New monthly rent (rent change, renewal offer). Unit: THB, decimal string (D-046).
+             * @example 15500.00
+             */
+            newRent: string | null;
+            /**
+             * @description Days between the letter and its effect (or the days given to pay).
+             * @example 37
+             */
+            noticeDays: number | null;
+            /** @example NTC-2026-00001 */
+            number: string;
+            /** @example null */
+            reasonCode: components["schemas"]["LessorReason"] | null;
+            /** @example 12 */
+            renewalMonths: number | null;
+            /**
+             * Format: date
+             * @description Answer (renewal offer) or pay (late payment) by.
+             * @example 2026-11-09
+             */
+            respondBy: string | null;
+            /**
+             * Format: date-time
+             * @description When it was sent to the resident in LINE.
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            sentAt: string | null;
+        };
+        LeaseNoticeItemDto: {
+            /**
+             * @description Overdue balance. Unit: THB, decimal string (D-046).
+             * @example 15000.00
+             */
+            balance: string;
+            /**
+             * Format: date
+             * @example 2026-10-05
+             */
+            dueDate: string;
+            /** @example INV-2026-00042 */
+            number: string;
+        };
+        /** @enum {string} */
+        LeaseNoticeKind: "rent_increase" | "renewal_offer" | "non_renewal" | "termination" | "late_payment";
         LeaseNoticeViewDto: {
             /** @example lessee */
             by: components["schemas"]["NoticeParty"];
@@ -20266,10 +20481,7 @@ export interface components {
             };
             utilityBillingMode?: components["schemas"]["UtilityBillingMode"];
         };
-        /**
-         * @description Required for a lessor notice (ข้อ 4 (12)).
-         * @enum {string}
-         */
+        /** @enum {string} */
         LessorReason: "lessee_breach" | "disturbance" | "end_of_term" | "mutual_agreement" | "unlawful_use";
         LineExchangeDto: {
             /**
@@ -68857,6 +69069,106 @@ export interface operations {
             };
         };
     };
+    "owner.leaseNotices.document": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                noticeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Download */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "expiresAt": "2026-11-01T00:20:00+07:00",
+                     *       "number": "NTC-2026-00001",
+                     *       "url": "https://storage.example.com/notice.pdf?X-Amz-Signature=abc"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DocumentDownloadDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "owner.leaseTemplates.list": {
         parameters: {
             query?: never;
@@ -72141,6 +72453,261 @@ export interface operations {
             };
             /** @description Problem: `provider.unavailable` */
             503: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.leases.notices": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                leaseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Notices */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "amountDue": null,
+                     *         "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "effectiveDate": "2027-11-01",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "issuedOn": "2026-11-01",
+                     *         "items": [],
+                     *         "kind": "renewal_offer",
+                     *         "language": "th",
+                     *         "leaseId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "message": null,
+                     *         "newRent": "15500.00",
+                     *         "noticeDays": 365,
+                     *         "number": "NTC-2026-00001",
+                     *         "reasonCode": null,
+                     *         "renewalMonths": 12,
+                     *         "respondBy": "2026-11-09",
+                     *         "sentAt": "2026-11-01T00:15:00+07:00"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["LeaseNoticeDto"][];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.leases.issueNotice": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                leaseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeaseNoticeCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Sent */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "amountDue": null,
+                     *       "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "effectiveDate": "2027-11-01",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "issuedOn": "2026-11-01",
+                     *       "items": [],
+                     *       "kind": "renewal_offer",
+                     *       "language": "th",
+                     *       "leaseId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "message": null,
+                     *       "newRent": "15500.00",
+                     *       "noticeDays": 365,
+                     *       "number": "NTC-2026-00001",
+                     *       "reasonCode": null,
+                     *       "renewalMonths": 12,
+                     *       "respondBy": "2026-11-09",
+                     *       "sentAt": "2026-11-01T00:15:00+07:00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["LeaseNoticeDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `compliance.acknowledgement_required`, `idempotency.in_progress`, `lease.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `compliance.termination_notice`, `idempotency.key_reused`, `lease.notice_nothing_overdue`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -103466,6 +104033,218 @@ export interface operations {
                 };
             };
             /** @description Problem: `compliance.notice_period`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.leases.notices": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                leaseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Notices */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "amountDue": null,
+                     *         "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "effectiveDate": "2027-11-01",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "issuedOn": "2026-11-01",
+                     *         "items": [],
+                     *         "kind": "renewal_offer",
+                     *         "language": "th",
+                     *         "leaseId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "message": null,
+                     *         "newRent": "15500.00",
+                     *         "noticeDays": 365,
+                     *         "number": "NTC-2026-00001",
+                     *         "reasonCode": null,
+                     *         "renewalMonths": 12,
+                     *         "respondBy": "2026-11-09",
+                     *         "sentAt": "2026-11-01T00:15:00+07:00"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["LeaseNoticeDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.leases.noticeDocument": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                leaseId: string;
+                noticeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Download */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "expiresAt": "2026-11-01T00:20:00+07:00",
+                     *       "number": "NTC-2026-00001",
+                     *       "url": "https://storage.example.com/notice.pdf?X-Amz-Signature=abc"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DocumentDownloadDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];

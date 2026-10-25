@@ -31,6 +31,7 @@ import { ownerCan, section, type OwnerContext } from "../shared/server";
 import { ComplianceChecks } from "./ComplianceChecks";
 import { LeaseActions } from "./LeaseActions";
 import { LeaseInviteButton } from "./LeaseInvite";
+import { LeaseNotices } from "./LeaseNotices";
 import { LeaseStampDuty } from "./LeaseStampDuty";
 
 const EVENT_TYPES = new Set([
@@ -88,12 +89,13 @@ export async function LeaseDetail({ context, leaseId }: { context: OwnerContext;
     if (isApiError(error) && error.status === 404) notFound();
     throw error;
   }
-  const [timeline, invitations, inspections, deposits, stampDuty] = await Promise.all([
+  const [timeline, invitations, inspections, deposits, stampDuty, notices] = await Promise.all([
     section(unwrap(api.GET("/v1/owner/leases/{leaseId}/events", { params: { path: { leaseId } } }))),
     section(unwrap(api.GET("/v1/owner/leases/{leaseId}/invitations", { params: { path: { leaseId } } }))),
     section(unwrap(api.GET("/v1/owner/inspections", { params: { query: { leaseId, perPage: 10 } } }))),
     section(unwrap(api.GET("/v1/owner/deposits", { params: { query: { leaseId, perPage: 5 } } }))),
     section(unwrap(api.GET("/v1/owner/leases/{leaseId}/stamp-duty", { params: { path: { leaseId } } }))),
+    section(unwrap(api.GET("/v1/owner/leases/{leaseId}/notices", { params: { path: { leaseId } } }))),
   ]);
   const signedBy = new Map(lease.signatures.map((signature) => [signature.partyId ?? signature.signerRole, signature]));
   const lessorSigned = lease.signatures.find((signature) => signature.signerRole === "lessor");
@@ -331,6 +333,10 @@ export async function LeaseDetail({ context, leaseId }: { context: OwnerContext;
             today={bangkokToday()}
             canManage={ownerCan(context.me, "lease.manage")}
           />
+        ) : null}
+
+        {notices.data && lease.status !== "draft" && lease.status !== "cancelled" ? (
+          <LeaseNotices lease={lease} notices={notices.data} canManage={ownerCan(context.me, "lease.manage")} />
         ) : null}
 
         <Card as="section" aria-labelledby="lease-lines" data-testid="lease-lines">

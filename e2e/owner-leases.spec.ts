@@ -201,6 +201,32 @@ test("stamp duty: the lease shows the duty and the owner records a payment by ha
   await expectAxeClean(page);
 });
 
+test("notices: the owner sends an overdue-rent letter and a renewal offer from the lease (B7.5)", async ({ page }) => {
+  await signInOwner(page);
+  await gotoOwner(page, `/leases/${LEASE_A302}`);
+  const card = page.getByTestId("lease-notices");
+  await expect(card).toContainText("ยังไม่เคยส่งหนังสือแจ้ง");
+  await hydrated(page);
+  await card.getByTestId("notice-send").click();
+  const dialog = page.getByRole("dialog", { name: "ส่งหนังสือแจ้งผู้เช่า" });
+  await dialog.getByTestId("notice-kind").selectOption("late_payment");
+  await expect(dialog.getByTestId("notice-hint")).toContainText("ไม่ใช่การบอกเลิกสัญญา");
+  await dialog.getByTestId("notice-message").fill("หากติดขัดโทรคุยกันได้ครับ");
+  await dialog.getByTestId("form-submit").click();
+  await expect(card.locator('[data-testid="lease-notice-row"][data-kind="late_payment"]')).toContainText("ค้าง");
+  const sent = await received("owner.leases.issueNotice");
+  expect(sent.at(-1)?.idempotencyKey).toBeTruthy();
+  expect(sent.at(-1)?.body).toMatchObject({ kind: "late_payment", message: "หากติดขัดโทรคุยกันได้ครับ" });
+
+  await card.getByTestId("notice-send").click();
+  await dialog.getByTestId("notice-kind").selectOption("renewal_offer");
+  await dialog.getByTestId("notice-new-rent").fill("6800.00");
+  await dialog.getByTestId("form-submit").click();
+  await expect(card.getByTestId("lease-notice-row")).toHaveCount(2);
+  await expect(card.getByTestId("lease-notice-row").first()).toHaveAttribute("data-kind", "renewal_offer");
+  await expectAxeClean(page);
+});
+
 test("deposits: countdown and late refunds; settlement with comparison, deductions, proposal and refund", async ({
   page,
 }) => {

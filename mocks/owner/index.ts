@@ -111,11 +111,13 @@ export function resetOwnerWorld(part: string | null): boolean {
     state.listingWorld = initialListings();
     state.leads = initialLeads();
     state.stampDuty = {};
+    state.leaseNotices = {};
     if (part) return true;
   }
   if (!part) {
     state.owner = fresh;
     state.stampDuty = {};
+    state.leaseNotices = {};
     return true;
   }
   const keys = PARTS[part];
