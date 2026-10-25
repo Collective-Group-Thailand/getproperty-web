@@ -64,7 +64,7 @@
 - 🟡 F6.5 ✅ ตรวจ/ซ่อน/คืนประกาศ, ยืนยันเจ้าของ (web 4ba5e2a); ⬜ ตั้งค่า fee ของแพลตฟอร์ม ⛔ API B7.2 (fee)
 
 ## 6. Login (D-255)
-- 🟡 เบอร์โทร OTP, Google, Apple, LINE สำหรับ owner/landlord (web: หน้าเข้าสู่ระบบ, สมัคร, ตั้งค่า › วิธีเข้าสู่ระบบ) และผู้เช่า/ผู้สนใจเช่า (LIFF: SMS + Google/Apple นอก LINE) — โค้ดครบ ทดสอบกับ fake provider แล้ว (api bb9137b) ⛔ เปิดจริงต้องมี OAuth client: ดู `docs/sign-in-providers.md`
+- ✅ เบอร์โทร OTP, Google, Apple, LINE สำหรับ owner/landlord (web: หน้าเข้าสู่ระบบ, สมัคร, ตั้งค่า › วิธีเข้าสู่ระบบ) และผู้เช่า/ผู้สนใจเช่า (LIFF: SMS + Google/Apple นอก LINE) — โค้ดครบ ทดสอบกับ fake provider แล้ว (api bb9137b) ⛔ เปิดจริงต้องมี OAuth client: ดู `docs/sign-in-providers.md`
 
 ## 7. getproperty-api (Mac)
 - ✅ B7.0 ปิด subscription (`platform.subscriptions.enabled=false`), error `subscription.disabled`, runbook SQL (commit 219b3dc, branch `feat/b7-landlords-free-pricing`)
