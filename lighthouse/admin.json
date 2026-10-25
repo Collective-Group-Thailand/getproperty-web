@@ -1,6 +1,6 @@
 {
   "extends": "./shared.json",
-  "$comment": "Platform admin console: LCP ≤ 2.5 s, CLS ≤ 0.1, initial JS ≤ 260 KB gz (D-179, docs/performance-budgets.md) — a hard limit on every URL. Measured signed in as a platform admin (scripts/lhci.ts). F5: home queues, tenants list/detail/subscription/pilot, a platform invoice, the tariff manager, settings, audit, outbox, fleet list/gateway and a live OTA rollout; F11: a tenant's provider credentials and the platform credentials page. One run per URL; the JS size does not vary between runs.",
+  "$comment": "Platform admin console: LCP ≤ 2.5 s, CLS ≤ 0.1, initial JS ≤ 260 KB gz (D-179, docs/performance-budgets.md) — a hard limit on every URL. Measured signed in as a platform admin (scripts/lhci.ts). F5: home queues, tenants list/detail/subscription/pilot, a platform invoice, the tariff manager, settings, audit, outbox, fleet list/gateway and a live OTA rollout; F11: a tenant's provider credentials and the platform credentials page. One run per URL; the JS size does not vary between runs. The realtime stream is blocked (blockedUrlPatterns): an open event stream never lets the page go network-idle, so each run would wait out Lighthouse's 45 s load limit; maxWaitForLoad caps a page that still never goes quiet at 15 s (the metrics come from the trace either way).",
   "ci": {
     "collect": {
       "url": [
@@ -26,7 +26,11 @@
       "settings": {
         "preset": "desktop",
         "throttlingMethod": "simulate",
-        "chromeFlags": "--host-resolver-rules=MAP *.localhost 127.0.0.1"
+        "chromeFlags": "--host-resolver-rules=MAP *.localhost 127.0.0.1",
+        "blockedUrlPatterns": [
+          "*/realtime/stream*"
+        ],
+        "maxWaitForLoad": 15000
       }
     },
     "assert": {

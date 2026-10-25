@@ -1,6 +1,6 @@
 {
   "extends": "./shared.json",
-  "$comment": "Staff PWA on a 6\" mid-range Android over 4G: LCP ≤ 2.5 s, CLS ≤ 0.1, initial JS ≤ 200 KB gz (D-179, docs/performance-budgets.md) — a hard limit. Measured as a phone with the Lighthouse mobile preset, signed in as the staff persona (scripts/lhci.ts); the staff host is reached through its Host header (`STAFF_HOST`). F4 adds Today, the reading round, inspections, devices and the install wizard (capture, camera and signature chunks load on first use). F4 4.4 (R2): Today from the staff tasks, work orders, a work order, parcels.",
+  "$comment": "Staff PWA on a 6\" mid-range Android over 4G: LCP ≤ 2.5 s, CLS ≤ 0.1, initial JS ≤ 200 KB gz (D-179, docs/performance-budgets.md) — a hard limit. Measured as a phone with the Lighthouse mobile preset, signed in as the staff persona (scripts/lhci.ts); the staff host is reached through its Host header (`STAFF_HOST`). F4 adds Today, the reading round, inspections, devices and the install wizard (capture, camera and signature chunks load on first use). F4 4.4 (R2): Today from the staff tasks, work orders, a work order, parcels. The realtime stream is blocked (blockedUrlPatterns): an open event stream never lets the page go network-idle, so each run would wait out Lighthouse's 45 s load limit; maxWaitForLoad caps a page that still never goes quiet at 15 s (the metrics come from the trace either way).",
   "ci": {
     "collect": {
       "url": [
@@ -31,7 +31,11 @@
           "throughputKbps": 1638.4,
           "cpuSlowdownMultiplier": 4
         },
-        "chromeFlags": "--host-resolver-rules=MAP *.localhost 127.0.0.1"
+        "chromeFlags": "--host-resolver-rules=MAP *.localhost 127.0.0.1",
+        "blockedUrlPatterns": [
+          "*/realtime/stream*"
+        ],
+        "maxWaitForLoad": 15000
       }
     },
     "assert": {

@@ -264,10 +264,13 @@ test("subscription: plan, usage, invoices with Thai QR and PDF, hardware, upgrad
 
   await gotoOwner(page, `/subscription/invoices/${OPEN_INVOICE}`);
   await expect(page.getByTestId("qr-image")).toBeVisible();
+  // The popup asks for the signed URL; headless Chromium downloads the PDF, so the popup itself never leaves
+  // about:blank — assert on the context-wide request instead of the popup's URL.
   const popup = page.waitForEvent("popup");
+  const signed = page.context().waitForEvent("request", (request) => request.url().includes("/__files/"));
   await page.getByTestId("platform-invoice-pdf").click();
-  // A `noopener` popup is reported while still on about:blank; wait for it to reach the signed URL.
-  await (await popup).waitForURL(/\/__files\//);
+  await popup;
+  await signed;
   await expectAxeClean(page);
 });
 
