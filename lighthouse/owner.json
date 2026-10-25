@@ -50,9 +50,7 @@
       "settings": {
         "preset": "desktop",
         "throttlingMethod": "simulate",
-        "blockedUrlPatterns": [
-          "*/realtime/stream*"
-        ],
+        "blockedUrlPatterns": ["*/realtime/stream*"],
         "maxWaitForLoad": 15000
       }
     },

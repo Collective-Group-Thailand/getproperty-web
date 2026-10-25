@@ -27,9 +27,7 @@
         "preset": "desktop",
         "throttlingMethod": "simulate",
         "chromeFlags": "--host-resolver-rules=MAP *.localhost 127.0.0.1",
-        "blockedUrlPatterns": [
-          "*/realtime/stream*"
-        ],
+        "blockedUrlPatterns": ["*/realtime/stream*"],
         "maxWaitForLoad": 15000
       }
     },
