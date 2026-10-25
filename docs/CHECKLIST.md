@@ -52,7 +52,7 @@
 - ✅ รีวิวดีไซน์ทุกหน้าด้วยภาพหน้าจอ (dev:mock): desktop + มือถือ 390px ครบ 26 หน้า แก้หน้าที่เลื่อนซ้ายขวาได้ 6 หน้า, การ์ดตัวเลข 2 คอลัมน์บนมือถือ
 - ✅ การ์ดพื้นที่จัดเก็บในหน้าค่าบริการ getproperty (ใช้ไป/พื้นที่ฟรี, ไฟล์ vs ข้อมูล, ย้ำว่าไม่ลบ/ไม่ล็อกข้อมูล) (D-276)
 - ⬜ เอาหน้า /subscription ออกหรือเปลี่ยนเป็น "ค่าธรรมเนียมรายเดือน" (ใบแจ้ง fee จาก verify slip) ⛔ API B7.2
-- ⬜ F6.1 สมัครเองสำหรับเจ้าของบ้าน/คอนโด + console แบบ portfolio ⛔ API B7.1
+- ✅ F6.1 สมัครเองสำหรับเจ้าของบ้าน/คอนโด (เบอร์โทร OTP) + หน้า portfolio + เพิ่มยูนิต (web fd76e99) — Google/Apple/LINE บนเว็บรอ B7.8
 - ⬜ F6.2 แก้ไขประกาศ (รูป ≥ 5, ราคา, เงื่อนไข), กล่องคนสนใจ, นัดดูห้อง ⛔ API B7.2–7.4
 - ⬜ F6.4 เอกสารครบชุด: สัญญาเช่า, ใบแจ้งหนี้, ใบเสร็จ, หนังสือแจ้ง, ใบตรวจสภาพห้อง, สรุปภาษีรายปี ⛔ API B7.5
 - ⬜ F6.6 ตั้งค่า LINE OA ของตัวเอง / ใช้ของ getproperty + ดูยอดข้อความ ⛔ API B7.7
@@ -68,7 +68,7 @@
 
 ## 7. getproperty-api (Mac)
 - ✅ B7.0 ปิด subscription (`platform.subscriptions.enabled=false`), error `subscription.disabled`, runbook SQL (commit 219b3dc, branch `feat/b7-landlords-free-pricing`)
-- ⬜ B7.1 landlord tenant สมัครเอง + portfolio
+- ✅ B7.1 landlord tenant สมัครเอง (เบอร์โทร OTP, LINE, Google, Apple) + portfolio + ส่งมอบตึก stub ให้นิติ (D-280) (api 040ebaf, asset-core v0.5.0)
 - ⬜ B7.2 กฎ fee แบบยืดหยุ่น (%, flat, min, cap, tier, MDR), split settlement, verify slip → บิล fee รายเดือน ⛔ เลือก payment gateway (O-020)
 - ⬜ B7.3 listings API: `/v1/public/listings`, `/{slug}`, `/sitemap` (หน้าเว็บใช้ mock ตาม contract ที่ผมส่งไว้)
 - ⬜ B7.4 คนสนใจ, นัดดูห้อง
