@@ -373,5 +373,10 @@
     "cancelled": "ยกเลิกแล้ว",
     "completed": "ดูห้องแล้ว",
     "no_show": "ไม่มาตามนัด"
+  },
+  "rentCertificate": {
+    "requested": "รอออกหนังสือ",
+    "issued": "ออกแล้ว",
+    "declined": "ปฏิเสธแล้ว"
   }
 }

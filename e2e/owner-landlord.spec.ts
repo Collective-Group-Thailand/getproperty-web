@@ -216,3 +216,29 @@ test("a landlord opens the documents of one unit from the portfolio (B7.5)", asy
   await expect(rows).toHaveCount(1);
   await expect(rows.first()).toContainText("สัญญาเช่า 12/345");
 });
+
+test("a landlord issues a rent certificate a tenant asked for and makes the year's income summary (B7.5)", async ({
+  page,
+}) => {
+  await signInWithOtp(page, HOSTS.owner, "0810000006");
+  await expect(page).toHaveURL(`${HOSTS.owner}/portfolio`);
+  await hydrated(page);
+  await expect(page.getByTestId("portfolio-certificates")).toContainText("รอ 1");
+  await page.getByTestId("portfolio-certificates").click();
+  await expect(page.getByTestId("certificate-row")).toHaveCount(1);
+  await expect(page.getByTestId("certificate-row")).toContainText("วีซ่า");
+  await expectAxeClean(page);
+  await hydrated(page);
+  await page.getByTestId("certificate-issue").click();
+  await page.getByRole("alertdialog").getByRole("button", { name: "ออกหนังสือ" }).click();
+  await expect(page.locator('[data-testid="certificate-answered"][data-state="issued"]')).toHaveCount(1);
+  await expect(page.getByTestId("certificate-row")).toHaveCount(0);
+
+  await page.goto(`${HOSTS.owner}/income`);
+  await hydrated(page);
+  await expect(page.getByTestId("income-unit")).toHaveCount(2);
+  await expect(page.getByTestId("income-gross")).not.toHaveText("฿0.00");
+  await expectAxeClean(page);
+  await page.getByTestId("income-unit").first().getByTestId("income-make").click();
+  await expect(page.getByTestId("income-unit").first().getByTestId("income-open")).toBeVisible();
+});

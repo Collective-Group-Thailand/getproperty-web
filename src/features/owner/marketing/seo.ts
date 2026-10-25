@@ -75,6 +75,12 @@ export function lineOaHref(): string | null {
   return id ? `https://line.me/R/ti/p/${encodeURIComponent(id)}` : null;
 }
 
+/** A listing in the LINE Mini App (ask the owner, book a viewing, D-252); null when the LIFF id is not configured. */
+export function liffRentHref(slug: string): string | null {
+  const id = serverEnv().NEXT_PUBLIC_LIFF_ID;
+  return id ? `https://liff.line.me/${encodeURIComponent(id)}/rent/${encodeURIComponent(slug)}` : null;
+}
+
 /** Opens a chat with the platform LINE OA with `text` typed in (LINE URL scheme `oaMessage`); null when not configured. */
 export function lineOaMessageHref(text: string): string | null {
   const id = serverEnv().NEXT_PUBLIC_LINE_OA_ID;

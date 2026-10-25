@@ -286,7 +286,7 @@ export async function LeaseDetail({ context, leaseId }: { context: OwnerContext;
             description={lease.compliance.inScope ? t("inScope") : t("outOfScope")}
           />
           <p className="text-muted mb-2 text-sm" data-testid="lease-language">
-            {t("language")}: {t(`languageValue.${lease.template.language}`)}
+            {t("language")}: {lease.bilingual ? t("languageBilingual") : t(`languageValue.${lease.template.language}`)}
           </p>
           <ComplianceChecks lease={lease} />
           <div className="mt-3 flex flex-wrap gap-2">

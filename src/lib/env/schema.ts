@@ -183,6 +183,21 @@ const publicShape = {
         .regex(/^@[\w.-]+$/, "must look like @account")
         .optional(),
     ),
+  /**
+   * The resident / prospect LINE Mini App's LIFF id (getproperty-liff): a listing's "ask the owner" button opens
+   * `https://liff.line.me/<id>/rent/<slug>` (enquiry + viewing booking, D-252); unset = the LINE OA chat link.
+   */
+  NEXT_PUBLIC_LIFF_ID: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => (value ? value : undefined))
+    .pipe(
+      z
+        .string()
+        .regex(/^\d+-[A-Za-z0-9]+$/, "must look like 1234567890-AbCdEfGh")
+        .optional(),
+    ),
   /** VAPID application server key; when unset the staff PWA reads it from `/v1/auth/web-push/public-key`. */
   NEXT_PUBLIC_VAPID_PUBLIC_KEY: optionalString,
   NEXT_PUBLIC_SENTRY_DSN: optionalUrl,

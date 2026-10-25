@@ -46,7 +46,10 @@ export const KIND_ICON: Record<Kind, IconGlyph> = {
 export async function PortfolioView({ context, welcome }: { context: OwnerContext; welcome: boolean }) {
   const t = await getTranslations("owner.portfolio");
   const { api, locale } = context;
-  const portfolio = await section(unwrap(api.GET("/v1/owner/portfolio")));
+  const [portfolio, requests] = await Promise.all([
+    section(unwrap(api.GET("/v1/owner/portfolio"))),
+    section(unwrap(api.GET("/v1/owner/rent-certificates", { params: { query: { state: "requested" } } }))),
+  ]);
   const addHref = ownerPath(locale, "/portfolio/new");
   const add = (
     <Button asChild iconStart={IconAdd} data-testid="portfolio-add">
@@ -80,6 +83,37 @@ export async function PortfolioView({ context, welcome }: { context: OwnerContex
       ) : (
         <>
           <MonthSummary totals={portfolio.data.totals} units={portfolio.data.units} locale={locale} />
+          <nav
+            aria-label={t("paperwork.title")}
+            className="grid gap-3 sm:grid-cols-2"
+            data-testid="portfolio-paperwork"
+          >
+            <a
+              href={ownerPath(locale, "/certificates")}
+              className="border-border bg-surface rounded-card flex min-h-12 items-center justify-between gap-3 border p-4"
+              data-testid="portfolio-certificates"
+            >
+              <span className="flex flex-col">
+                <span className="font-medium">{t("paperwork.certificates")}</span>
+                <span className="text-muted text-sm">{t("paperwork.certificatesHint")}</span>
+              </span>
+              {requests.data?.length ? (
+                <Badge tone="warning" size="sm">
+                  {t("paperwork.waiting", { count: requests.data.length })}
+                </Badge>
+              ) : null}
+            </a>
+            <a
+              href={ownerPath(locale, "/income")}
+              className="border-border bg-surface rounded-card flex min-h-12 items-center justify-between gap-3 border p-4"
+              data-testid="portfolio-income"
+            >
+              <span className="flex flex-col">
+                <span className="font-medium">{t("paperwork.income")}</span>
+                <span className="text-muted text-sm">{t("paperwork.incomeHint")}</span>
+              </span>
+            </a>
+          </nav>
           <section aria-labelledby="portfolio-units" className="flex flex-col gap-4">
             <h2 id="portfolio-units" className="text-lg font-semibold">
               {t("units.title", { count: portfolio.data.units.length })}

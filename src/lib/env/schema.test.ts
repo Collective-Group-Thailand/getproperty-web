@@ -99,5 +99,9 @@ describe("parsePublicEnv", () => {
     expect(parsePublicEnv({ NEXT_PUBLIC_ENV_BADGE: "production" }).NEXT_PUBLIC_ENV_BADGE).toBeUndefined();
     expect(parsePublicEnv({ NEXT_PUBLIC_ENV_BADGE: "uat" }).NEXT_PUBLIC_ENV_BADGE).toBe("uat");
     expect(parsePublicEnv({ NEXT_PUBLIC_LINE_OA_ID: "" }).NEXT_PUBLIC_LINE_OA_ID).toBeUndefined();
+    expect(parsePublicEnv({ NEXT_PUBLIC_LIFF_ID: "1657000000-AbCdEfGh" }).NEXT_PUBLIC_LIFF_ID).toBe(
+      "1657000000-AbCdEfGh",
+    );
+    expect(() => parsePublicEnv({ NEXT_PUBLIC_LIFF_ID: "not a liff id" })).toThrow(/NEXT_PUBLIC_LIFF_ID/);
   });
 });
