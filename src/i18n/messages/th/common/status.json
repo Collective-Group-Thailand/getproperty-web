@@ -356,5 +356,22 @@
     "pending": "รอตรวจ",
     "approved": "ยืนยันแล้ว",
     "rejected": "ไม่ผ่าน"
+  },
+  "lead": {
+    "new": "ใหม่",
+    "contacted": "คุยแล้ว",
+    "viewing_booked": "นัดดูห้อง",
+    "viewed": "ดูห้องแล้ว",
+    "applied": "ขอเช่า",
+    "won": "ได้ผู้เช่า",
+    "lost": "ไม่สำเร็จ"
+  },
+  "listingViewing": {
+    "requested": "รอยืนยัน",
+    "confirmed": "ยืนยันแล้ว",
+    "declined": "ปฏิเสธแล้ว",
+    "cancelled": "ยกเลิกแล้ว",
+    "completed": "ดูห้องแล้ว",
+    "no_show": "ไม่มาตามนัด"
   }
 }

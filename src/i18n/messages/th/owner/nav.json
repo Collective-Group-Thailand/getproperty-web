@@ -1,6 +1,7 @@
 {
   "portfolio": "พอร์ตของฉัน",
   "listings": "ประกาศเช่า",
+  "leads": "คนสนใจเช่า",
   "dashboard": "เช้านี้",
   "buildings": "อาคาร",
   "units": "ห้อง",
@@ -34,6 +35,7 @@
   },
   "bottom": {
     "portfolio": "พอร์ต",
+    "leads": "คนสนใจ",
     "today": "วันนี้",
     "units": "ห้อง",
     "invoices": "บิล",

@@ -153,7 +153,7 @@ export function menuFor(
 ): string[] {
   const menu = (surface === "owner" ? OWNER_MENU_BY_ROLE : STAFF_MENU_BY_ROLE)[role];
   if (surface !== "owner" || tenantType !== "landlord") return menu;
-  return ["portfolio", "listings", ...menu.filter((key) => !BUILDING_OPERATOR_ONLY.has(key))];
+  return ["portfolio", "listings", "leads", ...menu.filter((key) => !BUILDING_OPERATOR_ONLY.has(key))];
 }
 
 export interface OperatorPersona {

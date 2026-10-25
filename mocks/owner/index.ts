@@ -10,6 +10,7 @@ import { leaseHandlers, residentSigns } from "./leases";
 import { meteringHandlers } from "./metering";
 import { partyHandlers } from "./parties";
 import { paymentHandlers, providerPays } from "./payments";
+import { initialLeads, leadHandlers } from "./leads";
 import { initialListings, listingHandlers } from "./listings";
 import { portfolioHandlers } from "./portfolio";
 import { initialPortfolios } from "./portfolio-world";
@@ -32,6 +33,7 @@ export const ownerHandlers: HttpHandler[] = [
   ...settingsHandlers,
   ...portfolioHandlers,
   ...listingHandlers,
+  ...leadHandlers,
 ];
 
 /**
@@ -105,6 +107,7 @@ export function resetOwnerWorld(part: string | null): boolean {
     state.portfolio = initialPortfolios();
     state.landlordSignedUp = false;
     state.listingWorld = initialListings();
+    state.leads = initialLeads();
     if (part) return true;
   }
   if (!part) {

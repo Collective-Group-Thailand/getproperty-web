@@ -2,6 +2,7 @@ import type { components } from "../src/lib/api/schema";
 import { PLATFORM_USERS } from "./fixtures";
 import { initialOwnerWorld, type OwnerWorld } from "./owner/world";
 import { initialPlatformWorld, type PlatformWorld } from "./platform/world";
+import { initialLeads, type MockLead } from "./owner/leads";
 import { initialListings, type MockListing, type MockVerification } from "./owner/listings";
 import { initialPortfolios } from "./owner/portfolio-world";
 import { initialR2World, type R2World } from "./r2/world";
@@ -138,6 +139,8 @@ export interface MockState {
   landlordSignedUp: boolean;
   /** Listings, their reports and owner verifications (B7.2): see owner/listings.ts. */
   listingWorld: { listings: MockListing[]; verifications: MockVerification[] };
+  /** Enquiries and viewings of the landlord's listings (B7.3): see owner/leads.ts. */
+  leads: MockLead[];
   webVitals: unknown[];
   log: LoggedRequest[];
   /** Access token lifetime; the suite shortens it to exercise refresh. */
@@ -163,6 +166,7 @@ function initial(): MockState {
     portfolio: initialPortfolios(),
     landlordSignedUp: false,
     listingWorld: initialListings(),
+    leads: initialLeads(),
     webVitals: [],
     log: [],
     // 15 minutes like the API; a long Lighthouse run sets MOCK_ACCESS_TTL_MS so its fixed session cookie lasts.

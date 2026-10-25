@@ -149,3 +149,49 @@ test("support reviews listings: approves, restores a reported one and verifies a
   await expect(page.getByTestId("verification-row")).toHaveCount(0);
   await expectAxeClean(page);
 });
+
+test("a landlord answers enquiries: reply in LINE, confirm a viewing, close one lost (F6.2 part 2)", async ({
+  page,
+}) => {
+  await signInWithOtp(page, HOSTS.owner, "0810000006");
+  await page.goto(`${HOSTS.owner}/leads`);
+  await hydrated(page);
+  await expect(page.getByTestId("leads")).toBeVisible();
+  await expect(page.getByTestId("leads-upcoming")).toContainText("ธนพล ศรีสุข");
+  // Without a tab the inbox opens on what waits for an answer.
+  const waiting = page.getByTestId("lead-row");
+  await expect(waiting).toHaveCount(1);
+  await expect(waiting.first()).toContainText("สมศรี ใจดี");
+  await expect(waiting.first()).toHaveAttribute("data-awaiting", "true");
+  await expectAxeClean(page);
+
+  await waiting.first().getByRole("link").click();
+  await expect(page.getByTestId("lead-detail")).toContainText("สมศรี ใจดี");
+  await hydrated(page);
+  await expect(page.getByTestId("lead-viewing")).toHaveAttribute("data-state", "requested");
+  await expectAxeClean(page);
+
+  await page.getByTestId("lead-reply-input").fill("ยังว่างค่ะ เจอกันวันเสาร์นะคะ");
+  await page.getByTestId("lead-reply-send").click();
+  await expect(page.getByTestId("lead-message").last()).toHaveAttribute("data-author", "owner");
+  await expect(page.getByTestId("lead-message").last()).toContainText("เจอกันวันเสาร์");
+
+  await page.getByTestId("viewing-confirm").click();
+  await page.getByRole("alertdialog").getByRole("button", { name: "ยืนยันนัด" }).click();
+  await expect(page.getByTestId("lead-viewing")).toHaveAttribute("data-state", "confirmed");
+
+  // Answered: nothing waits any more, so the inbox opens on the conversations in progress.
+  await page.goto(`${HOSTS.owner}/leads?view=awaiting`);
+  await expect(page.getByTestId("lead-row")).toHaveCount(0);
+  await page.getByTestId("leads-tab-open").click();
+  await page.getByTestId("lead-row").filter({ hasText: "Daniel Weber" }).getByRole("link").click();
+  await hydrated(page);
+  await page.getByTestId("lead-lost").click();
+  await page.getByTestId("lead-lost-reason").selectOption("chose_other");
+  await page.getByRole("dialog").getByRole("button", { name: "ไม่สำเร็จ" }).click();
+  await expect(page.getByTestId("lead-outcome")).toContainText("เลือกที่อื่นแล้ว");
+  await expect(page.getByTestId("lead-closed")).toBeVisible();
+
+  await page.goto(`${HOSTS.owner}/leads?view=closed`);
+  await expect(page.getByTestId("lead-row")).toHaveCount(2);
+});

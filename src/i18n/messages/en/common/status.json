@@ -356,5 +356,22 @@
     "pending": "In review",
     "approved": "Verified",
     "rejected": "Rejected"
+  },
+  "lead": {
+    "new": "New",
+    "contacted": "Contacted",
+    "viewing_booked": "Viewing booked",
+    "viewed": "Viewed",
+    "applied": "Applied",
+    "won": "Won",
+    "lost": "Lost"
+  },
+  "listingViewing": {
+    "requested": "Awaiting you",
+    "confirmed": "Confirmed",
+    "declined": "Declined",
+    "cancelled": "Cancelled",
+    "completed": "Viewed",
+    "no_show": "No show"
   }
 }

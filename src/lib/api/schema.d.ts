@@ -2810,6 +2810,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/auth/prospect/line": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign in a prospect with a LINE id token
+         * @description For people looking for a place to rent (B7.3, D-252): verifies the LIFF / LINE Login id token, creates the account on first use and returns tokens of audience `prospect` (no scopes — every prospect operation reads only the caller’s own enquiries and viewings). Phone, Google and Apple sign-in for prospects follow with the OAuth clients of D-255.
+         *
+         *     Implements: D-252, D-255, ADR-0003.
+         */
+        post: operations["auth.prospectLine.exchange"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/auth/refresh": {
         parameters: {
             query?: never;
@@ -5878,6 +5900,100 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/owner/leads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Enquiries inbox
+         * @description Leads of my listings, the most recent prospect activity first; filter by state, by listing, or `open=true` for those not yet won or lost. `awaitingReply` marks the ones waiting for my answer (D-252).
+         *
+         *     Implements: D-252.
+         */
+        get: operations["owner.leads.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/leads/{leadId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One enquiry
+         * @description A lead with what the prospect asked, the whole conversation, the viewings and my notes (D-252).
+         *
+         *     Implements: D-252.
+         */
+        get: operations["owner.leads.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Notes on an enquiry
+         * @description My private notes on the lead — never shown to the prospect (D-252).
+         *
+         *     Implements: D-252.
+         */
+        patch: operations["owner.leads.update"];
+        trace?: never;
+    };
+    "/v1/owner/leads/{leadId}/actions/set-state": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Move an enquiry on
+         * @description contacted, viewed, applied, won — or lost with a reason (`lostReason`). Won and lost close the lead and cancel its live viewings (the prospect is told). A closed lead cannot be reopened; the prospect starts a new one by writing again (D-252).
+         *
+         *     Implements: D-252.
+         */
+        post: operations["owner.leads.setState"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/leads/{leadId}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reply to an enquiry
+         * @description Adds my reply to the conversation; a `new` lead becomes `contacted`; the prospect receives it in LINE (consent `prospect.enquiry`, quiet hours) with a link to the enquiry (D-252).
+         *
+         *     Implements: D-252, D-025.
+         */
+        post: operations["owner.leads.reply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/owner/lease-templates": {
         parameters: {
             query?: never;
@@ -6242,6 +6358,94 @@ export interface paths {
          *     Implements: D-020, D-021a, D-158, D-208.
          */
         post: operations["owner.leases.previewCompliance"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/listing-viewings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Viewing calendar
+         * @description Requested, confirmed and past viewings of my listings from `from` (default: today, Bangkok) to `to`, in time order (D-252).
+         *
+         *     Implements: D-252.
+         */
+        get: operations["owner.listingViewings.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/listing-viewings/{viewingId}/actions/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record how a viewing went
+         * @description After a confirmed viewing has started: `completed` (the lead becomes `viewed`) or `no_show` (D-252).
+         *
+         *     Implements: D-252.
+         */
+        post: operations["owner.listingViewings.complete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/listing-viewings/{viewingId}/actions/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm a viewing
+         * @description Confirms a requested viewing that has not started; the prospect is told in LINE and both sides are reminded `listing.viewing.reminder_hours_before` (D-252).
+         *
+         *     Implements: D-252.
+         */
+        post: operations["owner.listingViewings.confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/listing-viewings/{viewingId}/actions/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Decline a viewing
+         * @description Declines a requested or confirmed viewing that has not started, with a reason the prospect reads in LINE; the slot is free again (D-252).
+         *
+         *     Implements: D-252.
+         */
+        post: operations["owner.listingViewings.decline"];
         delete?: never;
         options?: never;
         head?: never;
@@ -9504,6 +9708,204 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/prospect/enquiries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My enquiries
+         * @description Every enquiry I started, most recently active first, with the conversation and viewings (D-252).
+         *
+         *     Implements: D-252.
+         */
+        get: operations["prospect.enquiries.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/prospect/enquiries/{leadId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One of my enquiries
+         * @description An enquiry of mine (someone else’s is a 404) (D-252).
+         *
+         *     Implements: D-252.
+         */
+        get: operations["prospect.enquiries.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/prospect/enquiries/{leadId}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Write to the owner
+         * @description Adds my message to an open enquiry; the owner is told in the console and in LINE (D-252).
+         *
+         *     Implements: D-252.
+         */
+        post: operations["prospect.enquiries.write"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/prospect/listings/{slug}/enquiries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask about a listing
+         * @description Sends a message to the owner of a published listing. The first contact with a listing needs `consent: true` (PDPA purpose `prospect.enquiry`, `listing.consent_required` otherwise) and counts against `listing.lead.daily_limit`; later messages go into the same open enquiry. Nationality is optional (D-252).
+         *
+         *     Implements: D-252, D-025.
+         */
+        post: operations["prospect.enquiries.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/prospect/listings/{slug}/viewings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Book a viewing
+         * @description Requests a free slot of the listing’s availability (`GET /v1/public/listings/{slug}/viewing-slots`; notice and horizon are settings) — the owner confirms or declines. Opens the enquiry when there is none (same consent rule as asking). One live viewing per enquiry (`listing.viewing_exists`: change its time instead); a slot taken a moment ago answers `listing.viewing_slot_taken` (D-252).
+         *
+         *     Implements: D-252, D-025.
+         */
+        post: operations["prospect.viewings.request"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/prospect/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Who I am as a prospect
+         * @description The signed-in prospect, with how many of my enquiries are open and how many viewings are still to come (B7.3, D-252).
+         *
+         *     Implements: D-252.
+         */
+        get: operations["prospect.me.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/prospect/ping": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ping the prospect surface
+         * @description Answers with the surface name, the server time (Asia/Bangkok) and the API version. Placeholder operation of the `prospect` surface until its real endpoints land. Anonymous or with an `prospect` token (checked from B1.3: wrong audience → 403 `auth.wrong_audience`).
+         *
+         *     Implements: D-002, ADR-0002.
+         */
+        get: operations["prospect.system.ping"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/prospect/viewings/{viewingId}/actions/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel my viewing
+         * @description Cancels a requested or confirmed viewing that has not started; the owner is told (D-252).
+         *
+         *     Implements: D-252.
+         */
+        post: operations["prospect.viewings.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/prospect/viewings/{viewingId}/actions/reschedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Change my viewing time
+         * @description Moves a requested or confirmed viewing to another free slot in one step: the old one is cancelled and points to the new request, which the owner confirms again (D-252).
+         *
+         *     Implements: D-252.
+         */
+        post: operations["prospect.viewings.reschedule"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/public/listings": {
         parameters: {
             query?: never;
@@ -9564,6 +9966,28 @@ export interface paths {
          *     Implements: D-252.
          */
         post: operations["public.listings.report"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/public/listings/{slug}/viewing-slots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Free viewing times
+         * @description Free slots of a published listing’s viewing availability from `from` (`YYYY-MM-DD`, default today in Bangkok) for `days` days (default 14), leaving out times already requested or confirmed and those inside `listing.viewing.min_notice_hours` or beyond `listing.viewing.horizon_days` (D-252). No personal data.
+         *
+         *     Implements: D-252.
+         */
+        get: operations["public.listings.viewingSlots"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -16475,6 +16899,56 @@ export interface components {
             /** @example พี่สาว */
             relation: string;
         };
+        EnquiryCreateDto: {
+            /**
+             * @description I agree that the owner uses my name, messages and LINE contact to answer this enquiry (consent `prospect.enquiry`, PDPA). Required for the first contact with a listing; later messages may send false.
+             * @example true
+             */
+            consent: boolean;
+            /** @example ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้ */
+            message: string;
+            /**
+             * Format: date
+             * @example 2026-12-01
+             */
+            moveInDate?: string | null;
+            /**
+             * @description ISO 3166-1 alpha-2 — optional; never required to enquire (D-252).
+             * @example TH
+             */
+            nationality?: string | null;
+            /** @example 2 */
+            occupants?: number | null;
+            /** @example 12 */
+            termMonths?: number | null;
+        };
+        EnquiryListingDto: {
+            /**
+             * @description False once the listing is no longer public (leased, paused, hidden).
+             * @example true
+             */
+            available: boolean;
+            /** @example พญาไท */
+            district: string | null;
+            /**
+             * @description Display name of the owner (tenant).
+             * @example มาลี ใจงาม
+             */
+            ownerName: string;
+            /** @example กรุงเทพมหานคร */
+            province: string | null;
+            /**
+             * @description Monthly rent. Unit: THB, decimal string (D-046).
+             * @example 15000.00
+             */
+            rent: string;
+            /** @example condo-1br-0193f2a4b1 */
+            slug: string;
+            /** @example One-bedroom condo near BTS Ari */
+            titleEn: string | null;
+            /** @example คอนโด 1 ห้องนอน ใกล้ BTS อารีย์ */
+            titleTh: string;
+        };
         /** @enum {string} */
         EnvironmentBadge: "development" | "test" | "production";
         /** @enum {string} */
@@ -18843,6 +19317,107 @@ export interface components {
          * @enum {string}
          */
         Language: "th" | "en";
+        LeadListingDto: {
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example condo-1br-0193f2a4b1 */
+            slug: string;
+            /** @example คอนโด 1 ห้องนอน ใกล้ BTS อารีย์ */
+            title: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            unitId: string;
+        };
+        LeadMessageCreateDto: {
+            /** @example ยังว่างค่ะ เสาร์นี้ 10 โมงสะดวกไหมคะ */
+            body: string;
+        };
+        LeadMessageDto: {
+            /** @example prospect */
+            author: components["schemas"]["ListingLeadAuthor"];
+            /** @example ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้ */
+            body: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T09:15:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+        };
+        LeadNotesDto: {
+            /** @example ทำงานแถวอารีย์ สะดวกดูวันเสาร์ */
+            notes: string | null;
+        };
+        LeadProspectDto: {
+            /**
+             * @description Replies reach the prospect in LINE.
+             * @example true
+             */
+            lineLinked: boolean;
+            /** @example สมศรี ใจดี */
+            name: string;
+            /**
+             * Format: uuid
+             * @description The prospect’s party in my tenant.
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            partyId: string;
+            /**
+             * @description Only when the prospect verified one.
+             * @example null
+             */
+            phone: string | null;
+        };
+        LeadStateDto: {
+            lostNote?: string | null;
+            /** @description Required with `lost`. */
+            lostReason?: components["schemas"]["ListingLeadLostReason"] | null;
+            /** @example lost */
+            state: components["schemas"]["OwnerLeadState"];
+        };
+        LeadViewingDto: {
+            /** @example null */
+            cancelledBy: components["schemas"]["ListingLeadAuthor"] | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-07T10:30:00+07:00
+             */
+            endsAt: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example จะมากับแฟนค่ะ */
+            note: string | null;
+            /**
+             * @description Why the owner declined (or why the prospect cancelled).
+             * @example null
+             */
+            reason: string | null;
+            /**
+             * Format: uuid
+             * @description The viewing that replaced this one when the prospect changed the time.
+             * @example null
+             */
+            rescheduledTo: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-07T10:00:00+07:00
+             */
+            startsAt: string;
+            /** @example requested */
+            state: components["schemas"]["ListingViewingState"];
+        };
         LeaseCompliancePreviewDto: {
             checks: components["schemas"]["LeasePreviewCheckDto"][];
             defaults: components["schemas"]["LeasePreviewDefaultsDto"] | null;
@@ -19675,6 +20250,12 @@ export interface components {
             /** @example 1 */
             version: number;
         };
+        /** @enum {string} */
+        ListingLeadAuthor: "prospect" | "owner";
+        /** @enum {string} */
+        ListingLeadLostReason: "price" | "location" | "unit_unsuitable" | "chose_other" | "no_response" | "not_qualified" | "unit_leased" | "other";
+        /** @enum {string} */
+        ListingLeadState: "new" | "contacted" | "viewing_booked" | "viewed" | "applied" | "won" | "lost";
         ListingPhotoAddDto: {
             /** @example ห้องนั่งเล่น */
             caption?: string | null;
@@ -19792,6 +20373,8 @@ export interface components {
         };
         /** @enum {string} */
         ListingVerificationState: "pending" | "approved" | "rejected";
+        /** @enum {string} */
+        ListingViewingState: "requested" | "confirmed" | "declined" | "cancelled" | "completed" | "no_show";
         LockActiveDto: {
             /**
              * @description false stops new codes and syncs (existing codes stay at the vendor).
@@ -20975,7 +21558,7 @@ export interface components {
         /** @enum {string} */
         NoticeParty: "lessee" | "lessor";
         /** @enum {string} */
-        NotificationAudience: "resident" | "technician" | "owner" | "manager" | "staff" | "accountant" | "platform";
+        NotificationAudience: "resident" | "technician" | "owner" | "manager" | "staff" | "accountant" | "platform" | "prospect";
         /** @enum {string} */
         NotificationChannel: "line" | "sms" | "email" | "in_app" | "web_push";
         NotificationPreferencesDto: {
@@ -21447,11 +22030,112 @@ export interface components {
         };
         /** @enum {string} */
         OutboxState: "pending" | "publishing" | "published" | "failed" | "dead";
+        OwnerLeadDto: {
+            /**
+             * @description The prospect wrote last and the enquiry is open: waiting for my answer.
+             * @example true
+             */
+            awaitingReply: boolean;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T09:15:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้ */
+            lastMessage: string | null;
+            /** @example prospect */
+            lastMessageBy: components["schemas"]["ListingLeadAuthor"] | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            lastOwnerAt: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T09:15:00+07:00
+             */
+            lastProspectAt: string;
+            listing: components["schemas"]["LeadListingDto"];
+            /** @example null */
+            lostNote: string | null;
+            /** @example null */
+            lostReason: components["schemas"]["ListingLeadLostReason"] | null;
+            messages: components["schemas"]["LeadMessageDto"][];
+            /**
+             * Format: date
+             * @example 2026-12-01
+             */
+            moveInDate: string | null;
+            /**
+             * @description ISO 3166-1 alpha-2, when given.
+             * @example TH
+             */
+            nationality: string | null;
+            /** @description The next live viewing. */
+            nextViewing: components["schemas"]["LeadViewingDto"] | null;
+            /** @example ทำงานแถวอารีย์ สะดวกดูวันเสาร์ */
+            notes: string | null;
+            /** @example 2 */
+            occupants: number | null;
+            prospect: components["schemas"]["LeadProspectDto"];
+            /** @example new */
+            state: components["schemas"]["ListingLeadState"];
+            /** @example 12 */
+            termMonths: number | null;
+            /** @example 1 */
+            version: number;
+            /** @description Newest first. */
+            viewings: components["schemas"]["LeadViewingDto"][];
+        };
+        /** @enum {string} */
+        OwnerLeadState: "contacted" | "viewed" | "applied" | "won" | "lost";
+        OwnerLeadSummaryDto: {
+            /**
+             * @description The prospect wrote last and the enquiry is open: waiting for my answer.
+             * @example true
+             */
+            awaitingReply: boolean;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T09:15:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้ */
+            lastMessage: string | null;
+            /** @example prospect */
+            lastMessageBy: components["schemas"]["ListingLeadAuthor"] | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            lastOwnerAt: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T09:15:00+07:00
+             */
+            lastProspectAt: string;
+            listing: components["schemas"]["LeadListingDto"];
+            /** @description The next live viewing. */
+            nextViewing: components["schemas"]["LeadViewingDto"] | null;
+            prospect: components["schemas"]["LeadProspectDto"];
+            /** @example new */
+            state: components["schemas"]["ListingLeadState"];
+        };
         /**
          * @description Menu entitlements of the owner console (keys of the web routes).
          * @enum {string}
          */
-        OwnerMenuKey: "portfolio" | "listings" | "dashboard" | "buildings" | "units" | "parties" | "leases" | "deposits" | "readings" | "devices" | "rate_plans" | "invoices" | "payments" | "reports" | "utility_loss" | "service_requests" | "access" | "parcels" | "announcements" | "members" | "bank_accounts" | "settings" | "notifications" | "privacy" | "access_grants" | "support_access" | "audit_log" | "subscription";
+        OwnerMenuKey: "portfolio" | "listings" | "leads" | "dashboard" | "buildings" | "units" | "parties" | "leases" | "deposits" | "readings" | "devices" | "rate_plans" | "invoices" | "payments" | "reports" | "utility_loss" | "service_requests" | "access" | "parcels" | "announcements" | "members" | "bank_accounts" | "settings" | "notifications" | "privacy" | "access_grants" | "support_access" | "audit_log" | "subscription";
         /** @enum {string} */
         OwnershipEvidence: "title_deed" | "condo_title" | "sale_contract";
         OwnerStorageDto: {
@@ -21524,6 +22208,44 @@ export interface components {
             subscription: components["schemas"]["SubscriptionDto"] | null;
             /** @description What is counted today. */
             usageToday: components["schemas"]["UsageCountsDto"] | null;
+        };
+        OwnerViewingDto: {
+            /**
+             * Format: date-time
+             * @example 2026-11-07T10:30:00+07:00
+             */
+            endsAt: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            leadId: string;
+            listing: components["schemas"]["OwnerViewingListingDto"];
+            /** @example สมศรี ใจดี */
+            prospectName: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-07T10:00:00+07:00
+             */
+            startsAt: string;
+            /** @example confirmed */
+            state: components["schemas"]["ListingViewingState"];
+        };
+        OwnerViewingListingDto: {
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example condo-1br-0193f2a4b1 */
+            slug: string;
+            /** @example คอนโด 1 ห้องนอน ใกล้ BTS อารีย์ */
+            title: string;
         };
         PageMeta: {
             /** @example 1 */
@@ -23153,6 +23875,56 @@ export interface components {
              * @example 350.50
              */
             utilitiesFinal?: string;
+        };
+        ProspectEnquiryDto: {
+            /**
+             * Format: date-time
+             * @example 2026-11-01T09:15:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            listing: components["schemas"]["EnquiryListingDto"];
+            messages: components["schemas"]["LeadMessageDto"][];
+            /**
+             * Format: date
+             * @example 2026-12-01
+             */
+            moveInDate: string | null;
+            /** @example null */
+            nationality: string | null;
+            /** @example 2 */
+            occupants: number | null;
+            /**
+             * @description False when the owner closed it; write again on the listing to start anew.
+             * @example true
+             */
+            open: boolean;
+            /** @example 12 */
+            termMonths: number | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T09:15:00+07:00
+             */
+            updatedAt: string;
+            /** @description Newest first. */
+            viewings: components["schemas"]["LeadViewingDto"][];
+        };
+        ProspectMeDto: {
+            /**
+             * @description My enquiries that are still open (not won or lost).
+             * @example 1
+             */
+            openEnquiries: number;
+            /**
+             * @description My viewings still to come (requested or confirmed, start in the future).
+             * @example 1
+             */
+            upcomingViewings: number;
+            user: components["schemas"]["MeUserDto"];
         };
         ProviderCredentialDto: {
             /**
@@ -27270,7 +28042,7 @@ export interface components {
         /** @enum {string} */
         SupportGrantState: "requested" | "approved" | "active" | "expired" | "revoked" | "denied";
         /** @enum {string} */
-        SurfaceName: "auth" | "owner" | "staff" | "resident" | "technician" | "admin" | "device" | "webhooks" | "public";
+        SurfaceName: "auth" | "owner" | "staff" | "resident" | "technician" | "prospect" | "admin" | "device" | "webhooks" | "public";
         SystemInfoDto: {
             /**
              * @description Short git commit of the build, when known
@@ -28106,7 +28878,7 @@ export interface components {
             submittedAt?: string;
         };
         /** @enum {string} */
-        TokenAudience: "operator" | "resident" | "technician" | "platform" | "device";
+        TokenAudience: "operator" | "resident" | "technician" | "platform" | "device" | "prospect";
         TokenPairDto: {
             /** @example eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCIsImtpZCI6ImdwLWRldi0xIn0.eyJzdWIiOiIuLi4ifQ.c2ln */
             accessToken: string;
@@ -28973,6 +29745,77 @@ export interface components {
             /** @example condo_title */
             evidenceKind: components["schemas"]["OwnershipEvidence"];
             note?: string | null;
+        };
+        ViewingCancelDto: {
+            /** @example ได้ห้องแล้วค่ะ */
+            reason?: string | null;
+        };
+        ViewingCompleteDto: {
+            /** @example completed */
+            outcome: components["schemas"]["ViewingOutcome"];
+        };
+        ViewingDeclineDto: {
+            /** @example ไม่สะดวกช่วงเช้า ขอเป็นบ่ายได้ไหมคะ */
+            reason: string;
+        };
+        /** @enum {string} */
+        ViewingOutcome: "completed" | "no_show";
+        ViewingRequestDto: {
+            /**
+             * @description I agree that the owner uses my name, messages and LINE contact to answer this enquiry (consent `prospect.enquiry`, PDPA). Required for the first contact with a listing; later messages may send false.
+             * @example true
+             */
+            consent: boolean;
+            /** @description A message to the owner. */
+            message?: string | null;
+            /**
+             * Format: date
+             * @example 2026-12-01
+             */
+            moveInDate?: string | null;
+            /**
+             * @description ISO 3166-1 alpha-2 — optional; never required to enquire (D-252).
+             * @example TH
+             */
+            nationality?: string | null;
+            /** @example จะมากับแฟนค่ะ */
+            note?: string | null;
+            /** @example 2 */
+            occupants?: number | null;
+            /**
+             * Format: date-time
+             * @description The start of a free slot (`viewing-slots`).
+             * @example 2026-11-07T10:00:00+07:00
+             */
+            startsAt: string;
+            /** @example 12 */
+            termMonths?: number | null;
+        };
+        ViewingRescheduleDto: {
+            /**
+             * Format: date-time
+             * @description The start of another free slot.
+             * @example 2026-11-07T10:00:00+07:00
+             */
+            startsAt: string;
+        };
+        ViewingSlotDto: {
+            /**
+             * Format: date-time
+             * @example 2026-11-07T10:30:00+07:00
+             */
+            endsAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-07T10:00:00+07:00
+             */
+            startsAt: string;
+        };
+        ViewingSlotsDto: {
+            /** @example 30 */
+            slotMinutes: number;
+            /** @description Free slots in time order (Asia/Bangkok offsets). */
+            slots: components["schemas"]["ViewingSlotDto"][];
         };
         VisitorCodeCreateDto: {
             /**
@@ -45576,6 +46419,114 @@ export interface operations {
             };
             /** @description Problem: `auth.unauthenticated` */
             401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "auth.prospectLine.exchange": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LineExchangeDto"];
+            };
+        };
+        responses: {
+            /** @description Signed in */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "accessToken": "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCIsImtpZCI6ImdwLWRldi0xIn0.eyJzdWIiOiIuLi4ifQ.c2ln",
+                     *       "accessTokenExpiresAt": "2026-11-01T00:30:00+07:00",
+                     *       "refreshToken": "q2r8XoT1Vb9mJ0yPz4LkWnE6aGs3dHf5Q2r8XoT1Vb9",
+                     *       "refreshTokenExpiresAt": "2026-12-01T00:15:00+07:00",
+                     *       "subject": {
+                     *         "audience": "prospect",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "permissions": [],
+                     *         "roles": [],
+                     *         "scopes": [],
+                     *         "type": "user"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["TokenPairDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.line_token_invalid` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.account_disabled` */
+            403: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -66520,6 +67471,824 @@ export interface operations {
             };
         };
     };
+    "owner.leads.list": {
+        parameters: {
+            query?: {
+                listingId?: string;
+                open?: boolean;
+                state?: components["schemas"]["ListingLeadState"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Leads */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "awaitingReply": true,
+                     *         "createdAt": "2026-11-01T09:15:00+07:00",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "lastMessage": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
+                     *         "lastMessageBy": "prospect",
+                     *         "lastOwnerAt": null,
+                     *         "lastProspectAt": "2026-11-01T09:15:00+07:00",
+                     *         "listing": {
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "slug": "condo-1br-0193f2a4b1",
+                     *           "title": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์",
+                     *           "unitId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *         },
+                     *         "nextViewing": {
+                     *           "cancelledBy": null,
+                     *           "endsAt": "2026-11-07T10:30:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "note": null,
+                     *           "reason": null,
+                     *           "rescheduledTo": null,
+                     *           "startsAt": "2026-11-07T10:00:00+07:00",
+                     *           "state": "requested"
+                     *         },
+                     *         "prospect": {
+                     *           "lineLinked": true,
+                     *           "name": "สมศรี ใจดี",
+                     *           "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "phone": null
+                     *         },
+                     *         "state": "viewing_booked"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["OwnerLeadSummaryDto"][];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.leads.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Lead */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "awaitingReply": true,
+                     *       "createdAt": "2026-11-01T09:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "lastMessage": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
+                     *       "lastMessageBy": "prospect",
+                     *       "lastOwnerAt": null,
+                     *       "lastProspectAt": "2026-11-01T09:15:00+07:00",
+                     *       "listing": {
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "slug": "condo-1br-0193f2a4b1",
+                     *         "title": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์",
+                     *         "unitId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *       },
+                     *       "lostNote": null,
+                     *       "lostReason": null,
+                     *       "messages": [
+                     *         {
+                     *           "author": "prospect",
+                     *           "body": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
+                     *           "createdAt": "2026-11-01T09:15:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *         }
+                     *       ],
+                     *       "moveInDate": "2026-12-01",
+                     *       "nationality": null,
+                     *       "nextViewing": {
+                     *         "cancelledBy": null,
+                     *         "endsAt": "2026-11-07T10:30:00+07:00",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "note": null,
+                     *         "reason": null,
+                     *         "rescheduledTo": null,
+                     *         "startsAt": "2026-11-07T10:00:00+07:00",
+                     *         "state": "requested"
+                     *       },
+                     *       "notes": null,
+                     *       "occupants": 2,
+                     *       "prospect": {
+                     *         "lineLinked": true,
+                     *         "name": "สมศรี ใจดี",
+                     *         "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "phone": null
+                     *       },
+                     *       "state": "viewing_booked",
+                     *       "termMonths": 12,
+                     *       "version": 2,
+                     *       "viewings": [
+                     *         {
+                     *           "cancelledBy": null,
+                     *           "endsAt": "2026-11-07T10:30:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "note": null,
+                     *           "reason": null,
+                     *           "rescheduledTo": null,
+                     *           "startsAt": "2026-11-07T10:00:00+07:00",
+                     *           "state": "requested"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["OwnerLeadDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.leads.update": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadNotesDto"];
+            };
+        };
+        responses: {
+            /** @description Saved */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "awaitingReply": true,
+                     *       "createdAt": "2026-11-01T09:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "lastMessage": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
+                     *       "lastMessageBy": "prospect",
+                     *       "lastOwnerAt": null,
+                     *       "lastProspectAt": "2026-11-01T09:15:00+07:00",
+                     *       "listing": {
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "slug": "condo-1br-0193f2a4b1",
+                     *         "title": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์",
+                     *         "unitId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *       },
+                     *       "lostNote": null,
+                     *       "lostReason": null,
+                     *       "messages": [
+                     *         {
+                     *           "author": "prospect",
+                     *           "body": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
+                     *           "createdAt": "2026-11-01T09:15:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *         }
+                     *       ],
+                     *       "moveInDate": "2026-12-01",
+                     *       "nationality": null,
+                     *       "nextViewing": {
+                     *         "cancelledBy": null,
+                     *         "endsAt": "2026-11-07T10:30:00+07:00",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "note": null,
+                     *         "reason": null,
+                     *         "rescheduledTo": null,
+                     *         "startsAt": "2026-11-07T10:00:00+07:00",
+                     *         "state": "requested"
+                     *       },
+                     *       "notes": null,
+                     *       "occupants": 2,
+                     *       "prospect": {
+                     *         "lineLinked": true,
+                     *         "name": "สมศรี ใจดี",
+                     *         "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "phone": null
+                     *       },
+                     *       "state": "viewing_booked",
+                     *       "termMonths": 12,
+                     *       "version": 2,
+                     *       "viewings": [
+                     *         {
+                     *           "cancelledBy": null,
+                     *           "endsAt": "2026-11-07T10:30:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "note": null,
+                     *           "reason": null,
+                     *           "rescheduledTo": null,
+                     *           "startsAt": "2026-11-07T10:00:00+07:00",
+                     *           "state": "requested"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["OwnerLeadDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.leads.setState": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadStateDto"];
+            };
+        };
+        responses: {
+            /** @description Moved */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "awaitingReply": true,
+                     *       "createdAt": "2026-11-01T09:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "lastMessage": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
+                     *       "lastMessageBy": "prospect",
+                     *       "lastOwnerAt": null,
+                     *       "lastProspectAt": "2026-11-01T09:15:00+07:00",
+                     *       "listing": {
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "slug": "condo-1br-0193f2a4b1",
+                     *         "title": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์",
+                     *         "unitId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *       },
+                     *       "lostNote": null,
+                     *       "lostReason": null,
+                     *       "messages": [
+                     *         {
+                     *           "author": "prospect",
+                     *           "body": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
+                     *           "createdAt": "2026-11-01T09:15:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *         }
+                     *       ],
+                     *       "moveInDate": "2026-12-01",
+                     *       "nationality": null,
+                     *       "nextViewing": {
+                     *         "cancelledBy": null,
+                     *         "endsAt": "2026-11-07T10:30:00+07:00",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "note": null,
+                     *         "reason": null,
+                     *         "rescheduledTo": null,
+                     *         "startsAt": "2026-11-07T10:00:00+07:00",
+                     *         "state": "requested"
+                     *       },
+                     *       "notes": null,
+                     *       "occupants": 2,
+                     *       "prospect": {
+                     *         "lineLinked": true,
+                     *         "name": "สมศรี ใจดี",
+                     *         "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "phone": null
+                     *       },
+                     *       "state": "viewing_booked",
+                     *       "termMonths": 12,
+                     *       "version": 2,
+                     *       "viewings": [
+                     *         {
+                     *           "cancelledBy": null,
+                     *           "endsAt": "2026-11-07T10:30:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "note": null,
+                     *           "reason": null,
+                     *           "rescheduledTo": null,
+                     *           "startsAt": "2026-11-07T10:00:00+07:00",
+                     *           "state": "requested"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["OwnerLeadDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `listing.lead_invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.leads.reply": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadMessageCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Sent */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "awaitingReply": true,
+                     *       "createdAt": "2026-11-01T09:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "lastMessage": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
+                     *       "lastMessageBy": "prospect",
+                     *       "lastOwnerAt": null,
+                     *       "lastProspectAt": "2026-11-01T09:15:00+07:00",
+                     *       "listing": {
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "slug": "condo-1br-0193f2a4b1",
+                     *         "title": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์",
+                     *         "unitId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *       },
+                     *       "lostNote": null,
+                     *       "lostReason": null,
+                     *       "messages": [
+                     *         {
+                     *           "author": "prospect",
+                     *           "body": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
+                     *           "createdAt": "2026-11-01T09:15:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *         }
+                     *       ],
+                     *       "moveInDate": "2026-12-01",
+                     *       "nationality": null,
+                     *       "nextViewing": {
+                     *         "cancelledBy": null,
+                     *         "endsAt": "2026-11-07T10:30:00+07:00",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "note": null,
+                     *         "reason": null,
+                     *         "rescheduledTo": null,
+                     *         "startsAt": "2026-11-07T10:00:00+07:00",
+                     *         "state": "requested"
+                     *       },
+                     *       "notes": null,
+                     *       "occupants": 2,
+                     *       "prospect": {
+                     *         "lineLinked": true,
+                     *         "name": "สมศรี ใจดี",
+                     *         "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "phone": null
+                     *       },
+                     *       "state": "viewing_booked",
+                     *       "termMonths": 12,
+                     *       "version": 2,
+                     *       "viewings": [
+                     *         {
+                     *           "cancelledBy": null,
+                     *           "endsAt": "2026-11-07T10:30:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "note": null,
+                     *           "reason": null,
+                     *           "rescheduledTo": null,
+                     *           "startsAt": "2026-11-07T10:00:00+07:00",
+                     *           "state": "requested"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["OwnerLeadDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `listing.lead_invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "owner.leaseTemplates.list": {
         parameters: {
             query?: never;
@@ -69853,6 +71622,647 @@ export interface operations {
             };
             /** @description Problem: `http.not_found` */
             404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.listingViewings.list": {
+        parameters: {
+            query?: {
+                from?: string;
+                listingId?: string;
+                to?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Viewings */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "endsAt": "2026-11-07T10:30:00+07:00",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "leadId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "listing": {
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "slug": "condo-1br-0193f2a4b1",
+                     *           "title": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์"
+                     *         },
+                     *         "prospectName": "สมศรี ใจดี",
+                     *         "startsAt": "2026-11-07T10:00:00+07:00",
+                     *         "state": "confirmed"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["OwnerViewingDto"][];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.listingViewings.complete": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                viewingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ViewingCompleteDto"];
+            };
+        };
+        responses: {
+            /** @description Recorded */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "awaitingReply": true,
+                     *       "createdAt": "2026-11-01T09:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "lastMessage": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
+                     *       "lastMessageBy": "prospect",
+                     *       "lastOwnerAt": null,
+                     *       "lastProspectAt": "2026-11-01T09:15:00+07:00",
+                     *       "listing": {
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "slug": "condo-1br-0193f2a4b1",
+                     *         "title": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์",
+                     *         "unitId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *       },
+                     *       "lostNote": null,
+                     *       "lostReason": null,
+                     *       "messages": [
+                     *         {
+                     *           "author": "prospect",
+                     *           "body": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
+                     *           "createdAt": "2026-11-01T09:15:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *         }
+                     *       ],
+                     *       "moveInDate": "2026-12-01",
+                     *       "nationality": null,
+                     *       "nextViewing": {
+                     *         "cancelledBy": null,
+                     *         "endsAt": "2026-11-07T10:30:00+07:00",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "note": null,
+                     *         "reason": null,
+                     *         "rescheduledTo": null,
+                     *         "startsAt": "2026-11-07T10:00:00+07:00",
+                     *         "state": "requested"
+                     *       },
+                     *       "notes": null,
+                     *       "occupants": 2,
+                     *       "prospect": {
+                     *         "lineLinked": true,
+                     *         "name": "สมศรี ใจดี",
+                     *         "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "phone": null
+                     *       },
+                     *       "state": "viewing_booked",
+                     *       "termMonths": 12,
+                     *       "version": 2,
+                     *       "viewings": [
+                     *         {
+                     *           "cancelledBy": null,
+                     *           "endsAt": "2026-11-07T10:30:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "note": null,
+                     *           "reason": null,
+                     *           "rescheduledTo": null,
+                     *           "startsAt": "2026-11-07T10:00:00+07:00",
+                     *           "state": "requested"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["OwnerLeadDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `listing.viewing_invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.listingViewings.confirm": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                viewingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Confirmed */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "awaitingReply": true,
+                     *       "createdAt": "2026-11-01T09:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "lastMessage": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
+                     *       "lastMessageBy": "prospect",
+                     *       "lastOwnerAt": null,
+                     *       "lastProspectAt": "2026-11-01T09:15:00+07:00",
+                     *       "listing": {
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "slug": "condo-1br-0193f2a4b1",
+                     *         "title": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์",
+                     *         "unitId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *       },
+                     *       "lostNote": null,
+                     *       "lostReason": null,
+                     *       "messages": [
+                     *         {
+                     *           "author": "prospect",
+                     *           "body": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
+                     *           "createdAt": "2026-11-01T09:15:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *         }
+                     *       ],
+                     *       "moveInDate": "2026-12-01",
+                     *       "nationality": null,
+                     *       "nextViewing": {
+                     *         "cancelledBy": null,
+                     *         "endsAt": "2026-11-07T10:30:00+07:00",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "note": null,
+                     *         "reason": null,
+                     *         "rescheduledTo": null,
+                     *         "startsAt": "2026-11-07T10:00:00+07:00",
+                     *         "state": "requested"
+                     *       },
+                     *       "notes": null,
+                     *       "occupants": 2,
+                     *       "prospect": {
+                     *         "lineLinked": true,
+                     *         "name": "สมศรี ใจดี",
+                     *         "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "phone": null
+                     *       },
+                     *       "state": "viewing_booked",
+                     *       "termMonths": 12,
+                     *       "version": 2,
+                     *       "viewings": [
+                     *         {
+                     *           "cancelledBy": null,
+                     *           "endsAt": "2026-11-07T10:30:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "note": null,
+                     *           "reason": null,
+                     *           "rescheduledTo": null,
+                     *           "startsAt": "2026-11-07T10:00:00+07:00",
+                     *           "state": "requested"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["OwnerLeadDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `listing.viewing_invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.listingViewings.decline": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                viewingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ViewingDeclineDto"];
+            };
+        };
+        responses: {
+            /** @description Declined */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "awaitingReply": true,
+                     *       "createdAt": "2026-11-01T09:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "lastMessage": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
+                     *       "lastMessageBy": "prospect",
+                     *       "lastOwnerAt": null,
+                     *       "lastProspectAt": "2026-11-01T09:15:00+07:00",
+                     *       "listing": {
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "slug": "condo-1br-0193f2a4b1",
+                     *         "title": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์",
+                     *         "unitId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *       },
+                     *       "lostNote": null,
+                     *       "lostReason": null,
+                     *       "messages": [
+                     *         {
+                     *           "author": "prospect",
+                     *           "body": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
+                     *           "createdAt": "2026-11-01T09:15:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *         }
+                     *       ],
+                     *       "moveInDate": "2026-12-01",
+                     *       "nationality": null,
+                     *       "nextViewing": {
+                     *         "cancelledBy": null,
+                     *         "endsAt": "2026-11-07T10:30:00+07:00",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "note": null,
+                     *         "reason": null,
+                     *         "rescheduledTo": null,
+                     *         "startsAt": "2026-11-07T10:00:00+07:00",
+                     *         "state": "requested"
+                     *       },
+                     *       "notes": null,
+                     *       "occupants": 2,
+                     *       "prospect": {
+                     *         "lineLinked": true,
+                     *         "name": "สมศรี ใจดี",
+                     *         "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "phone": null
+                     *       },
+                     *       "state": "viewing_booked",
+                     *       "termMonths": 12,
+                     *       "version": 2,
+                     *       "viewings": [
+                     *         {
+                     *           "cancelledBy": null,
+                     *           "endsAt": "2026-11-07T10:30:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "note": null,
+                     *           "reason": null,
+                     *           "rescheduledTo": null,
+                     *           "startsAt": "2026-11-07T10:00:00+07:00",
+                     *           "state": "requested"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["OwnerLeadDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `listing.viewing_invalid_state` */
+            409: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -93304,6 +95714,1207 @@ export interface operations {
             };
         };
     };
+    "prospect.enquiries.list": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Enquiries */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "createdAt": "2026-11-01T09:15:00+07:00",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "listing": {
+                     *           "available": true,
+                     *           "district": "พญาไท",
+                     *           "ownerName": "มาลี ใจงาม",
+                     *           "province": "กรุงเทพมหานคร",
+                     *           "rent": "15000.00",
+                     *           "slug": "condo-1br-0193f2a4b1",
+                     *           "titleEn": "One-bedroom condo near BTS Ari",
+                     *           "titleTh": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์"
+                     *         },
+                     *         "messages": [
+                     *           {
+                     *             "author": "prospect",
+                     *             "body": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
+                     *             "createdAt": "2026-11-01T09:15:00+07:00",
+                     *             "id": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *           }
+                     *         ],
+                     *         "moveInDate": "2026-12-01",
+                     *         "nationality": null,
+                     *         "occupants": 2,
+                     *         "open": true,
+                     *         "termMonths": 12,
+                     *         "updatedAt": "2026-11-01T09:15:00+07:00",
+                     *         "viewings": [
+                     *           {
+                     *             "cancelledBy": null,
+                     *             "endsAt": "2026-11-07T10:30:00+07:00",
+                     *             "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *             "note": null,
+                     *             "reason": null,
+                     *             "rescheduledTo": null,
+                     *             "startsAt": "2026-11-07T10:00:00+07:00",
+                     *             "state": "requested"
+                     *           }
+                     *         ]
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["ProspectEnquiryDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "prospect.enquiries.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Enquiry */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-11-01T09:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "listing": {
+                     *         "available": true,
+                     *         "district": "พญาไท",
+                     *         "ownerName": "มาลี ใจงาม",
+                     *         "province": "กรุงเทพมหานคร",
+                     *         "rent": "15000.00",
+                     *         "slug": "condo-1br-0193f2a4b1",
+                     *         "titleEn": "One-bedroom condo near BTS Ari",
+                     *         "titleTh": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์"
+                     *       },
+                     *       "messages": [
+                     *         {
+                     *           "author": "prospect",
+                     *           "body": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
+                     *           "createdAt": "2026-11-01T09:15:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *         }
+                     *       ],
+                     *       "moveInDate": "2026-12-01",
+                     *       "nationality": null,
+                     *       "occupants": 2,
+                     *       "open": true,
+                     *       "termMonths": 12,
+                     *       "updatedAt": "2026-11-01T09:15:00+07:00",
+                     *       "viewings": [
+                     *         {
+                     *           "cancelledBy": null,
+                     *           "endsAt": "2026-11-07T10:30:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "note": null,
+                     *           "reason": null,
+                     *           "rescheduledTo": null,
+                     *           "startsAt": "2026-11-07T10:00:00+07:00",
+                     *           "state": "requested"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ProspectEnquiryDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "prospect.enquiries.write": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadMessageCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Sent */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-11-01T09:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "listing": {
+                     *         "available": true,
+                     *         "district": "พญาไท",
+                     *         "ownerName": "มาลี ใจงาม",
+                     *         "province": "กรุงเทพมหานคร",
+                     *         "rent": "15000.00",
+                     *         "slug": "condo-1br-0193f2a4b1",
+                     *         "titleEn": "One-bedroom condo near BTS Ari",
+                     *         "titleTh": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์"
+                     *       },
+                     *       "messages": [
+                     *         {
+                     *           "author": "prospect",
+                     *           "body": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
+                     *           "createdAt": "2026-11-01T09:15:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *         }
+                     *       ],
+                     *       "moveInDate": "2026-12-01",
+                     *       "nationality": null,
+                     *       "occupants": 2,
+                     *       "open": true,
+                     *       "termMonths": 12,
+                     *       "updatedAt": "2026-11-01T09:15:00+07:00",
+                     *       "viewings": [
+                     *         {
+                     *           "cancelledBy": null,
+                     *           "endsAt": "2026-11-07T10:30:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "note": null,
+                     *           "reason": null,
+                     *           "rescheduledTo": null,
+                     *           "startsAt": "2026-11-07T10:00:00+07:00",
+                     *           "state": "requested"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ProspectEnquiryDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `listing.lead_invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "prospect.enquiries.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnquiryCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Sent */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-11-01T09:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "listing": {
+                     *         "available": true,
+                     *         "district": "พญาไท",
+                     *         "ownerName": "มาลี ใจงาม",
+                     *         "province": "กรุงเทพมหานคร",
+                     *         "rent": "15000.00",
+                     *         "slug": "condo-1br-0193f2a4b1",
+                     *         "titleEn": "One-bedroom condo near BTS Ari",
+                     *         "titleTh": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์"
+                     *       },
+                     *       "messages": [
+                     *         {
+                     *           "author": "prospect",
+                     *           "body": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
+                     *           "createdAt": "2026-11-01T09:15:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *         }
+                     *       ],
+                     *       "moveInDate": "2026-12-01",
+                     *       "nationality": null,
+                     *       "occupants": 2,
+                     *       "open": true,
+                     *       "termMonths": 12,
+                     *       "updatedAt": "2026-11-01T09:15:00+07:00",
+                     *       "viewings": [
+                     *         {
+                     *           "cancelledBy": null,
+                     *           "endsAt": "2026-11-07T10:30:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "note": null,
+                     *           "reason": null,
+                     *           "rescheduledTo": null,
+                     *           "startsAt": "2026-11-07T10:00:00+07:00",
+                     *           "state": "requested"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ProspectEnquiryDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.conflict` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `listing.consent_required`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests`, `listing.enquiry_limit` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "prospect.viewings.request": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ViewingRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Requested */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-11-01T09:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "listing": {
+                     *         "available": true,
+                     *         "district": "พญาไท",
+                     *         "ownerName": "มาลี ใจงาม",
+                     *         "province": "กรุงเทพมหานคร",
+                     *         "rent": "15000.00",
+                     *         "slug": "condo-1br-0193f2a4b1",
+                     *         "titleEn": "One-bedroom condo near BTS Ari",
+                     *         "titleTh": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์"
+                     *       },
+                     *       "messages": [
+                     *         {
+                     *           "author": "prospect",
+                     *           "body": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
+                     *           "createdAt": "2026-11-01T09:15:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *         }
+                     *       ],
+                     *       "moveInDate": "2026-12-01",
+                     *       "nationality": null,
+                     *       "occupants": 2,
+                     *       "open": true,
+                     *       "termMonths": 12,
+                     *       "updatedAt": "2026-11-01T09:15:00+07:00",
+                     *       "viewings": [
+                     *         {
+                     *           "cancelledBy": null,
+                     *           "endsAt": "2026-11-07T10:30:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "note": null,
+                     *           "reason": null,
+                     *           "rescheduledTo": null,
+                     *           "startsAt": "2026-11-07T10:00:00+07:00",
+                     *           "state": "requested"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ProspectEnquiryDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.conflict`, `listing.viewing_exists`, `listing.viewing_slot_taken` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `listing.consent_required`, `listing.viewing_slot_unavailable`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests`, `listing.enquiry_limit` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "prospect.me.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The signed-in prospect */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "openEnquiries": 1,
+                     *       "upcomingViewings": 1,
+                     *       "user": {
+                     *         "displayName": "Somchai Test",
+                     *         "email": null,
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "language": "th",
+                     *         "lineLinked": true,
+                     *         "phone": null
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ProspectMeDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "prospect.system.ping": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The surface is up */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "serverTime": "2026-11-01T00:15:00+07:00",
+                     *       "surface": "prospect",
+                     *       "version": "0.1.0"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["SystemPingDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "prospect.viewings.cancel": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                viewingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ViewingCancelDto"];
+            };
+        };
+        responses: {
+            /** @description Cancelled */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-11-01T09:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "listing": {
+                     *         "available": true,
+                     *         "district": "พญาไท",
+                     *         "ownerName": "มาลี ใจงาม",
+                     *         "province": "กรุงเทพมหานคร",
+                     *         "rent": "15000.00",
+                     *         "slug": "condo-1br-0193f2a4b1",
+                     *         "titleEn": "One-bedroom condo near BTS Ari",
+                     *         "titleTh": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์"
+                     *       },
+                     *       "messages": [
+                     *         {
+                     *           "author": "prospect",
+                     *           "body": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
+                     *           "createdAt": "2026-11-01T09:15:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *         }
+                     *       ],
+                     *       "moveInDate": "2026-12-01",
+                     *       "nationality": null,
+                     *       "occupants": 2,
+                     *       "open": true,
+                     *       "termMonths": 12,
+                     *       "updatedAt": "2026-11-01T09:15:00+07:00",
+                     *       "viewings": [
+                     *         {
+                     *           "cancelledBy": null,
+                     *           "endsAt": "2026-11-07T10:30:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "note": null,
+                     *           "reason": null,
+                     *           "rescheduledTo": null,
+                     *           "startsAt": "2026-11-07T10:00:00+07:00",
+                     *           "state": "requested"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ProspectEnquiryDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `listing.viewing_invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "prospect.viewings.reschedule": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                viewingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ViewingRescheduleDto"];
+            };
+        };
+        responses: {
+            /** @description Moved */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-11-01T09:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "listing": {
+                     *         "available": true,
+                     *         "district": "พญาไท",
+                     *         "ownerName": "มาลี ใจงาม",
+                     *         "province": "กรุงเทพมหานคร",
+                     *         "rent": "15000.00",
+                     *         "slug": "condo-1br-0193f2a4b1",
+                     *         "titleEn": "One-bedroom condo near BTS Ari",
+                     *         "titleTh": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์"
+                     *       },
+                     *       "messages": [
+                     *         {
+                     *           "author": "prospect",
+                     *           "body": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
+                     *           "createdAt": "2026-11-01T09:15:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *         }
+                     *       ],
+                     *       "moveInDate": "2026-12-01",
+                     *       "nationality": null,
+                     *       "occupants": 2,
+                     *       "open": true,
+                     *       "termMonths": 12,
+                     *       "updatedAt": "2026-11-01T09:15:00+07:00",
+                     *       "viewings": [
+                     *         {
+                     *           "cancelledBy": null,
+                     *           "endsAt": "2026-11-07T10:30:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "note": null,
+                     *           "reason": null,
+                     *           "rescheduledTo": null,
+                     *           "startsAt": "2026-11-07T10:00:00+07:00",
+                     *           "state": "requested"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ProspectEnquiryDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `listing.viewing_invalid_state`, `listing.viewing_slot_taken` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `listing.viewing_slot_unavailable`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "public.listings.search": {
         parameters: {
             query?: {
@@ -93604,6 +97215,90 @@ export interface operations {
             };
             /** @description Problem: `listing.report_duplicate` */
             409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "public.listings.viewingSlots": {
+        parameters: {
+            query?: {
+                days?: number;
+                from?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Free slots */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "slotMinutes": 30,
+                     *       "slots": [
+                     *         {
+                     *           "endsAt": "2026-11-07T10:30:00+07:00",
+                     *           "startsAt": "2026-11-07T10:00:00+07:00"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ViewingSlotsDto"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
