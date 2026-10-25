@@ -61,6 +61,7 @@ export {
   type ListingVerificationState,
 } from "./listing";
 export { LEAD_STATUS, VIEWING_STATUS, type LeadState, type ViewingState } from "./lead";
+export { RENT_CERTIFICATE_STATUS, type RentCertificateState } from "./rentCertificate";
 
 import { COMMAND_STATUS } from "./command";
 import { DEPOSIT_STATUS } from "./deposit";
@@ -112,6 +113,7 @@ import { TM30_STATUS } from "./tm30";
 import { LINK_REQUEST_STATUS } from "./linkRequest";
 import { PORTFOLIO_UNIT_STATUS } from "./portfolioUnit";
 import { LEAD_STATUS, VIEWING_STATUS } from "./lead";
+import { RENT_CERTIFICATE_STATUS } from "./rentCertificate";
 import { LISTING_STATUS, LISTING_VERIFICATION_STATUS } from "./listing";
 
 /** Every status map by its domain key (the `status.<domain>` namespace of its labels). */
@@ -123,6 +125,7 @@ export const STATUS_MAPS = {
   listingVerification: LISTING_VERIFICATION_STATUS,
   lead: LEAD_STATUS,
   listingViewing: VIEWING_STATUS,
+  rentCertificate: RENT_CERTIFICATE_STATUS,
   payment: PAYMENT_STATUS,
   deposit: DEPOSIT_STATUS,
   reading: READING_STATUS,

@@ -6,7 +6,7 @@ import { JsonLdScript } from "@/features/owner/marketing/JsonLdScript";
 import { ListingCard } from "@/features/owner/marketing/listings/ListingCard";
 import { ListingImage } from "@/features/owner/marketing/listings/ListingImage";
 import { publicListing, publicListings } from "@/features/owner/marketing/publicApi";
-import { lineOaMessageHref, marketingOrigin, ownerHref } from "@/features/owner/marketing/seo";
+import { liffRentHref, lineOaMessageHref, marketingOrigin, ownerHref } from "@/features/owner/marketing/seo";
 import { breadcrumbSchema, type JsonLd } from "@/features/owner/marketing/structured-data";
 import { formatDate, formatDecimal, formatTHB } from "@/i18n/format";
 import { getPathname } from "@/i18n/navigation";
@@ -86,7 +86,8 @@ export default async function ListingPage({ params }: Props) {
   const t = await getTranslations("owner.marketing.listings");
   const nav = await getTranslations("owner.marketing.nav");
   const href = url(slug, locale);
-  const contact = lineOaMessageHref(t("detail.lineMessage", { title: listing.title, url: href }));
+  // B7.3 / D-252: the LINE Mini App's own page for the listing (ask, book a viewing); else a chat with the OA
+  const contact = liffRentHref(slug) ?? lineOaMessageHref(t("detail.lineMessage", { title: listing.title, url: href }));
   const contactHref = contact ?? ownerHref("/login", locale);
   const similar =
     (await publicListings({ kind: listing.unitKind ?? undefined }, locale))?.data

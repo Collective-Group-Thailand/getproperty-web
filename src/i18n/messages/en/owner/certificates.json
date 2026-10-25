@@ -1,0 +1,36 @@
+{
+  "title": "Rent certificates",
+  "description": "Tenants ask in the LINE app for a visa, a bank or an employer; the receipts of the period are gathered for you.",
+  "documents": "Documents",
+  "waiting": "Waiting for you ({count})",
+  "noneWaiting": "No request waiting",
+  "noneWaitingBody": "When a tenant asks for a certificate it appears here and you are notified.",
+  "answered": "Answered",
+  "unit": "Unit {unit}",
+  "period": "{from} – {to}",
+  "total": "Total {amount}",
+  "reasonShown": "Reason: {reason}",
+  "open": "Open",
+  "purpose": {
+    "visa": "Visa",
+    "bank": "Bank",
+    "employer": "Employer",
+    "other": "Other"
+  },
+  "language": {
+    "th": "Thai",
+    "en": "English"
+  },
+  "actions": {
+    "issue": "Issue",
+    "issueTitle": "Issue the rent certificate for {unit}",
+    "issueBody": "The receipts of the period and any overdue amount go into a letter in your name, sent to the tenant in LINE.",
+    "issued": "Certificate issued",
+    "decline": "Decline",
+    "declineTitle": "Decline the request for {unit}",
+    "declineBody": "The tenant sees this reason in LINE.",
+    "reason": "Reason",
+    "declined": "Request declined"
+  },
+  "note": "“{note}”"
+}

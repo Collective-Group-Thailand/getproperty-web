@@ -1,0 +1,23 @@
+{
+  "title": "Annual rental income",
+  "description": "Income received through the platform per unit, for PND 90 / 94 (section 40(5) income).",
+  "documents": "Documents",
+  "year": "Tax year",
+  "gross": "Assessable income {year}",
+  "deduction": "Flat-rate deduction {percent}% (estimate)",
+  "net": "After the deduction (estimate)",
+  "noteTitle": "A summary to help you file, not a tax filing",
+  "noteBody": "Only receipts issued through the platform count; deposits returned are left out. Deducting actual expenses needs the evidence.",
+  "empty": {
+    "title": "No income in this year yet",
+    "body": "Receipts of the selected year appear here per unit."
+  },
+  "unit": "Unit {unit}",
+  "retained": "Deposits kept",
+  "unitGross": "40(5) income",
+  "makePdf": "Make the PDF",
+  "openPdf": "Open PDF",
+  "pdfTitle": "Income summary {unit} {number}",
+  "rent": "Rent",
+  "charges": "Utilities and service charges {amount}, shown apart and not counted as 40(5) income"
+}

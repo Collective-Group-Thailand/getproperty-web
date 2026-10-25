@@ -145,6 +145,8 @@ export interface MockState {
   stampDuty: Record<string, Schemas["StampDutyPaymentDto"]>;
   /** Notices sent on leases (B7.5 part 2), newest first, by lease id. */
   leaseNotices: Record<string, Schemas["LeaseNoticeDto"][]>;
+  /** Rent certificates (B7.5 part 3) by tenant id; filled on first read. */
+  certificates: Record<string, Schemas["RentCertificateDto"][]>;
   webVitals: unknown[];
   log: LoggedRequest[];
   /** Access token lifetime; the suite shortens it to exercise refresh. */
@@ -173,6 +175,7 @@ function initial(): MockState {
     leads: initialLeads(),
     stampDuty: {},
     leaseNotices: {},
+    certificates: {},
     webVitals: [],
     log: [],
     // 15 minutes like the API; a long Lighthouse run sets MOCK_ACCESS_TTL_MS so its fixed session cookie lasts.

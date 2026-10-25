@@ -112,5 +112,13 @@
     },
     "cancel": "Cancel",
     "submit": "Save unit"
+  },
+  "paperwork": {
+    "title": "Paperwork",
+    "certificates": "Rent certificates",
+    "certificatesHint": "Tenants ask in LINE; issue in one click",
+    "waiting": "{count} waiting",
+    "income": "Annual income",
+    "incomeHint": "For your income tax (40(5))"
   }
 }

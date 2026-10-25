@@ -156,7 +156,10 @@
       "lessor": "Lessor",
       "lessee": "Tenant",
       "shared": "Half each"
-    }
+    },
+    "bilingual": "Both languages in one lease",
+    "bilingualHint": "Thai followed by English, signed once; the Thai text prevails if they differ.",
+    "bilingualValue": "ไทย + English (one document)"
   },
   "invite": {
     "button": "Invite to the app",
@@ -320,7 +323,8 @@
       "payOnlineTitle": "Pay {amount} stamp duty with e-Stamp",
       "payOnlineBody": "We pay the duty to the Revenue Department and keep the receipt with this lease.",
       "payOnlineDone": "Stamp duty paid"
-    }
+    },
+    "languageBilingual": "ไทย + English"
   },
   "preview": {
     "title": "Legal checks before the draft",

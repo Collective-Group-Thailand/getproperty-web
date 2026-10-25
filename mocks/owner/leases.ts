@@ -202,6 +202,7 @@ function leaseFromInput(input: Schemas["LeaseCreateDto"]): Schemas["LeaseDto"] |
       ? { key: "landlord_condo_unit", version: 1, language: input.language }
       : { key: "ocpb_2568_residential_th", version: 1, language: "th" },
     stampDutyPayer: input.stampDutyPayer ?? "lessor",
+    bilingual: input.bilingual ?? false,
     parties,
     signatures: [],
     compliance: {

@@ -112,12 +112,14 @@ export function resetOwnerWorld(part: string | null): boolean {
     state.leads = initialLeads();
     state.stampDuty = {};
     state.leaseNotices = {};
+    state.certificates = {};
     if (part) return true;
   }
   if (!part) {
     state.owner = fresh;
     state.stampDuty = {};
     state.leaseNotices = {};
+    state.certificates = {};
     return true;
   }
   const keys = PARTS[part];

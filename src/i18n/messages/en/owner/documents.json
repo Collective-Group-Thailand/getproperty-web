@@ -36,5 +36,9 @@
     "empty": "No documents for this unit yet",
     "emptyBody": "Documents appear here once a lease, invoice or receipt is issued",
     "more": "{count} more documents"
+  },
+  "links": {
+    "certificates": "Rent certificates",
+    "income": "Annual income"
   }
 }

@@ -13,6 +13,7 @@ import { unwrap, unwrapWithETag } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
+import { Checkbox } from "@/ui/components/Checkbox";
 import { DatePicker } from "@/ui/components/DatePicker";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { Field } from "@/ui/components/Field";
@@ -74,6 +75,7 @@ interface Form {
   addendum: Schemas["AddendumClauseDto"][];
   language?: Schemas["Language"];
   stampDutyPayer?: Schemas["StampDutyPayer"];
+  bilingual?: boolean;
   savedAt?: string;
 }
 
@@ -266,7 +268,7 @@ export function LeaseWizard({
     lines: form.lines.map((line) => ({ ...line, recurrence: "monthly" })),
     addendum: form.addendum,
     acknowledgementIds: acknowledgementIds.length ? acknowledgementIds : undefined,
-    ...(languages.length > 1 ? { language: form.language ?? "th" } : {}),
+    ...(languages.length > 1 ? { language: form.language ?? "th", bilingual: form.bilingual ?? false } : {}),
     ...(landlord ? { stampDutyPayer: form.stampDutyPayer ?? "lessor" } : {}),
   });
 
@@ -647,6 +649,13 @@ export function LeaseWizard({
                     ]}
                   />
                   <p className="text-muted text-sm">{t("languageHint")}</p>
+                  <Checkbox
+                    label={t("bilingual")}
+                    description={t("bilingualHint")}
+                    checked={form.bilingual ?? false}
+                    onCheckedChange={(checked) => update({ bilingual: checked === true })}
+                    data-testid="lease-bilingual"
+                  />
                 </div>
               ) : null}
               {landlord ? (
@@ -895,7 +904,9 @@ export function LeaseWizard({
                     {
                       id: "language",
                       term: t("language"),
-                      description: t(form.language === "en" ? "langEn" : "langTh"),
+                      description: form.bilingual
+                        ? t("bilingualValue")
+                        : t(form.language === "en" ? "langEn" : "langTh"),
                     },
                   ]
                 : []),

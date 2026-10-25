@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { formatDateTime, formatNumber } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
+import { Button } from "@/ui/components/Button";
 import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { IconBill } from "@/ui/icons/glyphs/bill";
@@ -108,12 +109,24 @@ export async function DocumentsView({ context, searchParams }: { context: OwnerC
         }
         actions={
           unitId ? undefined : (
-            <ExportButton
-              kind="document_archive_zip"
-              params={{ period, buildingId: building?.id }}
-              label={t("zip")}
-              testId="documents-zip"
-            />
+            <div className="flex flex-wrap gap-2">
+              <Button asChild variant="secondary">
+                <a href={ownerPath(locale, "/certificates")} data-testid="documents-certificates">
+                  {t("links.certificates")}
+                </a>
+              </Button>
+              <Button asChild variant="secondary">
+                <a href={ownerPath(locale, "/income")} data-testid="documents-income">
+                  {t("links.income")}
+                </a>
+              </Button>
+              <ExportButton
+                kind="document_archive_zip"
+                params={{ period, buildingId: building?.id }}
+                label={t("zip")}
+                testId="documents-zip"
+              />
+            </div>
           )
         }
       />

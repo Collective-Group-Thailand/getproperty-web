@@ -247,4 +247,146 @@ export const landlordDocumentHandlers: HttpHandler[] = [
       .find((candidate) => candidate.id === params.noticeId);
     return notice && ok.own ? json(documentDownload(request, notice.documentId!, notice.number)) : notFound(op);
   }),
+
+  // ── rent certificates and the annual income summary (B7.5 part 3) ─────────────────────────────────────
+  http.get("*/v1/owner/rent-certificates", ({ request }) => {
+    const ok = owner(request, "owner.rentCertificates.list");
+    if (ok instanceof Response) return ok;
+    const params = query(request);
+    const rows = certificatesOf(ok.tenantId).filter(
+      (c) =>
+        (!params.get("state") || c.state === params.get("state")) &&
+        (!params.get("leaseId") || c.leaseId === params.get("leaseId")),
+    );
+    return json(rows);
+  }),
+
+  http.post("*/v1/owner/rent-certificates/:certificateId/actions/issue", async ({ request, params }) => {
+    const op = "owner.rentCertificates.issue";
+    const ok = mutating(request, op);
+    if (ok instanceof Response) return ok;
+    const row = certificatesOf(ok.tenantId).find((c) => c.id === params.certificateId);
+    if (!row) return notFound(op);
+    return idempotent(request, op, () => {
+      if (row.state !== "requested") return problem(op, "rent_certificate.invalid_state");
+      Object.assign(row, {
+        state: "issued",
+        number: `RPC-2569-${String(++certificateSeq).padStart(5, "0")}`,
+        totalPaid: "180000.00",
+        documentId: `${row.id.slice(0, -4)}0a4d`,
+        decidedAt: new Date().toISOString(),
+      });
+      return { status: 200, body: row };
+    });
+  }),
+
+  http.post("*/v1/owner/rent-certificates/:certificateId/actions/decline", async ({ request, params }) => {
+    const op = "owner.rentCertificates.decline";
+    const ok = mutating(request, op);
+    if (ok instanceof Response) return ok;
+    const row = certificatesOf(ok.tenantId).find((c) => c.id === params.certificateId);
+    if (!row) return notFound(op);
+    if (row.state !== "requested") return problem(op, "rent_certificate.invalid_state");
+    const input = (await request.json().catch(() => ({}))) as { reason?: string };
+    if (!input.reason?.trim()) return validation(op, "reason", "between 1 and 300 characters", "length");
+    Object.assign(row, { state: "declined", declineReason: input.reason.trim(), decidedAt: new Date().toISOString() });
+    return json(row);
+  }),
+
+  http.get("*/v1/owner/income-summaries", ({ request }) => {
+    const ok = owner(request, "owner.incomeSummaries.year");
+    if (ok instanceof Response) return ok;
+    const year = Number(query(request).get("year"));
+    return json(incomeOf(ok.tenantId, year));
+  }),
+
+  http.post("*/v1/owner/income-summaries", async ({ request }) => {
+    const op = "owner.incomeSummaries.generate";
+    const ok = mutating(request, op);
+    if (ok instanceof Response) return ok;
+    return idempotent(request, op, (payload) => {
+      const input = payload as Schemas["IncomeSummaryCreateDto"];
+      const summary = incomeOf(ok.tenantId, input.year);
+      if (!summary.units.some((u) => u.unitId === input.unitId)) return notFound(op);
+      return {
+        status: 201,
+        body: {
+          documentId: `${input.unitId.slice(0, -4)}0a4d`,
+          number: `ISM-2569-${String(++summarySeq).padStart(5, "0")}`,
+          summary,
+        },
+      };
+    });
+  }),
 ];
+
+let certificateSeq = 0;
+let summarySeq = 0;
+
+/** Per tenant: the landlord persona starts with one visa request on the leased condo. */
+function certificatesOf(tenantId: string): Schemas["RentCertificateDto"][] {
+  if (!state.certificates[tenantId]) {
+    const leased = (state.portfolio[tenantId] ?? []).find((unit) => unit.leaseId);
+    state.certificates[tenantId] = leased
+      ? [
+          {
+            id: "5c1e0000-0000-4000-8000-00000000c001",
+            leaseId: leased.leaseId!,
+            unitNo: leased.unitNo,
+            leaseNumber: "CTR-2569-00003",
+            purpose: "visa",
+            periodFrom: "2025-11-01",
+            periodTo: new Date(Date.now() + 7 * 3_600_000).toISOString().slice(0, 10),
+            language: "en",
+            note: "For my visa extension next month",
+            state: "requested",
+            requestedByResident: true,
+            number: null,
+            totalPaid: null,
+            declineReason: null,
+            documentId: null,
+            requestedAt: new Date(Date.now() - 3 * 3_600_000).toISOString(),
+            decidedAt: null,
+          },
+        ]
+      : [];
+  }
+  return state.certificates[tenantId]!;
+}
+
+/** The portfolio's leased units, each paid its rent every month of the year so far (amounts as strings). */
+function incomeOf(tenantId: string, year: number): Schemas["IncomeYearDto"] {
+  const now = new Date(Date.now() + 7 * 3_600_000);
+  const months = year < now.getUTCFullYear() ? 12 : now.getUTCMonth() + 1;
+  const units = (state.portfolio[tenantId] ?? [])
+    .filter((unit) => unit.leaseId && unit.defaultRent)
+    .map((unit) => {
+      const rent = Number(unit.defaultRent);
+      const received = (rent * months).toFixed(2);
+      const charge = 1200;
+      return {
+        unitId: unit.unitId,
+        unitNo: unit.unitNo,
+        months: Array.from({ length: 12 }, (_, i) => (i < months ? rent.toFixed(2) : "0.00")),
+        chargeMonths: Array.from({ length: 12 }, (_, i) => (i < months ? charge.toFixed(2) : "0.00")),
+        rent: received,
+        charges: (charge * months).toFixed(2),
+        retained: "0.00",
+        gross: received,
+      };
+    });
+  const gross = units.reduce((sum, unit) => sum + Number(unit.gross), 0);
+  return {
+    year,
+    deductionPercent: "30",
+    units,
+    totals: {
+      rent: gross.toFixed(2),
+      charges: units.reduce((sum, unit) => sum + Number(unit.charges), 0).toFixed(2),
+      retained: "0.00",
+      gross: gross.toFixed(2),
+      deduction: (gross * 0.3).toFixed(2),
+      net: (gross * 0.7).toFixed(2),
+    },
+  };
+}
