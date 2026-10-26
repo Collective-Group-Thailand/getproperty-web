@@ -389,5 +389,9 @@
     "entered": "Awaiting checker",
     "published": "Published",
     "withdrawn": "Replaced"
+  },
+  "guide": {
+    "draft": "Draft",
+    "published": "Published"
   }
 }

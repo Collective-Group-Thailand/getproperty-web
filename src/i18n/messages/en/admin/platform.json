@@ -102,5 +102,81 @@
     "testSendTitle": "Send a test of {key}",
     "testSendBody": "The published version goes to you only, over {channel}, with the sample data.",
     "testSent": "Test sent"
+  },
+  "guides": {
+    "title": "Guides",
+    "description": "Articles of the public site in Thai and English. Write a draft; another person reviews it before it is published.",
+    "col": {
+      "title": "Guide",
+      "locale": "Language",
+      "category": "Topic",
+      "state": "State",
+      "reviewed": "Facts checked"
+    },
+    "locale": {
+      "th": "ไทย",
+      "en": "English"
+    },
+    "category": {
+      "landlord": "Landlords",
+      "law": "Law",
+      "tax": "Tax",
+      "operations": "Operations"
+    },
+    "audience": {
+      "landlord": "Landlords",
+      "apartment": "Apartments"
+    },
+    "publishedAt": "Published {date}",
+    "draftHint": "Draft, not on the site",
+    "reviewHint": "The last editor cannot publish. Another platform user checks the facts and sources, then publishes.",
+    "text": "Text",
+    "facts": "About the guide",
+    "body": "Body",
+    "bodyCount": "{sections} sections · {blocks} blocks · {faq} questions · {sources} sources",
+    "minutes": "{count, plural, one {# minute} other {# minutes}}",
+    "yes": "Yes",
+    "no": "No",
+    "field": {
+      "slug": "Slug (end of the link)",
+      "slugHint": "Lowercase letters, digits and -, e.g. rental-income-tax; the same in both languages",
+      "title": "Title",
+      "summary": "Summary",
+      "summaryHint": "Up to 200 characters; shown in search results",
+      "answer": "Short answer",
+      "answerHint": "Answer the article's question in 2–3 sentences, up to 600 characters",
+      "readMinutes": "Reading time (minutes)",
+      "general": "General information, not advice",
+      "generalLabel": "Legal or tax article (shows that it is general information, not advice)",
+      "audience": "The closing call to action speaks to",
+      "published": "First published",
+      "reviewedHint": "The day the facts were last checked against the sources",
+      "sections": "Sections (JSON)",
+      "sectionsHint": "A list of sections, each with id, heading and blocks; a block is p (paragraph), ul / ol (list), note (an aside with tone info, warning or product) or affiliate",
+      "faq": "FAQ (JSON: a list of q and a)",
+      "sources": "Sources (JSON: a list of label and url, https links only)"
+    },
+    "new": "Write a guide",
+    "newTitle": "New guide",
+    "newHint": "Saved as a draft first; add the body on the guide's page.",
+    "saveDraft": "Save draft",
+    "draftSaved": "Draft saved",
+    "edit": "Edit",
+    "editTitle": "Edit text and facts",
+    "editLive": "This guide is published: the change shows on the site within 5 minutes.",
+    "save": "Save",
+    "saved": "Saved",
+    "editBody": "Edit the body",
+    "editBodyTitle": "Edit the body",
+    "editBodyHint": "The format is checked before saving; anything the page cannot draw is pointed out.",
+    "invalidJson": "This is not valid JSON",
+    "publish": "Reviewed, publish",
+    "publishTitle": "Publish this guide?",
+    "publishBody": "\"{title}\" shows on the site at once and you are recorded as its reviewer.",
+    "published": "Published",
+    "unpublish": "Take off the site",
+    "unpublishTitle": "Take this guide off the site?",
+    "unpublishBody": "\"{title}\" disappears from the site at once. It stays here and can be published again.",
+    "unpublished": "Taken off"
   }
 }

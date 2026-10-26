@@ -75,7 +75,10 @@ export async function GET(): Promise<Response> {
         // Guides: the short answer of each, which is what an answer engine quotes (D-271, D-277).
         ...articlesLlmsSection(
           t("guides.title"),
-          guidesFor(locale).map((guide) => ({ article: guide, url: url(`/guides/${guide.slug}`, locale) })),
+          (await guidesFor(locale)).map((guide) => ({
+            article: { ...guide, sections: [], faq: [], sources: [] },
+            url: url(`/guides/${guide.slug}`, locale),
+          })),
         ).qa!,
         ...faq("faq.items"),
         ...faq("landlords.faq.items"),

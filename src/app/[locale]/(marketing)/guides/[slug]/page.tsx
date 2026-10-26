@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { GuideBlocks } from "@/features/owner/marketing/guides/GuideBlocks";
-import { GUIDE_SLUGS, guideBySlug, guidesFor } from "@/features/owner/marketing/guides";
+import { guideBySlug, guideSlugs, guidesFor } from "@/features/owner/marketing/guides";
 import { JsonLdScript } from "@/features/owner/marketing/JsonLdScript";
 import { marketingMetadata, marketingOrigin, ownerHref } from "@/features/owner/marketing/seo";
 import { formatDate } from "@/i18n/format";
@@ -17,14 +17,19 @@ import { IconExternal } from "@/ui/icons/glyphs/external";
 
 type Params = { params: Promise<{ locale: Locale; slug: string }> };
 
-export function generateStaticParams() {
-  return routing.locales.flatMap((locale) => GUIDE_SLUGS.map((slug) => ({ locale, slug })));
+/** Published guides at build time (none when the API is not reachable then — pages render on first request). */
+export async function generateStaticParams() {
+  const slugs = await guideSlugs();
+  return routing.locales.flatMap((locale) => slugs.map((slug) => ({ locale, slug })));
 }
+
+/** A guide edited in admin shows within five minutes (the API read is cached that long). */
+export const revalidate = 300;
 
 export async function generateMetadata({ params }: Params) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
-  const guide = guideBySlug(locale, slug);
+  const guide = await guideBySlug(locale, slug);
   if (!guide) return {};
   const t = await getTranslations("owner.marketing.guides");
   return marketingMetadata(`/guides/${slug}`, locale, {
@@ -41,14 +46,14 @@ export async function generateMetadata({ params }: Params) {
 export default async function GuidePage({ params }: Params) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
-  const guide = guideBySlug(locale, slug);
+  const guide = await guideBySlug(locale, slug);
   if (!guide) notFound();
   const t = await getTranslations("owner.marketing.guides");
   const nav = await getTranslations("owner.marketing.nav");
   const origin = marketingOrigin();
   const href = (path: string) => getPathname({ href: path, locale });
   const url = `${origin}${href(`/guides/${slug}`)}`;
-  const related = guidesFor(locale)
+  const related = (await guidesFor(locale))
     .filter((g) => g.slug !== slug)
     .sort((a, b) => Number(b.category === guide.category) - Number(a.category === guide.category))
     .slice(0, 3);

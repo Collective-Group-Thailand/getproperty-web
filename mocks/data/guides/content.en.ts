@@ -1,4 +1,4 @@
-import type { Guide } from "./types";
+import type { Guide } from "../../../src/features/owner/marketing/guides/types";
 
 /* English guides (D-271): the same slugs, sections and facts as the Thai ones, written for English readers. */
 export const GUIDES_EN: Guide[] = [

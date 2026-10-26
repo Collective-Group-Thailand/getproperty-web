@@ -1,10 +1,14 @@
 import { hasAffiliateLinks, sameShape, validateArticle } from "@collective/content";
 import { describe, expect, it } from "vitest";
 
-import { GUIDES_EN } from "./content.en";
-import { GUIDES_TH } from "./content.th";
+import { GUIDES_EN } from "../../../../../mocks/data/guides/content.en";
+import { GUIDES_TH } from "../../../../../mocks/data/guides/content.th";
 
-describe("guides content (D-271, D-277)", () => {
+/*
+ * The guides now live in getproperty-api (B7.13, edited in admin › Guides); these files are the mock API's copy of the
+ * seed (`pnpm dev:mock`, e2e). They must stay valid articles so the pages render them like the real ones.
+ */
+describe("guides of the mock API (D-271, D-277)", () => {
   it("has the same guides, sections and FAQ count in Thai and English", () => {
     expect(GUIDES_EN.map((g) => g.slug)).toEqual(GUIDES_TH.map((g) => g.slug));
     GUIDES_TH.forEach((th, index) => {

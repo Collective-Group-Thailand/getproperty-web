@@ -1,5 +1,6 @@
 import type { MenuRegistry } from "@/features/shared/shell/menu";
 import type { Schemas } from "@/lib/api/types";
+import { IconBook } from "@/ui/icons/glyphs/book";
 import { IconBuilding } from "@/ui/icons/glyphs/building";
 import { IconChat } from "@/ui/icons/glyphs/chat";
 import { IconCpu } from "@/ui/icons/glyphs/cpu";
@@ -26,6 +27,7 @@ export const ADMIN_MENU: MenuRegistry<Schemas["AdminMenuKey"]> = {
   devices: { href: "/devices", icon: IconGateway, group: "platform" },
   ota_releases: { href: "/ota", icon: IconCpu, group: "platform" },
   notification_templates: { href: "/notification-templates", icon: IconMail, group: "platform" },
+  guides: { href: "/guides", icon: IconBook, group: "platform" },
   feature_flags: { href: "/feature-flags", icon: IconFlag, group: "platform" },
   settings: { href: "/settings", icon: IconSettings, group: "platform" },
   platform_users: { href: "/platform-users", icon: IconResidents, group: "operations" },

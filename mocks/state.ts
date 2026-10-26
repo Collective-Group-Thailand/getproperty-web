@@ -150,6 +150,8 @@ export interface MockState {
   landlordSignedUp: boolean;
   /** Linked sign-in identities; see handlers/identities.ts. */
   identities: MockIdentity[];
+  /** Guides of the public site (B7.13), created on first read: see platform/guides.ts. */
+  guides?: Schemas["AdminGuideDto"][];
   /** Identity verification attempts (D-267) by operator persona key, newest first: see handlers/identity-verification.ts. */
   identityVerifications: Record<string, Schemas["IdentityVerificationAttemptDto"][]>;
   /** Listings, their reports and owner verifications (B7.2): see owner/listings.ts. */

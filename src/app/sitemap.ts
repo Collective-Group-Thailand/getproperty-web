@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { GUIDE_SLUGS } from "@/features/owner/marketing/guides";
+import { guideSlugs } from "@/features/owner/marketing/guides";
 import { publicListingAreas, publicListingSlugs } from "@/features/owner/marketing/publicApi";
 import { marketingOrigin } from "@/features/owner/marketing/seo";
 import { MARKETING_PATHS } from "@/lib/zones/marketing";
@@ -26,7 +26,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
     alternates: { languages: languages(`/rent/${slug}`) },
   }));
-  const guides = GUIDE_SLUGS.map((slug) => ({
+  // Published guides (D-271) from the API, like the listings.
+  const guides = (await guideSlugs()).map((slug) => ({
     url: `${origin}${getPathname({ href: `/guides/${slug}`, locale: routing.defaultLocale })}`,
     changeFrequency: "monthly" as const,
     priority: 0.7,

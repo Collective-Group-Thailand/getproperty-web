@@ -1,4 +1,4 @@
-# getproperty: Master checklist (อัปเดต 27 ต.ค. 2026 01:00)
+# getproperty: Master checklist (อัปเดต 27 ต.ค. 2026 01:40)
 
 สัญลักษณ์: ✅ เสร็จและ commit แล้ว · 🟡 เสร็จบน cloud รอ commit · 🔄 กำลังทำ · ⬜ ยังไม่เริ่ม · ⛔ รออย่างอื่นก่อน (บอกไว้ว่ารออะไร)
 
@@ -45,7 +45,7 @@
 - ✅ หน้าประกาศแสดงค่าน้ำค่าไฟที่จ่ายจริง (อัตรา, ค่าส่วนกลาง, ค่าเฉลี่ยบิล 3 เดือนเมื่อเจ้าของเปิด) + หน้าเจ้าของที่ยืนยันแล้ว /owners/[slug] (ยืนยันกี่ห้อง ใช้งานตั้งแต่ ตอบเร็วแค่ไหน ประกาศทั้งหมด ไม่มีเบอร์โทร) (web 4c780fe)
 - ✅ คู่มือ 5 เรื่อง th/en (/guides) + เครื่องมือฟรี 3 ตัว (/tools)
 - ✅ หน้าเกี่ยวกับเรา, ติดต่อ (ฟอร์ม), ความปลอดภัย/PDPA, ศูนย์ช่วยเหลือ, สำหรับผู้เช่าชาวต่างชาติ
-- ⬜ ย้ายคู่มือเข้า CMS (API B7.13) และเพิ่มบทความต่อเนื่อง
+- ✅ ย้ายคู่มือเข้า CMS (API B7.13, api d04b8f8): หน้า /guides อ่านจาก API, แก้ไข/เผยแพร่ใน admin › คู่มือบนเว็บ (คนเขียนกับคนตรวจต้องเป็นคนละคน) — ⬜ เพิ่มบทความต่อเนื่อง ⛔ คุณ (หัวข้อ/ผู้ตรวจ)
 - ⬜ ลงทะเบียน Google Search Console / Bing, ส่ง sitemap ⛔ คุณ (ต้องใช้บัญชีโดเมน)
 
 ## 4. Owner console (web: `src/app/[locale]/(console)`)
@@ -71,6 +71,8 @@
 ## 7. getproperty-api (Mac)
 - ✅ B7.0 ปิด subscription (`platform.subscriptions.enabled=false`), error `subscription.disabled`, runbook SQL (commit 219b3dc, branch `feat/b7-landlords-free-pricing`)
 - ✅ B7.1 landlord tenant สมัครเอง (เบอร์โทร OTP, LINE, Google, Apple) + portfolio + ส่งมอบตึก stub ให้นิติ (D-280) (api 040ebaf, asset-core v0.5.0)
+- ⏭️ B7.12 พาร์ทเนอร์ (deposit alternative, rent advance, บริการรอบการเช่า, juristic bridge) ⛔ รอพาร์ทเนอร์
+- ✅ B7.13 คู่มือบนเว็บใน CMS: migration 0057, admin CRUD + เผยแพร่โดยผู้ตรวจอีกคน, public read, seed คู่มือ 5 เรื่อง ไทย/อังกฤษ (api d04b8f8)
 - ⬜ B7.2 กฎ fee แบบยืดหยุ่น (%, flat, min, cap, tier, MDR), split settlement, verify slip → บิล fee รายเดือน ⛔ เลือก payment gateway (O-020)
 - ✅ B7.3 listings API: `/v1/public/listings`, `/{slug}`, `/sitemap` + ประกาศฝั่งเจ้าของ, ยืนยันเจ้าของ, คิวตรวจประกาศ, รายงานประกาศ (api 13a2562 = prompt 7.2 + public read ของ 7.3; หน้า /rent ใช้ contract จริงแล้ว web f7bda0f)
 - ✅ B7.4: สร้างร่างสัญญาจากคนสนใจ (ใช้เงื่อนไขจากประกาศ), สัญญามีผลแล้วปิดประกาศเอง คนอื่นได้ข้อความขอบคุณทาง LINE, เตือนเปิดประกาศใหม่ 60 วันก่อนสัญญาหมด + ปุ่มเปิดประกาศใหม่ในคลิกเดียว (api ede4f71, web — เจ้าของห้องคอนโดในอาคารร่วมสร้างสัญญาได้แล้ว)

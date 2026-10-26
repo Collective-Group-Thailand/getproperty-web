@@ -540,6 +540,106 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/guides": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Guides
+         * @description Every guide in both languages, draft or published (D-271).
+         *
+         *     Implements: D-271.
+         */
+        get: operations["admin.guides.list"];
+        put?: never;
+        /**
+         * Write a guide
+         * @description A new guide as a draft (one per slug and language, `guide.slug_taken`). The body must be the shared article shape — sections of p / ul / ol / note / affiliate blocks, FAQ, https sources (D-271, D-277).
+         *
+         *     Implements: D-271.
+         */
+        post: operations["admin.guides.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/guides/{guideId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One guide
+         * @description A guide with its body (D-271).
+         *
+         *     Implements: D-271.
+         */
+        get: operations["admin.guides.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Edit a guide
+         * @description Changes any field but slug and language; requires `If-Match`. A published guide shows the change at once (D-271).
+         *
+         *     Implements: D-271.
+         */
+        patch: operations["admin.guides.update"];
+        trace?: never;
+    };
+    "/v1/admin/guides/{guideId}/actions/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Review and publish
+         * @description A platform user other than the last editor (`guide.same_reviewer`) publishes the guide and is recorded as its reviewer; it is public at once (D-271, D-091).
+         *
+         *     Implements: D-271, D-091.
+         */
+        post: operations["admin.guides.publish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/guides/{guideId}/actions/unpublish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Take off the site
+         * @description Back to draft; the public page is gone at once (D-271).
+         *
+         *     Implements: D-271.
+         */
+        post: operations["admin.guides.unpublish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/haas-assets": {
         parameters: {
             query?: never;
@@ -10796,6 +10896,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/public/guides": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Guides
+         * @description Published guides of one language, newest first (D-271).
+         *
+         *     Implements: D-271.
+         */
+        get: operations["public.guides.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/public/guides/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One guide
+         * @description A published guide in one language with its sections, FAQ and sources (D-271); unpublished or unknown = 404.
+         *
+         *     Implements: D-271.
+         */
+        get: operations["public.guides.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/public/listings": {
         parameters: {
             query?: never;
@@ -15108,6 +15252,93 @@ export interface components {
             /** @example ประกาศ กฟน. อัตรา ก.ย. 2569 */
             title?: string | null;
         };
+        AdminGuideDto: {
+            /**
+             * @description The short answer first (AEO).
+             * @example ค่าเช่าบ้านและคอนโดเป็นเงินได้ประเภทที่ 5
+             */
+            answer: string;
+            /** @example landlord */
+            audience: components["schemas"]["GuideAudience"];
+            /** @example tax */
+            category: components["schemas"]["GuideCategory"];
+            faq: components["schemas"]["GuideFaqDto"][];
+            /**
+             * @description Legal or tax content: the page shows "general information, not advice".
+             * @example true
+             */
+            general: boolean;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example th */
+            locale: components["schemas"]["Language"];
+            /**
+             * Format: date
+             * @example 2026-10-24
+             */
+            published: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            publishedAt: string | null;
+            /** @example 6 */
+            readMinutes: number;
+            /**
+             * Format: date
+             * @description The facts were last checked on this day.
+             * @example 2026-10-24
+             */
+            reviewed: string;
+            /**
+             * Format: uuid
+             * @description Who reviewed and published it.
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            reviewedBy: string | null;
+            /**
+             * @description Sections `{ id, heading, blocks }`; a block is one of `{ p }`, `{ ul: [] }`, `{ ol: [] }`, `{ note, tone? (info | warning | product) }`, `{ affiliate: { name, url, merchant, why, imageUrl? } }` (the shared article of D-277).
+             * @example [
+             *       {
+             *         "blocks": [
+             *           {
+             *             "p": "เงินที่ได้จากการให้เช่าบ้าน คอนโด ห้องพัก เป็นเงินได้ตามมาตรา 40(5)"
+             *           }
+             *         ],
+             *         "heading": "ค่าเช่าเป็นเงินได้ประเภทไหน",
+             *         "id": "type"
+             *       }
+             *     ]
+             */
+            sections: {
+                [key: string]: unknown;
+            }[];
+            /** @example rental-income-tax */
+            slug: string;
+            sources: components["schemas"]["GuideSourceDto"][];
+            /** @example published */
+            state: components["schemas"]["GuideState"];
+            /** @example รายได้ค่าเช่าเป็นเงินได้ตามมาตรา 40(5) หักค่าใช้จ่ายเหมา 30% หรือตามจริง */
+            summary: string;
+            /** @example ภาษีค่าเช่าบ้านและคอนโด: ยื่นเมื่อไร หักค่าใช้จ่ายได้เท่าไร */
+            title: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            updatedAt: string;
+            /**
+             * Format: uuid
+             * @description The last editor.
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            updatedBy: string | null;
+            /** @example 3 */
+            version: number;
+        };
         AdminListingDto: {
             descriptionTh: string;
             district: string | null;
@@ -15178,7 +15409,7 @@ export interface components {
             user: components["schemas"]["MeUserDto"];
         };
         /** @enum {string} */
-        AdminMenuKey: "tenants" | "listings" | "platform_users" | "utility_tariffs" | "settings" | "feature_flags" | "devices" | "ota_releases" | "support_grants" | "subscriptions" | "notification_templates" | "outbox" | "ingest_dead_letters" | "data_subject_requests" | "integration_events" | "audit_log" | "ai_usage";
+        AdminMenuKey: "tenants" | "listings" | "guides" | "platform_users" | "utility_tariffs" | "settings" | "feature_flags" | "devices" | "ota_releases" | "support_grants" | "subscriptions" | "notification_templates" | "outbox" | "ingest_dead_letters" | "data_subject_requests" | "integration_events" | "audit_log" | "ai_usage";
         AdminStorageOverviewDto: {
             data: components["schemas"]["AdminStorageTenantDto"][];
             totals: components["schemas"]["AdminStorageTotalsDto"];
@@ -19179,6 +19410,211 @@ export interface components {
         GrantReason: "pm_contract" | "landlord_unit" | "owner_portal" | "contractor" | "developer_post_sale" | "warranty" | "juristic_handover" | "support_other";
         /** @enum {string} */
         GrantScope: "building" | "unit";
+        /** @enum {string} */
+        GuideAudience: "landlord" | "apartment";
+        /** @enum {string} */
+        GuideCategory: "tax" | "law" | "landlord" | "operations";
+        GuideCreateDto: {
+            /** @example ค่าเช่าบ้านและคอนโดเป็นเงินได้ประเภทที่ 5 */
+            answer: string;
+            /** @example landlord */
+            audience: components["schemas"]["GuideAudience"];
+            /** @example tax */
+            category: components["schemas"]["GuideCategory"];
+            faq: components["schemas"]["GuideFaqDto"][];
+            /** @example true */
+            general: boolean;
+            /** @example th */
+            locale: components["schemas"]["Language"];
+            /**
+             * Format: date
+             * @example 2026-10-24
+             */
+            published: string;
+            /** @example 6 */
+            readMinutes: number;
+            /**
+             * Format: date
+             * @example 2026-10-24
+             */
+            reviewed: string;
+            /**
+             * @description Sections `{ id, heading, blocks }`; a block is one of `{ p }`, `{ ul: [] }`, `{ ol: [] }`, `{ note, tone? (info | warning | product) }`, `{ affiliate: { name, url, merchant, why, imageUrl? } }` (the shared article of D-277).
+             * @example [
+             *       {
+             *         "blocks": [
+             *           {
+             *             "p": "เงินที่ได้จากการให้เช่าบ้าน คอนโด ห้องพัก เป็นเงินได้ตามมาตรา 40(5)"
+             *           }
+             *         ],
+             *         "heading": "ค่าเช่าเป็นเงินได้ประเภทไหน",
+             *         "id": "type"
+             *       }
+             *     ]
+             */
+            sections: {
+                [key: string]: unknown;
+            }[];
+            /** @example rental-income-tax */
+            slug: string;
+            sources: components["schemas"]["GuideSourceDto"][];
+            /** @example รายได้ค่าเช่าเป็นเงินได้ตามมาตรา 40(5) */
+            summary: string;
+            /** @example ภาษีค่าเช่าบ้านและคอนโด */
+            title: string;
+        };
+        GuideDetailDto: {
+            /**
+             * @description The short answer first (AEO).
+             * @example ค่าเช่าบ้านและคอนโดเป็นเงินได้ประเภทที่ 5
+             */
+            answer: string;
+            /** @example landlord */
+            audience: components["schemas"]["GuideAudience"];
+            /** @example tax */
+            category: components["schemas"]["GuideCategory"];
+            faq: components["schemas"]["GuideFaqDto"][];
+            /**
+             * @description Legal or tax content: the page shows "general information, not advice".
+             * @example true
+             */
+            general: boolean;
+            /** @example th */
+            locale: components["schemas"]["Language"];
+            /**
+             * Format: date
+             * @example 2026-10-24
+             */
+            published: string;
+            /** @example 6 */
+            readMinutes: number;
+            /**
+             * Format: date
+             * @description The facts were last checked on this day.
+             * @example 2026-10-24
+             */
+            reviewed: string;
+            /**
+             * @description Sections `{ id, heading, blocks }`; a block is one of `{ p }`, `{ ul: [] }`, `{ ol: [] }`, `{ note, tone? (info | warning | product) }`, `{ affiliate: { name, url, merchant, why, imageUrl? } }` (the shared article of D-277).
+             * @example [
+             *       {
+             *         "blocks": [
+             *           {
+             *             "p": "เงินที่ได้จากการให้เช่าบ้าน คอนโด ห้องพัก เป็นเงินได้ตามมาตรา 40(5)"
+             *           }
+             *         ],
+             *         "heading": "ค่าเช่าเป็นเงินได้ประเภทไหน",
+             *         "id": "type"
+             *       }
+             *     ]
+             */
+            sections: {
+                [key: string]: unknown;
+            }[];
+            /** @example rental-income-tax */
+            slug: string;
+            sources: components["schemas"]["GuideSourceDto"][];
+            /** @example รายได้ค่าเช่าเป็นเงินได้ตามมาตรา 40(5) หักค่าใช้จ่ายเหมา 30% หรือตามจริง */
+            summary: string;
+            /** @example ภาษีค่าเช่าบ้านและคอนโด: ยื่นเมื่อไร หักค่าใช้จ่ายได้เท่าไร */
+            title: string;
+        };
+        GuideFaqDto: {
+            /** @example ต้องนำค่าเช่าไปรวมเป็นเงินได้ตามมาตรา 40(5) ทุกกรณี */
+            a: string;
+            /** @example ปล่อยเช่าคอนโดห้องเดียวต้องยื่นภาษีไหม */
+            q: string;
+        };
+        GuideSourceDto: {
+            /** @example กรมสรรพากร */
+            label: string;
+            /** @example https://www.rd.go.th/ */
+            url: string;
+        };
+        /** @enum {string} */
+        GuideState: "draft" | "published";
+        GuideSummaryDto: {
+            /**
+             * @description The short answer first (AEO).
+             * @example ค่าเช่าบ้านและคอนโดเป็นเงินได้ประเภทที่ 5
+             */
+            answer: string;
+            /** @example landlord */
+            audience: components["schemas"]["GuideAudience"];
+            /** @example tax */
+            category: components["schemas"]["GuideCategory"];
+            /**
+             * @description Legal or tax content: the page shows "general information, not advice".
+             * @example true
+             */
+            general: boolean;
+            /** @example th */
+            locale: components["schemas"]["Language"];
+            /**
+             * Format: date
+             * @example 2026-10-24
+             */
+            published: string;
+            /** @example 6 */
+            readMinutes: number;
+            /**
+             * Format: date
+             * @description The facts were last checked on this day.
+             * @example 2026-10-24
+             */
+            reviewed: string;
+            /** @example rental-income-tax */
+            slug: string;
+            /** @example รายได้ค่าเช่าเป็นเงินได้ตามมาตรา 40(5) หักค่าใช้จ่ายเหมา 30% หรือตามจริง */
+            summary: string;
+            /** @example ภาษีค่าเช่าบ้านและคอนโด: ยื่นเมื่อไร หักค่าใช้จ่ายได้เท่าไร */
+            title: string;
+        };
+        GuideUpdateDto: {
+            /** @example ค่าเช่าบ้านและคอนโดเป็นเงินได้ประเภทที่ 5 */
+            answer?: string;
+            /** @example landlord */
+            audience?: components["schemas"]["GuideAudience"];
+            /** @example tax */
+            category?: components["schemas"]["GuideCategory"];
+            faq?: components["schemas"]["GuideFaqDto"][];
+            /** @example true */
+            general?: boolean;
+            /**
+             * Format: date
+             * @example 2026-10-24
+             */
+            published?: string;
+            /** @example 6 */
+            readMinutes?: number;
+            /**
+             * Format: date
+             * @example 2026-10-24
+             */
+            reviewed?: string;
+            /**
+             * @description Sections `{ id, heading, blocks }`; a block is one of `{ p }`, `{ ul: [] }`, `{ ol: [] }`, `{ note, tone? (info | warning | product) }`, `{ affiliate: { name, url, merchant, why, imageUrl? } }` (the shared article of D-277).
+             * @example [
+             *       {
+             *         "blocks": [
+             *           {
+             *             "p": "เงินที่ได้จากการให้เช่าบ้าน คอนโด ห้องพัก เป็นเงินได้ตามมาตรา 40(5)"
+             *           }
+             *         ],
+             *         "heading": "ค่าเช่าเป็นเงินได้ประเภทไหน",
+             *         "id": "type"
+             *       }
+             *     ]
+             */
+            sections?: {
+                [key: string]: unknown;
+            }[];
+            sources?: components["schemas"]["GuideSourceDto"][];
+            /** @example รายได้ค่าเช่าเป็นเงินได้ตามมาตรา 40(5) */
+            summary?: string;
+            /** @example ภาษีค่าเช่าบ้านและคอนโด */
+            title?: string;
+        };
         /** @enum {string} */
         HaasAction: "install" | "in-service" | "replace" | "deinstall" | "write-off";
         HaasAssetCreateDto: {
@@ -26402,6 +26838,9 @@ export interface components {
             lat: number;
             /** @example 100.5446 */
             lng: number;
+        };
+        PublicGuidesDto: {
+            data: components["schemas"]["GuideSummaryDto"][];
         };
         PublicListingDetailDto: {
             /** @description The full address (D-252); the unit number only when the owner shows it. */
@@ -36614,6 +37053,869 @@ export interface operations {
                 };
             };
             /** @description Problem: `document.type_not_allowed`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.guides.list": {
+        parameters: {
+            query?: {
+                locale?: components["schemas"]["Language"];
+                state?: components["schemas"]["GuideState"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Guides */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "answer": "ค่าเช่าบ้านและคอนโดเป็นเงินได้ประเภทที่ 5 (มาตรา 40(5))",
+                     *         "audience": "landlord",
+                     *         "category": "tax",
+                     *         "faq": [
+                     *           {
+                     *             "a": "ต้องนำค่าเช่าไปรวมเป็นเงินได้ตามมาตรา 40(5)",
+                     *             "q": "ปล่อยเช่าคอนโดห้องเดียวต้องยื่นภาษีไหม"
+                     *           }
+                     *         ],
+                     *         "general": true,
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "locale": "th",
+                     *         "published": "2026-10-24",
+                     *         "publishedAt": "2026-11-01T00:15:00+07:00",
+                     *         "readMinutes": 6,
+                     *         "reviewed": "2026-10-24",
+                     *         "reviewedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "sections": [
+                     *           {
+                     *             "blocks": [
+                     *               {
+                     *                 "p": "เงินที่ได้จากการให้เช่าบ้าน คอนโด ห้องพัก เป็นเงินได้ตามมาตรา 40(5)"
+                     *               }
+                     *             ],
+                     *             "heading": "ค่าเช่าเป็นเงินได้ประเภทไหน",
+                     *             "id": "type"
+                     *           }
+                     *         ],
+                     *         "slug": "rental-income-tax",
+                     *         "sources": [
+                     *           {
+                     *             "label": "กรมสรรพากร",
+                     *             "url": "https://www.rd.go.th/"
+                     *           }
+                     *         ],
+                     *         "state": "published",
+                     *         "summary": "รายได้ค่าเช่าเป็นเงินได้ตามมาตรา 40(5) หักค่าใช้จ่ายเหมา 30% หรือตามจริง",
+                     *         "title": "ภาษีค่าเช่าบ้านและคอนโด: ยื่นเมื่อไร หักค่าใช้จ่ายได้เท่าไร",
+                     *         "updatedAt": "2026-11-01T00:15:00+07:00",
+                     *         "updatedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "version": 2
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["AdminGuideDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.guides.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GuideCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Draft */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "answer": "ค่าเช่าบ้านและคอนโดเป็นเงินได้ประเภทที่ 5 (มาตรา 40(5))",
+                     *       "audience": "landlord",
+                     *       "category": "tax",
+                     *       "faq": [
+                     *         {
+                     *           "a": "ต้องนำค่าเช่าไปรวมเป็นเงินได้ตามมาตรา 40(5)",
+                     *           "q": "ปล่อยเช่าคอนโดห้องเดียวต้องยื่นภาษีไหม"
+                     *         }
+                     *       ],
+                     *       "general": true,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "locale": "th",
+                     *       "published": "2026-10-24",
+                     *       "publishedAt": null,
+                     *       "readMinutes": 6,
+                     *       "reviewed": "2026-10-24",
+                     *       "reviewedBy": null,
+                     *       "sections": [
+                     *         {
+                     *           "blocks": [
+                     *             {
+                     *               "p": "เงินที่ได้จากการให้เช่าบ้าน คอนโด ห้องพัก เป็นเงินได้ตามมาตรา 40(5)"
+                     *             }
+                     *           ],
+                     *           "heading": "ค่าเช่าเป็นเงินได้ประเภทไหน",
+                     *           "id": "type"
+                     *         }
+                     *       ],
+                     *       "slug": "rental-income-tax",
+                     *       "sources": [
+                     *         {
+                     *           "label": "กรมสรรพากร",
+                     *           "url": "https://www.rd.go.th/"
+                     *         }
+                     *       ],
+                     *       "state": "draft",
+                     *       "summary": "รายได้ค่าเช่าเป็นเงินได้ตามมาตรา 40(5) หักค่าใช้จ่ายเหมา 30% หรือตามจริง",
+                     *       "title": "ภาษีค่าเช่าบ้านและคอนโด: ยื่นเมื่อไร หักค่าใช้จ่ายได้เท่าไร",
+                     *       "updatedAt": "2026-11-01T00:15:00+07:00",
+                     *       "updatedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminGuideDto"];
+                };
+            };
+            /** @description Problem: `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `guide.slug_taken` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.guides.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                guideId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Guide */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "answer": "ค่าเช่าบ้านและคอนโดเป็นเงินได้ประเภทที่ 5 (มาตรา 40(5))",
+                     *       "audience": "landlord",
+                     *       "category": "tax",
+                     *       "faq": [
+                     *         {
+                     *           "a": "ต้องนำค่าเช่าไปรวมเป็นเงินได้ตามมาตรา 40(5)",
+                     *           "q": "ปล่อยเช่าคอนโดห้องเดียวต้องยื่นภาษีไหม"
+                     *         }
+                     *       ],
+                     *       "general": true,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "locale": "th",
+                     *       "published": "2026-10-24",
+                     *       "publishedAt": "2026-11-01T00:15:00+07:00",
+                     *       "readMinutes": 6,
+                     *       "reviewed": "2026-10-24",
+                     *       "reviewedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "sections": [
+                     *         {
+                     *           "blocks": [
+                     *             {
+                     *               "p": "เงินที่ได้จากการให้เช่าบ้าน คอนโด ห้องพัก เป็นเงินได้ตามมาตรา 40(5)"
+                     *             }
+                     *           ],
+                     *           "heading": "ค่าเช่าเป็นเงินได้ประเภทไหน",
+                     *           "id": "type"
+                     *         }
+                     *       ],
+                     *       "slug": "rental-income-tax",
+                     *       "sources": [
+                     *         {
+                     *           "label": "กรมสรรพากร",
+                     *           "url": "https://www.rd.go.th/"
+                     *         }
+                     *       ],
+                     *       "state": "published",
+                     *       "summary": "รายได้ค่าเช่าเป็นเงินได้ตามมาตรา 40(5) หักค่าใช้จ่ายเหมา 30% หรือตามจริง",
+                     *       "title": "ภาษีค่าเช่าบ้านและคอนโด: ยื่นเมื่อไร หักค่าใช้จ่ายได้เท่าไร",
+                     *       "updatedAt": "2026-11-01T00:15:00+07:00",
+                     *       "updatedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminGuideDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.guides.update": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description ETag from the last read of this resource. Mismatch → 412 `concurrency.stale`; missing → 428 `concurrency.precondition_required`. */
+                "If-Match": components["parameters"]["IfMatch"];
+            };
+            path: {
+                guideId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GuideUpdateDto"];
+            };
+        };
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    ETag: components["headers"]["ETag"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "answer": "ค่าเช่าบ้านและคอนโดเป็นเงินได้ประเภทที่ 5 (มาตรา 40(5))",
+                     *       "audience": "landlord",
+                     *       "category": "tax",
+                     *       "faq": [
+                     *         {
+                     *           "a": "ต้องนำค่าเช่าไปรวมเป็นเงินได้ตามมาตรา 40(5)",
+                     *           "q": "ปล่อยเช่าคอนโดห้องเดียวต้องยื่นภาษีไหม"
+                     *         }
+                     *       ],
+                     *       "general": true,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "locale": "th",
+                     *       "published": "2026-10-24",
+                     *       "publishedAt": "2026-11-01T00:15:00+07:00",
+                     *       "readMinutes": 6,
+                     *       "reviewed": "2026-10-24",
+                     *       "reviewedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "sections": [
+                     *         {
+                     *           "blocks": [
+                     *             {
+                     *               "p": "เงินที่ได้จากการให้เช่าบ้าน คอนโด ห้องพัก เป็นเงินได้ตามมาตรา 40(5)"
+                     *             }
+                     *           ],
+                     *           "heading": "ค่าเช่าเป็นเงินได้ประเภทไหน",
+                     *           "id": "type"
+                     *         }
+                     *       ],
+                     *       "slug": "rental-income-tax",
+                     *       "sources": [
+                     *         {
+                     *           "label": "กรมสรรพากร",
+                     *           "url": "https://www.rd.go.th/"
+                     *         }
+                     *       ],
+                     *       "state": "published",
+                     *       "summary": "รายได้ค่าเช่าเป็นเงินได้ตามมาตรา 40(5) หักค่าใช้จ่ายเหมา 30% หรือตามจริง",
+                     *       "title": "ภาษีค่าเช่าบ้านและคอนโด: ยื่นเมื่อไร หักค่าใช้จ่ายได้เท่าไร",
+                     *       "updatedAt": "2026-11-01T00:15:00+07:00",
+                     *       "updatedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminGuideDto"];
+                };
+            };
+            /** @description Problem: `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.precondition_required` */
+            428: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.guides.publish": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                guideId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Published */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "answer": "ค่าเช่าบ้านและคอนโดเป็นเงินได้ประเภทที่ 5 (มาตรา 40(5))",
+                     *       "audience": "landlord",
+                     *       "category": "tax",
+                     *       "faq": [
+                     *         {
+                     *           "a": "ต้องนำค่าเช่าไปรวมเป็นเงินได้ตามมาตรา 40(5)",
+                     *           "q": "ปล่อยเช่าคอนโดห้องเดียวต้องยื่นภาษีไหม"
+                     *         }
+                     *       ],
+                     *       "general": true,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "locale": "th",
+                     *       "published": "2026-10-24",
+                     *       "publishedAt": "2026-11-01T00:15:00+07:00",
+                     *       "readMinutes": 6,
+                     *       "reviewed": "2026-10-24",
+                     *       "reviewedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "sections": [
+                     *         {
+                     *           "blocks": [
+                     *             {
+                     *               "p": "เงินที่ได้จากการให้เช่าบ้าน คอนโด ห้องพัก เป็นเงินได้ตามมาตรา 40(5)"
+                     *             }
+                     *           ],
+                     *           "heading": "ค่าเช่าเป็นเงินได้ประเภทไหน",
+                     *           "id": "type"
+                     *         }
+                     *       ],
+                     *       "slug": "rental-income-tax",
+                     *       "sources": [
+                     *         {
+                     *           "label": "กรมสรรพากร",
+                     *           "url": "https://www.rd.go.th/"
+                     *         }
+                     *       ],
+                     *       "state": "published",
+                     *       "summary": "รายได้ค่าเช่าเป็นเงินได้ตามมาตรา 40(5) หักค่าใช้จ่ายเหมา 30% หรือตามจริง",
+                     *       "title": "ภาษีค่าเช่าบ้านและคอนโด: ยื่นเมื่อไร หักค่าใช้จ่ายได้เท่าไร",
+                     *       "updatedAt": "2026-11-01T00:15:00+07:00",
+                     *       "updatedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminGuideDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `guide.same_reviewer` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.guides.unpublish": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                guideId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Draft */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "answer": "ค่าเช่าบ้านและคอนโดเป็นเงินได้ประเภทที่ 5 (มาตรา 40(5))",
+                     *       "audience": "landlord",
+                     *       "category": "tax",
+                     *       "faq": [
+                     *         {
+                     *           "a": "ต้องนำค่าเช่าไปรวมเป็นเงินได้ตามมาตรา 40(5)",
+                     *           "q": "ปล่อยเช่าคอนโดห้องเดียวต้องยื่นภาษีไหม"
+                     *         }
+                     *       ],
+                     *       "general": true,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "locale": "th",
+                     *       "published": "2026-10-24",
+                     *       "publishedAt": null,
+                     *       "readMinutes": 6,
+                     *       "reviewed": "2026-10-24",
+                     *       "reviewedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "sections": [
+                     *         {
+                     *           "blocks": [
+                     *             {
+                     *               "p": "เงินที่ได้จากการให้เช่าบ้าน คอนโด ห้องพัก เป็นเงินได้ตามมาตรา 40(5)"
+                     *             }
+                     *           ],
+                     *           "heading": "ค่าเช่าเป็นเงินได้ประเภทไหน",
+                     *           "id": "type"
+                     *         }
+                     *       ],
+                     *       "slug": "rental-income-tax",
+                     *       "sources": [
+                     *         {
+                     *           "label": "กรมสรรพากร",
+                     *           "url": "https://www.rd.go.th/"
+                     *         }
+                     *       ],
+                     *       "state": "draft",
+                     *       "summary": "รายได้ค่าเช่าเป็นเงินได้ตามมาตรา 40(5) หักค่าใช้จ่ายเหมา 30% หรือตามจริง",
+                     *       "title": "ภาษีค่าเช่าบ้านและคอนโด: ยื่นเมื่อไร หักค่าใช้จ่ายได้เท่าไร",
+                     *       "updatedAt": "2026-11-01T00:15:00+07:00",
+                     *       "updatedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminGuideDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -106352,6 +107654,197 @@ export interface operations {
                 };
             };
             /** @description Problem: `listing.viewing_slot_unavailable`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "public.guides.list": {
+        parameters: {
+            query?: {
+                /** @description Default th. */
+                locale?: components["schemas"]["Language"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Guides */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "answer": "ค่าเช่าบ้านและคอนโดเป็นเงินได้ประเภทที่ 5 (มาตรา 40(5))",
+                     *           "audience": "landlord",
+                     *           "category": "tax",
+                     *           "general": true,
+                     *           "locale": "th",
+                     *           "published": "2026-10-24",
+                     *           "readMinutes": 6,
+                     *           "reviewed": "2026-10-24",
+                     *           "slug": "rental-income-tax",
+                     *           "summary": "รายได้ค่าเช่าเป็นเงินได้ตามมาตรา 40(5) หักค่าใช้จ่ายเหมา 30% หรือตามจริง",
+                     *           "title": "ภาษีค่าเช่าบ้านและคอนโด: ยื่นเมื่อไร หักค่าใช้จ่ายได้เท่าไร"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PublicGuidesDto"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "public.guides.get": {
+        parameters: {
+            query?: {
+                /** @description Default th. */
+                locale?: components["schemas"]["Language"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Guide */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "answer": "ค่าเช่าบ้านและคอนโดเป็นเงินได้ประเภทที่ 5 (มาตรา 40(5))",
+                     *       "audience": "landlord",
+                     *       "category": "tax",
+                     *       "faq": [
+                     *         {
+                     *           "a": "ต้องนำค่าเช่าไปรวมเป็นเงินได้ตามมาตรา 40(5)",
+                     *           "q": "ปล่อยเช่าคอนโดห้องเดียวต้องยื่นภาษีไหม"
+                     *         }
+                     *       ],
+                     *       "general": true,
+                     *       "locale": "th",
+                     *       "published": "2026-10-24",
+                     *       "readMinutes": 6,
+                     *       "reviewed": "2026-10-24",
+                     *       "sections": [
+                     *         {
+                     *           "blocks": [
+                     *             {
+                     *               "p": "เงินที่ได้จากการให้เช่าบ้าน คอนโด ห้องพัก เป็นเงินได้ตามมาตรา 40(5)"
+                     *             }
+                     *           ],
+                     *           "heading": "ค่าเช่าเป็นเงินได้ประเภทไหน",
+                     *           "id": "type"
+                     *         }
+                     *       ],
+                     *       "slug": "rental-income-tax",
+                     *       "sources": [
+                     *         {
+                     *           "label": "กรมสรรพากร",
+                     *           "url": "https://www.rd.go.th/"
+                     *         }
+                     *       ],
+                     *       "summary": "รายได้ค่าเช่าเป็นเงินได้ตามมาตรา 40(5) หักค่าใช้จ่ายเหมา 30% หรือตามจริง",
+                     *       "title": "ภาษีค่าเช่าบ้านและคอนโด: ยื่นเมื่อไร หักค่าใช้จ่ายได้เท่าไร"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GuideDetailDto"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
