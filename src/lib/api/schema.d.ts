@@ -7404,6 +7404,34 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/owner/me/identity-verification": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My identity verification
+         * @description Whether my identity is verified and my latest attempt (D-267). Only the outcome is kept — never my ID number, photos or date of birth.
+         *
+         *     Implements: D-267.
+         */
+        get: operations["owner.identityVerification.get"];
+        put?: never;
+        /**
+         * Verify my identity
+         * @description Opens a verification at the licensed e-KYC provider (ID card and selfie; O-021) and answers its page to open; a pending attempt is answered again. `identity.already_verified` once verified; `ekyc.unavailable` while no provider is configured. The provider’s signed webhook decides (D-267).
+         *
+         *     Implements: D-267.
+         */
+        post: operations["owner.identityVerification.start"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/owner/me/password": {
         parameters: {
             query?: never;
@@ -10586,6 +10614,34 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/prospect/me/identity-verification": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My identity verification
+         * @description Whether my identity is verified and my latest attempt (D-267). Only the outcome is kept — never my ID number, photos or date of birth.
+         *
+         *     Implements: D-267.
+         */
+        get: operations["prospect.identityVerification.get"];
+        put?: never;
+        /**
+         * Verify my identity
+         * @description Opens a verification at the licensed e-KYC provider (ID card and selfie; O-021) and answers its page to open; a pending attempt is answered again. `identity.already_verified` once verified; `ekyc.unavailable` while no provider is configured. The provider’s signed webhook decides (D-267).
+         *
+         *     Implements: D-267.
+         */
+        post: operations["prospect.identityVerification.start"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/prospect/ping": {
         parameters: {
             query?: never;
@@ -12031,6 +12087,34 @@ export interface paths {
          *     Implements: D-255, D-283.
          */
         delete: operations["resident.identities.unlink"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/me/identity-verification": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My identity verification
+         * @description Whether my identity is verified and my latest attempt (D-267). Only the outcome is kept — never my ID number, photos or date of birth.
+         *
+         *     Implements: D-267.
+         */
+        get: operations["resident.identityVerification.get"];
+        put?: never;
+        /**
+         * Verify my identity
+         * @description Opens a verification at the licensed e-KYC provider (ID card and selfie; O-021) and answers its page to open; a pending attempt is answered again. `identity.already_verified` once verified; `ekyc.unavailable` while no provider is configured. The provider’s signed webhook decides (D-267).
+         *
+         *     Implements: D-267.
+         */
+        post: operations["resident.identityVerification.start"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -14380,6 +14464,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/webhooks/ekyc/{provider}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * e-KYC outcome
+         * @description The provider tells the outcome of a verification session: `approved` makes the person identity-verified, `rejected` keeps the reason. Signed (401 `webhook.signature_invalid` otherwise); a repeated delivery is answered `handled: false` (D-267).
+         *
+         *     Implements: D-267.
+         */
+        post: operations["webhooks.ekyc.callback"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/webhooks/integration/{platform}": {
         parameters: {
             query?: never;
@@ -14492,6 +14598,22 @@ export interface paths {
     };
 }
 export interface webhooks {
+    "ekyc.callback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "integration.receive": {
         parameters: {
             query?: never;
@@ -18044,6 +18166,15 @@ export interface components {
             /** @example schedule */
             triggeredBy: components["schemas"]["ReminderTrigger"];
         };
+        EkycWebhookAckDto: {
+            /**
+             * @description false when the attempt was already decided (a repeated delivery).
+             * @example true
+             */
+            handled: boolean;
+            /** @example approved */
+            state: components["schemas"]["IdentityVerificationState"];
+        };
         EmergencyContactDto: {
             /** @example ญาติ ทดสอบ */
             name: string;
@@ -19121,6 +19252,64 @@ export interface components {
          * @enum {string}
          */
         IdentityTokenProvider: "line" | "firebase_google" | "firebase_apple";
+        IdentityVerificationAttemptDto: {
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @description A pending attempt expires then.
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            expiresAt: string;
+            /**
+             * @description Why the provider did not verify me.
+             * @example null
+             */
+            failureReason: string | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example pending */
+            state: components["schemas"]["IdentityVerificationState"];
+            /**
+             * @description While pending: the provider’s page where I verify (ID card and selfie); null otherwise.
+             * @example https://ekyc.example.com/session/abc
+             */
+            verificationUrl: string | null;
+        };
+        IdentityVerificationDto: {
+            /**
+             * @description Whether online identity verification is offered now (a provider is configured, O-021).
+             * @example true
+             */
+            available: boolean;
+            /** @description My latest attempt. */
+            latest: components["schemas"]["IdentityVerificationAttemptDto"] | null;
+            /**
+             * @description My identity is verified (D-267): the badge shows.
+             * @example false
+             */
+            verified: boolean;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            verifiedAt: string | null;
+        };
+        IdentityVerificationStartDto: {
+            /**
+             * @description Language of the provider’s page.
+             * @example th
+             */
+            language?: components["schemas"]["Language"];
+        };
+        /** @enum {string} */
+        IdentityVerificationState: "pending" | "approved" | "rejected" | "expired";
         /** @enum {string} */
         ImportAction: "create" | "update" | "unchanged" | "error";
         ImportErrorDto: {
@@ -20619,7 +20808,7 @@ export interface components {
             tokens: components["schemas"]["TokenPairDto"];
         };
         /**
-         * @description Language of the text shown.
+         * @description Language of the provider’s page.
          * @enum {string}
          */
         Language: "th" | "en";
@@ -20690,6 +20879,11 @@ export interface components {
             notes: string | null;
         };
         LeadProspectDto: {
+            /**
+             * @description The prospect verified their identity (e-KYC, D-267).
+             * @example false
+             */
+            identityVerified: boolean;
             /**
              * @description Replies reach the prospect in LINE.
              * @example true
@@ -25994,6 +26188,11 @@ export interface components {
             /** @example มาลี มีสุข */
             ownerDisplayName: string;
             /**
+             * @description The owner verified their identity at the e-KYC provider (D-267); a second badge beside the ownership one.
+             * @example false
+             */
+            ownerIdentityVerified: boolean;
+            /**
              * @description The owner’s public page `GET /v1/public/owners/{slug}` (D-274) when it is open (verified and not switched off); else null.
              * @example landlord-0a1b2c3d4e
              */
@@ -26064,6 +26263,11 @@ export interface components {
             /** @example 12 */
             minTermMonths: number;
             nearestTransit: components["schemas"]["PublicTransitDto"] | null;
+            /**
+             * @description The owner verified their identity at the e-KYC provider (D-267); a second badge beside the ownership one.
+             * @example false
+             */
+            ownerIdentityVerified: boolean;
             petsAllowed: boolean;
             /** @example กรุงเทพมหานคร */
             province: string | null;
@@ -26129,6 +26333,11 @@ export interface components {
             verification: components["schemas"]["PublicOwnerVerificationDto"];
         };
         PublicOwnerVerificationDto: {
+            /**
+             * @description The owner’s identity is verified too (e-KYC, D-267).
+             * @example true
+             */
+            identityVerified: boolean;
             /**
              * @description What the platform verified: ownership of the listed units (D-252); identity follows with D-267.
              * @example unit_ownership
@@ -71559,6 +71768,7 @@ export interface operations {
                      *           "state": "requested"
                      *         },
                      *         "prospect": {
+                     *           "identityVerified": true,
                      *           "lineLinked": true,
                      *           "name": "สมศรี ใจดี",
                      *           "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
@@ -71702,6 +71912,7 @@ export interface operations {
                      *       "notes": null,
                      *       "occupants": 2,
                      *       "prospect": {
+                     *         "identityVerified": true,
                      *         "lineLinked": true,
                      *         "name": "สมศรี ใจดี",
                      *         "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
@@ -71872,6 +72083,7 @@ export interface operations {
                      *       "notes": null,
                      *       "occupants": 2,
                      *       "prospect": {
+                     *         "identityVerified": true,
                      *         "lineLinked": true,
                      *         "name": "สมศรี ใจดี",
                      *         "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
@@ -72042,6 +72254,7 @@ export interface operations {
                      *       "notes": null,
                      *       "occupants": 2,
                      *       "prospect": {
+                     *         "identityVerified": true,
                      *         "lineLinked": true,
                      *         "name": "สมศรี ใจดี",
                      *         "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
@@ -72223,6 +72436,7 @@ export interface operations {
                      *         "notes": null,
                      *         "occupants": 2,
                      *         "prospect": {
+                     *           "identityVerified": true,
                      *           "lineLinked": true,
                      *           "name": "สมศรี ใจดี",
                      *           "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
@@ -72405,6 +72619,7 @@ export interface operations {
                      *       "notes": null,
                      *       "occupants": 2,
                      *       "prospect": {
+                     *         "identityVerified": true,
                      *         "lineLinked": true,
                      *         "name": "สมศรี ใจดี",
                      *         "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
@@ -77018,6 +77233,7 @@ export interface operations {
                      *       "notes": null,
                      *       "occupants": 2,
                      *       "prospect": {
+                     *         "identityVerified": true,
                      *         "lineLinked": true,
                      *         "name": "สมศรี ใจดี",
                      *         "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
@@ -77194,6 +77410,7 @@ export interface operations {
                      *       "notes": null,
                      *       "occupants": 2,
                      *       "prospect": {
+                     *         "identityVerified": true,
                      *         "lineLinked": true,
                      *         "name": "สมศรี ใจดี",
                      *         "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
@@ -77374,6 +77591,7 @@ export interface operations {
                      *       "notes": null,
                      *       "occupants": 2,
                      *       "prospect": {
+                     *         "identityVerified": true,
                      *         "lineLinked": true,
                      *         "name": "สมศรี ใจดี",
                      *         "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
@@ -82321,6 +82539,230 @@ export interface operations {
             };
             /** @description Problem: `internal.unexpected` */
             500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.identityVerification.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Status */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "available": true,
+                     *       "latest": {
+                     *         "createdAt": "2026-11-01T00:15:00+07:00",
+                     *         "expiresAt": "2026-11-01T00:15:00+07:00",
+                     *         "failureReason": null,
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "state": "pending",
+                     *         "verificationUrl": "https://ekyc.example.com/session/abc"
+                     *       },
+                     *       "verified": false,
+                     *       "verifiedAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["IdentityVerificationDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.identityVerification.start": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IdentityVerificationStartDto"];
+            };
+        };
+        responses: {
+            /** @description Started */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "available": true,
+                     *       "latest": {
+                     *         "createdAt": "2026-11-01T00:15:00+07:00",
+                     *         "expiresAt": "2026-11-01T00:15:00+07:00",
+                     *         "failureReason": null,
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "state": "pending",
+                     *         "verificationUrl": "https://ekyc.example.com/session/abc"
+                     *       },
+                     *       "verified": false,
+                     *       "verifiedAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["IdentityVerificationDto"];
+                };
+            };
+            /** @description Problem: `http.malformed_json`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `identity.already_verified` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `ekyc.unavailable` */
+            503: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -104402,6 +104844,216 @@ export interface operations {
             };
         };
     };
+    "prospect.identityVerification.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Status */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "available": true,
+                     *       "latest": {
+                     *         "createdAt": "2026-11-01T00:15:00+07:00",
+                     *         "expiresAt": "2026-11-01T00:15:00+07:00",
+                     *         "failureReason": null,
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "state": "pending",
+                     *         "verificationUrl": "https://ekyc.example.com/session/abc"
+                     *       },
+                     *       "verified": false,
+                     *       "verifiedAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["IdentityVerificationDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "prospect.identityVerification.start": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IdentityVerificationStartDto"];
+            };
+        };
+        responses: {
+            /** @description Started */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "available": true,
+                     *       "latest": {
+                     *         "createdAt": "2026-11-01T00:15:00+07:00",
+                     *         "expiresAt": "2026-11-01T00:15:00+07:00",
+                     *         "failureReason": null,
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "state": "pending",
+                     *         "verificationUrl": "https://ekyc.example.com/session/abc"
+                     *       },
+                     *       "verified": false,
+                     *       "verifiedAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["IdentityVerificationDto"];
+                };
+            };
+            /** @description Problem: `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `identity.already_verified` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `ekyc.unavailable` */
+            503: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "prospect.system.ping": {
         parameters: {
             query?: never;
@@ -104859,6 +105511,7 @@ export interface operations {
                      *             "line": "BTS สายสุขุมวิท",
                      *             "name": "BTS อารีย์"
                      *           },
+                     *           "ownerIdentityVerified": true,
                      *           "petsAllowed": false,
                      *           "province": "กรุงเทพมหานคร",
                      *           "publishedAt": "2026-11-01T10:00:00+07:00",
@@ -104967,6 +105620,7 @@ export interface operations {
                      *         "name": "BTS อารีย์"
                      *       },
                      *       "ownerDisplayName": "มาลี มีสุข",
+                     *       "ownerIdentityVerified": true,
                      *       "ownerProfileSlug": "landlord-0a1b2c3d4e",
                      *       "petsAllowed": false,
                      *       "photos": [
@@ -105418,6 +106072,7 @@ export interface operations {
                      *             "line": "BTS สายสุขุมวิท",
                      *             "name": "BTS อารีย์"
                      *           },
+                     *           "ownerIdentityVerified": true,
                      *           "petsAllowed": false,
                      *           "province": "กรุงเทพมหานคร",
                      *           "publishedAt": "2026-11-01T10:00:00+07:00",
@@ -105433,6 +106088,7 @@ export interface operations {
                      *       "memberSince": "2026-10-25",
                      *       "slug": "landlord-0a1b2c3d4e",
                      *       "verification": {
+                     *         "identityVerified": true,
                      *         "level": "unit_ownership",
                      *         "verifiedUnits": 2
                      *       }
@@ -112810,6 +113466,216 @@ export interface operations {
             };
             /** @description Problem: `internal.unexpected` */
             500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.identityVerification.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Status */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "available": true,
+                     *       "latest": {
+                     *         "createdAt": "2026-11-01T00:15:00+07:00",
+                     *         "expiresAt": "2026-11-01T00:15:00+07:00",
+                     *         "failureReason": null,
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "state": "pending",
+                     *         "verificationUrl": "https://ekyc.example.com/session/abc"
+                     *       },
+                     *       "verified": false,
+                     *       "verifiedAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["IdentityVerificationDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.identityVerification.start": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IdentityVerificationStartDto"];
+            };
+        };
+        responses: {
+            /** @description Started */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "available": true,
+                     *       "latest": {
+                     *         "createdAt": "2026-11-01T00:15:00+07:00",
+                     *         "expiresAt": "2026-11-01T00:15:00+07:00",
+                     *         "failureReason": null,
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "state": "pending",
+                     *         "verificationUrl": "https://ekyc.example.com/session/abc"
+                     *       },
+                     *       "verified": false,
+                     *       "verifiedAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["IdentityVerificationDto"];
+                };
+            };
+            /** @description Problem: `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `identity.already_verified` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `ekyc.unavailable` */
+            503: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -128525,6 +129391,111 @@ export interface operations {
                 };
             };
             /** @description Problem: `document.type_not_allowed`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "webhooks.ekyc.callback": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Hex HMAC-SHA256 of the raw body with the shared secret (`EKYC_WEBHOOK_SECRET`). */
+                "X-Ekyc-Signature": string;
+            };
+            path: {
+                provider: string;
+            };
+            cookie?: never;
+        };
+        /** @description `sessionId`, `outcome` (approved | rejected), `reason` (optional). */
+        requestBody: {
+            content: {
+                "application/json": {
+                    [key: string]: unknown;
+                };
+            };
+        };
+        responses: {
+            /** @description Accepted */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "handled": true,
+                     *       "state": "approved"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["EkycWebhookAckDto"];
+                };
+            };
+            /** @description Problem: `http.malformed_json` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `webhook.signature_invalid` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `webhook.malformed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];

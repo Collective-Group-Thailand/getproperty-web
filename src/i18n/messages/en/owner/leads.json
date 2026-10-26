@@ -16,7 +16,8 @@
     "awaiting": "Waiting for you",
     "you": "You: {text}",
     "viewing": "Viewing {date}",
-    "noMessage": "Asked for a viewing"
+    "noMessage": "Asked for a viewing",
+    "identityVerified": "Identity verified"
   },
   "empty": {
     "awaiting": {
@@ -59,7 +60,10 @@
       "facebook_marketplace": "Facebook Marketplace",
       "qr": "QR on the card",
       "link": "Copied link"
-    }
+    },
+    "identity": "Identity",
+    "identityYes": "Verified",
+    "identityNo": "Not verified"
   },
   "thread": {
     "title": "Messages",

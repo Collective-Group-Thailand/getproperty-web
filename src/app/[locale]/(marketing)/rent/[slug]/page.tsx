@@ -20,6 +20,7 @@ import { Icon } from "@/ui/icons";
 import { IconChat } from "@/ui/icons/glyphs/chat";
 import { IconChevronLeft } from "@/ui/icons/glyphs/chevron-left";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
+import { IconShield } from "@/ui/icons/glyphs/shield";
 import { IconExternal } from "@/ui/icons/glyphs/external";
 import { IconFlag } from "@/ui/icons/glyphs/flag";
 
@@ -286,13 +287,22 @@ export default async function ListingPage({ params }: Props) {
                   <p className="font-semibold">{listing.ownerDisplayName}</p>
                 )}
               </div>
-              {listing.verifiedOwner ? (
-                <Badge tone="success" icon={IconCheckCircle} size="sm">
-                  {t("detail.verified")}
-                </Badge>
-              ) : (
-                <span className="text-muted text-xs">{t("detail.notVerified")}</span>
-              )}
+              <div className="flex flex-col items-end gap-1">
+                {listing.verifiedOwner ? (
+                  <Badge tone="success" icon={IconCheckCircle} size="sm">
+                    {t("detail.verified")}
+                  </Badge>
+                ) : (
+                  <span className="text-muted text-xs">{t("detail.notVerified")}</span>
+                )}
+                {listing.ownerIdentityVerified ? (
+                  <span data-testid="listing-identity-verified">
+                    <Badge tone="success" icon={IconShield} size="sm">
+                      {t("detail.identityVerified")}
+                    </Badge>
+                  </span>
+                ) : null}
+              </div>
             </div>
           </div>
           <a

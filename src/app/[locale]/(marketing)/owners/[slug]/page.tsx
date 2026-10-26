@@ -12,6 +12,7 @@ import type { Locale } from "@/i18n/routing";
 import { Badge } from "@/ui/components/Badge";
 import { Icon } from "@/ui/icons";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
+import { IconShield } from "@/ui/icons/glyphs/shield";
 import { IconChevronLeft } from "@/ui/icons/glyphs/chevron-left";
 
 type Params = { params: Promise<{ locale: Locale; slug: string }> };
@@ -72,10 +73,17 @@ export default async function OwnerPage({ params }: Params) {
             <h1 className="text-display" data-testid="owner-name">
               {owner.displayName}
             </h1>
-            <div>
+            <div className="flex flex-wrap gap-2">
               <Badge tone="success" icon={IconCheckCircle}>
                 {t("verified", { count: owner.verification.verifiedUnits })}
               </Badge>
+              {owner.verification.identityVerified ? (
+                <span data-testid="owner-identity-verified">
+                  <Badge tone="success" icon={IconShield}>
+                    {t("identityVerified")}
+                  </Badge>
+                </span>
+              ) : null}
             </div>
           </div>
           <dl className="m-0 grid gap-6 sm:grid-cols-3">

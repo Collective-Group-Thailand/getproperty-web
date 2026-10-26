@@ -10,7 +10,8 @@
     "access_grants": "Access grants",
     "audit_log": "Audit log",
     "sign_in": "Ways to sign in",
-    "line_oa": "LINE OA"
+    "line_oa": "LINE OA",
+    "verification": "Identity"
   },
   "general": {
     "title": "Settings",
@@ -553,6 +554,45 @@
       "own": "{count, number} messages through your OA — LINE bills you; getproperty charges nothing",
       "fallbacks": "{count, plural, one {LINE refused # message for quota; it went by SMS where a phone was known} other {LINE refused # messages for quota; they went by SMS where a phone was known}}",
       "repliesFree": "Replies are not counted"
+    }
+  },
+  "verification": {
+    "title": "Identity",
+    "description": "Verify once with your ID card and a selfie. People looking to rent see “Identity verified” on your listings and owner page.",
+    "statusTitle": "Your status",
+    "verified": "Identity verified",
+    "pending": "Waiting for the result",
+    "notVerified": "Not verified",
+    "verifiedBody": "Verified on {date}. The badge shows on all your listings and your owner page.",
+    "unavailableTitle": "Online identity verification is not offered yet",
+    "unavailableBody": "We are choosing a licensed identity provider. Once it is ready you can start here. Unit ownership verification works as before.",
+    "pendingBody": "Started. You can continue on the provider’s page until {date}, then come back here for the result.",
+    "continue": "Continue verifying",
+    "refresh": "Check the result",
+    "rejectedTitle": "Not verified",
+    "rejectedNoReason": "The provider gave no reason. Try again somewhere with good light.",
+    "expired": "Your last attempt ran out of time. You can start again.",
+    "start": "Verify my identity",
+    "startAgain": "Try again",
+    "steps": {
+      "card": {
+        "title": "Photograph your ID card",
+        "body": "On the licensed provider’s page. It takes about 5 minutes."
+      },
+      "selfie": {
+        "title": "Take a selfie",
+        "body": "To confirm the card is yours."
+      },
+      "result": {
+        "title": "Get the result at once",
+        "body": "You come back here automatically; the badge shows as soon as you pass."
+      }
+    },
+    "whyTitle": "Why verify",
+    "why": {
+      "badge": "“Identity verified” shows on your listings, your owner page and in chats with people who enquire.",
+      "trust": "Renters know they are talking to the real owner, not a scammer.",
+      "privacy": "We keep only the outcome — never your ID number, card photo or date of birth."
     }
   }
 }

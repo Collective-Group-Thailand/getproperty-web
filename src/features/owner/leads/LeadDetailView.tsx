@@ -9,10 +9,12 @@ import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { formatDate, formatDateTime } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/errors";
+import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { IconMegaphone } from "@/ui/icons/glyphs/megaphone";
+import { IconShield } from "@/ui/icons/glyphs/shield";
 
 import { ownerPath } from "../shared/links";
 import { section, type OwnerContext } from "../shared/server";
@@ -97,6 +99,19 @@ export async function LeadDetailView({ context, leadId }: { context: OwnerContex
                 ...(lead.prospect.phone
                   ? [{ id: "phone", term: t("prospect.phone"), description: lead.prospect.phone }]
                   : []),
+                {
+                  id: "identity",
+                  term: t("prospect.identity"),
+                  description: lead.prospect.identityVerified ? (
+                    <span data-testid="lead-identity-verified">
+                      <Badge tone="success" icon={IconShield} size="sm">
+                        {t("prospect.identityYes")}
+                      </Badge>
+                    </span>
+                  ) : (
+                    t("prospect.identityNo")
+                  ),
+                },
                 {
                   id: "line",
                   term: t("prospect.line"),

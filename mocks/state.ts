@@ -150,6 +150,8 @@ export interface MockState {
   landlordSignedUp: boolean;
   /** Linked sign-in identities; see handlers/identities.ts. */
   identities: MockIdentity[];
+  /** Identity verification attempts (D-267) by operator persona key, newest first: see handlers/identity-verification.ts. */
+  identityVerifications: Record<string, Schemas["IdentityVerificationAttemptDto"][]>;
   /** Listings, their reports and owner verifications (B7.2): see owner/listings.ts. */
   listingWorld: { listings: MockListing[]; verifications: MockVerification[] };
   /** Enquiries and viewings of the landlord's listings (B7.3): see owner/leads.ts. */
@@ -200,6 +202,7 @@ function initial(): MockState {
     portfolio: initialPortfolios(),
     landlordSignedUp: false,
     identities: initialIdentities(),
+    identityVerifications: {},
     listingWorld: initialListings(),
     leads: initialLeads(),
     stampDuty: {},

@@ -109,6 +109,7 @@ export function resetOwnerWorld(part: string | null): boolean {
   const fresh = initialOwnerWorld();
   if (!part || part === "identities") {
     state.identities = initialIdentities();
+    state.identityVerifications = {};
     if (part) return true;
   }
   if (!part || part === "portfolio") {
