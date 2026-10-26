@@ -5,6 +5,7 @@ import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { Icon } from "@/ui/icons";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
+import { IconShield } from "@/ui/icons/glyphs/shield";
 
 import type { PublicListingSummary } from "./contract";
 import { ListingImage } from "./ListingImage";
@@ -31,8 +32,11 @@ export async function ListingCard({ listing, locale }: { listing: PublicListingS
             {listing.title}
           </a>
         </h3>
-        {listing.verifiedOwner ? (
-          <Icon icon={IconCheckCircle} className="text-primary mt-0.5 shrink-0" aria-label={t("card.verified")} />
+        {listing.verifiedOwner || listing.ownerIdentityVerified ? (
+          <span className="text-primary mt-0.5 flex shrink-0 gap-1">
+            {listing.verifiedOwner ? <Icon icon={IconCheckCircle} aria-label={t("card.verified")} /> : null}
+            {listing.ownerIdentityVerified ? <Icon icon={IconShield} aria-label={t("card.identityVerified")} /> : null}
+          </span>
         ) : null}
       </div>
       <p className="text-muted -mt-2 text-sm">

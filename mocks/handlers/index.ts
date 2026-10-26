@@ -3,6 +3,7 @@ import type { HttpHandler } from "msw";
 import { authHandlers } from "./auth";
 import { generatedHandlers } from "./generated";
 import { identityHandlers } from "./identities";
+import { identityVerificationHandlers } from "./identity-verification";
 import { meHandlers } from "./me";
 import { notificationHandlers } from "./notifications";
 import { ownerHandlers } from "../owner";
@@ -19,6 +20,7 @@ export function handlers(): HttpHandler[] {
   return [
     ...authHandlers,
     ...identityHandlers,
+    ...identityVerificationHandlers,
     ...meHandlers,
     ...notificationHandlers,
     ...realtimeHandlers,

@@ -17,6 +17,7 @@ import { IconCalendar } from "@/ui/icons/glyphs/calendar";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 import { IconInbox } from "@/ui/icons/glyphs/inbox";
 import { IconArchive } from "@/ui/icons/glyphs/archive";
+import { IconShield } from "@/ui/icons/glyphs/shield";
 
 import { ownerPath } from "../shared/links";
 import { section, type OwnerContext } from "../shared/server";
@@ -161,7 +162,17 @@ async function LeadRow({ lead, locale, now }: { lead: Lead; locale: Locale; now:
         </span>
         <span className="flex min-w-0 flex-1 flex-col gap-1">
           <span className="flex min-w-0 flex-col">
-            <span className={lead.awaitingReply ? "font-semibold" : "font-medium"}>{lead.prospect.name}</span>
+            <span className="flex items-center gap-1">
+              <span className={lead.awaitingReply ? "font-semibold" : "font-medium"}>{lead.prospect.name}</span>
+              {lead.prospect.identityVerified ? (
+                <Icon
+                  icon={IconShield}
+                  className="text-primary shrink-0"
+                  label={t("identityVerified")}
+                  data-testid="lead-row-identity"
+                />
+              ) : null}
+            </span>
             <span className="text-muted truncate text-xs">{lead.listing.title}</span>
           </span>
           <span

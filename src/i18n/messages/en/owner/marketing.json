@@ -794,7 +794,8 @@
       "verified": "Verified owner",
       "transit": "{distance} m from {name}",
       "availableFrom": "Available {date}",
-      "pets": "Pets OK"
+      "pets": "Pets OK",
+      "identityVerified": "Owner identity verified"
     },
     "detail": {
       "back": "All homes",
@@ -833,7 +834,8 @@
       "similar": "More homes you may like",
       "lineMessage": "I'm interested in this home: {title} ({url})",
       "notFound": "This listing was not found; it may have been closed.",
-      "bathrooms": "Bathrooms"
+      "bathrooms": "Bathrooms",
+      "identityVerified": "Identity verified"
     },
     "area": {
       "metaTitle": {
@@ -889,7 +891,8 @@
       "hours": "{count, plural, one {about # hour} other {about # hours}}",
       "listings": "{name}'s homes",
       "empty": "No homes available right now.",
-      "note": "This page shows no phone number or private contact. Reach the owner from a listing's button."
+      "note": "This page shows no phone number or private contact. Reach the owner from a listing's button.",
+      "identityVerified": "Identity verified"
     }
   },
   "guides": {

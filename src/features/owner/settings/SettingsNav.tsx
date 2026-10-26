@@ -7,7 +7,7 @@ import { LinkTabs } from "@/ui/components/LinkTabs";
 import { ownerPath } from "../shared/links";
 
 /** The settings pages in menu order, each shown when `/v1/owner/me.menu` entitles it. */
-const PAGES: { key: Schemas["OwnerMenuKey"] | "sign_in" | "line_oa"; path: string }[] = [
+const PAGES: { key: Schemas["OwnerMenuKey"] | "sign_in" | "verification" | "line_oa"; path: string }[] = [
   { key: "settings", path: "/settings" },
   { key: "bank_accounts", path: "/settings/bank-accounts" },
   // D-254: whoever opens the general settings connects the tenant's own LINE OA.
@@ -20,6 +20,8 @@ const PAGES: { key: Schemas["OwnerMenuKey"] | "sign_in" | "line_oa"; path: strin
   { key: "audit_log", path: "/settings/audit-log" },
   // Personal (D-255): every member manages their own ways to sign in.
   { key: "sign_in", path: "/settings/sign-in" },
+  // Personal (D-267): every member may verify their identity; the owner's shows on the listings.
+  { key: "verification", path: "/settings/verification" },
 ];
 
 export type SettingsPage = (typeof PAGES)[number]["path"];
@@ -37,7 +39,10 @@ export async function SettingsNav({ me, current, locale }: { me: OwnerMe; curren
       label={t("label")}
       current={ownerPath(locale, current)}
       tabs={PAGES.filter(
-        (page) => page.key === "sign_in" || (page.key === "line_oa" ? allowed.has("settings") : allowed.has(page.key)),
+        (page) =>
+          page.key === "sign_in" ||
+          page.key === "verification" ||
+          (page.key === "line_oa" ? allowed.has("settings") : allowed.has(page.key)),
       ).map((page) => ({
         href: ownerPath(locale, page.path),
         label: t(page.key),

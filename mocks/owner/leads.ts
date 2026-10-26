@@ -48,6 +48,8 @@ function lead(input: {
   messages: [Schemas["ListingLeadAuthor"], string, number][];
   viewings?: Schemas["LeadViewingDto"][];
   extra?: Partial<Schemas["OwnerLeadDto"]>;
+  /** The prospect verified their identity (D-267). */
+  verified?: boolean;
 }): MockLead {
   const messages = input.messages.map(([author, text, ago], i) => ({
     id: `${input.id.slice(0, -3)}${String(100 + i)}`,
@@ -58,7 +60,13 @@ function lead(input: {
   const dto: Schemas["OwnerLeadDto"] = {
     id: input.id,
     listing: ARI,
-    prospect: { partyId: `${input.id.slice(0, -1)}f`, name: input.name, phone: null, lineLinked: true },
+    prospect: {
+      partyId: `${input.id.slice(0, -1)}f`,
+      name: input.name,
+      phone: null,
+      lineLinked: true,
+      identityVerified: input.verified ?? false,
+    },
     state: input.state,
     lastMessage: null,
     channel: null,
@@ -107,6 +115,7 @@ export function initialLeads(): MockLead[] {
       messages: [["prospect", "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้ ทำงานแถวอารีย์ค่ะ", 3]],
       viewings: [viewing("6f8b0d2c-0000-4000-8000-0000000f1001", slot(2, 10), "requested", "จะมากับแฟนค่ะ")],
       extra: { moveInDate: "2026-12-01", termMonths: 12, occupants: 2, channel: "facebook_group" },
+      verified: true,
     }),
     lead({
       id: "5e7a9c1b-0000-4000-8000-0000000e1002",

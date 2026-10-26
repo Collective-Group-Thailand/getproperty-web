@@ -51,6 +51,7 @@ const base = (
   address: "",
   nearestTransit: null,
   verifiedOwner: true,
+  ownerIdentityVerified: false,
   publishedAt: "2026-10-20T09:00:00+07:00",
   description: "",
   facilities: ["สระว่ายน้ำ", "ฟิตเนส", "ที่จอดรถ", "รปภ. 24 ชม.", "คีย์การ์ด"],
@@ -73,6 +74,7 @@ const LISTINGS: PublicListingDetail[] = [
     address: "ซอยพหลโยธิน 7 แขวงพญาไท เขตพญาไท กรุงเทพฯ 10400",
     nearestTransit: { name: "อารีย์", line: "BTS สายสุขุมวิท", distanceM: 350 },
     ownerProfileSlug: "landlord-0a1b2c3d4e",
+    ownerIdentityVerified: true,
     utility: {
       electricity: {
         kind: "tiered",
@@ -295,7 +297,7 @@ const OWNER_PAGE = (): PublicOwner => {
   return {
     slug: "landlord-0a1b2c3d4e",
     displayName: "คุณนภา",
-    verification: { level: "unit_ownership", verifiedUnits: 2 },
+    verification: { level: "unit_ownership", verifiedUnits: 2, identityVerified: true },
     memberSince: "2026-10-01",
     medianReplyMinutes: 42,
     listings,

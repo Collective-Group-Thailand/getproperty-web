@@ -16,7 +16,8 @@
     "awaiting": "รอคุณตอบ",
     "you": "คุณ: {text}",
     "viewing": "นัด {date}",
-    "noMessage": "ขอนัดดูห้อง"
+    "noMessage": "ขอนัดดูห้อง",
+    "identityVerified": "ยืนยันตัวตนแล้ว"
   },
   "empty": {
     "awaiting": {
@@ -59,7 +60,10 @@
       "facebook_marketplace": "Facebook Marketplace",
       "qr": "QR บนการ์ด",
       "link": "ลิงก์ที่คัดลอกไปแชร์"
-    }
+    },
+    "identity": "ยืนยันตัวตน",
+    "identityYes": "ยืนยันตัวตนแล้ว",
+    "identityNo": "ยังไม่ยืนยัน"
   },
   "thread": {
     "title": "ข้อความ",
