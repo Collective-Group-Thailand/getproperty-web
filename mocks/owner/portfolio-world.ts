@@ -38,6 +38,14 @@ export function initialPortfolios(): Record<string, Schemas["PortfolioUnitDto"][
         leaseEndDate: "2027-05-31",
         invoice: { id: "9d4a3f6b-5e7c-4b8d-9e2f-3a4b5c6d7e01", status: "paid", total: "15000.00", balance: "0.00" },
         openServiceRequests: 0,
+        vacantSince: null,
+        listing: {
+          id: "8d4b2c1a-0000-4000-8000-00000000a001",
+          state: "published",
+          slug: "condo-1br-a1b2c3d4e5",
+          availableFrom: null,
+          openLeads: 2,
+        },
       },
       {
         unitId: "7b2e1d4f-3c5a-4f6b-9c0d-1e2f3a4b5c02",
@@ -61,6 +69,14 @@ export function initialPortfolios(): Record<string, Schemas["PortfolioUnitDto"][
           balance: "22000.00",
         },
         openServiceRequests: 1,
+        vacantSince: null,
+        listing: {
+          id: "8d4b2c1a-0000-4000-8000-00000000a002",
+          state: "pending_review",
+          slug: "condo-1br-f6a7b8c9d0",
+          availableFrom: "2026-12-01",
+          openLeads: 0,
+        },
       },
       {
         unitId: "7b2e1d4f-3c5a-4f6b-9c0d-1e2f3a4b5c03",
@@ -79,6 +95,8 @@ export function initialPortfolios(): Record<string, Schemas["PortfolioUnitDto"][
         leaseEndDate: null,
         invoice: null,
         openServiceRequests: 0,
+        vacantSince: "2026-09-30",
+        listing: null,
       },
     ],
     [TENANTS.fresh.profile.id]: [],

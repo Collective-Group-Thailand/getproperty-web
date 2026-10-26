@@ -91,3 +91,25 @@ export async function openShareLink(code: string): Promise<PublicShareLink | nul
     return null;
   }
 }
+
+export type PublicRentRecord = Schemas["PublicRentRecordDto"];
+
+/**
+ * A rent record letter (D-256): the facts behind a verification code while the letter is live. Never cached — a
+ * revoked letter must stop checking at once; null when the code is unknown, revoked, expired or the API is down.
+ */
+export async function publicRentRecord(code: string): Promise<PublicRentRecord | null> {
+  const normalised = code.toUpperCase().replace(/[^0-9A-Z]/g, "");
+  if (!/^[0-9A-Z]{10}$/.test(normalised)) return null;
+  try {
+    const response = await fetch(`${serverEnv().API_INTERNAL_URL}/v1/public/rent-records/${normalised}`, {
+      headers: { accept: "application/json" },
+      cache: "no-store",
+    });
+    if (!response.ok) return null;
+    const body = (await response.json()) as PublicRentRecord;
+    return typeof body.holderName === "string" ? body : null;
+  } catch {
+    return null;
+  }
+}

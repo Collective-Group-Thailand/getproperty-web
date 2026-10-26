@@ -1,0 +1,28 @@
+{
+  "months": "{count} months",
+  "monthsLabel": "By month",
+  "status": {
+    "on_time": "On time",
+    "late": "Late",
+    "outstanding": "Outstanding"
+  },
+  "notConfirmed": "{count} more months were paid in a way getproperty did not confirm (cash, for example) and are not counted.",
+  "footnote": "Only payments getproperty confirmed (through the platform or a verified slip) count. These are facts, not a score.",
+  "lead": {
+    "title": "Rent record",
+    "shared": "Shared with you on {date}",
+    "none": "This person has not shared a rent record. If they rented through getproperty before, they can share it from LINE."
+  },
+  "check": {
+    "kicker": "Rent record letter",
+    "title": "Check a rent record",
+    "lead": "Enter the 10-character code from the letter the renter gave you to see what getproperty confirmed.",
+    "codeLabel": "Verification code",
+    "codeHint": "10 letters and digits, e.g. H4N8R2K7QX",
+    "submit": "Check",
+    "confirmed": "Confirmed by getproperty",
+    "validity": "Issued {issued} · can be checked until {expires}",
+    "notFoundTitle": "Letter not found",
+    "notFound": "This code is wrong, has expired or was withdrawn by the renter. Check the code, or ask the renter for a new letter."
+  }
+}

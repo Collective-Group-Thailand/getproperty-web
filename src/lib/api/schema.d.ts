@@ -10548,6 +10548,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/prospect/enquiries/{leadId}/rent-record": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Share my rent record with this enquiry
+         * @description The owner of the listing sees my rent record on this enquiry until I revoke it; the same enquiry again answers the live share. Explicit consent per share (PDPA, D-256); `rent_record.empty` while no month is confirmed.
+         *
+         *     Implements: D-256.
+         */
+        post: operations["prospect.rentRecord.shareWithEnquiry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/prospect/listings/{slug}/enquiries": {
         parameters: {
             query?: never;
@@ -10636,6 +10658,72 @@ export interface paths {
          *     Implements: D-267.
          */
         post: operations["prospect.identityVerification.start"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/prospect/me/rent-record": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My rent record
+         * @description My rent record (D-256): months paid on time, late or still outstanding, from payments getproperty confirmed (gateway or verified slip) — facts, no score — and everything I shared, with its state.
+         *
+         *     Implements: D-256.
+         */
+        get: operations["prospect.rentRecord.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/prospect/me/rent-record/letters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * A letter with a verification code
+         * @description A letter with a verification code a next landlord can check on getproperty (valid `rent_record.letter.valid_days`). The code is shown once; I can revoke the letter at any time. `rent_record.empty` while no month is confirmed (D-256).
+         *
+         *     Implements: D-256.
+         */
+        post: operations["prospect.rentRecord.createLetter"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/prospect/me/rent-record/shares/{shareId}/actions/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Stop sharing
+         * @description Stops sharing at once: the owner no longer sees it on the enquiry, the letter code no longer checks (D-256).
+         *
+         *     Implements: D-256.
+         */
+        post: operations["prospect.rentRecord.revokeShare"];
         delete?: never;
         options?: never;
         head?: never;
@@ -10920,6 +11008,28 @@ export interface paths {
          *     Implements: D-254.
          */
         get: operations["public.pricing.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/public/rent-records/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Check a rent record letter
+         * @description The rent record behind a letter’s verification code while the letter is live — the holder’s name, when it was issued and until when it checks, and the facts (D-256). Revoked, expired or unknown codes are a 404.
+         *
+         *     Implements: D-256.
+         */
+        get: operations["public.rentRecords.get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -12164,6 +12274,72 @@ export interface paths {
         get: operations["resident.privacy.get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/me/rent-record": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My rent record
+         * @description My rent record (D-256): months paid on time, late or still outstanding, from payments getproperty confirmed (gateway or verified slip) — facts, no score — and everything I shared, with its state.
+         *
+         *     Implements: D-256.
+         */
+        get: operations["resident.rentRecord.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/me/rent-record/letters": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * A letter with a verification code
+         * @description A letter with a verification code a next landlord can check on getproperty (valid `rent_record.letter.valid_days`). The code is shown once; I can revoke the letter at any time. `rent_record.empty` while no month is confirmed (D-256).
+         *
+         *     Implements: D-256.
+         */
+        post: operations["resident.rentRecord.createLetter"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/me/rent-record/shares/{shareId}/actions/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Stop sharing
+         * @description Stops sharing at once: the owner no longer sees it on the enquiry, the letter code no longer checks (D-256).
+         *
+         *     Implements: D-256.
+         */
+        post: operations["resident.rentRecord.revokeShare"];
         delete?: never;
         options?: never;
         head?: never;
@@ -20903,6 +21079,40 @@ export interface components {
              */
             phone: string | null;
         };
+        LeadRentRecordDto: {
+            /** @example 2025-11 */
+            firstMonth: string | null;
+            /** @example 2026-10 */
+            lastMonth: string | null;
+            /**
+             * @description Months paid in full after the due date.
+             * @example 1
+             */
+            late: number;
+            /** @description One row per month, newest first. */
+            months: components["schemas"]["RentRecordMonthDto"][];
+            /**
+             * @description Months paid in a way getproperty did not confirm (cash, a transfer the owner recorded); not counted.
+             * @example 0
+             */
+            notConfirmed: number;
+            /**
+             * @description Months paid in full by the due date (D-256).
+             * @example 11
+             */
+            onTime: number;
+            /**
+             * @description Months with money still owed past the due date.
+             * @example 0
+             */
+            outstanding: number;
+            /**
+             * Format: date-time
+             * @description When the prospect shared it with this enquiry.
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            sharedAt: string;
+        };
         LeadStateDto: {
             lostNote?: string | null;
             /** @description Required with `lost`. */
@@ -23501,6 +23711,11 @@ export interface components {
             /** @example upload-1 */
             uploadId: string;
         };
+        MyRentRecordDto: {
+            record: components["schemas"]["RentRecordDto"];
+            /** @description Everything I shared, newest first. */
+            shares: components["schemas"]["RentRecordShareDto"][];
+        };
         NewMeterDto: {
             /** @example Eastron */
             manufacturer?: string | null;
@@ -24144,6 +24359,8 @@ export interface components {
             /** @example 2 */
             occupants: number | null;
             prospect: components["schemas"]["LeadProspectDto"];
+            /** @description The prospect’s rent record, when they shared it with this enquiry (D-256); null otherwise. */
+            rentRecord: components["schemas"]["LeadRentRecordDto"] | null;
             /** @example new */
             state: components["schemas"]["ListingLeadState"];
             /** @example 12 */
@@ -25436,6 +25653,24 @@ export interface components {
              */
             total: string;
         };
+        PortfolioListingRefDto: {
+            /**
+             * Format: date
+             * @example 2026-12-01
+             */
+            availableFrom: string | null;
+            /** Format: uuid */
+            id: string;
+            /**
+             * @description Enquiries still open (not won or lost).
+             * @example 3
+             */
+            openLeads: number;
+            /** @example condo-1br-a1b2c3d4e5 */
+            slug: string;
+            /** @example published */
+            state: components["schemas"]["ListingState"];
+        };
         PortfolioTotalsDto: {
             /**
              * @description Paid on this month’s invoices. Unit: THB, decimal string (D-046).
@@ -25542,6 +25777,8 @@ export interface components {
             leaseEndDate: string | null;
             /** Format: uuid */
             leaseId: string | null;
+            /** @description The unit’s latest listing and its open enquiries (D-261); null when it was never listed. */
+            listing: components["schemas"]["PortfolioListingRefDto"] | null;
             /** @example 0 */
             openServiceRequests: number;
             /** @example leased */
@@ -25550,6 +25787,12 @@ export interface components {
             unitId: string;
             /** @example 12/345 */
             unitNo: string;
+            /**
+             * Format: date
+             * @description A vacant unit: the day its last lease ended (D-261, the vacancy view).
+             * @example null
+             */
+            vacantSince: string | null;
         };
         /** @enum {string} */
         PortfolioUnitKind: "condo_unit" | "house" | "townhouse" | "room";
@@ -26431,6 +26674,24 @@ export interface components {
             /** @description A published change that takes effect later, if any. */
             messagingNext: components["schemas"]["PublicMessagingRateDto"] | null;
         };
+        PublicRentRecordDto: {
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            expiresAt: string;
+            /**
+             * @description The name the holder uses on getproperty.
+             * @example สมศรี ใจดี
+             */
+            holderName: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            issuedAt: string;
+            record: components["schemas"]["RentRecordDto"];
+        };
         PublicShareLinkDto: {
             /** @example facebook_group */
             channel: components["schemas"]["ListingChannel"];
@@ -27285,6 +27546,106 @@ export interface components {
              */
             rent: string;
         };
+        RentRecordDto: {
+            /** @example 2025-11 */
+            firstMonth: string | null;
+            /** @example 2026-10 */
+            lastMonth: string | null;
+            /**
+             * @description Months paid in full after the due date.
+             * @example 1
+             */
+            late: number;
+            /** @description One row per month, newest first. */
+            months: components["schemas"]["RentRecordMonthDto"][];
+            /**
+             * @description Months paid in a way getproperty did not confirm (cash, a transfer the owner recorded); not counted.
+             * @example 0
+             */
+            notConfirmed: number;
+            /**
+             * @description Months paid in full by the due date (D-256).
+             * @example 11
+             */
+            onTime: number;
+            /**
+             * @description Months with money still owed past the due date.
+             * @example 0
+             */
+            outstanding: number;
+        };
+        RentRecordLetterDto: {
+            /**
+             * @description The verification code — shown once; only its hash is kept.
+             * @example H4N8R2K7QX
+             */
+            code: string;
+            share: components["schemas"]["RentRecordShareDto"];
+            /**
+             * @description Where anyone with the code checks it.
+             * @example https://getproperty.co/rent-record/H4N8R2K7QX
+             */
+            verifyUrl: string;
+        };
+        RentRecordMonthDto: {
+            /**
+             * @description Month of the invoice period (Bangkok, YYYY-MM).
+             * @example 2026-10
+             */
+            month: string;
+            /** @example on_time */
+            status: components["schemas"]["RentRecordMonthStatus"];
+        };
+        /** @enum {string} */
+        RentRecordMonthStatus: "on_time" | "late" | "outstanding";
+        RentRecordShareDto: {
+            /**
+             * @description A letter: the last 4 characters of its code.
+             * @example K7QX
+             */
+            codeHint: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            expiresAt: string | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example enquiry */
+            kind: components["schemas"]["RentRecordShareKind"];
+            /** @description The enquiry it is shared with. */
+            lead: components["schemas"]["RentRecordShareLeadDto"] | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            revokedAt: string | null;
+            /** @example live */
+            state: components["schemas"]["RentRecordShareState"];
+        };
+        /** @enum {string} */
+        RentRecordShareKind: "enquiry" | "letter";
+        RentRecordShareLeadDto: {
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example คอนโด 1 ห้องนอน ใกล้ BTS อารีย์ */
+            listingTitle: string;
+            /** @example มาลี มีสุข */
+            ownerName: string;
+        };
+        /** @enum {string} */
+        RentRecordShareState: "live" | "revoked" | "expired";
         ResendResultDto: {
             /**
              * @description The billed party receives the invoice Flex message again.
@@ -71918,6 +72279,25 @@ export interface operations {
                      *         "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *         "phone": null
                      *       },
+                     *       "rentRecord": {
+                     *         "firstMonth": "2026-09",
+                     *         "lastMonth": "2026-10",
+                     *         "late": 1,
+                     *         "months": [
+                     *           {
+                     *             "month": "2026-10",
+                     *             "status": "on_time"
+                     *           },
+                     *           {
+                     *             "month": "2026-09",
+                     *             "status": "late"
+                     *           }
+                     *         ],
+                     *         "notConfirmed": 0,
+                     *         "onTime": 1,
+                     *         "outstanding": 0,
+                     *         "sharedAt": "2026-11-01T09:20:00+07:00"
+                     *       },
                      *       "state": "viewing_booked",
                      *       "termMonths": 12,
                      *       "version": 2,
@@ -72089,6 +72469,25 @@ export interface operations {
                      *         "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *         "phone": null
                      *       },
+                     *       "rentRecord": {
+                     *         "firstMonth": "2026-09",
+                     *         "lastMonth": "2026-10",
+                     *         "late": 1,
+                     *         "months": [
+                     *           {
+                     *             "month": "2026-10",
+                     *             "status": "on_time"
+                     *           },
+                     *           {
+                     *             "month": "2026-09",
+                     *             "status": "late"
+                     *           }
+                     *         ],
+                     *         "notConfirmed": 0,
+                     *         "onTime": 1,
+                     *         "outstanding": 0,
+                     *         "sharedAt": "2026-11-01T09:20:00+07:00"
+                     *       },
                      *       "state": "viewing_booked",
                      *       "termMonths": 12,
                      *       "version": 2,
@@ -72259,6 +72658,25 @@ export interface operations {
                      *         "name": "สมศรี ใจดี",
                      *         "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *         "phone": null
+                     *       },
+                     *       "rentRecord": {
+                     *         "firstMonth": "2026-09",
+                     *         "lastMonth": "2026-10",
+                     *         "late": 1,
+                     *         "months": [
+                     *           {
+                     *             "month": "2026-10",
+                     *             "status": "on_time"
+                     *           },
+                     *           {
+                     *             "month": "2026-09",
+                     *             "status": "late"
+                     *           }
+                     *         ],
+                     *         "notConfirmed": 0,
+                     *         "onTime": 1,
+                     *         "outstanding": 0,
+                     *         "sharedAt": "2026-11-01T09:20:00+07:00"
                      *       },
                      *       "state": "viewing_booked",
                      *       "termMonths": 12,
@@ -72442,6 +72860,25 @@ export interface operations {
                      *           "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *           "phone": null
                      *         },
+                     *         "rentRecord": {
+                     *           "firstMonth": "2026-09",
+                     *           "lastMonth": "2026-10",
+                     *           "late": 1,
+                     *           "months": [
+                     *             {
+                     *               "month": "2026-10",
+                     *               "status": "on_time"
+                     *             },
+                     *             {
+                     *               "month": "2026-09",
+                     *               "status": "late"
+                     *             }
+                     *           ],
+                     *           "notConfirmed": 0,
+                     *           "onTime": 1,
+                     *           "outstanding": 0,
+                     *           "sharedAt": "2026-11-01T09:20:00+07:00"
+                     *         },
                      *         "state": "applied",
                      *         "termMonths": 12,
                      *         "version": 2,
@@ -72624,6 +73061,25 @@ export interface operations {
                      *         "name": "สมศรี ใจดี",
                      *         "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *         "phone": null
+                     *       },
+                     *       "rentRecord": {
+                     *         "firstMonth": "2026-09",
+                     *         "lastMonth": "2026-10",
+                     *         "late": 1,
+                     *         "months": [
+                     *           {
+                     *             "month": "2026-10",
+                     *             "status": "on_time"
+                     *           },
+                     *           {
+                     *             "month": "2026-09",
+                     *             "status": "late"
+                     *           }
+                     *         ],
+                     *         "notConfirmed": 0,
+                     *         "onTime": 1,
+                     *         "outstanding": 0,
+                     *         "sharedAt": "2026-11-01T09:20:00+07:00"
                      *       },
                      *       "state": "viewing_booked",
                      *       "termMonths": 12,
@@ -77239,6 +77695,25 @@ export interface operations {
                      *         "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *         "phone": null
                      *       },
+                     *       "rentRecord": {
+                     *         "firstMonth": "2026-09",
+                     *         "lastMonth": "2026-10",
+                     *         "late": 1,
+                     *         "months": [
+                     *           {
+                     *             "month": "2026-10",
+                     *             "status": "on_time"
+                     *           },
+                     *           {
+                     *             "month": "2026-09",
+                     *             "status": "late"
+                     *           }
+                     *         ],
+                     *         "notConfirmed": 0,
+                     *         "onTime": 1,
+                     *         "outstanding": 0,
+                     *         "sharedAt": "2026-11-01T09:20:00+07:00"
+                     *       },
                      *       "state": "viewing_booked",
                      *       "termMonths": 12,
                      *       "version": 2,
@@ -77415,6 +77890,25 @@ export interface operations {
                      *         "name": "สมศรี ใจดี",
                      *         "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *         "phone": null
+                     *       },
+                     *       "rentRecord": {
+                     *         "firstMonth": "2026-09",
+                     *         "lastMonth": "2026-10",
+                     *         "late": 1,
+                     *         "months": [
+                     *           {
+                     *             "month": "2026-10",
+                     *             "status": "on_time"
+                     *           },
+                     *           {
+                     *             "month": "2026-09",
+                     *             "status": "late"
+                     *           }
+                     *         ],
+                     *         "notConfirmed": 0,
+                     *         "onTime": 1,
+                     *         "outstanding": 0,
+                     *         "sharedAt": "2026-11-01T09:20:00+07:00"
                      *       },
                      *       "state": "viewing_booked",
                      *       "termMonths": 12,
@@ -77596,6 +78090,25 @@ export interface operations {
                      *         "name": "สมศรี ใจดี",
                      *         "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *         "phone": null
+                     *       },
+                     *       "rentRecord": {
+                     *         "firstMonth": "2026-09",
+                     *         "lastMonth": "2026-10",
+                     *         "late": 1,
+                     *         "months": [
+                     *           {
+                     *             "month": "2026-10",
+                     *             "status": "on_time"
+                     *           },
+                     *           {
+                     *             "month": "2026-09",
+                     *             "status": "late"
+                     *           }
+                     *         ],
+                     *         "notConfirmed": 0,
+                     *         "onTime": 1,
+                     *         "outstanding": 0,
+                     *         "sharedAt": "2026-11-01T09:20:00+07:00"
                      *       },
                      *       "state": "viewing_booked",
                      *       "termMonths": 12,
@@ -89277,10 +89790,18 @@ export interface operations {
                      *           "kind": "condo_unit",
                      *           "leaseEndDate": "2027-05-31",
                      *           "leaseId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "listing": {
+                     *             "availableFrom": null,
+                     *             "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *             "openLeads": 0,
+                     *             "slug": "condo-1br-a1b2c3d4e5",
+                     *             "state": "closed"
+                     *           },
                      *           "openServiceRequests": 0,
                      *           "state": "leased",
                      *           "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
-                     *           "unitNo": "12/345"
+                     *           "unitNo": "12/345",
+                     *           "vacantSince": null
                      *         }
                      *       ]
                      *     }
@@ -104440,6 +104961,122 @@ export interface operations {
             };
         };
     };
+    "prospect.rentRecord.shareWithEnquiry": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                leadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Shared */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "codeHint": null,
+                     *       "createdAt": "2026-11-01T09:15:00+07:00",
+                     *       "expiresAt": null,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "enquiry",
+                     *       "lead": {
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "listingTitle": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์",
+                     *         "ownerName": "มาลี มีสุข"
+                     *       },
+                     *       "revokedAt": null,
+                     *       "state": "live"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RentRecordShareDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `rent_record.empty` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "prospect.enquiries.create": {
         parameters: {
             query?: never;
@@ -105044,6 +105681,312 @@ export interface operations {
             };
             /** @description Problem: `ekyc.unavailable` */
             503: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "prospect.rentRecord.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Record and shares */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "record": {
+                     *         "firstMonth": "2026-09",
+                     *         "lastMonth": "2026-10",
+                     *         "late": 1,
+                     *         "months": [
+                     *           {
+                     *             "month": "2026-10",
+                     *             "status": "on_time"
+                     *           },
+                     *           {
+                     *             "month": "2026-09",
+                     *             "status": "late"
+                     *           }
+                     *         ],
+                     *         "notConfirmed": 0,
+                     *         "onTime": 1,
+                     *         "outstanding": 0
+                     *       },
+                     *       "shares": [
+                     *         {
+                     *           "codeHint": null,
+                     *           "createdAt": "2026-11-01T09:15:00+07:00",
+                     *           "expiresAt": null,
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "kind": "enquiry",
+                     *           "lead": {
+                     *             "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *             "listingTitle": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์",
+                     *             "ownerName": "มาลี มีสุข"
+                     *           },
+                     *           "revokedAt": null,
+                     *           "state": "live"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["MyRentRecordDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "prospect.rentRecord.createLetter": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Letter */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "H4N8R2K7QX",
+                     *       "share": {
+                     *         "codeHint": "K7QX",
+                     *         "createdAt": "2026-11-01T09:15:00+07:00",
+                     *         "expiresAt": "2027-01-30T09:15:00+07:00",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "kind": "letter",
+                     *         "lead": null,
+                     *         "revokedAt": null,
+                     *         "state": "live"
+                     *       },
+                     *       "verifyUrl": "https://getproperty.co/rent-record/H4N8R2K7QX"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RentRecordLetterDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `rent_record.empty` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "prospect.rentRecord.revokeShare": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                shareId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Revoked */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "codeHint": null,
+                     *       "createdAt": "2026-11-01T09:15:00+07:00",
+                     *       "expiresAt": null,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "enquiry",
+                     *       "lead": {
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "listingTitle": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์",
+                     *         "ownerName": "มาลี มีสุข"
+                     *       },
+                     *       "revokedAt": null,
+                     *       "state": "live"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RentRecordShareDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -106309,6 +107252,92 @@ export interface operations {
                      *     }
                      */
                     "application/json": components["schemas"]["PublicPricingDto"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "public.rentRecords.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                /** @description The letter’s verification code. */
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Record */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expiresAt": "2027-01-30T09:15:00+07:00",
+                     *       "holderName": "สมศรี ใจดี",
+                     *       "issuedAt": "2026-11-01T09:15:00+07:00",
+                     *       "record": {
+                     *         "firstMonth": "2026-09",
+                     *         "lastMonth": "2026-10",
+                     *         "late": 1,
+                     *         "months": [
+                     *           {
+                     *             "month": "2026-10",
+                     *             "status": "on_time"
+                     *           },
+                     *           {
+                     *             "month": "2026-09",
+                     *             "status": "late"
+                     *           }
+                     *         ],
+                     *         "notConfirmed": 0,
+                     *         "onTime": 1,
+                     *         "outstanding": 0
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PublicRentRecordDto"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
             /** @description Problem: `http.too_many_requests` */
@@ -114014,6 +115043,312 @@ export interface operations {
             };
             /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
             403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.rentRecord.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Record and shares */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "record": {
+                     *         "firstMonth": "2026-09",
+                     *         "lastMonth": "2026-10",
+                     *         "late": 1,
+                     *         "months": [
+                     *           {
+                     *             "month": "2026-10",
+                     *             "status": "on_time"
+                     *           },
+                     *           {
+                     *             "month": "2026-09",
+                     *             "status": "late"
+                     *           }
+                     *         ],
+                     *         "notConfirmed": 0,
+                     *         "onTime": 1,
+                     *         "outstanding": 0
+                     *       },
+                     *       "shares": [
+                     *         {
+                     *           "codeHint": null,
+                     *           "createdAt": "2026-11-01T09:15:00+07:00",
+                     *           "expiresAt": null,
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "kind": "enquiry",
+                     *           "lead": {
+                     *             "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *             "listingTitle": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์",
+                     *             "ownerName": "มาลี มีสุข"
+                     *           },
+                     *           "revokedAt": null,
+                     *           "state": "live"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["MyRentRecordDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.rentRecord.createLetter": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Letter */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "code": "H4N8R2K7QX",
+                     *       "share": {
+                     *         "codeHint": "K7QX",
+                     *         "createdAt": "2026-11-01T09:15:00+07:00",
+                     *         "expiresAt": "2027-01-30T09:15:00+07:00",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "kind": "letter",
+                     *         "lead": null,
+                     *         "revokedAt": null,
+                     *         "state": "live"
+                     *       },
+                     *       "verifyUrl": "https://getproperty.co/rent-record/H4N8R2K7QX"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RentRecordLetterDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `rent_record.empty` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.rentRecord.revokeShare": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                shareId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Revoked */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "codeHint": null,
+                     *       "createdAt": "2026-11-01T09:15:00+07:00",
+                     *       "expiresAt": null,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "enquiry",
+                     *       "lead": {
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "listingTitle": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์",
+                     *         "ownerName": "มาลี มีสุข"
+                     *       },
+                     *       "revokedAt": null,
+                     *       "state": "live"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RentRecordShareDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
