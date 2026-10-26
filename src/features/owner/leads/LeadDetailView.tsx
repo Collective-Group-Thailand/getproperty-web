@@ -89,6 +89,11 @@ export async function LeadDetailView({ context, leadId }: { context: OwnerContex
                   description: lead.occupants ? t("prospect.occupantsValue", { count: lead.occupants }) : notGiven,
                 },
                 { id: "nationality", term: t("prospect.nationality"), description: lead.nationality ?? notGiven },
+                {
+                  id: "channel",
+                  term: t("prospect.channel"),
+                  description: lead.channel ? t(`prospect.channels.${lead.channel}`) : t("prospect.channelDirect"),
+                },
                 ...(lead.prospect.phone
                   ? [{ id: "phone", term: t("prospect.phone"), description: lead.prospect.phone }]
                   : []),

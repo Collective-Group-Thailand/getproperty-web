@@ -232,3 +232,15 @@ test("area page: listings near a station, nearby areas, 404 for an unknown area 
   await expect(page.getByRole("heading", { name: "ย่านอื่นใกล้เคียง" })).toBeVisible();
   expect((await page.goto(`${HOSTS.owner}/rent/area/no-such-area`))?.status()).toBe(404);
 });
+
+test("a share-kit short link lands on the listing with its UTM; an unknown one on the search (D-268)", async ({
+  page,
+}) => {
+  await page.goto(`${HOSTS.owner}/s/ab12cd34`);
+  await expect(page).toHaveURL(
+    `${HOSTS.owner}/rent/condo-ari-1br-sunlit?utm_source=facebook_group&utm_medium=share&utm_campaign=listing&ch=facebook_group`,
+  );
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("คอนโดแสงดีใกล้ BTS อารีย์ 1 ห้องนอน วิวสวน");
+  await page.goto(`${HOSTS.owner}/s/zzzzzzzz`);
+  await expect(page).toHaveURL(`${HOSTS.owner}/rent`);
+});

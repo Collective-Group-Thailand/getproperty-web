@@ -69,3 +69,25 @@ export async function publicOwner(slug: string, language?: string): Promise<Publ
   const body = await getJson<PublicOwner>(`/v1/public/owners/${slug}`, language);
   return body && typeof body.slug === "string" ? body : null;
 }
+
+export type PublicShareLink = Schemas["PublicShareLinkDto"];
+
+/**
+ * A share-kit short link was opened (D-268): the API counts the click and names the listing and the channel's UTM.
+ * Never cached (every open counts); null when the link is unknown, the listing is no longer public or the API is down.
+ */
+export async function openShareLink(code: string): Promise<PublicShareLink | null> {
+  if (!/^[a-z0-9]{8}$/.test(code)) return null;
+  try {
+    const response = await fetch(`${serverEnv().API_INTERNAL_URL}/v1/public/share-links/${code}/open`, {
+      method: "POST",
+      headers: { accept: "application/json" },
+      cache: "no-store",
+    });
+    if (!response.ok) return null;
+    const body = (await response.json()) as PublicShareLink;
+    return typeof body.slug === "string" ? body : null;
+  } catch {
+    return null;
+  }
+}

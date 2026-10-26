@@ -151,6 +151,30 @@ test("a landlord sees the rent of similar homes and the utility cost renters see
   await expect(page.getByTestId("listing-utility-average")).toHaveCount(0);
 });
 
+test("a landlord prepares the share kit: card to download, a link and caption per channel, clicks and enquiries (D-268)", async ({
+  page,
+}) => {
+  await signInWithOtp(page, HOSTS.owner, "0810000006");
+  await expect(page).toHaveURL(`${HOSTS.owner}/portfolio`);
+  await page.goto(`${HOSTS.owner}/listings/8d4b2c1a-0000-4000-8000-00000000a001`);
+  await hydrated(page);
+  await page.getByTestId("listing-share-open").click();
+  await expect(page.getByTestId("listing-share-card")).toBeVisible();
+  await expect(page.getByTestId("listing-share-channel")).toHaveCount(5);
+  const group = page.locator('[data-testid="listing-share-channel"][data-channel="facebook_group"]');
+  await expect(group).toContainText("กลุ่ม Facebook");
+  await expect(group.getByTestId("listing-share-stats")).toHaveText("คลิก 37 · สนใจ 1");
+  await expect(page.getByTestId("listing-share-line")).toHaveAttribute("href", /^https:\/\/line\.me\/R\/share\?text=/);
+  await expect(page.getByTestId("listing-share-download")).toHaveAttribute("download", "share-card-th.png");
+  await page.getByRole("radio", { name: "English" }).click();
+  await expect(page.getByTestId("listing-share-download")).toHaveAttribute("download", "share-card-en.png");
+  await expectAxeClean(page);
+
+  // the enquiry that came from the Facebook group says so
+  await page.goto(`${HOSTS.owner}/leads/5e7a9c1b-0000-4000-8000-0000000e1001`);
+  await expect(page.getByText("กลุ่ม Facebook")).toBeVisible();
+});
+
 test("support reviews listings: approves, restores a reported one and verifies an owner (F6.5)", async ({ page }) => {
   await signInPlatform(page, "support");
   await page.goto(`${HOSTS.admin}/listings`);

@@ -61,6 +61,7 @@ function lead(input: {
     prospect: { partyId: `${input.id.slice(0, -1)}f`, name: input.name, phone: null, lineLinked: true },
     state: input.state,
     lastMessage: null,
+    channel: null,
     lastMessageBy: null,
     awaitingReply: false,
     nextViewing: null,
@@ -105,7 +106,7 @@ export function initialLeads(): MockLead[] {
       state: "viewing_booked",
       messages: [["prospect", "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้ ทำงานแถวอารีย์ค่ะ", 3]],
       viewings: [viewing("6f8b0d2c-0000-4000-8000-0000000f1001", slot(2, 10), "requested", "จะมากับแฟนค่ะ")],
-      extra: { moveInDate: "2026-12-01", termMonths: 12, occupants: 2 },
+      extra: { moveInDate: "2026-12-01", termMonths: 12, occupants: 2, channel: "facebook_group" },
     }),
     lead({
       id: "5e7a9c1b-0000-4000-8000-0000000e1002",
@@ -117,7 +118,7 @@ export function initialLeads(): MockLead[] {
         ["prospect", "Great, thanks!", 25],
         ["owner", "You are welcome — book a viewing time whenever it suits you.", 24],
       ],
-      extra: { nationality: "DE", termMonths: 6, occupants: 1 },
+      extra: { nationality: "DE", termMonths: 6, occupants: 1, channel: "line" },
     }),
     lead({
       id: "5e7a9c1b-0000-4000-8000-0000000e1003",
@@ -150,6 +151,7 @@ const summary = (dto: Schemas["OwnerLeadDto"]): Schemas["OwnerLeadSummaryDto"] =
   prospect: dto.prospect,
   state: dto.state,
   lastMessage: dto.lastMessage,
+  channel: dto.channel,
   lastMessageBy: dto.lastMessageBy,
   awaitingReply: dto.awaitingReply,
   nextViewing: dto.nextViewing,

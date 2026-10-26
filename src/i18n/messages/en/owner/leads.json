@@ -50,7 +50,16 @@
     "line": "LINE",
     "lineYes": "Your replies reach them in LINE",
     "lineNo": "LINE not linked",
-    "notGiven": "Not given"
+    "notGiven": "Not given",
+    "channel": "Came from",
+    "channelDirect": "getproperty directly",
+    "channels": {
+      "line": "LINE",
+      "facebook_group": "Facebook group",
+      "facebook_marketplace": "Facebook Marketplace",
+      "qr": "QR on the card",
+      "link": "Copied link"
+    }
   },
   "thread": {
     "title": "Messages",
