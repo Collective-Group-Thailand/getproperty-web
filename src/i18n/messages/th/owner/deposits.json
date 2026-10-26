@@ -141,6 +141,12 @@
     "notInspected": "ไม่ได้ตรวจ",
     "noComparison": "ยังไม่มีผลตรวจห้องให้เทียบ",
     "disputePhotos": "รูปจากผู้เช่า",
-    "disputePhoto": "รูปจากผู้เช่า {number}"
+    "disputePhoto": "รูปจากผู้เช่า {number}",
+    "acceptedNoteTitle": "ผู้เช่ายอมรับพร้อมหมายเหตุ",
+    "residentAdded": {
+      "moveIn": "สิ่งที่ผู้เช่าเพิ่มตอนลงนามบันทึกเข้าอยู่",
+      "moveOut": "สิ่งที่ผู้เช่าเพิ่มตอนลงนามบันทึกย้ายออก"
+    },
+    "residentPhotoAlt": "รูปจากผู้เช่า {index}"
   }
 }

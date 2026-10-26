@@ -282,4 +282,6 @@ test("deposits: countdown and late refunds; settlement with comparison, deductio
   // The late one: B-102 is highlighted as late on its page too.
   await gotoOwner(page, `/deposits/${DEPOSIT_B102}`);
   await expect(page.getByText("คืนเงินประกันล่าช้า")).toBeVisible();
+  // D-266: the resident accepted with a note
+  await expect(page.getByTestId("resident-accept-note")).toHaveText("รับทราบค่าทำความสะอาดครับ");
 });
