@@ -304,6 +304,19 @@ const OWNER_PAGE = (): PublicOwner => {
 };
 
 export const listingHandlers: HttpHandler[] = [
+  // D-268: a share-kit short link of the Ari listing (posted in a Facebook group); every other code is unknown.
+  http.post("*/v1/public/share-links/:code/open", ({ params }) =>
+    params.code === "ab12cd34"
+      ? HttpResponse.json({
+          slug: "condo-ari-1br-sunlit",
+          channel: "facebook_group",
+          utm: { source: "facebook_group", medium: "share", campaign: "listing" },
+        })
+      : HttpResponse.json(
+          { type: "about:blank", title: "Not found", status: 404, code: "http.not_found" },
+          { status: 404, headers: { "content-type": "application/problem+json" } },
+        ),
+  ),
   http.get("*/v1/public/owners/:slug", ({ params }) =>
     params.slug === "landlord-0a1b2c3d4e"
       ? HttpResponse.json(OWNER_PAGE())

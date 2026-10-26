@@ -204,5 +204,37 @@
       "empty": "No power or water rates for this unit yet, so renters do not see this cost.",
       "setRates": "Set utility rates"
     }
+  },
+  "share": {
+    "title": "Share the listing",
+    "description": "A photo card, a caption and a link for each channel; the links tell you where interested people came from.",
+    "intro": "Make a square photo card (Thai / English) with a QR code and captions for Facebook groups, Marketplace and LINE.",
+    "prepare": "Prepare the share kit",
+    "language": "Language of the card and captions",
+    "thai": "ไทย",
+    "english": "English",
+    "cardAlt": "1080 × 1080 listing card with the photo, rent and a QR code",
+    "download": "Download the card",
+    "cardNote": "Fits Facebook groups, Marketplace and LINE. The download link works for 10 minutes.",
+    "stats": "{clicks, plural, one {# click} other {# clicks}} · {enquiries, plural, one {# enquiry} other {# enquiries}}",
+    "channels": {
+      "line": "LINE",
+      "facebook_group": "Facebook group",
+      "facebook_marketplace": "Facebook Marketplace",
+      "qr": "QR on the card",
+      "link": "Plain link"
+    },
+    "hints": {
+      "line": "Opens LINE to pick the chat or group to send it to.",
+      "facebook_group": "Copy the caption, attach the card and post in rental groups (Facebook does not allow automatic posting).",
+      "facebook_marketplace": "Create a Marketplace listing, paste the caption and use the card as the first photo.",
+      "qr": "This QR code is on the card; print it for the building entrance or the lift.",
+      "link": "For anywhere else, such as e-mail or forums."
+    },
+    "shareLine": "Share in LINE",
+    "copyCaption": "Copy caption",
+    "copyLink": "Copy link",
+    "copiedCaption": "Caption copied",
+    "copiedLink": "Link copied"
   }
 }

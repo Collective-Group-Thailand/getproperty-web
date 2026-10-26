@@ -7066,6 +7066,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/owner/listings/{listingId}/share-kit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Share kit of a listing
+         * @description For a published listing: a short link per channel (LINE, Facebook group, Marketplace, QR, plain link — `<web>/s/{code}` → the listing with UTM; made on first use, then the same), captions in Thai and English per channel, clicks and enquiries per channel, and the 1080 × 1080 photo cards (th / en, PNG: cover photo, rent, title, area, facts, QR of the link, getproperty logo) — rendered again only when what they show changes (D-268). Nothing is posted anywhere (Facebook forbids automated posting): the owner copies and downloads; LINE opens its share picker. `listing.invalid_state` unless published.
+         *
+         *     Implements: D-268.
+         */
+        post: operations["owner.listings.shareKit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/owner/locks": {
         parameters: {
             query?: never;
@@ -10844,6 +10866,28 @@ export interface paths {
         get: operations["public.pricing.get"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/public/share-links/{code}/open": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Open a share link
+         * @description A short link of a listing’s share kit was opened (`<web>/s/{code}`, D-268): counts the click and answers the listing to show and the UTM of its channel. `404` when the code is unknown or the listing is no longer public (the web then shows the search).
+         *
+         *     Implements: D-268.
+         */
+        post: operations["public.shareLinks.open"];
         delete?: never;
         options?: never;
         head?: never;
@@ -18024,6 +18068,11 @@ export interface components {
         };
         EnquiryCreateDto: {
             /**
+             * @description D-268: the share-kit channel the prospect came from (the `ch` of the short link). Kept on a new enquiry only.
+             * @example facebook_group
+             */
+            channel?: components["schemas"]["ListingChannel"] | null;
+            /**
              * @description I agree that the owner uses my name, messages and LINE contact to answer this enquiry (consent `prospect.enquiry`, PDPA). Required for the first contact with a listing; later messages may send false.
              * @example true
              */
@@ -21561,6 +21610,8 @@ export interface components {
             weekly: components["schemas"]["WeeklySlotDto"][];
         };
         /** @enum {string} */
+        ListingChannel: "line" | "facebook_group" | "facebook_marketplace" | "qr" | "link";
+        /** @enum {string} */
         ListingCloseReason: "leased" | "withdrawn" | "hidden";
         ListingComparablesDto: {
             /** @description Null below `minimum` comparables. */
@@ -23832,6 +23883,11 @@ export interface components {
              */
             awaitingReply: boolean;
             /**
+             * @description The share-kit channel the prospect came from (D-268); null when not through a share link.
+             * @example facebook_group
+             */
+            channel: components["schemas"]["ListingChannel"] | null;
+            /**
              * Format: date-time
              * @example 2026-11-01T09:15:00+07:00
              */
@@ -23901,6 +23957,11 @@ export interface components {
              * @example true
              */
             awaitingReply: boolean;
+            /**
+             * @description The share-kit channel the prospect came from (D-268); null when not through a share link.
+             * @example facebook_group
+             */
+            channel: components["schemas"]["ListingChannel"] | null;
             /**
              * Format: date-time
              * @example 2026-11-01T09:15:00+07:00
@@ -26150,6 +26211,25 @@ export interface components {
             messaging: components["schemas"]["PublicMessagingRateDto"] | null;
             /** @description A published change that takes effect later, if any. */
             messagingNext: components["schemas"]["PublicMessagingRateDto"] | null;
+        };
+        PublicShareLinkDto: {
+            /** @example facebook_group */
+            channel: components["schemas"]["ListingChannel"];
+            /**
+             * @description The listing to open (`/rent/{slug}`).
+             * @example condo-1br-0193f2a4b1
+             */
+            slug: string;
+            /** @description Add to the listing URL as `utm_*`. */
+            utm: components["schemas"]["PublicShareUtmDto"];
+        };
+        PublicShareUtmDto: {
+            /** @example listing */
+            campaign: string;
+            /** @example share */
+            medium: string;
+            /** @example facebook_group */
+            source: string;
         };
         PublicSitemapDto: {
             data: components["schemas"]["PublicSitemapEntryDto"][];
@@ -29463,6 +29543,72 @@ export interface components {
              */
             statementDate: string;
         };
+        ShareCardDto: {
+            /**
+             * Format: uuid
+             * @example 0193f2a4-b1c2-7d3e-8f40-5a6b7c8d9e0f
+             */
+            documentId: string;
+            /** @example 1080 */
+            height: number;
+            /**
+             * @description Signed download link (10 minutes).
+             * @example https://storage.getproperty.test/…
+             */
+            url: string;
+            /** @example 1080 */
+            width: number;
+        };
+        ShareCardsDto: {
+            /** @description English card (PNG). */
+            en: components["schemas"]["ShareCardDto"];
+            /** @description Thai card (PNG). */
+            th: components["schemas"]["ShareCardDto"];
+        };
+        ShareKitDto: {
+            cards: components["schemas"]["ShareCardsDto"];
+            /** @description LINE, Facebook group, Marketplace, QR, plain link. */
+            links: components["schemas"]["ShareKitLinkDto"][];
+            /**
+             * Format: uuid
+             * @example 0193f2a4-b1c2-7d3e-8f40-5a6b7c8d9e0a
+             */
+            listingId: string;
+        };
+        ShareKitLinkDto: {
+            /**
+             * @example Sunny 1-bedroom condo near BTS Ari
+             *     Rent ฿15,000/month · …
+             */
+            captionEn: string;
+            /**
+             * @example คอนโด 1 ห้องนอน ใกล้ BTS อารีย์
+             *     ค่าเช่า ฿15,000/เดือน · …
+             */
+            captionTh: string;
+            /** @example facebook_group */
+            channel: components["schemas"]["ListingChannel"];
+            /**
+             * @description Times the link was opened.
+             * @example 37
+             */
+            clicks: number;
+            /**
+             * @description Enquiries that came through this channel.
+             * @example 3
+             */
+            enquiries: number;
+            /**
+             * @description LINE only: opens LINE’s share picker with the Thai caption. Facebook is copy and download (D-268).
+             * @example https://line.me/R/share?text=…
+             */
+            shareUrl: string | null;
+            /**
+             * @description The short link of this channel.
+             * @example https://app.getproperty.co/s/ab12cd34
+             */
+            url: string;
+        };
         /** @enum {string} */
         SignatureMethod: "draw_liff" | "draw_web" | "scan_upload";
         /** @enum {string} */
@@ -32206,6 +32352,11 @@ export interface components {
         /** @enum {string} */
         ViewingOutcome: "completed" | "no_show";
         ViewingRequestDto: {
+            /**
+             * @description D-268: the share-kit channel the prospect came from (the `ch` of the short link). Kept on a new enquiry only.
+             * @example facebook_group
+             */
+            channel?: components["schemas"]["ListingChannel"] | null;
             /**
              * @description I agree that the owner uses my name, messages and LINE contact to answer this enquiry (consent `prospect.enquiry`, PDPA). Required for the first contact with a listing; later messages may send false.
              * @example true
@@ -71317,6 +71468,7 @@ export interface operations {
                      * @example [
                      *       {
                      *         "awaitingReply": true,
+                     *         "channel": "facebook_group",
                      *         "createdAt": "2026-11-01T09:15:00+07:00",
                      *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *         "lastMessage": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
@@ -71444,6 +71596,7 @@ export interface operations {
                     /**
                      * @example {
                      *       "awaitingReply": true,
+                     *       "channel": "facebook_group",
                      *       "createdAt": "2026-11-01T09:15:00+07:00",
                      *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "lastMessage": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
@@ -71613,6 +71766,7 @@ export interface operations {
                     /**
                      * @example {
                      *       "awaitingReply": true,
+                     *       "channel": "facebook_group",
                      *       "createdAt": "2026-11-01T09:15:00+07:00",
                      *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "lastMessage": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
@@ -71782,6 +71936,7 @@ export interface operations {
                     /**
                      * @example {
                      *       "awaitingReply": true,
+                     *       "channel": "facebook_group",
                      *       "createdAt": "2026-11-01T09:15:00+07:00",
                      *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "lastMessage": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
@@ -71962,6 +72117,7 @@ export interface operations {
                      * @example {
                      *       "lead": {
                      *         "awaitingReply": true,
+                     *         "channel": "facebook_group",
                      *         "createdAt": "2026-11-01T09:15:00+07:00",
                      *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *         "lastMessage": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
@@ -72143,6 +72299,7 @@ export interface operations {
                     /**
                      * @example {
                      *       "awaitingReply": true,
+                     *       "channel": "facebook_group",
                      *       "createdAt": "2026-11-01T09:15:00+07:00",
                      *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "lastMessage": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
@@ -76755,6 +76912,7 @@ export interface operations {
                     /**
                      * @example {
                      *       "awaitingReply": true,
+                     *       "channel": "facebook_group",
                      *       "createdAt": "2026-11-01T09:15:00+07:00",
                      *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "lastMessage": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
@@ -76930,6 +77088,7 @@ export interface operations {
                     /**
                      * @example {
                      *       "awaitingReply": true,
+                     *       "channel": "facebook_group",
                      *       "createdAt": "2026-11-01T09:15:00+07:00",
                      *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "lastMessage": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
@@ -77109,6 +77268,7 @@ export interface operations {
                     /**
                      * @example {
                      *       "awaitingReply": true,
+                     *       "channel": "facebook_group",
                      *       "createdAt": "2026-11-01T09:15:00+07:00",
                      *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "lastMessage": "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้",
@@ -79622,6 +79782,148 @@ export interface operations {
                 };
             };
             /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `listing.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.listings.shareKit": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                listingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Share kit */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cards": {
+                     *         "en": {
+                     *           "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "height": 1080,
+                     *           "url": "https://storage.getproperty.test/share-card-en.png",
+                     *           "width": 1080
+                     *         },
+                     *         "th": {
+                     *           "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "height": 1080,
+                     *           "url": "https://storage.getproperty.test/share-card-th.png",
+                     *           "width": 1080
+                     *         }
+                     *       },
+                     *       "links": [
+                     *         {
+                     *           "captionEn": "Sunny 1-bedroom condo near BTS Ari\nRent ฿15,000/month · deposit 2 mo · advance 1 mo · minimum 12 months",
+                     *           "captionTh": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์\nค่าเช่า ฿15,000/เดือน · มัดจำ 2 เดือน · ล่วงหน้า 1 เดือน · สัญญาขั้นต่ำ 12 เดือน",
+                     *           "channel": "facebook_group",
+                     *           "clicks": 37,
+                     *           "enquiries": 3,
+                     *           "shareUrl": null,
+                     *           "url": "https://app.getproperty.co/s/ab12cd34"
+                     *         }
+                     *       ],
+                     *       "listingId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ShareKitDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
             400: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -105284,6 +105586,77 @@ export interface operations {
                      *     }
                      */
                     "application/json": components["schemas"]["PublicPricingDto"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "public.shareLinks.open": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Where to go */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "channel": "facebook_group",
+                     *       "slug": "condo-1br-0193f2a4b1",
+                     *       "utm": {
+                     *         "campaign": "listing",
+                     *         "medium": "share",
+                     *         "source": "facebook_group"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PublicShareLinkDto"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
             /** @description Problem: `http.too_many_requests` */

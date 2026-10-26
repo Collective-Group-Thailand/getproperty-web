@@ -20,6 +20,7 @@ import { ListingAvailabilityForm } from "./ListingAvailabilityForm";
 import { ListingDetailsForm } from "./ListingDetailsForm";
 import { ListingInsights } from "./ListingInsights";
 import { ListingPhotos } from "./ListingPhotos";
+import { ListingSharePanel } from "./ListingSharePanel";
 import { VerificationCard } from "./VerificationCard";
 
 /**
@@ -111,6 +112,13 @@ export async function ListingEditorView({ context, listingId }: { context: Owner
       </Card>
 
       <ListingInsights context={context} listing={listing} />
+
+      {listing.state === "published" && !listing.hidden ? (
+        <Card as="section" aria-labelledby="listing-share" className="flex flex-col gap-4">
+          <CardHeader title={<span id="listing-share">{t("share.title")}</span>} description={t("share.description")} />
+          <ListingSharePanel listingId={listing.id} />
+        </Card>
+      ) : null}
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card as="section" aria-labelledby="listing-availability" className="flex flex-col gap-4">

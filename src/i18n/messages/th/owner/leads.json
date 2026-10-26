@@ -50,7 +50,16 @@
     "line": "LINE",
     "lineYes": "ตอบกลับแล้วถึงทาง LINE",
     "lineNo": "ยังไม่ได้เชื่อม LINE",
-    "notGiven": "ไม่ได้ระบุ"
+    "notGiven": "ไม่ได้ระบุ",
+    "channel": "มาจาก",
+    "channelDirect": "หน้า getproperty โดยตรง",
+    "channels": {
+      "line": "LINE",
+      "facebook_group": "กลุ่ม Facebook",
+      "facebook_marketplace": "Facebook Marketplace",
+      "qr": "QR บนการ์ด",
+      "link": "ลิงก์ที่คัดลอกไปแชร์"
+    }
   },
   "thread": {
     "title": "ข้อความ",

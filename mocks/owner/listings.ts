@@ -4,7 +4,7 @@ import type { components } from "../../src/lib/api/schema";
 import { TENANTS } from "../fixtures";
 import { platform } from "../platform/support";
 import { state } from "../state";
-import { body, json, mutating, owner, problem } from "./support";
+import { allowed, body, json, mutating, owner, problem } from "./support";
 
 type Schemas = components["schemas"];
 
@@ -23,6 +23,12 @@ const LANDLORD = TENANTS.landlord.profile.id;
 const UNIT_ARI = "7b2e1d4f-3c5a-4f6b-9c0d-1e2f3a4b5c01";
 const UNIT_THONGLOR = "7b2e1d4f-3c5a-4f6b-9c0d-1e2f3a4b5c02";
 const PHOTO_MIN = 5;
+/** A small square stand-in for the rendered 1080 × 1080 card (the API renders the real one with sharp). */
+const SHARE_CARD_PNG =
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080"><rect width="1080" height="640" fill="#7aa6c2"/><rect y="640" width="1080" height="440" fill="#fff"/><text x="56" y="760" font-size="76" font-family="sans-serif" fill="#14213d">฿15,000</text></svg>',
+  );
 const FLAGGED = ["โอนก่อนดูห้อง", "จองก่อนดูห้อง", "pay before viewing"];
 const now = () => new Date().toISOString();
 
@@ -281,6 +287,42 @@ export const listingHandlers: HttpHandler[] = [
     if (ok instanceof Response) return ok;
     const l = find(ok.tenantId, String(params.listingId));
     return l ? json(withUrls(request, l.dto)) : problem("owner.listings.get", "http.not_found");
+  }),
+  // D-268: the share kit — links per channel (stable per listing), captions, clicks and enquiries, the two cards.
+  http.post(`${LISTING_PATH}/share-kit`, ({ request, params }) => {
+    const op = "owner.listings.shareKit";
+    const ok = mutating(request, op);
+    if (ok instanceof Response) return ok;
+    const forbidden = allowed(ok, op, "listing.manage");
+    if (forbidden) return forbidden;
+    const l = find(ok.tenantId, String(params.listingId));
+    if (!l) return problem(op, "http.not_found");
+    if (l.dto.state !== "published" || l.dto.hidden) return problem(op, "listing.invalid_state");
+    const channels = ["line", "facebook_group", "facebook_marketplace", "qr", "link"] as const;
+    const rent = `฿${Number(l.dto.rent).toLocaleString("en-US")}`;
+    const card = (lang: string) => ({
+      documentId: `${l.dto.id.slice(0, -2)}c${lang === "th" ? "1" : "2"}`,
+      url: SHARE_CARD_PNG,
+      width: 1080,
+      height: 1080,
+    });
+    return json({
+      listingId: l.dto.id,
+      links: channels.map((channel, i) => {
+        const url = `${origin(request)}/s/${l.dto.id.replace(/-/g, "").slice(-6)}${i}${channel.length % 10}`;
+        const captionTh = `${l.dto.titleTh}\nค่าเช่า ${rent}/เดือน · มัดจำ ${l.dto.depositMonths} เดือน\nดูรูปทั้งหมด ถามหรือนัดดูห้อง: ${url}`;
+        return {
+          channel,
+          url,
+          clicks: channel === "facebook_group" ? 37 : channel === "line" ? 12 : 0,
+          enquiries: channel === "facebook_group" ? 1 : channel === "line" ? 1 : 0,
+          captionTh,
+          captionEn: `${l.dto.titleEn ?? l.dto.titleTh}\nRent ${rent}/month · deposit ${l.dto.depositMonths} mo\nAll photos, questions and viewings: ${url}`,
+          shareUrl: channel === "line" ? `https://line.me/R/share?text=${encodeURIComponent(captionTh)}` : null,
+        };
+      }),
+      cards: { th: card("th"), en: card("en") },
+    } satisfies Schemas["ShareKitDto"]);
   }),
   // D-269: comparable listings near the Ari one (enough for a band); every other listing has too few yet.
   http.get(`${LISTING_PATH}/comparables`, ({ request, params }) => {

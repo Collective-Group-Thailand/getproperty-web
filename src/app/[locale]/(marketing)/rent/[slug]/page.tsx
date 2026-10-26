@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import type { PublicListingDetail } from "@/features/owner/marketing/listings/contract";
 import { JsonLdScript } from "@/features/owner/marketing/JsonLdScript";
+import { ChannelLink } from "@/features/owner/marketing/listings/ChannelLink";
 import { ListingCard } from "@/features/owner/marketing/listings/ListingCard";
 import { ListingImage } from "@/features/owner/marketing/listings/ListingImage";
 import { ListingUtility } from "@/features/owner/marketing/listings/ListingUtility";
@@ -265,9 +266,9 @@ export default async function ListingPage({ params }: Props) {
               <li>{t("detail.minTerm", { months: listing.minTermMonths })}</li>
             </ul>
             <Button asChild size="lg" block iconStart={contact ? IconChat : undefined}>
-              <a href={contactHref} {...(contact ? { rel: "noopener noreferrer", target: "_blank" } : {})}>
+              <ChannelLink href={contactHref} {...(contact ? { rel: "noopener noreferrer", target: "_blank" } : {})}>
                 {contact ? t("detail.contact") : t("detail.contactSignIn")}
-              </a>
+              </ChannelLink>
             </Button>
             <p className="text-muted text-xs">{t("detail.contactNote")}</p>
             <div className="border-border flex items-center gap-3 border-t pt-4">
@@ -325,9 +326,9 @@ export default async function ListingPage({ params }: Props) {
           <span className="text-muted text-sm">{t("card.perMonth")}</span>
         </p>
         <Button asChild iconStart={contact ? IconChat : undefined}>
-          <a href={contactHref} {...(contact ? { rel: "noopener noreferrer", target: "_blank" } : {})}>
+          <ChannelLink href={contactHref} {...(contact ? { rel: "noopener noreferrer", target: "_blank" } : {})}>
             {contact ? t("detail.contact") : t("detail.contactSignIn")}
-          </a>
+          </ChannelLink>
         </Button>
       </div>
       <div className="h-20 lg:hidden" aria-hidden />
