@@ -141,6 +141,12 @@
     "notInspected": "Not inspected",
     "noComparison": "No inspections to compare yet.",
     "disputePhotos": "Photos from the resident",
-    "disputePhoto": "Resident's photo {number}"
+    "disputePhoto": "Resident's photo {number}",
+    "acceptedNoteTitle": "The resident accepted with a note",
+    "residentAdded": {
+      "moveIn": "What the resident added when signing the move-in report",
+      "moveOut": "What the resident added when signing the move-out report"
+    },
+    "residentPhotoAlt": "Resident photo {index}"
   }
 }

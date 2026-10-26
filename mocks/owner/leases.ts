@@ -900,6 +900,7 @@ function endOccupancy(lease: Schemas["LeaseDto"]) {
       refundedAt: null,
       residentResponse: null,
       disputeReason: null,
+      residentNote: null,
       disputeDocumentIds: [],
       statementNumber: null,
       isLate: false,

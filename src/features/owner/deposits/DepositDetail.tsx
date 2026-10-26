@@ -57,6 +57,22 @@ export async function DepositDetail({ context, depositId }: { context: OwnerCont
       : Promise.resolve({ data: null, error: null }),
   ]);
   const settlement = deposit.settlement;
+  // D-266: what the resident added when countersigning the move-in / move-out reports
+  const residentAdded = (
+    await Promise.all(
+      (["moveIn", "moveOut"] as const).map(async (side) => {
+        const inspectionId = side === "moveIn" ? settlement?.moveInInspectionId : settlement?.moveOutInspectionId;
+        if (!inspectionId) return null;
+        const report = await section(
+          unwrap(api.GET("/v1/owner/inspections/{inspectionId}", { params: { path: { inspectionId } } })),
+        );
+        const r = report.data;
+        return r && (r.residentNote || r.residentPhotoDocumentIds.length)
+          ? { side, note: r.residentNote, photos: r.residentPhotoDocumentIds }
+          : null;
+      }),
+    )
+  ).filter((x): x is { side: "moveIn" | "moveOut"; note: string | null; photos: string[] } => x !== null);
   const unitId = lease.data?.unitId ?? null;
   const editable = settlement ? settlement.status === "opened" || settlement.status === "inspected" : false;
   const days = settlement && !settlement.refundedAt ? daysUntil(settlement.deadlineAt) : null;
@@ -87,6 +103,11 @@ export async function DepositDetail({ context, depositId }: { context: OwnerCont
       {settlement?.isLate ? (
         <Callout tone="danger" title={t("lateTitle")}>
           {t("lateBody", { date: formatDate(settlement.deadlineAt, locale) })}
+        </Callout>
+      ) : null}
+      {settlement?.residentResponse === "accepted" && settlement.residentNote ? (
+        <Callout tone="info" title={t("acceptedNoteTitle")}>
+          <span data-testid="resident-accept-note">{settlement.residentNote}</span>
         </Callout>
       ) : null}
       {settlement?.residentResponse === "disputed" ? (
@@ -349,6 +370,28 @@ export async function DepositDetail({ context, depositId }: { context: OwnerCont
           ) : (
             <p className="text-muted text-sm">{t("noComparison")}</p>
           )}
+          {residentAdded.map((added) => (
+            <div
+              key={added.side}
+              className="border-border mt-4 flex flex-col gap-2 border-t pt-4"
+              data-testid="resident-report-note"
+            >
+              <p className="m-0 text-sm font-medium">{t(`residentAdded.${added.side}`)}</p>
+              {added.note ? <p className="m-0 text-sm">{added.note}</p> : null}
+              {added.photos.length ? (
+                <span className="flex flex-wrap gap-1">
+                  {added.photos.map((fileId, index) => (
+                    <PhotoThumb
+                      key={fileId}
+                      fileId={fileId}
+                      alt={t("residentPhotoAlt", { index: index + 1 })}
+                      size="sm"
+                    />
+                  ))}
+                </span>
+              ) : null}
+            </div>
+          ))}
         </Card>
       ) : null}
     </OwnerPage>

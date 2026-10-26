@@ -11247,9 +11247,9 @@ export interface paths {
         put?: never;
         /**
          * Accept the proposed settlement
-         * @description The agreed refund is the proposed one; the owner then pays it before the deadline (D-023). Lessee or co-tenant.
+         * @description The agreed refund is the proposed one; the owner then pays it before the deadline (D-023). An optional note is kept with the acceptance and shown to the owner (D-266). Lessee or co-tenant.
          *
-         *     Implements: D-023.
+         *     Implements: D-023, D-266.
          */
         post: operations["resident.deposits.accept"];
         delete?: never;
@@ -11473,9 +11473,9 @@ export interface paths {
         put?: never;
         /**
          * Countersign the report
-         * @description I sign a report the owner completed without my signature (lessee or co-tenant, once): it becomes `signed` and the owner hears it in LINE. The report PDF keeps its number and content (L5 5.2, D-253).
+         * @description I sign a report the owner completed without my signature (lessee or co-tenant, once): it becomes `signed` and the owner hears it in LINE. I may add a note and up to 6 photos of my own (uploads with purpose `inspection_note`), kept with the report and shown to the owner and beside it at move-out (D-266). The report PDF keeps its number and content (L5 5.2, D-253).
          *
-         *     Implements: D-253, D-023.
+         *     Implements: D-253, D-023, D-266.
          */
         post: operations["resident.inspections.countersign"];
         delete?: never;
@@ -12577,9 +12577,9 @@ export interface paths {
         put?: never;
         /**
          * Upload a photo
-         * @description Purpose `deposit_dispute` (with `depositId`): a photo for my dispute of a proposed deposit settlement — 409 `deposit.invalid_state` when the settlement is not waiting for my answer (D-023, D-203). Purpose `service_request` (with `unitId`, a unit I occupy): a photo of a problem I am about to report (B5.1, D-072). JPEG / PNG / WebP ≤ 10 MB with its SHA-256. Answers a 15-minute PUT URL; upload the bytes there, then send the `fileId` in `photoDocumentIds` of the dispute / request. The file is a photo of my unit, scanned like every upload.
+         * @description Purpose `deposit_dispute` (with `depositId`): a photo for my dispute of a proposed deposit settlement — 409 `deposit.invalid_state` when the settlement is not waiting for my answer (D-023, D-203). Purpose `service_request` (with `unitId`, a unit I occupy): a photo of a problem I am about to report (B5.1, D-072). Purpose `inspection_note` (with `inspectionId`): a photo I add to a move-in / move-out report I am about to countersign — 409 `inspection.invalid_state` once signed (D-266). JPEG / PNG / WebP ≤ 10 MB with its SHA-256. Answers a 15-minute PUT URL; upload the bytes there, then send the `fileId` in `photoDocumentIds` of the dispute / request. The file is a photo of my unit, scanned like every upload.
          *
-         *     Implements: D-023, D-072, D-203.
+         *     Implements: D-023, D-072, D-203, D-266.
          */
         post: operations["resident.uploads.presign"];
         delete?: never;
@@ -19437,6 +19437,16 @@ export interface components {
              * @example null
              */
             reportNumber: string | null;
+            /**
+             * @description What the resident added when countersigning in LINE (D-266).
+             * @example null
+             */
+            residentNote: string | null;
+            /**
+             * @description Photos the resident added when countersigning (core.document ids, up to 6; D-266).
+             * @example []
+             */
+            residentPhotoDocumentIds: string[];
             /** @example false */
             residentSigned: boolean;
             /**
@@ -27083,6 +27093,13 @@ export interface components {
              */
             requestedAt: string;
         };
+        ResidentAcceptDto: {
+            /**
+             * @description An optional note kept with my acceptance (D-266).
+             * @example รับทราบค่าทำความสะอาดครับ ขอบคุณที่คืนเงินเร็ว
+             */
+            note?: string | null;
+        };
         ResidentAccountDto: {
             /** @example บริษัท ตัวอย่าง จำกัด */
             accountName: string;
@@ -27146,6 +27163,18 @@ export interface components {
             version: number;
         };
         ResidentCountersignDto: {
+            /**
+             * @description What I see differently, kept with the report (D-266).
+             * @example ผนังห้องนอนมีรอยขีดอยู่ก่อนแล้ว (ดูรูป)
+             */
+            note?: string | null;
+            /**
+             * @description Up to 6 photos I uploaded for this report (`POST /v1/resident/uploads`, purpose `inspection_note`).
+             * @example [
+             *       "3b241101-e2bb-4255-8caf-4136c566a962"
+             *     ]
+             */
+            photoDocumentIds?: string[];
             /**
              * @description My drawn signature (PNG ≤ 200 KB, base64).
              * @example iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==
@@ -27329,6 +27358,16 @@ export interface components {
              * @example https://storage.example.com/report.pdf?X-Amz-Signature=abc
              */
             reportUrl: string | null;
+            /**
+             * @description What I added when countersigning (D-266).
+             * @example null
+             */
+            residentNote: string | null;
+            /**
+             * @description 5-minute links to the photos I added when countersigning (D-266).
+             * @example []
+             */
+            residentPhotoUrls: string[];
             /** @example false */
             residentSigned: boolean;
             /**
@@ -28207,6 +28246,12 @@ export interface components {
              * @example 3b241101-e2bb-4255-8caf-4136c566a962
              */
             depositId?: string;
+            /**
+             * Format: uuid
+             * @description The report I am about to countersign (`inspection_note`, required; D-266).
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            inspectionId?: string;
             /** @example deposit_dispute */
             purpose: components["schemas"]["ResidentUploadPurpose"];
             /**
@@ -28254,7 +28299,7 @@ export interface components {
             uploadUrl: string;
         };
         /** @enum {string} */
-        ResidentUploadPurpose: "deposit_dispute" | "service_request";
+        ResidentUploadPurpose: "deposit_dispute" | "service_request" | "inspection_note";
         ResidentUsageDto: {
             /** @example 1d */
             bucket: components["schemas"]["SeriesBucket"];
@@ -29466,6 +29511,11 @@ export interface components {
             refundedAt: string | null;
             /** @example null */
             refundMethod: components["schemas"]["RefundMethod"] | null;
+            /**
+             * @description The resident’s note with an accepted settlement (D-266).
+             * @example null
+             */
+            residentNote: string | null;
             /** @example null */
             residentResponse: components["schemas"]["ResidentResponse"] | null;
             /** @example null */
@@ -61881,6 +61931,7 @@ export interface operations {
                      *             "refundAmount": null,
                      *             "refundMethod": null,
                      *             "refundedAt": null,
+                     *             "residentNote": null,
                      *             "residentResponse": null,
                      *             "statementNumber": null,
                      *             "status": "proposed",
@@ -62039,6 +62090,7 @@ export interface operations {
                      *         "refundAmount": null,
                      *         "refundMethod": null,
                      *         "refundedAt": null,
+                     *         "residentNote": null,
                      *         "residentResponse": null,
                      *         "statementNumber": null,
                      *         "status": "proposed",
@@ -62590,6 +62642,7 @@ export interface operations {
                      *         "refundAmount": null,
                      *         "refundMethod": null,
                      *         "refundedAt": null,
+                     *         "residentNote": null,
                      *         "residentResponse": null,
                      *         "statementNumber": null,
                      *         "status": "proposed",
@@ -62762,6 +62815,7 @@ export interface operations {
                      *         "refundAmount": "3349.50",
                      *         "refundMethod": "bank_transfer",
                      *         "refundedAt": "2026-12-03T10:12:00+07:00",
+                     *         "residentNote": null,
                      *         "residentResponse": "accepted",
                      *         "statementNumber": "DPS-2026-00001",
                      *         "status": "refunded",
@@ -62929,6 +62983,7 @@ export interface operations {
                      *         "refundAmount": null,
                      *         "refundMethod": null,
                      *         "refundedAt": null,
+                     *         "residentNote": null,
                      *         "residentResponse": null,
                      *         "statementNumber": null,
                      *         "status": "inspected",
@@ -63100,6 +63155,7 @@ export interface operations {
                      *         "refundAmount": null,
                      *         "refundMethod": null,
                      *         "refundedAt": null,
+                     *         "residentNote": null,
                      *         "residentResponse": null,
                      *         "statementNumber": null,
                      *         "status": "inspected",
@@ -63268,6 +63324,7 @@ export interface operations {
                      *         "refundAmount": null,
                      *         "refundMethod": null,
                      *         "refundedAt": null,
+                     *         "residentNote": null,
                      *         "residentResponse": null,
                      *         "statementNumber": null,
                      *         "status": "proposed",
@@ -67668,6 +67725,8 @@ export interface operations {
                      *           ],
                      *           "notes": null,
                      *           "reportNumber": null,
+                     *           "residentNote": null,
+                     *           "residentPhotoDocumentIds": [],
                      *           "residentSigned": false,
                      *           "scheduledFor": null,
                      *           "staffSigned": false,
@@ -67819,6 +67878,8 @@ export interface operations {
                      *       ],
                      *       "notes": null,
                      *       "reportNumber": null,
+                     *       "residentNote": null,
+                     *       "residentPhotoDocumentIds": [],
                      *       "residentSigned": false,
                      *       "scheduledFor": null,
                      *       "staffSigned": false,
@@ -67979,6 +68040,8 @@ export interface operations {
                      *       ],
                      *       "notes": null,
                      *       "reportNumber": null,
+                     *       "residentNote": null,
+                     *       "residentPhotoDocumentIds": [],
                      *       "residentSigned": false,
                      *       "scheduledFor": null,
                      *       "staffSigned": false,
@@ -68135,6 +68198,8 @@ export interface operations {
                      *       ],
                      *       "notes": null,
                      *       "reportNumber": "INS-2026-00001",
+                     *       "residentNote": null,
+                     *       "residentPhotoDocumentIds": [],
                      *       "residentSigned": true,
                      *       "scheduledFor": null,
                      *       "staffSigned": true,
@@ -68301,6 +68366,8 @@ export interface operations {
                      *       ],
                      *       "notes": null,
                      *       "reportNumber": null,
+                     *       "residentNote": null,
+                     *       "residentPhotoDocumentIds": [],
                      *       "residentSigned": false,
                      *       "scheduledFor": null,
                      *       "staffSigned": false,
@@ -72413,7 +72480,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `validation.failed` */
+            /** @description Problem: `listing.bank_account_in_message`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -103898,7 +103965,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `validation.failed` */
+            /** @description Problem: `listing.bank_account_in_message`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -104054,7 +104121,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `listing.consent_required`, `validation.failed` */
+            /** @description Problem: `listing.bank_account_in_message`, `listing.consent_required`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -104210,7 +104277,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `listing.consent_required`, `listing.viewing_slot_unavailable`, `validation.failed` */
+            /** @description Problem: `listing.bank_account_in_message`, `listing.consent_required`, `listing.viewing_slot_unavailable`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -107434,6 +107501,7 @@ export interface operations {
                      *           "refundAmount": null,
                      *           "refundMethod": null,
                      *           "refundedAt": null,
+                     *           "residentNote": null,
                      *           "residentResponse": null,
                      *           "statementNumber": null,
                      *           "status": "proposed",
@@ -107575,6 +107643,7 @@ export interface operations {
                      *         "refundAmount": null,
                      *         "refundMethod": null,
                      *         "refundedAt": null,
+                     *         "residentNote": null,
                      *         "residentResponse": null,
                      *         "statementNumber": null,
                      *         "status": "proposed",
@@ -107664,7 +107733,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResidentAcceptDto"];
+            };
+        };
         responses: {
             /** @description Accepted */
             200: {
@@ -107735,6 +107808,7 @@ export interface operations {
                      *         "refundAmount": null,
                      *         "refundMethod": null,
                      *         "refundedAt": null,
+                     *         "residentNote": "รับทราบค่าทำความสะอาดครับ",
                      *         "residentResponse": "accepted",
                      *         "statementNumber": null,
                      *         "status": "agreed",
@@ -107921,6 +107995,7 @@ export interface operations {
                      *         "refundAmount": null,
                      *         "refundMethod": null,
                      *         "refundedAt": null,
+                     *         "residentNote": null,
                      *         "residentResponse": "disputed",
                      *         "statementNumber": null,
                      *         "status": "disputed",
@@ -108841,6 +108916,8 @@ export interface operations {
                      *         "ownerSigned": true,
                      *         "reportNumber": "INS-2569-00012",
                      *         "reportUrl": "https://storage.example.com/report.pdf?X-Amz-Signature=abc",
+                     *         "residentNote": null,
+                     *         "residentPhotoUrls": [],
                      *         "residentSigned": false,
                      *         "status": "completed",
                      *         "type": "move_in",
@@ -108952,6 +109029,8 @@ export interface operations {
                      *       "ownerSigned": true,
                      *       "reportNumber": "INS-2569-00012",
                      *       "reportUrl": "https://storage.example.com/report.pdf?X-Amz-Signature=abc",
+                     *       "residentNote": null,
+                     *       "residentPhotoUrls": [],
                      *       "residentSigned": false,
                      *       "status": "completed",
                      *       "type": "move_in",
@@ -109079,6 +109158,10 @@ export interface operations {
                      *       "ownerSigned": true,
                      *       "reportNumber": "INS-2569-00012",
                      *       "reportUrl": "https://storage.example.com/report.pdf?X-Amz-Signature=abc",
+                     *       "residentNote": "ผนังห้องนอนมีรอยขีดอยู่ก่อนแล้ว (ดูรูป)",
+                     *       "residentPhotoUrls": [
+                     *         "https://storage.example.com/note.jpg?X-Amz-Signature=abc"
+                     *       ],
                      *       "residentSigned": true,
                      *       "status": "signed",
                      *       "type": "move_in",
@@ -115965,7 +116048,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `deposit.invalid_state` */
+            /** @description Problem: `deposit.invalid_state`, `inspection.invalid_state` */
             409: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -117936,6 +118019,8 @@ export interface operations {
                      *           ],
                      *           "notes": null,
                      *           "reportNumber": null,
+                     *           "residentNote": null,
+                     *           "residentPhotoDocumentIds": [],
                      *           "residentSigned": false,
                      *           "scheduledFor": null,
                      *           "staffSigned": false,
@@ -118087,6 +118172,8 @@ export interface operations {
                      *       ],
                      *       "notes": null,
                      *       "reportNumber": null,
+                     *       "residentNote": null,
+                     *       "residentPhotoDocumentIds": [],
                      *       "residentSigned": false,
                      *       "scheduledFor": null,
                      *       "staffSigned": false,
@@ -118247,6 +118334,8 @@ export interface operations {
                      *       ],
                      *       "notes": null,
                      *       "reportNumber": null,
+                     *       "residentNote": null,
+                     *       "residentPhotoDocumentIds": [],
                      *       "residentSigned": false,
                      *       "scheduledFor": null,
                      *       "staffSigned": false,
@@ -118403,6 +118492,8 @@ export interface operations {
                      *       ],
                      *       "notes": null,
                      *       "reportNumber": "INS-2026-00001",
+                     *       "residentNote": null,
+                     *       "residentPhotoDocumentIds": [],
                      *       "residentSigned": true,
                      *       "scheduledFor": null,
                      *       "staffSigned": true,
@@ -118569,6 +118660,8 @@ export interface operations {
                      *       ],
                      *       "notes": null,
                      *       "reportNumber": null,
+                     *       "residentNote": null,
+                     *       "residentPhotoDocumentIds": [],
                      *       "residentSigned": false,
                      *       "scheduledFor": null,
                      *       "staffSigned": false,
