@@ -86,6 +86,7 @@ function lead(input: {
     messages,
     viewings: input.viewings ?? [],
     leaseId: null,
+    rentRecord: null,
     version: 1,
     ...input.extra,
   };
@@ -106,6 +107,29 @@ function derive(dto: Schemas["OwnerLeadDto"]): Schemas["OwnerLeadDto"] {
   };
 }
 
+/** A rent record a prospect shared (D-256): eleven months, one late — facts as the API counts them. */
+export const SAMPLE_RENT_RECORD: Schemas["RentRecordDto"] = {
+  months: [
+    "2026-09",
+    "2026-08",
+    "2026-07",
+    "2026-06",
+    "2026-05",
+    "2026-04",
+    "2026-03",
+    "2026-02",
+    "2026-01",
+    "2025-12",
+    "2025-11",
+  ].map((month) => ({ month, status: month === "2026-03" ? ("late" as const) : ("on_time" as const) })),
+  onTime: 10,
+  late: 1,
+  outstanding: 0,
+  notConfirmed: 0,
+  firstMonth: "2025-11",
+  lastMonth: "2026-09",
+};
+
 export function initialLeads(): MockLead[] {
   return [
     lead({
@@ -114,7 +138,13 @@ export function initialLeads(): MockLead[] {
       state: "viewing_booked",
       messages: [["prospect", "ห้องยังว่างไหมคะ อยากเข้าดูเสาร์นี้ ทำงานแถวอารีย์ค่ะ", 3]],
       viewings: [viewing("6f8b0d2c-0000-4000-8000-0000000f1001", slot(2, 10), "requested", "จะมากับแฟนค่ะ")],
-      extra: { moveInDate: "2026-12-01", termMonths: 12, occupants: 2, channel: "facebook_group" },
+      extra: {
+        moveInDate: "2026-12-01",
+        termMonths: 12,
+        occupants: 2,
+        channel: "facebook_group",
+        rentRecord: { ...SAMPLE_RENT_RECORD, sharedAt: iso(-2 * HOUR) },
+      },
       verified: true,
     }),
     lead({

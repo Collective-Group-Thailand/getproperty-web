@@ -120,5 +120,17 @@
     "waiting": "{count} waiting",
     "income": "Annual income",
     "incomeHint": "For your income tax (40(5))"
+  },
+  "vacancy": {
+    "title": "Empty and soon empty ({count})",
+    "description": "List before the lease ends: people can book viewings today, so the unit is never empty for a month.",
+    "vacant": "Empty now",
+    "vacantSince": "Empty since {date}",
+    "endsOn": "Tenant gave notice, lease ends {date}",
+    "openLeads": "{count, plural, one {# enquiry} other {# enquiries}}",
+    "openListing": "Open the listing",
+    "relist": "List it again",
+    "list": "List it",
+    "listEarly": "List it early"
   }
 }

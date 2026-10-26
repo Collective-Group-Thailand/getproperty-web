@@ -16,6 +16,7 @@ import { DescriptionList } from "@/ui/components/DescriptionList";
 import { IconMegaphone } from "@/ui/icons/glyphs/megaphone";
 import { IconShield } from "@/ui/icons/glyphs/shield";
 
+import { RentRecordSummary } from "../rentRecord/RentRecordSummary";
 import { ownerPath } from "../shared/links";
 import { section, type OwnerContext } from "../shared/server";
 import { LeadNotes, LeadStateActions, LeadViewings } from "./LeadActions";
@@ -28,7 +29,7 @@ import { LeadThread } from "./LeadThread";
  * that order.
  */
 export async function LeadDetailView({ context, leadId }: { context: OwnerContext; leadId: string }) {
-  const t = await getTranslations("owner.leads");
+  const [t, rr] = await Promise.all([getTranslations("owner.leads"), getTranslations("owner.rentRecord")]);
   const { api, locale } = context;
   const result = await section(unwrap(api.GET("/v1/owner/leads/{leadId}", { params: { path: { leadId } } })));
   if (!result.data) {
@@ -119,6 +120,24 @@ export async function LeadDetailView({ context, leadId }: { context: OwnerContex
                 },
               ]}
             />
+          </Card>
+
+          <Card as="section" aria-labelledby="lead-rent-record" className="flex flex-col gap-4">
+            <CardHeader
+              title={<span id="lead-rent-record">{rr("lead.title")}</span>}
+              description={
+                lead.rentRecord
+                  ? rr("lead.shared", { date: formatDateTime(lead.rentRecord.sharedAt, locale) })
+                  : undefined
+              }
+            />
+            {lead.rentRecord ? (
+              <RentRecordSummary record={lead.rentRecord} locale={locale} />
+            ) : (
+              <p className="text-muted text-sm" data-testid="lead-rent-record-none">
+                {rr("lead.none")}
+              </p>
+            )}
           </Card>
 
           <Card as="section" aria-labelledby="lead-viewings" className="flex flex-col gap-4">

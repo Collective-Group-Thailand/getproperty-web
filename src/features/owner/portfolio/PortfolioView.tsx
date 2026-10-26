@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { INVOICE_STATUS, type InvoiceStatus } from "@/domain/status/invoice";
+import { LISTING_STATUS } from "@/domain/status/listing";
 import { PORTFOLIO_UNIT_STATUS } from "@/domain/status/portfolioUnit";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { SectionError } from "@/features/shared/console/SectionError";
@@ -114,6 +115,7 @@ export async function PortfolioView({ context, welcome }: { context: OwnerContex
               </span>
             </a>
           </nav>
+          <Vacancy units={portfolio.data.units} locale={locale} />
           <section aria-labelledby="portfolio-units" className="flex flex-col gap-4">
             <h2 id="portfolio-units" className="text-lg font-semibold">
               {t("units.title", { count: portfolio.data.units.length })}
@@ -127,6 +129,79 @@ export async function PortfolioView({ context, welcome }: { context: OwnerContex
         </>
       )}
     </OwnerPage>
+  );
+}
+
+/**
+ * No empty months (D-261): the units that are empty or whose end is decided, each with its listing and enquiries —
+ * so the next tenancy starts before the last one ends. Which leases are "ending" is the API's: notice given.
+ */
+async function Vacancy({ units, locale }: { units: Unit[]; locale: Locale }) {
+  const t = await getTranslations("owner.portfolio.vacancy");
+  const rows = units.filter((unit) => unit.state === "vacant" || unit.state === "notice_given");
+  if (!rows.length) return null;
+  return (
+    <section aria-labelledby="portfolio-vacancy" className="flex flex-col gap-3" data-testid="portfolio-vacancy">
+      <div className="flex flex-col gap-1">
+        <h2 id="portfolio-vacancy" className="text-lg font-semibold">
+          {t("title", { count: rows.length })}
+        </h2>
+        <p className="text-muted text-sm">{t("description")}</p>
+      </div>
+      <Card padding="none">
+        <ul className="divide-border m-0 flex list-none flex-col divide-y p-0">
+          {rows.map((unit) => {
+            const listing = unit.listing;
+            const live = listing && ["published", "pending_review", "paused", "draft"].includes(listing.state);
+            const name = unit.kind === "house" || unit.kind === "townhouse" ? unit.building.name : unit.unitNo;
+            return (
+              <li
+                key={unit.unitId}
+                className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+                data-testid="vacancy-row"
+                data-unit-no={unit.unitNo}
+              >
+                <span className="flex min-w-0 flex-col">
+                  <span className="font-medium">{name}</span>
+                  <span className="text-muted text-sm">
+                    {unit.state === "vacant"
+                      ? unit.vacantSince
+                        ? t("vacantSince", { date: formatDate(unit.vacantSince, locale) })
+                        : t("vacant")
+                      : t("endsOn", { date: unit.leaseEndDate ? formatDate(unit.leaseEndDate, locale) : "-" })}
+                  </span>
+                </span>
+                <span className="flex flex-wrap items-center gap-2">
+                  {live ? (
+                    <>
+                      <StatusBadgeOf map={LISTING_STATUS} value={listing.state} size="sm" />
+                      <span className="text-muted text-sm" data-testid="vacancy-leads">
+                        {t("openLeads", { count: listing.openLeads })}
+                      </span>
+                      <Button asChild size="sm" variant="secondary">
+                        <a href={ownerPath(locale, `/listings/${listing.id}`)}>{t("openListing")}</a>
+                      </Button>
+                    </>
+                  ) : listing ? (
+                    <Button asChild size="sm" variant="secondary" iconStart={IconMegaphone}>
+                      <a href={ownerPath(locale, `/listings/${listing.id}`)} data-testid="vacancy-relist">
+                        {t("relist")}
+                      </a>
+                    </Button>
+                  ) : (
+                    <Button asChild size="sm" iconStart={IconMegaphone}>
+                      <a href={ownerPath(locale, `/listings/new?unit=${unit.unitId}`)} data-testid="vacancy-list">
+                        {unit.state === "vacant" ? t("list") : t("listEarly")}
+                      </a>
+                    </Button>
+                  )}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      </Card>
+    </section>
   );
 }
 

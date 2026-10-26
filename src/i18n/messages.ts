@@ -40,6 +40,7 @@ export const MESSAGE_FILES = {
     "payments",
     "portfolio",
     "rates",
+    "rentRecord",
     "reports",
     "service",
     "settings",

@@ -11,6 +11,7 @@ import { platformHandlers } from "../platform";
 import { r2Handlers } from "../r2";
 import { publicHandlers } from "./public";
 import { realtimeHandlers } from "./realtime";
+import { rentRecordHandlers } from "./rent-records";
 import { searchHandlers } from "./search";
 import { staffHandlers } from "./staff";
 import { telemetryHandlers } from "./telemetry";
@@ -25,6 +26,7 @@ export function handlers(): HttpHandler[] {
     ...notificationHandlers,
     ...realtimeHandlers,
     ...publicHandlers,
+    ...rentRecordHandlers,
     ...searchHandlers,
     ...telemetryHandlers,
     ...staffHandlers,

@@ -70,6 +70,8 @@ export const portfolioHandlers: HttpHandler[] = [
       leaseEndDate: null,
       invoice: null,
       openServiceRequests: 0,
+      vacantSince: null,
+      listing: null,
     });
     return json({ unitId, buildingId, propertyId: crypto.randomUUID(), stub: condo }, 201);
   }),
