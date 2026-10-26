@@ -13,7 +13,7 @@ import { MARKETING_PATHS } from "@/lib/zones/marketing";
  */
 const ROBOTS_ALLOW = robotsAllowRules({
   pages: MARKETING_PATHS.filter((path) => !path.startsWith("/legal/")),
-  families: ["/legal/", "/rent/", "/guides/"],
+  families: ["/legal/", "/rent/", "/guides/", "/owners/"],
   localePrefixes: ["/en"],
   extra: ["/llms.txt$"],
 });

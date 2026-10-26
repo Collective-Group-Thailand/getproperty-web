@@ -78,7 +78,11 @@ export default async function AreaPage({ params }: Params) {
           <div className="grid gap-8 md:grid-cols-12 md:items-end">
             <div className="flex flex-col gap-3 md:col-span-8">
               <p className="text-primary text-sm font-semibold">
-                {area.kind === "station" && area.line ? area.line : area.province}
+                {area.kind === "station" && area.line
+                  ? area.line
+                  : locale === "en"
+                    ? (area.provinceEn ?? area.province)
+                    : area.province}
               </p>
               <h1 className="text-display">{t(`area.title.${area.kind}`, { name })}</h1>
               <p className="text-muted text-lg">{t("area.count", { count: area.count })}</p>

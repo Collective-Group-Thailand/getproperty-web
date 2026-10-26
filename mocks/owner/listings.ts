@@ -44,6 +44,8 @@ const base = (
   smokingAllowed: false,
   facilities: [],
   showUnitNo: false,
+  showUtilityHistory: true,
+  utility: null,
   transit: null,
   unitKind: "condo_unit",
   sizeSqm: "28.50",
@@ -94,6 +96,13 @@ export function initialListings(): { listings: MockListing[]; verifications: Moc
           facilities: ["สระว่ายน้ำ", "ฟิตเนส", "คีย์การ์ด"],
           transit: { name: "BTS อารีย์", line: "BTS สายสุขุมวิท", distanceM: 350 },
           availability: { weekly: [{ weekday: 6, from: "10:00", to: "16:00" }], exceptions: [], slotMinutes: 30 },
+          utility: {
+            electricity: { kind: "flat", pricePerUnit: "5.0000", tiers: [], minimumCharge: null },
+            water: { kind: "flat", pricePerUnit: "18.0000", tiers: [], minimumCharge: "100.00" },
+            fixedCharges: [{ kind: "common_fee", name: "ค่าส่วนกลาง", amount: "1200.00" }],
+            averageBill3m: "1385.00",
+            basedOnBills: 3,
+          },
           version: 4,
         }),
       },
@@ -182,6 +191,9 @@ const withUrls = (request: Request, dto: Schemas["ListingDto"]): Schemas["Listin
   ...dto,
   photos: dto.photos.map((p) => ({ ...p, url: `${origin(request)}/__files/${p.documentId}` })),
   verifiedOwner: verified(dto.unitId),
+  // like the API: the average of past bills only while the owner lets it show (D-265)
+  utility:
+    dto.utility && !dto.showUtilityHistory ? { ...dto.utility, averageBill3m: null, basedOnBills: 0 } : dto.utility,
 });
 const verified = (unitId: string) =>
   state.listingWorld.verifications.some((v) => v.dto.unitId === unitId && v.dto.state === "approved");
@@ -269,6 +281,24 @@ export const listingHandlers: HttpHandler[] = [
     if (ok instanceof Response) return ok;
     const l = find(ok.tenantId, String(params.listingId));
     return l ? json(withUrls(request, l.dto)) : problem("owner.listings.get", "http.not_found");
+  }),
+  // D-269: comparable listings near the Ari one (enough for a band); every other listing has too few yet.
+  http.get(`${LISTING_PATH}/comparables`, ({ request, params }) => {
+    const op = "owner.listings.comparables";
+    const ok = owner(request, op);
+    if (ok instanceof Response) return ok;
+    const l = find(ok.tenantId, String(params.listingId));
+    if (!l) return problem(op, "http.not_found");
+    return json(
+      l.dto.unitId === UNIT_ARI
+        ? {
+            band: { p25: "13500.00", p50: "15000.00", p75: "16800.00" },
+            medianDaysToLet: 18,
+            sampleSize: 12,
+            minimum: 8,
+          }
+        : { band: null, medianDaysToLet: null, sampleSize: 3, minimum: 8 },
+    );
   }),
   http.patch(LISTING_PATH, async ({ request, params }) => {
     const op = "owner.listings.update";

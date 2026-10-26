@@ -58,6 +58,7 @@ export function ListingDetailsForm({ listing }: { listing: Listing }) {
   const [pets, setPets] = useState(listing.petsAllowed);
   const [smoking, setSmoking] = useState(listing.smokingAllowed);
   const [showUnitNo, setShowUnitNo] = useState(listing.showUnitNo);
+  const [showUtilityHistory, setShowUtilityHistory] = useState(listing.showUtilityHistory);
   const [facilities, setFacilities] = useState<string[]>(listing.facilities);
   const [draft, setDraft] = useState("");
   const [saved, setSaved] = useState(false);
@@ -96,6 +97,7 @@ export function ListingDetailsForm({ listing }: { listing: Listing }) {
               smokingAllowed: smoking,
               facilities,
               showUnitNo,
+              showUtilityHistory,
               transit:
                 transitName && distance !== undefined
                   ? { name: transitName, line: blankToNull(form.get("transitLine")), distanceM: distance }
@@ -231,6 +233,13 @@ export function ListingDetailsForm({ listing }: { listing: Listing }) {
         description={t("showUnitNoHint")}
         checked={showUnitNo}
         onCheckedChange={setShowUnitNo}
+      />
+
+      <Switch
+        label={t("showUtilityHistory")}
+        description={t("showUtilityHistoryHint")}
+        checked={showUtilityHistory}
+        onCheckedChange={setShowUtilityHistory}
       />
 
       <fieldset className="flex flex-col gap-3">

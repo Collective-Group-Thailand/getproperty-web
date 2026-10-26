@@ -125,6 +125,32 @@ test("a landlord lists a vacant house: draft, photos, publish (F6.2)", async ({ 
   await expect(page.getByTestId("listing-card")).toHaveCount(3);
 });
 
+test("a landlord sees the rent of similar homes and the utility cost renters see, and can hide past bills (B7.9)", async ({
+  page,
+}) => {
+  await signInWithOtp(page, HOSTS.owner, "0810000006");
+  await expect(page).toHaveURL(`${HOSTS.owner}/portfolio`);
+  await page.goto(`${HOSTS.owner}/listings/8d4b2c1a-0000-4000-8000-00000000a001`);
+  await expect(page.getByTestId("listing-editor")).toBeVisible();
+  await hydrated(page);
+
+  const band = page.getByTestId("listing-comparables-band");
+  await expect(band).toContainText("฿13,500–฿16,800");
+  await expect(band).toContainText("ค่ากลาง ฿15,000 ต่อเดือน");
+  await expect(band).toContainText("ประมาณ 18 วัน");
+  await expect(band).toContainText("จาก 12 ประกาศ");
+  await expect(page.getByTestId("listing-utility-average")).toContainText("฿1,385");
+  await expectAxeClean(page);
+
+  await page.getByRole("switch", { name: "แสดงค่าน้ำค่าไฟเฉลี่ยจากบิลจริง" }).click();
+  await page.getByTestId("listing-details-save").click();
+  await expect(page.getByTestId("listing-details")).toContainText("บันทึกแล้ว");
+  await page.reload();
+  await expect(page.getByRole("switch", { name: "แสดงค่าน้ำค่าไฟเฉลี่ยจากบิลจริง" })).not.toBeChecked();
+  await expect(page.getByText("คุณปิดการแสดงค่าเฉลี่ยจากบิลไว้")).toBeVisible();
+  await expect(page.getByTestId("listing-utility-average")).toHaveCount(0);
+});
+
 test("support reviews listings: approves, restores a reported one and verifies an owner (F6.5)", async ({ page }) => {
   await signInPlatform(page, "support");
   await page.goto(`${HOSTS.admin}/listings`);

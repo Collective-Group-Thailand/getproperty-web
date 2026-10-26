@@ -18,6 +18,7 @@ import { section, type OwnerContext } from "../shared/server";
 import { ListingActions } from "./ListingActions";
 import { ListingAvailabilityForm } from "./ListingAvailabilityForm";
 import { ListingDetailsForm } from "./ListingDetailsForm";
+import { ListingInsights } from "./ListingInsights";
 import { ListingPhotos } from "./ListingPhotos";
 import { VerificationCard } from "./VerificationCard";
 
@@ -108,6 +109,8 @@ export async function ListingEditorView({ context, listingId }: { context: Owner
         />
         <ListingDetailsForm listing={listing} />
       </Card>
+
+      <ListingInsights context={context} listing={listing} />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card as="section" aria-labelledby="listing-availability" className="flex flex-col gap-4">

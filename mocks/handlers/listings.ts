@@ -1,4 +1,4 @@
-// CONTRACT-REQUEST — `/v1/public/listings*` (D-252, api B7.3) is not in the contract yet (docs/contract-requests.md).
+// `/v1/public/listings*` (D-252), areas (D-272) and owner pages (D-274) like getproperty-api's B7.2 / B7.9.
 // Sample listings for `pnpm dev:mock` and the e2e suite only; production reads the API and shows an empty state
 // until real owners publish.
 import { http, HttpResponse, type HttpHandler } from "msw";
@@ -7,6 +7,7 @@ import type {
   PublicListingArea,
   PublicListingDetail,
   PublicListingSummary,
+  PublicOwner,
 } from "../../src/features/owner/marketing/listings/contract";
 
 const photo = (id: string, caption: string | null = null) => ({
@@ -57,6 +58,8 @@ const base = (
   floor: null,
   geo: null,
   ownerDisplayName: "คุณนภา",
+  ownerProfileSlug: null,
+  utility: null,
   ...over,
 });
 
@@ -69,6 +72,22 @@ const LISTINGS: PublicListingDetail[] = [
     district: "พญาไท",
     address: "ซอยพหลโยธิน 7 แขวงพญาไท เขตพญาไท กรุงเทพฯ 10400",
     nearestTransit: { name: "อารีย์", line: "BTS สายสุขุมวิท", distanceM: 350 },
+    ownerProfileSlug: "landlord-0a1b2c3d4e",
+    utility: {
+      electricity: {
+        kind: "tiered",
+        pricePerUnit: null,
+        tiers: [
+          { fromUnits: "0", toUnits: "150", pricePerUnit: "4.0000" },
+          { fromUnits: "150", toUnits: null, pricePerUnit: "5.0000" },
+        ],
+        minimumCharge: null,
+      },
+      water: { kind: "flat", pricePerUnit: "18.0000", tiers: [], minimumCharge: "100.00" },
+      fixedCharges: [{ kind: "common_fee", name: "ค่าส่วนกลาง", amount: "1200.00" }],
+      averageBill3m: "1385.00",
+      basedOnBills: 3,
+    },
     cover: photo(P.living),
     photos: [
       photo(P.living, "ห้องนั่งเล่น"),
@@ -182,14 +201,16 @@ const summary = ({
   floor,
   geo,
   ownerDisplayName,
+  ownerProfileSlug,
   smokingAllowed,
+  utility,
   ...rest
 }: PublicListingDetail): PublicListingSummary => {
-  void [description, facilities, photos, floor, geo, ownerDisplayName, smokingAllowed];
+  void [description, facilities, photos, floor, geo, ownerDisplayName, ownerProfileSlug, smokingAllowed, utility];
   return rest;
 };
 
-/** Areas (D-272): districts and transit stations with published listings. CONTRACT-REQUEST `/v1/public/listings/areas`. */
+/** Areas (D-272): districts and transit stations with published listings, like `GET /v1/public/listings/areas`. */
 const AREAS: (Omit<PublicListingArea, "count" | "band" | "indexable"> & {
   match: (l: PublicListingDetail) => boolean;
 })[] = [
@@ -199,6 +220,7 @@ const AREAS: (Omit<PublicListingArea, "count" | "band" | "indexable"> & {
     name: "อารีย์",
     nameEn: "Ari",
     province: "กรุงเทพมหานคร",
+    provinceEn: "Bangkok",
     line: "BTS สายสุขุมวิท",
     match: (l) => l.nearestTransit?.name === "อารีย์",
   },
@@ -208,6 +230,7 @@ const AREAS: (Omit<PublicListingArea, "count" | "band" | "indexable"> & {
     name: "อ่อนนุช",
     nameEn: "On Nut",
     province: "กรุงเทพมหานคร",
+    provinceEn: "Bangkok",
     line: "BTS สายสุขุมวิท",
     match: (l) => l.nearestTransit?.name === "อ่อนนุช",
   },
@@ -217,6 +240,7 @@ const AREAS: (Omit<PublicListingArea, "count" | "band" | "indexable"> & {
     name: "ลาดพร้าว",
     nameEn: "Lat Phrao",
     province: "กรุงเทพมหานคร",
+    provinceEn: "Bangkok",
     line: "MRT สายสีน้ำเงิน",
     match: (l) => l.nearestTransit?.name === "ลาดพร้าว",
   },
@@ -226,6 +250,7 @@ const AREAS: (Omit<PublicListingArea, "count" | "band" | "indexable"> & {
     name: "พญาไท",
     nameEn: "Phaya Thai",
     province: "กรุงเทพมหานคร",
+    provinceEn: "Bangkok",
     line: null,
     match: (l) => l.district === "พญาไท",
   },
@@ -235,6 +260,7 @@ const AREAS: (Omit<PublicListingArea, "count" | "band" | "indexable"> & {
     name: "จตุจักร",
     nameEn: "Chatuchak",
     province: "กรุงเทพมหานคร",
+    provinceEn: "Bangkok",
     line: null,
     match: (l) => l.district === "จตุจักร",
   },
@@ -244,6 +270,7 @@ const AREAS: (Omit<PublicListingArea, "count" | "band" | "indexable"> & {
     name: "นนทบุรี",
     nameEn: "Nonthaburi",
     province: "นนทบุรี",
+    provinceEn: "Nonthaburi",
     line: null,
     match: (l) => l.province === "นนทบุรี",
   },
@@ -262,7 +289,29 @@ const areaRows = (): PublicListingArea[] =>
     return { ...area, count: rows.length, indexable: rows.length >= 2, band: band(rows.map((l) => Number(l.rent))) };
   }).filter((area) => area.count > 0);
 
+/** The verified owner of the first listing (D-274); every other owner's page is closed. */
+const OWNER_PAGE = (): PublicOwner => {
+  const listings = LISTINGS.filter((l) => l.ownerProfileSlug === "landlord-0a1b2c3d4e").map(summary);
+  return {
+    slug: "landlord-0a1b2c3d4e",
+    displayName: "คุณนภา",
+    verification: { level: "unit_ownership", verifiedUnits: 2 },
+    memberSince: "2026-10-01",
+    medianReplyMinutes: 42,
+    listings,
+    listingCount: listings.length,
+  };
+};
+
 export const listingHandlers: HttpHandler[] = [
+  http.get("*/v1/public/owners/:slug", ({ params }) =>
+    params.slug === "landlord-0a1b2c3d4e"
+      ? HttpResponse.json(OWNER_PAGE())
+      : HttpResponse.json(
+          { type: "about:blank", title: "Not found", status: 404, code: "http.not_found" },
+          { status: 404, headers: { "content-type": "application/problem+json" } },
+        ),
+  ),
   http.get("*/v1/public/listings/areas", () => HttpResponse.json({ data: areaRows() })),
   http.get("*/v1/public/listings/sitemap", () =>
     HttpResponse.json({ data: LISTINGS.map((l) => ({ slug: l.slug, updatedAt: l.publishedAt })) }),
