@@ -4,6 +4,7 @@ import { state } from "../state";
 import { businessHandlers } from "./business";
 import { credentialHandlers } from "./credentials";
 import { advanceRollout, fleetHandlers } from "./fleet";
+import { guideHandlers } from "./guides";
 import { operationHandlers } from "./operations";
 import { initialPlatformWorld } from "./world";
 
@@ -13,10 +14,12 @@ export const platformHandlers: HttpHandler[] = [
   ...operationHandlers,
   ...fleetHandlers,
   ...credentialHandlers,
+  ...guideHandlers,
 ];
 
 export function resetPlatformWorld(): void {
   state.platform = initialPlatformWorld();
+  state.guides = undefined;
 }
 
 export { advanceRollout };

@@ -340,6 +340,7 @@ export const PLATFORM_PERMISSIONS: Record<Schemas["PlatformRole"], string[]> = {
     "admin.building.manage",
     "admin.listing.moderate",
     "admin.listing.verify",
+    "admin.guide.manage",
   ],
   support: [
     "admin.tenant.read",
@@ -347,6 +348,7 @@ export const PLATFORM_PERMISSIONS: Record<Schemas["PlatformRole"], string[]> = {
     "admin.integration_event.read",
     "admin.listing.moderate",
     "admin.listing.verify",
+    "admin.guide.manage",
   ],
   field_engineer: ["admin.tenant.read", "admin.device.manage"],
   finance: [
@@ -362,6 +364,7 @@ export const PLATFORM_PERMISSIONS: Record<Schemas["PlatformRole"], string[]> = {
 const ADMIN_MENU_RULES: [Schemas["AdminMenuKey"], string[]][] = [
   ["tenants", ["admin.tenant.read"]],
   ["listings", ["admin.listing.moderate", "admin.listing.verify"]],
+  ["guides", ["admin.guide.manage"]],
   ["platform_users", ["admin.user.manage"]],
   ["utility_tariffs", ["admin.utility_tariff.enter", "admin.utility_tariff.verify"]],
   ["settings", ["admin.setting.manage", "admin.compliance.manage"]],

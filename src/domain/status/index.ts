@@ -63,6 +63,7 @@ export {
 export { LEAD_STATUS, VIEWING_STATUS, type LeadState, type ViewingState } from "./lead";
 export { RENT_CERTIFICATE_STATUS, type RentCertificateState } from "./rentCertificate";
 export { MESSAGING_CHANNEL_STATUS, type MessagingChannelState } from "./messagingChannel";
+export { GUIDE_STATUS, type GuideState } from "./guide";
 export { MESSAGING_RATE_STATUS, type MessagingRateState } from "./messagingRate";
 
 import { COMMAND_STATUS } from "./command";
@@ -117,6 +118,7 @@ import { PORTFOLIO_UNIT_STATUS } from "./portfolioUnit";
 import { LEAD_STATUS, VIEWING_STATUS } from "./lead";
 import { RENT_CERTIFICATE_STATUS } from "./rentCertificate";
 import { MESSAGING_CHANNEL_STATUS } from "./messagingChannel";
+import { GUIDE_STATUS } from "./guide";
 import { MESSAGING_RATE_STATUS } from "./messagingRate";
 import { LISTING_STATUS, LISTING_VERIFICATION_STATUS } from "./listing";
 
@@ -131,6 +133,7 @@ export const STATUS_MAPS = {
   listingViewing: VIEWING_STATUS,
   rentCertificate: RENT_CERTIFICATE_STATUS,
   messagingChannel: MESSAGING_CHANNEL_STATUS,
+  guide: GUIDE_STATUS,
   messagingRate: MESSAGING_RATE_STATUS,
   payment: PAYMENT_STATUS,
   deposit: DEPOSIT_STATUS,

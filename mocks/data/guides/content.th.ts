@@ -1,4 +1,4 @@
-import type { Guide } from "./types";
+import type { Guide } from "../../../src/features/owner/marketing/guides/types";
 
 /* Thai guides (D-271). Facts checked on the `reviewed` date against the listed sources. */
 export const GUIDES_TH: Guide[] = [

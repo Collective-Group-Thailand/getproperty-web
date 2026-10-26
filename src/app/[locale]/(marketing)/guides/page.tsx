@@ -26,7 +26,7 @@ export default async function Guides({ params }: Params) {
   const nav = await getTranslations("owner.marketing.nav");
   const origin = marketingOrigin();
   const href = (path: string) => getPathname({ href: path, locale });
-  const guides = guidesFor(locale);
+  const guides = await guidesFor(locale);
   const groups = ORDER.map((category) => ({ category, items: guides.filter((g) => g.category === category) })).filter(
     (group) => group.items.length > 0,
   );
