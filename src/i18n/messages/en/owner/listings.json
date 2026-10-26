@@ -138,7 +138,9 @@
     "transitLine": "Line",
     "transitDistance": "Walking distance (m)",
     "save": "Save",
-    "saved": "Saved"
+    "saved": "Saved",
+    "showUtilityHistory": "Show the average utility bill from real bills",
+    "showUtilityHistoryHint": "Renters see the average of this unit's last 3 bills (once there are enough). The power and water rates are always shown."
   },
   "availability": {
     "title": "Viewing times",
@@ -181,5 +183,26 @@
     "submit": "Send evidence",
     "submitted": "Evidence sent",
     "chooseFiles": "Choose files"
+  },
+  "insights": {
+    "comparables": {
+      "title": "Rent of similar homes",
+      "description": "Same kind, same bedrooms, similar size, in the same district or near the same station — listed now or let in the last 12 months.",
+      "band": "Most rents",
+      "median": "Median {amount} a month",
+      "yours": "Your rent",
+      "daysLabel": "Let within",
+      "days": "{count, plural, one {about # day} other {about # days}}",
+      "daysUnknown": "Not known yet",
+      "sample": "From {count} listings, none named",
+      "few": "Fewer than {minimum} similar homes yet ({count} now). The rent range appears once there are enough, so the number does not mislead."
+    },
+    "utility": {
+      "title": "Utility cost renters see",
+      "description": "From the rates set in getproperty and this unit's real bills — as on the public listing.",
+      "descriptionHidden": "From the rates set in getproperty; you turned off the average of past bills.",
+      "empty": "No power or water rates for this unit yet, so renters do not see this cost.",
+      "setRates": "Set utility rates"
+    }
   }
 }

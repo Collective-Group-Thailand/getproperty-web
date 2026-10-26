@@ -9,6 +9,7 @@ import {
   type PublicListingArea,
   type PublicListingDetail,
   type PublicListingsPage,
+  type PublicOwner,
 } from "./listings/contract";
 
 export type PublicPlan = Schemas["PublicPlanDto"];
@@ -60,4 +61,11 @@ export async function publicListingSlugs(): Promise<{ slug: string; updatedAt: s
 export async function publicListingAreas(): Promise<PublicListingArea[]> {
   const body = await getJson<{ data: PublicListingArea[] }>("/v1/public/listings/areas");
   return Array.isArray(body?.data) ? body.data : [];
+}
+
+/** A verified owner's public page (D-274); null when it is not open (not verified, switched off) or the API is down. */
+export async function publicOwner(slug: string, language?: string): Promise<PublicOwner | null> {
+  if (!/^[a-z0-9-]{1,80}$/.test(slug)) return null;
+  const body = await getJson<PublicOwner>(`/v1/public/owners/${slug}`, language);
+  return body && typeof body.slug === "string" ? body : null;
 }

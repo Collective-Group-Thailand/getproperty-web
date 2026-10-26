@@ -5,6 +5,7 @@ import type { PublicListingDetail } from "@/features/owner/marketing/listings/co
 import { JsonLdScript } from "@/features/owner/marketing/JsonLdScript";
 import { ListingCard } from "@/features/owner/marketing/listings/ListingCard";
 import { ListingImage } from "@/features/owner/marketing/listings/ListingImage";
+import { ListingUtility } from "@/features/owner/marketing/listings/ListingUtility";
 import { publicListing, publicListings } from "@/features/owner/marketing/publicApi";
 import { liffRentHref, lineOaMessageHref, marketingOrigin, ownerHref } from "@/features/owner/marketing/seo";
 import { breadcrumbSchema, type JsonLd } from "@/features/owner/marketing/structured-data";
@@ -196,6 +197,18 @@ export default async function ListingPage({ params }: Props) {
             </dl>
           </section>
 
+          {listing.utility ? (
+            <section aria-labelledby="utility">
+              <h2 id="utility" className="text-xl">
+                {t("utility.title")}
+              </h2>
+              <p className="text-muted mt-1 text-sm">{t("utility.intro")}</p>
+              <div className="mt-4 max-w-2xl">
+                <ListingUtility utility={listing.utility} locale={locale} />
+              </div>
+            </section>
+          ) : null}
+
           <section aria-labelledby="about">
             <h2 id="about" className="text-xl">
               {t("detail.about")}
@@ -260,7 +273,17 @@ export default async function ListingPage({ params }: Props) {
             <div className="border-border flex items-center gap-3 border-t pt-4">
               <div className="min-w-0 flex-1">
                 <p className="text-muted text-xs">{t("detail.owner")}</p>
-                <p className="font-semibold">{listing.ownerDisplayName}</p>
+                {listing.ownerProfileSlug ? (
+                  <a
+                    href={getPathname({ href: `/owners/${listing.ownerProfileSlug}`, locale })}
+                    className="font-semibold underline-offset-4 hover:underline"
+                    data-testid="listing-owner-link"
+                  >
+                    {listing.ownerDisplayName}
+                  </a>
+                ) : (
+                  <p className="font-semibold">{listing.ownerDisplayName}</p>
+                )}
               </div>
               {listing.verifiedOwner ? (
                 <Badge tone="success" icon={IconCheckCircle} size="sm">

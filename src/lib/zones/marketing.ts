@@ -41,10 +41,11 @@ export function isMarketingPath(zone: Zone, pathname: string): boolean {
 
 /**
  * Public pages with a slug: a listing (D-252) `/rent/<slug>`, an area or station page (D-272) `/rent/area/<slug>`, a
- * guide (D-271) `/guides/<slug>`.
+ * guide (D-271) `/guides/<slug>`, a verified owner's page (D-274) `/owners/<slug>`.
  */
 export const MARKETING_PATTERNS: readonly RegExp[] = [
   /^\/rent\/[a-z0-9-]{1,120}$/,
   /^\/rent\/area\/[a-z0-9-]{1,80}$/,
   /^\/guides\/[a-z0-9-]{1,80}$/,
+  /^\/owners\/[a-z0-9-]{1,80}$/,
 ];

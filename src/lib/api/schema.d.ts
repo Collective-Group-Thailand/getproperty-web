@@ -6994,6 +6994,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/owner/listings/{listingId}/comparables": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Rent band of comparable listings
+         * @description Comparable listings — same kind and bedrooms, size within ±20 %, same district or within 1 km of the same station, published now or let in the last 12 months — their rent band (25th / 50th / 75th percentile) and median days to let (D-269). Nothing below `listing.comparables.min`; never per competitor, never public.
+         *
+         *     Implements: D-269.
+         */
+        get: operations["owner.listings.comparables"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/owner/listings/{listingId}/photos": {
         parameters: {
             query?: never;
@@ -10696,6 +10718,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/public/listings/areas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Areas and stations with listings
+         * @description Every district and transit station with published listings (D-272): count, the rent band of their listings once there are `listing.comparables.min` of them (D-269), and whether the page may be indexed (`listing.area.index_min`). Filter the search with `?area=<slug>`.
+         *
+         *     Implements: D-272, D-269.
+         */
+        get: operations["public.listings.areas"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/public/listings/sitemap": {
         parameters: {
             query?: never;
@@ -10710,6 +10754,28 @@ export interface paths {
          *     Implements: D-252.
          */
         get: operations["public.listings.sitemap"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/public/owners/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * A verified owner’s page
+         * @description Display name, what the platform verified, member since, median reply time to enquiries and the published listings of an owner with at least one approved ownership verification (D-274, D-252). `404` when there is none or the owner switched the page off (`listing.public_profile.enabled`). No phone, e-mail or address of the owner.
+         *
+         *     Implements: D-274, D-252.
+         */
+        get: operations["public.owners.get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -11302,6 +11368,72 @@ export interface paths {
          *     Implements: D-073.
          */
         post: operations["resident.community.cancelBooking"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/inspections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Move-in and move-out reports of my leases
+         * @description Completed reports, newest first (lines without photo links — open one for them). `completed` waits for my countersignature when the owner signed apart (L5 5.2, D-253).
+         *
+         *     Implements: D-253, D-023.
+         */
+        get: operations["resident.inspections.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/inspections/{inspectionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One of my move-in / move-out reports
+         * @description Every line with its condition, notes and 5-minute photo links, and the report PDF; 404 outside my lease scopes (D-253, D-023).
+         *
+         *     Implements: D-253, D-023.
+         */
+        get: operations["resident.inspections.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/inspections/{inspectionId}/actions/countersign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Countersign the report
+         * @description I sign a report the owner completed without my signature (lessee or co-tenant, once): it becomes `signed` and the owner hears it in LINE. The report PDF keeps its number and content (L5 5.2, D-253).
+         *
+         *     Implements: D-253, D-023.
+         */
+        post: operations["resident.inspections.countersign"];
         delete?: never;
         options?: never;
         head?: never;
@@ -21430,6 +21562,25 @@ export interface components {
         };
         /** @enum {string} */
         ListingCloseReason: "leased" | "withdrawn" | "hidden";
+        ListingComparablesDto: {
+            /** @description Null below `minimum` comparables. */
+            band: components["schemas"]["ListingRentBandDto"] | null;
+            /**
+             * @description Median days from publishing to let.
+             * @example 21
+             */
+            medianDaysToLet: number | null;
+            /**
+             * @description `listing.comparables.min`.
+             * @example 8
+             */
+            minimum: number;
+            /**
+             * @description Comparable listings found.
+             * @example 12
+             */
+            sampleSize: number;
+        };
         ListingCreateDto: {
             /**
              * @description Months of rent paid in advance.
@@ -21473,6 +21624,11 @@ export interface components {
              * @example false
              */
             showUnitNo?: boolean;
+            /**
+             * @description D-265: show the average of the unit’s last confirmed utility bills (only with at least `listing.utility_history.min_bills` of them; the rates are always shown).
+             * @example true
+             */
+            showUtilityHistory?: boolean;
             /** @example false */
             smokingAllowed?: boolean;
             /** @example One-bedroom with a city view near BTS Ari */
@@ -21529,6 +21685,11 @@ export interface components {
             /** @description Why a submitted listing waits for a moderator. */
             reviewReasons: components["schemas"]["ListingReviewReason"][];
             showUnitNo: boolean;
+            /**
+             * @description D-265: the average of the last confirmed utility bills is shown.
+             * @example true
+             */
+            showUtilityHistory: boolean;
             /** @example 28.50 */
             sizeSqm: string | null;
             /**
@@ -21546,11 +21707,26 @@ export interface components {
             /** Format: uuid */
             unitId: string;
             unitKind: components["schemas"]["PortfolioUnitKind"] | null;
+            /** @description What the public listing shows of the unit’s utility cost (D-265). */
+            utility: components["schemas"]["ListingUtilityDto"] | null;
             /** @description The unit’s owner is verified (badge "เจ้าของตัวจริง"). */
             verifiedOwner: boolean;
             /** @example 1 */
             version: number;
         };
+        ListingFixedChargeDto: {
+            /**
+             * @description THB per month.
+             * @example 500.00
+             */
+            amount: string;
+            /** @example service */
+            kind: components["schemas"]["ListingFixedChargeKind"];
+            /** @example ค่าส่วนกลาง */
+            name: string;
+        };
+        /** @enum {string} */
+        ListingFixedChargeKind: "common_fee" | "service" | "fund";
         /** @enum {string} */
         ListingLeadAuthor: "prospect" | "owner";
         /** @enum {string} */
@@ -21588,6 +21764,14 @@ export interface components {
         ListingPhotosArrangeDto: {
             /** @description Every photo once, in the new order (first = cover). */
             photos: components["schemas"]["ListingPhotoOrderItemDto"][];
+        };
+        ListingRentBandDto: {
+            /** @example 12500.00 */
+            p25: string;
+            /** @example 14000.00 */
+            p50: string;
+            /** @example 16000.00 */
+            p75: string;
         };
         ListingReportDto: {
             /** @example ขอให้โอนมัดจำก่อนดูห้อง */
@@ -21664,6 +21848,11 @@ export interface components {
              * @example false
              */
             showUnitNo?: boolean;
+            /**
+             * @description D-265: show the average of the unit’s last confirmed utility bills (only with at least `listing.utility_history.min_bills` of them; the rates are always shown).
+             * @example true
+             */
+            showUtilityHistory?: boolean;
             /** @example false */
             smokingAllowed?: boolean;
             /** @example One-bedroom with a city view near BTS Ari */
@@ -21671,6 +21860,57 @@ export interface components {
             /** @example คอนโด 1 ห้องนอน ใกล้ BTS อารีย์ */
             titleTh?: string;
             transit?: components["schemas"]["ListingTransitDto"] | null;
+        };
+        ListingUtilityDto: {
+            /**
+             * @description Average electricity + water of the last three confirmed bills, THB; null below `listing.utility_history.min_bills` or switched off.
+             * @example 1240.50
+             */
+            averageBill3m: string | null;
+            /**
+             * @description Bills behind the average (0 when not shown).
+             * @example 3
+             */
+            basedOnBills: number;
+            electricity: components["schemas"]["ListingUtilityRateDto"] | null;
+            /** @description Fixed monthly charges of the unit. */
+            fixedCharges: components["schemas"]["ListingFixedChargeDto"][];
+            water: components["schemas"]["ListingUtilityRateDto"] | null;
+        };
+        ListingUtilityRateDto: {
+            /** @example flat */
+            kind: components["schemas"]["ListingUtilityRateKind"];
+            /**
+             * @description Minimum charge per bill, THB.
+             * @example 100.00
+             */
+            minimumCharge: string | null;
+            /**
+             * @description Flat: THB per unit.
+             * @example 7.0000
+             */
+            pricePerUnit: string | null;
+            /** @description Tiered: the blocks in order. */
+            tiers: components["schemas"]["ListingUtilityTierDto"][];
+        };
+        /** @enum {string} */
+        ListingUtilityRateKind: "flat" | "tiered";
+        ListingUtilityTierDto: {
+            /**
+             * @description Units from (inclusive), decimal string.
+             * @example 0
+             */
+            fromUnits: string;
+            /**
+             * @description THB per unit (kWh or m³).
+             * @example 7.0000
+             */
+            pricePerUnit: string;
+            /**
+             * @description Units up to; null = no upper end.
+             * @example 150
+             */
+            toUnits: string | null;
         };
         /** @enum {string} */
         ListingVerificationState: "pending" | "approved" | "rejected";
@@ -25602,6 +25842,53 @@ export interface components {
              */
             expiresAt: string;
         };
+        PublicAreaDto: {
+            band: components["schemas"]["ListingRentBandDto"] | null;
+            /**
+             * @description Published listings.
+             * @example 14
+             */
+            count: number;
+            /**
+             * @description At least `listing.area.index_min` listings (else the page is noindex).
+             * @example true
+             */
+            indexable: boolean;
+            /** @example district */
+            kind: components["schemas"]["PublicAreaKind"];
+            /**
+             * @description A station’s line as owners name it, else its system (BTS, MRT, ARL); null for a district.
+             * @example null
+             */
+            line: string | null;
+            /**
+             * @description Thai name.
+             * @example พญาไท
+             */
+            name: string;
+            /**
+             * @description English name (the Thai name when the platform has no English name for it yet).
+             * @example Phaya Thai
+             */
+            nameEn: string;
+            /**
+             * @description The province (of most of a station’s listings).
+             * @example กรุงเทพมหานคร
+             */
+            province: string | null;
+            /** @example Bangkok */
+            provinceEn: string | null;
+            /**
+             * @description ASCII slug of the area page (`/rent/area/{slug}`); stable for a given name.
+             * @example phaya-thai
+             */
+            slug: string;
+        };
+        /** @enum {string} */
+        PublicAreaKind: "district" | "station";
+        PublicAreasDto: {
+            data: components["schemas"]["PublicAreaDto"][];
+        };
         PublicGeoDto: {
             /** @example 13.7799 */
             lat: number;
@@ -25635,6 +25922,11 @@ export interface components {
             nearestTransit: components["schemas"]["PublicTransitDto"] | null;
             /** @example มาลี มีสุข */
             ownerDisplayName: string;
+            /**
+             * @description The owner’s public page `GET /v1/public/owners/{slug}` (D-274) when it is open (verified and not switched off); else null.
+             * @example landlord-0a1b2c3d4e
+             */
+            ownerProfileSlug: string | null;
             petsAllowed: boolean;
             /** @description In order, 1600 px renditions. */
             photos: components["schemas"]["PublicListingPhotoDto"][];
@@ -25658,6 +25950,8 @@ export interface components {
              */
             title: string;
             unitKind: components["schemas"]["PortfolioUnitKind"] | null;
+            /** @description The unit’s real utility cost (D-265). */
+            utility: components["schemas"]["ListingUtilityDto"] | null;
             /** @description The unit’s owner is verified (badge "เจ้าของตัวจริง"). */
             verifiedOwner: boolean;
         };
@@ -25742,6 +26036,41 @@ export interface components {
             /** @example 7.00 */
             vatPercent: string;
         };
+        PublicOwnerDto: {
+            /** @example มาลี มีสุข */
+            displayName: string;
+            /** @example 3 */
+            listingCount: number;
+            /** @description Published listings, newest first (up to 50). */
+            listings: components["schemas"]["PublicListingSummaryDto"][];
+            /**
+             * @description Median minutes to the first answer on an enquiry (12 months; null with fewer than 3).
+             * @example 42
+             */
+            medianReplyMinutes: number | null;
+            /**
+             * Format: date
+             * @example 2026-10-25
+             */
+            memberSince: string;
+            /** @example landlord-0a1b2c3d4e */
+            slug: string;
+            verification: components["schemas"]["PublicOwnerVerificationDto"];
+        };
+        PublicOwnerVerificationDto: {
+            /**
+             * @description What the platform verified: ownership of the listed units (D-252); identity follows with D-267.
+             * @example unit_ownership
+             */
+            level: components["schemas"]["PublicOwnerVerificationLevel"];
+            /** @example 2 */
+            verifiedUnits: number;
+        };
+        /**
+         * @description What the platform verified: ownership of the listed units (D-252); identity follows with D-267.
+         * @enum {string}
+         */
+        PublicOwnerVerificationLevel: "unit_ownership";
         PublicPlanDto: {
             /** @example THB */
             currency: string;
@@ -26736,6 +27065,13 @@ export interface components {
             /** @example 1 */
             version: number;
         };
+        ResidentCountersignDto: {
+            /**
+             * @description My drawn signature (PNG ≤ 200 KB, base64).
+             * @example iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==
+             */
+            signaturePng: string;
+        };
         ResidentDeductionDto: {
             /**
              * @description Deducted amount. Unit: THB, decimal string (D-046).
@@ -26875,6 +27211,83 @@ export interface components {
          * @enum {string}
          */
         ResidentEntitlement: "bills" | "usage" | "service_requests" | "lease" | "announcements" | "parcels" | "facilities" | "access";
+        ResidentInspectionDto: {
+            /**
+             * @description I may countersign now (lessee or co-tenant, not signed yet).
+             * @example true
+             */
+            canCountersign: boolean;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            completedAt: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            items: components["schemas"]["ResidentInspectionItemDto"][];
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            leaseId: string;
+            /** @example null */
+            notes: string | null;
+            /** @example true */
+            ownerSigned: boolean;
+            /** @example INS-2569-00012 */
+            reportNumber: string | null;
+            /**
+             * @description 5-minute link to the report PDF.
+             * @example https://storage.example.com/report.pdf?X-Amz-Signature=abc
+             */
+            reportUrl: string | null;
+            /** @example false */
+            residentSigned: boolean;
+            /**
+             * @description `completed` = the owner signed; `signed` = I signed too.
+             * @example completed
+             */
+            status: components["schemas"]["InspectionStatus"];
+            /** @example move_in */
+            type: components["schemas"]["InspectionType"];
+            /** @example A-201 */
+            unitNo: string;
+        };
+        ResidentInspectionItemDto: {
+            /** @example ห้องนอน */
+            area: string | null;
+            /** @example good */
+            condition: components["schemas"]["ItemCondition"] | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example ผนังห้องนอน */
+            label: string;
+            /**
+             * @description Meter register read at the inspection.
+             * @example null
+             */
+            meterRegister: string | null;
+            /** @example มีรอยขีดข่วนเล็กน้อยมุมขวา */
+            notes: string | null;
+            /**
+             * @description 5-minute links to the line’s photos.
+             * @example [
+             *       "https://storage.example.com/inspection.jpg?X-Amz-Signature=abc"
+             *     ]
+             */
+            photoUrls: string[];
+        };
         ResidentInvoiceDto: {
             /**
              * @description Amount due at issue. Unit: THB, decimal string (D-046).
@@ -76920,6 +77333,7 @@ export interface operations {
                      *         "reportCount": 0,
                      *         "reviewReasons": [],
                      *         "showUnitNo": false,
+                     *         "showUtilityHistory": true,
                      *         "sizeSqm": "28.50",
                      *         "slug": "condo-1br-0a1b2c3d4e",
                      *         "smokingAllowed": false,
@@ -76933,6 +77347,7 @@ export interface operations {
                      *         },
                      *         "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *         "unitKind": "condo_unit",
+                     *         "utility": null,
                      *         "verifiedOwner": true,
                      *         "version": 3
                      *       }
@@ -77082,6 +77497,7 @@ export interface operations {
                      *       "reportCount": 0,
                      *       "reviewReasons": [],
                      *       "showUnitNo": false,
+                     *       "showUtilityHistory": true,
                      *       "sizeSqm": "28.50",
                      *       "slug": "condo-1br-0a1b2c3d4e",
                      *       "smokingAllowed": false,
@@ -77095,6 +77511,7 @@ export interface operations {
                      *       },
                      *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "unitKind": "condo_unit",
+                     *       "utility": null,
                      *       "verifiedOwner": true,
                      *       "version": 3
                      *     }
@@ -77251,6 +77668,7 @@ export interface operations {
                      *       "reportCount": 0,
                      *       "reviewReasons": [],
                      *       "showUnitNo": false,
+                     *       "showUtilityHistory": true,
                      *       "sizeSqm": "28.50",
                      *       "slug": "condo-1br-0a1b2c3d4e",
                      *       "smokingAllowed": false,
@@ -77264,6 +77682,7 @@ export interface operations {
                      *       },
                      *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "unitKind": "condo_unit",
+                     *       "utility": null,
                      *       "verifiedOwner": true,
                      *       "version": 3
                      *     }
@@ -77424,6 +77843,7 @@ export interface operations {
                      *       "reportCount": 0,
                      *       "reviewReasons": [],
                      *       "showUnitNo": false,
+                     *       "showUtilityHistory": true,
                      *       "sizeSqm": "28.50",
                      *       "slug": "condo-1br-0a1b2c3d4e",
                      *       "smokingAllowed": false,
@@ -77437,6 +77857,7 @@ export interface operations {
                      *       },
                      *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "unitKind": "condo_unit",
+                     *       "utility": null,
                      *       "verifiedOwner": true,
                      *       "version": 3
                      *     }
@@ -77603,6 +78024,7 @@ export interface operations {
                      *       "reportCount": 0,
                      *       "reviewReasons": [],
                      *       "showUnitNo": false,
+                     *       "showUtilityHistory": true,
                      *       "sizeSqm": "28.50",
                      *       "slug": "condo-1br-0a1b2c3d4e",
                      *       "smokingAllowed": false,
@@ -77616,6 +78038,7 @@ export interface operations {
                      *       },
                      *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "unitKind": "condo_unit",
+                     *       "utility": null,
                      *       "verifiedOwner": true,
                      *       "version": 3
                      *     }
@@ -77782,6 +78205,7 @@ export interface operations {
                      *       "reportCount": 0,
                      *       "reviewReasons": [],
                      *       "showUnitNo": false,
+                     *       "showUtilityHistory": true,
                      *       "sizeSqm": "28.50",
                      *       "slug": "condo-1br-0a1b2c3d4e",
                      *       "smokingAllowed": false,
@@ -77795,6 +78219,7 @@ export interface operations {
                      *       },
                      *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "unitKind": "condo_unit",
+                     *       "utility": null,
                      *       "verifiedOwner": true,
                      *       "version": 3
                      *     }
@@ -77961,6 +78386,7 @@ export interface operations {
                      *       "reportCount": 0,
                      *       "reviewReasons": [],
                      *       "showUnitNo": false,
+                     *       "showUtilityHistory": true,
                      *       "sizeSqm": "28.50",
                      *       "slug": "condo-1br-0a1b2c3d4e",
                      *       "smokingAllowed": false,
@@ -77974,6 +78400,7 @@ export interface operations {
                      *       },
                      *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "unitKind": "condo_unit",
+                     *       "utility": null,
                      *       "verifiedOwner": true,
                      *       "version": 3
                      *     }
@@ -78140,6 +78567,7 @@ export interface operations {
                      *       "reportCount": 0,
                      *       "reviewReasons": [],
                      *       "showUnitNo": false,
+                     *       "showUtilityHistory": true,
                      *       "sizeSqm": "28.50",
                      *       "slug": "condo-1br-0a1b2c3d4e",
                      *       "smokingAllowed": false,
@@ -78153,6 +78581,7 @@ export interface operations {
                      *       },
                      *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "unitKind": "condo_unit",
+                     *       "utility": null,
                      *       "verifiedOwner": true,
                      *       "version": 3
                      *     }
@@ -78319,6 +78748,7 @@ export interface operations {
                      *       "reportCount": 0,
                      *       "reviewReasons": [],
                      *       "showUnitNo": false,
+                     *       "showUtilityHistory": true,
                      *       "sizeSqm": "28.50",
                      *       "slug": "condo-1br-0a1b2c3d4e",
                      *       "smokingAllowed": false,
@@ -78332,6 +78762,7 @@ export interface operations {
                      *       },
                      *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "unitKind": "condo_unit",
+                     *       "utility": null,
                      *       "verifiedOwner": true,
                      *       "version": 3
                      *     }
@@ -78502,6 +78933,7 @@ export interface operations {
                      *       "reportCount": 0,
                      *       "reviewReasons": [],
                      *       "showUnitNo": false,
+                     *       "showUtilityHistory": true,
                      *       "sizeSqm": "28.50",
                      *       "slug": "condo-1br-0a1b2c3d4e",
                      *       "smokingAllowed": false,
@@ -78515,6 +78947,7 @@ export interface operations {
                      *       },
                      *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "unitKind": "condo_unit",
+                     *       "utility": null,
                      *       "verifiedOwner": true,
                      *       "version": 3
                      *     }
@@ -78564,6 +78997,120 @@ export interface operations {
             };
             /** @description Problem: `listing.invalid_state` */
             409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.listings.comparables": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                listingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Comparables */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "band": {
+                     *         "p25": "12500.00",
+                     *         "p50": "14000.00",
+                     *         "p75": "16000.00"
+                     *       },
+                     *       "medianDaysToLet": 21,
+                     *       "minimum": 8,
+                     *       "sampleSize": 12
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ListingComparablesDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -78685,6 +79232,7 @@ export interface operations {
                      *       "reportCount": 0,
                      *       "reviewReasons": [],
                      *       "showUnitNo": false,
+                     *       "showUtilityHistory": true,
                      *       "sizeSqm": "28.50",
                      *       "slug": "condo-1br-0a1b2c3d4e",
                      *       "smokingAllowed": false,
@@ -78698,6 +79246,7 @@ export interface operations {
                      *       },
                      *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "unitKind": "condo_unit",
+                     *       "utility": null,
                      *       "verifiedOwner": true,
                      *       "version": 3
                      *     }
@@ -78868,6 +79417,7 @@ export interface operations {
                      *       "reportCount": 0,
                      *       "reviewReasons": [],
                      *       "showUnitNo": false,
+                     *       "showUtilityHistory": true,
                      *       "sizeSqm": "28.50",
                      *       "slug": "condo-1br-0a1b2c3d4e",
                      *       "smokingAllowed": false,
@@ -78881,6 +79431,7 @@ export interface operations {
                      *       },
                      *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "unitKind": "condo_unit",
+                     *       "utility": null,
                      *       "verifiedOwner": true,
                      *       "version": 3
                      *     }
@@ -79048,6 +79599,7 @@ export interface operations {
                      *       "reportCount": 0,
                      *       "reviewReasons": [],
                      *       "showUnitNo": false,
+                     *       "showUtilityHistory": true,
                      *       "sizeSqm": "28.50",
                      *       "slug": "condo-1br-0a1b2c3d4e",
                      *       "smokingAllowed": false,
@@ -79061,6 +79613,7 @@ export interface operations {
                      *       },
                      *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "unitKind": "condo_unit",
+                     *       "utility": null,
                      *       "verifiedOwner": true,
                      *       "version": 3
                      *     }
@@ -103870,6 +104423,8 @@ export interface operations {
     "public.listings.search": {
         parameters: {
             query?: {
+                /** @description An area or station slug from `GET /v1/public/listings/areas` (D-272). */
+                area?: string;
                 /** @description Available on or before this day. */
                 availableBy?: string;
                 /** @description Bedrooms at least. */
@@ -104043,6 +104598,7 @@ export interface operations {
                      *         "name": "BTS อารีย์"
                      *       },
                      *       "ownerDisplayName": "มาลี มีสุข",
+                     *       "ownerProfileSlug": "landlord-0a1b2c3d4e",
                      *       "petsAllowed": false,
                      *       "photos": [
                      *         {
@@ -104060,6 +104616,29 @@ export interface operations {
                      *       "smokingAllowed": false,
                      *       "title": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์",
                      *       "unitKind": "condo_unit",
+                     *       "utility": {
+                     *         "averageBill3m": "1240.50",
+                     *         "basedOnBills": 3,
+                     *         "electricity": {
+                     *           "kind": "flat",
+                     *           "minimumCharge": null,
+                     *           "pricePerUnit": "7.0000",
+                     *           "tiers": []
+                     *         },
+                     *         "fixedCharges": [
+                     *           {
+                     *             "amount": "500.00",
+                     *             "kind": "common_fee",
+                     *             "name": "ค่าส่วนกลาง"
+                     *           }
+                     *         ],
+                     *         "water": {
+                     *           "kind": "flat",
+                     *           "minimumCharge": "100.00",
+                     *           "pricePerUnit": "18.0000",
+                     *           "tiers": []
+                     *         }
+                     *       },
                      *       "verifiedOwner": true
                      *     }
                      */
@@ -104292,6 +104871,76 @@ export interface operations {
             };
         };
     };
+    "public.listings.areas": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Areas */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "band": {
+                     *             "p25": "12500.00",
+                     *             "p50": "14000.00",
+                     *             "p75": "16000.00"
+                     *           },
+                     *           "count": 14,
+                     *           "indexable": true,
+                     *           "kind": "district",
+                     *           "line": null,
+                     *           "name": "พญาไท",
+                     *           "nameEn": "Phaya Thai",
+                     *           "province": "กรุงเทพมหานคร",
+                     *           "provinceEn": "Bangkok",
+                     *           "slug": "phaya-thai"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PublicAreasDto"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "public.listings.sitemap": {
         parameters: {
             query?: never;
@@ -104325,6 +104974,122 @@ export interface operations {
                      *     }
                      */
                     "application/json": components["schemas"]["PublicSitemapDto"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "public.owners.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owner */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "displayName": "มาลี มีสุข",
+                     *       "listingCount": 1,
+                     *       "listings": [
+                     *         {
+                     *           "address": "ถนนพหลโยธิน, พญาไท, กรุงเทพมหานคร 10400",
+                     *           "advanceMonths": 1,
+                     *           "availableFrom": "2026-12-01",
+                     *           "bathrooms": 1,
+                     *           "bedrooms": 1,
+                     *           "cover": {
+                     *             "caption": null,
+                     *             "height": 720,
+                     *             "url": "https://storage.invalid/p.w960.webp",
+                     *             "width": 960
+                     *           },
+                     *           "depositMonths": 2,
+                     *           "district": "พญาไท",
+                     *           "furnishing": "fully_furnished",
+                     *           "minTermMonths": 12,
+                     *           "nearestTransit": {
+                     *             "distanceM": 350,
+                     *             "line": "BTS สายสุขุมวิท",
+                     *             "name": "BTS อารีย์"
+                     *           },
+                     *           "petsAllowed": false,
+                     *           "province": "กรุงเทพมหานคร",
+                     *           "publishedAt": "2026-11-01T10:00:00+07:00",
+                     *           "rent": "15000.00",
+                     *           "sizeSqm": "28.50",
+                     *           "slug": "condo-1br-0a1b2c3d4e",
+                     *           "title": "คอนโด 1 ห้องนอน ใกล้ BTS อารีย์",
+                     *           "unitKind": "condo_unit",
+                     *           "verifiedOwner": true
+                     *         }
+                     *       ],
+                     *       "medianReplyMinutes": 42,
+                     *       "memberSince": "2026-10-25",
+                     *       "slug": "landlord-0a1b2c3d4e",
+                     *       "verification": {
+                     *         "level": "unit_ownership",
+                     *         "verifiedUnits": 2
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PublicOwnerDto"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
             /** @description Problem: `http.too_many_requests` */
@@ -107621,6 +108386,386 @@ export interface operations {
                 };
             };
             /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.inspections.list": {
+        parameters: {
+            query?: {
+                /** @description Only this lease. */
+                leaseId?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Reports */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "canCountersign": true,
+                     *         "completedAt": "2026-11-01T00:15:00+07:00",
+                     *         "createdAt": "2026-11-01T00:15:00+07:00",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "items": [
+                     *           {
+                     *             "area": "ห้องนอน",
+                     *             "condition": "good",
+                     *             "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *             "label": "ผนังห้องนอน",
+                     *             "meterRegister": null,
+                     *             "notes": null,
+                     *             "photoUrls": [
+                     *               "https://storage.example.com/inspection.jpg?X-Amz-Signature=abc"
+                     *             ]
+                     *           }
+                     *         ],
+                     *         "leaseId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "notes": null,
+                     *         "ownerSigned": true,
+                     *         "reportNumber": "INS-2569-00012",
+                     *         "reportUrl": "https://storage.example.com/report.pdf?X-Amz-Signature=abc",
+                     *         "residentSigned": false,
+                     *         "status": "completed",
+                     *         "type": "move_in",
+                     *         "unitNo": "A-201"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["ResidentInspectionDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.inspections.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                inspectionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The report */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "canCountersign": true,
+                     *       "completedAt": "2026-11-01T00:15:00+07:00",
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "items": [
+                     *         {
+                     *           "area": "ห้องนอน",
+                     *           "condition": "good",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "label": "ผนังห้องนอน",
+                     *           "meterRegister": null,
+                     *           "notes": null,
+                     *           "photoUrls": [
+                     *             "https://storage.example.com/inspection.jpg?X-Amz-Signature=abc"
+                     *           ]
+                     *         }
+                     *       ],
+                     *       "leaseId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "notes": null,
+                     *       "ownerSigned": true,
+                     *       "reportNumber": "INS-2569-00012",
+                     *       "reportUrl": "https://storage.example.com/report.pdf?X-Amz-Signature=abc",
+                     *       "residentSigned": false,
+                     *       "status": "completed",
+                     *       "type": "move_in",
+                     *       "unitNo": "A-201"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ResidentInspectionDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.inspections.countersign": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Recommended client-generated uuid. When sent, a replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. Without it the request is not deduplicated. */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
+            };
+            path: {
+                inspectionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResidentCountersignDto"];
+            };
+        };
+        responses: {
+            /** @description Countersigned */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "canCountersign": false,
+                     *       "completedAt": "2026-11-01T00:15:00+07:00",
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "items": [
+                     *         {
+                     *           "area": "ห้องนอน",
+                     *           "condition": "good",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "label": "ผนังห้องนอน",
+                     *           "meterRegister": null,
+                     *           "notes": null,
+                     *           "photoUrls": [
+                     *             "https://storage.example.com/inspection.jpg?X-Amz-Signature=abc"
+                     *           ]
+                     *         }
+                     *       ],
+                     *       "leaseId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "notes": null,
+                     *       "ownerSigned": true,
+                     *       "reportNumber": "INS-2569-00012",
+                     *       "reportUrl": "https://storage.example.com/report.pdf?X-Amz-Signature=abc",
+                     *       "residentSigned": true,
+                     *       "status": "signed",
+                     *       "type": "move_in",
+                     *       "unitNo": "A-201"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ResidentInspectionDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `lease.not_signer` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `inspection.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `lease.signature_invalid`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];

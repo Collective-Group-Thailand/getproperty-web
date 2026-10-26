@@ -1,8 +1,8 @@
 import type { Schemas } from "@/lib/api/types";
 
 /*
- * The public listings read of D-252 (api B7.2, `13a2562`): the shapes are the API's DTOs. Only the areas of D-272 are
- * still a CONTRACT-REQUEST (docs/contract-requests.md, api B7.9). Money and sizes are decimal strings, as everywhere.
+ * The public listings read of D-252 (api B7.2) and the areas and owner pages of B7.9 (D-272, D-274): the shapes are
+ * the API's DTOs. Money and sizes are decimal strings, as everywhere.
  */
 export type ListingUnitKind = Schemas["PortfolioUnitKind"];
 export type ListingFurnishing = Schemas["Furnishing"];
@@ -10,24 +10,10 @@ export type PublicListingPhoto = Schemas["PublicListingPhotoDto"];
 export type PublicListingSummary = Schemas["PublicListingSummaryDto"];
 export type PublicListingDetail = Schemas["PublicListingDetailDto"];
 export type PublicListingsPage = Schemas["PublicListingsPageDto"];
-
-// CONTRACT-REQUEST (api B7.9): not in the contract yet.
 /** A district or transit station with published listings (D-272, `GET /v1/public/listings/areas`). */
-export interface PublicListingArea {
-  slug: string;
-  kind: "district" | "station";
-  /** Thai name, and the English one for `/en`. */
-  name: string;
-  nameEn: string;
-  province: string;
-  /** The transit line of a station. */
-  line: string | null;
-  count: number;
-  /** Whether the page may be indexed (the API's setting `listing.area.index_min`, D-272). */
-  indexable: boolean;
-  /** Rent band of the area's listings (D-269), decimal strings; null below the comparables threshold. */
-  band: { p25: string; p50: string; p75: string } | null;
-}
+export type PublicListingArea = Schemas["PublicAreaDto"];
+/** A verified owner's public page (D-274, `GET /v1/public/owners/{slug}`). */
+export type PublicOwner = Schemas["PublicOwnerDto"];
 
 export interface ListingQuery {
   q?: string;

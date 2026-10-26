@@ -133,6 +133,33 @@ test("rent detail: full address, rent, owner contact, Offer JSON-LD; unknown slu
   expect((await page.goto(`${HOSTS.owner}/rent/no-such-listing`))?.status()).toBe(404);
 });
 
+test("rent detail shows the unit's real utility cost and links the verified owner's page (D-265, D-274)", async ({
+  page,
+}) => {
+  await page.goto(`${HOSTS.owner}/rent/condo-ari-1br-sunlit`);
+  const utility = page.getByTestId("listing-utility");
+  await expect(utility).toContainText("หน่วยที่ 0–150");
+  await expect(utility).toContainText("฿18.00 ต่อ ลบ.ม.");
+  await expect(utility).toContainText("ค่าส่วนกลาง");
+  await expect(page.getByTestId("listing-utility-average")).toContainText("฿1,385");
+
+  await page.getByTestId("listing-owner-link").click();
+  await expect(page).toHaveURL(`${HOSTS.owner}/owners/landlord-0a1b2c3d4e`);
+  await expect(page.getByTestId("owner-name")).toHaveText("คุณนภา");
+  await expect(page.getByText("ตรวจเอกสารสิทธิ์แล้ว 2 ห้อง")).toBeVisible();
+  await expect(page.getByTestId("owner-reply")).toHaveText("ประมาณ 42 นาที");
+  await expect(page.getByTestId("listings").getByRole("listitem")).toHaveCount(1);
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
+  expect(results.violations).toEqual([]);
+
+  await page.goto(`${HOSTS.owner}/en/owners/landlord-0a1b2c3d4e`);
+  await expect(page.getByText("Title checked for 2 units")).toBeVisible();
+  // a listing whose owner's page is closed names the owner without a link; an unknown owner is 404
+  await page.goto(`${HOSTS.owner}/rent/condo-onnut-studio-near-bts`);
+  await expect(page.getByTestId("listing-owner-link")).toHaveCount(0);
+  expect((await page.goto(`${HOSTS.owner}/owners/no-such-owner`))?.status()).toBe(404);
+});
+
 test("guides: index and an article with its short answer, Article and FAQ JSON-LD (D-271)", async ({ page }) => {
   await page.goto(`${HOSTS.owner}/guides`);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("รู้ก่อนปล่อยเช่า");

@@ -852,6 +852,44 @@
       "popular": "Popular areas",
       "back": "All rentals",
       "ownerCta": "Own a place in {name}? List it free — no agent fee."
+    },
+    "utility": {
+      "title": "Utility costs, as billed",
+      "intro": "The rates this unit is billed at today, as the owner set them in getproperty.",
+      "electricity": "Electricity",
+      "water": "Water",
+      "per": {
+        "kwh": "per kWh",
+        "m3": "per m³"
+      },
+      "tier": "Units {from}–{to}",
+      "tierFrom": "From unit {from}",
+      "minimum": "Minimum {amount} a month",
+      "notSet": "Not stated by the owner",
+      "perMonth": "a month",
+      "fixed": {
+        "common_fee": "Common fee",
+        "service": "Service charge",
+        "fund": "Sinking fund"
+      },
+      "average": "{count, plural, one {Average water + electricity, last # month} other {Average water + electricity, last # months}}",
+      "averageNote": "From this unit's real bills issued through getproperty."
+    },
+    "ownerPage": {
+      "metaTitle": "{name} · verified owner · getproperty",
+      "metaDescription": "{count, plural, one {# home} other {# homes}} for rent from {name}, an owner whose title deeds getproperty checked. Talk to the owner directly, no agent fee.",
+      "back": "All rentals",
+      "kicker": "Owner",
+      "verified": "{count, plural, one {Title checked for # unit} other {Title checked for # units}}",
+      "listingsLabel": "Listed now",
+      "memberSinceLabel": "On getproperty since",
+      "replyLabel": "Usually replies within",
+      "replyUnknown": "Not enough data yet",
+      "minutes": "{count, plural, one {about # minute} other {about # minutes}}",
+      "hours": "{count, plural, one {about # hour} other {about # hours}}",
+      "listings": "{name}'s homes",
+      "empty": "No homes available right now.",
+      "note": "This page shows no phone number or private contact. Reach the owner from a listing's button."
     }
   },
   "guides": {
