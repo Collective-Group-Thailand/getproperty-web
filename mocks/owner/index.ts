@@ -20,6 +20,7 @@ import { initialPortfolios } from "./portfolio-world";
 import { releaseHandlers } from "./release";
 import { settingsHandlers } from "./settings";
 import { storageHandlers } from "./storage";
+import { agencyHandlers, initialAgencyWorld } from "./agency";
 import { initialOwnerWorld, type OwnerWorld } from "./world";
 
 /** The owner surface's stateful handlers (F2); the contract-generated handlers answer what is not here. */
@@ -36,6 +37,7 @@ export const ownerHandlers: HttpHandler[] = [
   ...meteringHandlers,
   ...settingsHandlers,
   ...storageHandlers,
+  ...agencyHandlers,
   ...portfolioHandlers,
   ...listingHandlers,
   ...leadHandlers,
@@ -125,6 +127,12 @@ export function resetOwnerWorld(part: string | null): boolean {
     state.leaseNotices = {};
     state.certificates = {};
     if (part) return true;
+  }
+  if (!part || part === "agency" || part === "portfolio") {
+    // Mandates, co-broke and deals (G2) read the landlord portfolio: they reset with it.
+    state.agency = initialAgencyWorld();
+    state.agencySignedUp = false;
+    if (part === "agency") return true;
   }
   if (!part || part === "storage") {
     // Storage of G1 (files, packages, quota overrides) lives beside the owner world.

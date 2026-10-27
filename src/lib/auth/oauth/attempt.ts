@@ -26,6 +26,8 @@ export interface OAuthAttempt {
   next?: string;
   /** Sign-up: the name typed on the form (the provider's name is the fallback). */
   displayName?: string;
+  /** Sign-up of an estate agency (G2, D-293) instead of a landlord. */
+  signUpAs?: "agency";
 }
 
 export function encodeAttempt(attempt: OAuthAttempt): string {
@@ -46,7 +48,7 @@ export function decodeAttempt(value: string | undefined): OAuthAttempt | null {
     ) {
       return null;
     }
-    return parsed as OAuthAttempt;
+    return { ...(parsed as OAuthAttempt), signUpAs: parsed.signUpAs === "agency" ? "agency" : undefined };
   } catch {
     return null;
   }

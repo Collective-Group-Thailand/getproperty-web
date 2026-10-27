@@ -23,11 +23,12 @@ import { IconDoor } from "@/ui/icons/glyphs/door";
 import { IconFloor } from "@/ui/icons/glyphs/floor";
 import { IconHome } from "@/ui/icons/glyphs/home";
 import { IconBill } from "@/ui/icons/glyphs/bill";
+import { IconSign } from "@/ui/icons/glyphs/sign";
 import { IconMegaphone } from "@/ui/icons/glyphs/megaphone";
 import { IconWrench } from "@/ui/icons/glyphs/wrench";
 
 import { ownerPath } from "../shared/links";
-import { section, type OwnerContext } from "../shared/server";
+import { ownerCan, section, type OwnerContext } from "../shared/server";
 
 type Unit = Schemas["PortfolioUnitDto"];
 type Kind = Schemas["PortfolioUnitKind"];
@@ -122,7 +123,12 @@ export async function PortfolioView({ context, welcome }: { context: OwnerContex
             </h2>
             <ul className="m-0 grid list-none gap-4 p-0 md:grid-cols-2 xl:grid-cols-3" data-testid="portfolio-units">
               {portfolio.data.units.map((unit) => (
-                <UnitCard key={unit.unitId} unit={unit} locale={locale} />
+                <UnitCard
+                  key={unit.unitId}
+                  unit={unit}
+                  locale={locale}
+                  canInvite={context.me.menu.includes("mandates") && ownerCan(context.me, "tenant.grant.manage")}
+                />
               ))}
             </ul>
           </section>
@@ -237,7 +243,7 @@ async function MonthSummary({
   );
 }
 
-async function UnitCard({ unit, locale }: { unit: Unit; locale: Locale }) {
+async function UnitCard({ unit, locale, canInvite }: { unit: Unit; locale: Locale; canInvite: boolean }) {
   const t = await getTranslations("owner.portfolio.unit");
   const kind = unit.kind ?? "condo_unit";
   const isHouse = kind === "house" || kind === "townhouse";
@@ -323,6 +329,13 @@ async function UnitCard({ unit, locale }: { unit: Unit; locale: Locale }) {
           <Button asChild size="sm" variant="secondary" iconStart={IconMegaphone}>
             <a href={ownerPath(locale, `/listings/new?unit=${unit.unitId}`)} data-testid="portfolio-list-unit">
               {t("listIt")}
+            </a>
+          </Button>
+        ) : null}
+        {canInvite ? (
+          <Button asChild size="sm" variant="ghost" iconStart={IconSign}>
+            <a href={ownerPath(locale, `/mandates?invite=${unit.unitId}`)} data-testid="portfolio-invite-agency">
+              {t("inviteAgency")}
             </a>
           </Button>
         ) : null}

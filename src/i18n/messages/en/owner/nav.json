@@ -40,6 +40,11 @@
     "units": "Units",
     "invoices": "Invoices",
     "money": "Money",
-    "more": "More"
-  }
+    "more": "More",
+    "mandatedUnits": "Units"
+  },
+  "mandated_units": "Mandated units",
+  "mandates": "Agency mandates",
+  "co_broke": "Co-broke",
+  "deals": "Closed deals"
 }

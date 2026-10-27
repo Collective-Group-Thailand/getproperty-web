@@ -39,74 +39,83 @@ function signedIn(audience: "operator" | "platform", key: string) {
   return json({ ...issueTokens(audience, key), subject: subject(audience, key) });
 }
 
-export const authHandlers: HttpHandler[] = [
-  // Landlord self sign-up (B7.1, D-251): any phone; the code is MOCK_OTP_CODE; the account is the `signup` persona.
-  http.post("*/v1/public/signup/landlord/otp", async ({ request }) => {
-    const body = (await request.json().catch(() => ({}))) as { phone?: string };
-    if (!body.phone || !/^\+?\d{9,12}$/.test(body.phone.replace(/\s/g, ""))) {
-      return problem("public.landlordSignup.otp", "validation.failed");
-    }
-    const challengeId = crypto.randomUUID();
-    const now = Date.now();
-    state.challenges.set(challengeId, { phone: body.phone, attempts: 0, expiresAt: now + 5 * 60_000 });
-    return json({
-      challengeId,
-      expiresAt: new Date(now + 5 * 60_000).toISOString(),
-      resendAvailableAt: new Date(now + 60_000).toISOString(),
-    });
-  }),
-
-  http.post("*/v1/public/signup/landlord", async ({ request }) => {
-    const op = "public.landlordSignup.create";
-    const body = (await request.json().catch(() => ({}))) as {
-      provider?: string;
-      challengeId?: string;
-      code?: string;
-      idToken?: string;
-      displayName?: string;
-    };
-    if (!body.displayName?.trim()) return problem(op, "validation.failed");
-    let phone: string | null = null;
-    if (body.provider === "phone_otp") {
-      const challenge = body.challengeId ? state.challenges.get(body.challengeId) : undefined;
-      if (!challenge || challenge.expiresAt < Date.now()) return problem(op, "auth.otp_expired");
-      if (body.code !== MOCK_OTP_CODE) {
-        challenge.attempts += 1;
-        return problem(op, "auth.otp_invalid", { attemptsRemaining: Math.max(0, MAX_ATTEMPTS - challenge.attempts) });
+function signUpHandlers(kind: "landlord" | "agency"): HttpHandler[] {
+  return [
+    http.post(`*/v1/public/signup/${kind}/otp`, async ({ request }) => {
+      const body = (await request.json().catch(() => ({}))) as { phone?: string };
+      if (!body.phone || !/^\+?\d{9,12}$/.test(body.phone.replace(/\s/g, ""))) {
+        return problem(`public.${kind}Signup.otp`, "validation.failed");
       }
-      state.challenges.delete(body.challengeId!);
-      phone = challenge.phone;
-    } else {
-      // Google / Apple / LINE (D-255): the fake token's identity, linked to the new landlord.
-      const identity = signUpIdentity(body.provider, body.idToken);
-      if (!identity)
-        return problem(op, body.provider === "line" ? "auth.line_token_invalid" : "auth.identity_token_invalid");
-      if (identity.provider !== "line" && !identity.email) return problem(op, "auth.identity_contact_required");
-      linkSignUpIdentity(identity);
-    }
-    const persona = OPERATORS.find((p) => p.key === "signup")!;
-    // A second sign-up answers 200 with the landlord tenant it already owns, like the API.
-    const created = !state.landlordSignedUp;
-    if (created) {
-      state.landlordSignedUp = true;
-      persona.user.displayName = body.displayName.trim();
-      if (phone) persona.user.phone = phone;
-      state.portfolio[TENANTS.fresh.profile.id] = [];
-    }
-    return json(
-      {
-        created,
-        tenant: {
-          id: TENANTS.fresh.profile.id,
-          slug: "landlord-0a1b2c3d4e",
-          displayName: persona.user.displayName,
-          type: "landlord",
+      const challengeId = crypto.randomUUID();
+      const now = Date.now();
+      state.challenges.set(challengeId, { phone: body.phone, attempts: 0, expiresAt: now + 5 * 60_000 });
+      return json({
+        challengeId,
+        expiresAt: new Date(now + 5 * 60_000).toISOString(),
+        resendAvailableAt: new Date(now + 60_000).toISOString(),
+      });
+    }),
+
+    http.post(`*/v1/public/signup/${kind}`, async ({ request }) => {
+      const op = `public.${kind}Signup.create`;
+      const body = (await request.json().catch(() => ({}))) as {
+        provider?: string;
+        challengeId?: string;
+        code?: string;
+        idToken?: string;
+        displayName?: string;
+      };
+      if (!body.displayName?.trim()) return problem(op, "validation.failed");
+      let phone: string | null = null;
+      if (body.provider === "phone_otp") {
+        const challenge = body.challengeId ? state.challenges.get(body.challengeId) : undefined;
+        if (!challenge || challenge.expiresAt < Date.now()) return problem(op, "auth.otp_expired");
+        if (body.code !== MOCK_OTP_CODE) {
+          challenge.attempts += 1;
+          return problem(op, "auth.otp_invalid", { attemptsRemaining: Math.max(0, MAX_ATTEMPTS - challenge.attempts) });
+        }
+        state.challenges.delete(body.challengeId!);
+        phone = challenge.phone;
+      } else {
+        // Google / Apple / LINE (D-255): the fake token's identity, linked to the new landlord.
+        const identity = signUpIdentity(body.provider, body.idToken);
+        if (!identity)
+          return problem(op, body.provider === "line" ? "auth.line_token_invalid" : "auth.identity_token_invalid");
+        if (identity.provider !== "line" && !identity.email) return problem(op, "auth.identity_contact_required");
+        linkSignUpIdentity(identity);
+      }
+      const persona = OPERATORS.find((p) => p.key === (kind === "agency" ? "agencySignup" : "signup"))!;
+      const tenant = kind === "agency" ? TENANTS.freshAgency : TENANTS.fresh;
+      // A second sign-up answers 200 with the landlord tenant it already owns, like the API.
+      const created = kind === "agency" ? !state.agencySignedUp : !state.landlordSignedUp;
+      if (created) {
+        if (kind === "agency") state.agencySignedUp = true;
+        else state.landlordSignedUp = true;
+        persona.user.displayName = body.displayName.trim();
+        if (phone) persona.user.phone = phone;
+        if (kind === "landlord") state.portfolio[TENANTS.fresh.profile.id] = [];
+      }
+      return json(
+        {
+          created,
+          tenant: {
+            id: tenant.profile.id,
+            slug: `${kind}-0a1b2c3d4e`,
+            displayName: persona.user.displayName,
+            type: kind,
+          },
+          tokens: issueTokens("operator", persona.key),
         },
-        tokens: issueTokens("operator", persona.key),
-      },
-      created ? 201 : 200,
-    );
-  }),
+        created ? 201 : 200,
+      );
+    }),
+  ];
+}
+
+export const authHandlers: HttpHandler[] = [
+  // Landlord self sign-up (B7.1, D-251) and agency self sign-up (G2, D-293): any phone; the code is MOCK_OTP_CODE;
+  // the account is the `signup` / `agencySignup` persona.
+  ...(["landlord", "agency"] as const).flatMap((kind) => signUpHandlers(kind)),
 
   http.post("*/v1/auth/operator/otp/request", async ({ request }) => {
     const body = (await request.json().catch(() => ({}))) as { phone?: string };

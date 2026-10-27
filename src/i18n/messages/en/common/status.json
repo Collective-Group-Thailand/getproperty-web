@@ -399,5 +399,18 @@
     "active": "Active",
     "expired": "Expired",
     "cancelled": "Cancelled"
+  },
+  "mandate": {
+    "invited": "Awaiting the agency",
+    "accepted": "Accepted — starts soon",
+    "active": "Active",
+    "ended": "Ended",
+    "revoked": "Revoked by the owner"
+  },
+  "coBroke": {
+    "proposed": "Awaiting signature",
+    "signed": "Signed",
+    "ended": "Ended",
+    "cancelled": "Cancelled"
   }
 }

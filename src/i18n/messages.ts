@@ -15,6 +15,7 @@ export const MESSAGE_FILES = {
   common: ["auth", "brand", "common", "console", "errors", "glossary", "notifications", "shell", "status"],
   owner: [
     "access",
+    "agency",
     "arrears",
     "billing",
     "buildings",

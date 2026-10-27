@@ -1,0 +1,191 @@
+{
+  "outsideMoney": "Commission is paid directly between the parties, outside getproperty. The platform only records the amount from the mandate terms and never deducts it from rent.",
+  "scope": {
+    "list": "List",
+    "list_and_lease": "List and lease",
+    "manage": "Full management"
+  },
+  "scopeHint": {
+    "list": "The agency may list this unit",
+    "list_and_lease": "Lists the unit and sees its leases",
+    "manage": "Sees the unit's listing, leases, invoices and service requests"
+  },
+  "exclusive": "Exclusive",
+  "nonExclusive": "Non-exclusive",
+  "commission": {
+    "amount": "Commission {amount}",
+    "percent": "Commission {percent} of one month's rent",
+    "none": "No commission set"
+  },
+  "validity": {
+    "open": "From {from}",
+    "range": "{from} – {to}"
+  },
+  "mandates": {
+    "title": "Agency mandates",
+    "ownerDescription": "Ask an agency to list or manage your units. An agency sees only the units you mandate, and you can revoke at any time.",
+    "agencyDescription": "Owners who mandated units to you. Once you accept, you see the unit and can list it.",
+    "tabs": {
+      "invited": "Awaiting answer",
+      "active": "Active",
+      "past": "Ended"
+    },
+    "empty": {
+      "invited": "No invitations waiting",
+      "active": "No active mandates yet",
+      "past": "No ended mandates"
+    },
+    "emptyOwnerHint": "Invite an agency to help find a renter for a vacant unit.",
+    "unit": "Unit {unitNo}",
+    "owner": "Owner: {name}",
+    "agency": "Agency: {name}",
+    "invite": "Invite an agency",
+    "inviteTitle": "Invite an agency to a unit",
+    "inviteHint": "The agency sees only this unit once it accepts. You can revoke at any time; getproperty charges nothing for it.",
+    "fields": {
+      "unit": "Unit",
+      "agency": "Agency",
+      "agencyHint": "Type the agency's name to search",
+      "agencySearch": "Search agencies",
+      "noAgency": "No agency with that name",
+      "scope": "What you mandate",
+      "exclusive": "Exclusive mandate",
+      "exclusiveHint": "No other agency may hold a mandate on this unit at the same time",
+      "commissionTerms": "Commission terms",
+      "commissionPercent": "% of one month's rent",
+      "commissionAmount": "or a fixed amount (THB)",
+      "commissionHint": "When both are given, the fixed amount applies",
+      "validFrom": "Starts",
+      "validTo": "Ends (optional)"
+    },
+    "invited": "Invitation sent",
+    "accept": "Accept",
+    "acceptTitle": "Accept the mandate for unit {unitNo}",
+    "acceptBody": "{scope} · {exclusive} · {commission} from {owner}. Once accepted you see this unit and can list it.",
+    "accepted": "Accepted",
+    "decline": "Decline",
+    "declineTitle": "Decline the mandate for unit {unitNo}",
+    "declineBody": "The owner will see that you declined.",
+    "declined": "Declined",
+    "reason": "Reason (optional)",
+    "revoke": "Revoke mandate",
+    "revokeTitle": "Revoke the mandate for unit {unitNo} from {agency}",
+    "revokeBody": "The agency loses access to this unit at once and its listing of the unit is closed.",
+    "revoked": "Mandate revoked",
+    "end": "End mandate",
+    "endTitle": "End the mandate for unit {unitNo}",
+    "endBody": "Access to this unit ends at once and the agency's listing of the unit is closed.",
+    "ended": "Mandate ended",
+    "inviteFromPortfolio": "Invite an agency",
+    "reasonShown": "Reason: {reason}"
+  },
+  "units": {
+    "title": "Mandated units",
+    "description": "Units owners mandated to you. You see only these units; access ends when the owner revokes or the mandate ends.",
+    "empty": "No mandated units yet",
+    "emptyHint": "When an owner invites you and you accept, the unit appears here.",
+    "inbox": "See invitations",
+    "area": "{area} m²",
+    "listing": "Listing: {state}",
+    "noListing": "Not listed yet",
+    "openListing": "Open listing",
+    "listIt": "List it",
+    "until": "Until {date}",
+    "welcome": "Welcome — your agency account is ready. Free, with unlimited users, units and listings."
+  },
+  "listingState": {
+    "draft": "Draft",
+    "pending_review": "In review",
+    "published": "Published",
+    "paused": "Paused",
+    "rejected": "Rejected",
+    "closed": "Closed"
+  },
+  "coBroke": {
+    "title": "Co-broke",
+    "description": "Commission-sharing agreements with other agencies for listings you hold, or that other agencies invited you to.",
+    "asListing": "My listings",
+    "asCo": "Invited to",
+    "empty": "No co-broke agreements yet",
+    "listing": "Listing {slug}",
+    "split": "Co-agency gets {percent} of the commission",
+    "with": "with {name}",
+    "from": "from {name}",
+    "propose": "Propose co-broke",
+    "proposeTitle": "Propose a co-broke agreement",
+    "proposeHint": "The co-agency signs in getproperty before it applies. The share is computed from the commission recorded when the deal closes.",
+    "noListings": "You need a listing of a mandated unit before you can propose co-broke.",
+    "fields": {
+      "listing": "Listing",
+      "coAgency": "Co-agency",
+      "split": "Co-agency share (%)",
+      "splitHint": "Above 0 and below 100",
+      "validFrom": "Starts",
+      "validTo": "Ends (optional)",
+      "note": "Note (optional)"
+    },
+    "proposed": "Proposal sent",
+    "sign": "Sign agreement",
+    "signTitle": "Sign the co-broke agreement with {name}",
+    "signBody": "You get {percent} of the commission when listing {slug} closes a deal. Your name and the time are recorded.",
+    "signed": "Signed",
+    "cancel": "Cancel proposal",
+    "cancelTitle": "Cancel the co-broke proposal",
+    "cancelBody": "The co-agency can no longer sign this proposal.",
+    "cancelled": "Cancelled",
+    "end": "End agreement",
+    "endTitle": "End the co-broke agreement",
+    "endBody": "Deals closed after this are not shared under this agreement.",
+    "endDone": "Agreement ended"
+  },
+  "deals": {
+    "title": "Closed deals",
+    "description": "Leases signed through getproperty whose first rent payment is confirmed, with the commission recorded.",
+    "empty": "No closed deals yet",
+    "emptyHint": "A deal appears once a lease is signed in getproperty and the first rent is paid.",
+    "unit": "Unit {unitNo}",
+    "closed": "Closed {date}",
+    "rent": "Rent {amount}/month",
+    "commission": "Recorded commission",
+    "coBrokeShare": "Co-broke share",
+    "noCommission": "No commission recorded",
+    "owner": "Owner",
+    "listingAgency": "Listing agency",
+    "coAgency": "Co-agency",
+    "none": "—",
+    "fees": "getproperty fees",
+    "feesHint": "Billed on your getproperty invoice, never deducted from rent.",
+    "noFees": "No fee for this deal (no price set yet).",
+    "feeKind": {
+      "success_fee": "Success fee",
+      "co_broke_fee": "Co-broke fee"
+    },
+    "feeRate": {
+      "percent_of_amount": "{rate} of {base}",
+      "per_deal": "{rate} per deal"
+    },
+    "invoiced": "Invoiced",
+    "notInvoiced": "Not invoiced yet",
+    "capped": "Capped",
+    "view": "View details"
+  },
+  "signUp": {
+    "title": "Sign up as an agency",
+    "subtitle": "Agency accounts are free, with unlimited users, units and listings.",
+    "name": "Agency or agent name",
+    "nameHint": "The name owners see when they mandate a unit",
+    "asLandlord": "Own a unit? Sign up as an owner",
+    "asAgency": "An estate agent? Create an agency account"
+  },
+  "columns": {
+    "unit": "Unit",
+    "closed": "Closed",
+    "rent": "Rent per month",
+    "fee": "Fee",
+    "rate": "Rate",
+    "amount": "Amount",
+    "state": "State",
+    "validity": "Period",
+    "actions": "Actions"
+  }
+}

@@ -49,7 +49,8 @@
     "repairsNone": "None",
     "external": "This condo's juristic person is not on getproperty yet. Your unit's data is visible to you only.",
     "listIt": "List it for rent",
-    "documents": "Documents"
+    "documents": "Documents",
+    "inviteAgency": "Invite an agency"
   },
   "form": {
     "title": "Add a unit",

@@ -7,6 +7,7 @@ import { initialListings, type MockListing, type MockVerification } from "./owne
 import { initialPortfolios } from "./owner/portfolio-world";
 import { initialR2World, type R2World } from "./r2/world";
 import { initialStorageWorld, type MockStorageWorld } from "./storage-world";
+import { initialAgencyWorld, type MockAgencyWorld } from "./owner/agency";
 import {
   initialChannels,
   initialDevices,
@@ -149,6 +150,8 @@ export interface MockState {
   portfolio: Record<string, Schemas["PortfolioUnitDto"][]>;
   /** Whether the landlord sign-up (`signup` persona) has happened. */
   landlordSignedUp: boolean;
+  /** Whether the agency sign-up (`agencySignup` persona, G2) has happened. */
+  agencySignedUp: boolean;
   /** Linked sign-in identities; see handlers/identities.ts. */
   identities: MockIdentity[];
   /** Guides of the public site (B7.13), created on first read: see platform/guides.ts. */
@@ -167,6 +170,8 @@ export interface MockState {
   certificates: Record<string, Schemas["RentCertificateDto"][]>;
   /** Storage quota, files and packages (G1): see storage-world.ts. */
   storage: MockStorageWorld;
+  /** Agencies, mandates, co-broke agreements and deals (G2): see owner/agency.ts. */
+  agency: MockAgencyWorld;
   webVitals: unknown[];
   log: LoggedRequest[];
   /** Access token lifetime; the suite shortens it to exercise refresh. */
@@ -206,6 +211,7 @@ function initial(): MockState {
     r2: initialR2World(),
     portfolio: initialPortfolios(),
     landlordSignedUp: false,
+    agencySignedUp: false,
     identities: initialIdentities(),
     identityVerifications: {},
     listingWorld: initialListings(),
@@ -214,6 +220,7 @@ function initial(): MockState {
     leaseNotices: {},
     certificates: {},
     storage: initialStorageWorld(),
+    agency: initialAgencyWorld(),
     webVitals: [],
     log: [],
     // 15 minutes like the API; a long Lighthouse run sets MOCK_ACCESS_TTL_MS so its fixed session cookie lasts.

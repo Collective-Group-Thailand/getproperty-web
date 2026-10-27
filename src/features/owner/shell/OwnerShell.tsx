@@ -59,8 +59,9 @@ export async function OwnerShell({
   const focus = jar.get(BUILDING_COOKIE)?.value;
   const readOnly = me.subscription?.readOnly ?? false;
   const subscription = items.find((item) => item.key === "subscription");
-  // A landlord's "buildings" are its houses and the condo stubs it shares (B7.1): the portfolio is the switch.
-  const landlord = me.currentTenant.type === "landlord";
+  // A landlord's "buildings" are its houses and the condo stubs it shares (B7.1): the portfolio is the switch. An
+  // agency (G2) works unit by unit on its mandated units: no building switcher either.
+  const landlord = me.currentTenant.type === "landlord" || me.currentTenant.type === "agency";
 
   return (
     <ReadOnlyProvider initial={readOnly}>
