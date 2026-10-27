@@ -47,8 +47,9 @@ function origin(intent: OAuthIntent, locale: Locale): string {
   return path(intent === "signin" ? "/login" : intent === "signup" ? "/signup" : "/settings/sign-in", locale);
 }
 
-export function failureUrl(intent: OAuthIntent, locale: Locale, code: string): string {
+export function failureUrl(intent: OAuthIntent, locale: Locale, code: string, signUpAs?: "agency"): string {
   const url = new URL(origin(intent, locale));
+  if (intent === "signup" && signUpAs) url.searchParams.set("as", signUpAs);
   url.searchParams.set("oauthError", code);
   return url.toString();
 }
@@ -60,10 +61,11 @@ export async function startAttempt(input: {
   locale: Locale;
   next?: string;
   displayName?: string;
+  signUpAs?: "agency";
 }): Promise<string> {
   const env = serverEnv();
   if (!enabledProviders(env).includes(input.provider))
-    return failureUrl(input.intent, input.locale, "oauth.unavailable");
+    return failureUrl(input.intent, input.locale, "oauth.unavailable", input.signUpAs);
   const values = newAttempt();
   const attempt: OAuthAttempt = {
     ...values,
@@ -72,6 +74,7 @@ export async function startAttempt(input: {
     locale: input.locale,
     next: safeNextPath(input.next),
     displayName: input.displayName?.trim().slice(0, 200) || undefined,
+    signUpAs: input.signUpAs,
   };
   (await cookies()).set(ATTEMPT_COOKIE, encodeAttempt(attempt), attemptCookieOptions(ATTEMPT_MAX_AGE));
   return authorizeUrl(env, input.provider, values, callbackUri(input.provider), path("/oauth/fake", input.locale));
@@ -109,8 +112,8 @@ export async function finishAttempt(provider: OAuthProvider, input: CallbackInpu
   if (!attempt) return failureUrl("signin", "th", "oauth.expired");
   const locale: Locale = isLocale(attempt.locale) ? attempt.locale : "th";
   if (attempt.provider !== provider || !sameState(attempt.state, input.state))
-    return failureUrl(attempt.intent, locale, "oauth.state_mismatch");
-  if (input.error || !input.code) return failureUrl(attempt.intent, locale, "oauth.cancelled");
+    return failureUrl(attempt.intent, locale, "oauth.state_mismatch", attempt.signUpAs);
+  if (input.error || !input.code) return failureUrl(attempt.intent, locale, "oauth.cancelled", attempt.signUpAs);
 
   let identity: ProviderIdentity;
   try {
@@ -123,15 +126,15 @@ export async function finishAttempt(provider: OAuthProvider, input: CallbackInpu
     });
   } catch (error) {
     if (!(error instanceof OAuthExchangeError)) console.error("oauth exchange failed", error);
-    return failureUrl(attempt.intent, locale, "oauth.exchange_failed");
+    return failureUrl(attempt.intent, locale, "oauth.exchange_failed", attempt.signUpAs);
   }
 
   try {
     return await complete(attempt, locale, identity);
   } catch (error) {
-    if (isApiError(error)) return failureUrl(attempt.intent, locale, error.code);
+    if (isApiError(error)) return failureUrl(attempt.intent, locale, error.code, attempt.signUpAs);
     console.error("oauth completion failed", error);
-    return failureUrl(attempt.intent, locale, "service.unavailable");
+    return failureUrl(attempt.intent, locale, "service.unavailable", attempt.signUpAs);
   }
 }
 
@@ -149,18 +152,21 @@ async function complete(attempt: OAuthAttempt, locale: Locale, identity: Provide
       return attempt.next ? `${ownerOrigin()}${attempt.next}` : path("/dashboard", locale);
     }
     case "signup": {
+      const signUp = {
+        ...body,
+        displayName: (attempt.displayName ?? identity.displayName ?? "").trim() || "getproperty",
+        language: locale === "en" ? ("en" as const) : ("th" as const),
+      };
+      const api = await authApiClient(locale);
+      // An estate agency (G2, D-293) signs up the same way and starts at its mandated units.
       const result = await unwrap(
-        (await authApiClient(locale)).POST("/v1/public/signup/landlord", {
-          body: {
-            ...body,
-            displayName: (attempt.displayName ?? identity.displayName ?? "").trim() || "getproperty",
-            language: locale === "en" ? "en" : "th",
-          },
-        }),
+        attempt.signUpAs === "agency"
+          ? api.POST("/v1/public/signup/agency", { body: signUp })
+          : api.POST("/v1/public/signup/landlord", { body: signUp }),
       );
       await writeSession(result.tokens);
       await writeTenant(result.tenant.id);
-      return path("/portfolio", locale);
+      return path(attempt.signUpAs === "agency" ? "/mandated-units?welcome=1" : "/portfolio", locale);
     }
     case "link": {
       const api = await serverApi("owner");

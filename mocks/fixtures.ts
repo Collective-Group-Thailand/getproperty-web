@@ -71,6 +71,28 @@ export const TENANTS = {
     },
     subscription: { plan: null, state: "active", readOnly: false },
   },
+  /** An estate agency (G2, D-284, D-293): works on the units owners mandated to it. */
+  agency: {
+    profile: {
+      id: "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c66",
+      displayName: "บ้านดี พร็อพเพอร์ตี้",
+      type: "agency",
+      status: "active",
+      role: "owner",
+    },
+    subscription: { plan: null, state: "active", readOnly: false },
+  },
+  /** The agency tenant `POST /v1/public/signup/agency` creates in the mock. */
+  freshAgency: {
+    profile: {
+      id: "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c77",
+      displayName: "นายหน้าใหม่",
+      type: "agency",
+      status: "active",
+      role: "owner",
+    },
+    subscription: { plan: null, state: "active", readOnly: false },
+  },
 } as const satisfies Record<string, MockTenant>;
 
 export type TenantKey = keyof typeof TENANTS;
@@ -152,8 +174,13 @@ export function menuFor(
   tenantType: Schemas["OperatorTenantDto"]["type"] = "apartment",
 ): string[] {
   const menu = (surface === "owner" ? OWNER_MENU_BY_ROLE : STAFF_MENU_BY_ROLE)[role];
-  if (surface !== "owner" || tenantType !== "landlord") return menu;
-  return ["portfolio", "listings", "leads", ...menu.filter((key) => !BUILDING_OPERATOR_ONLY.has(key))];
+  if (surface !== "owner" || (tenantType !== "landlord" && tenantType !== "agency")) return menu;
+  const rest = menu.filter((key) => !BUILDING_OPERATOR_ONLY.has(key));
+  // G2 (D-293): landlords see their mandates and deals; an agency works from its mandated units.
+  const listingRole = role === "owner" || role === "manager";
+  if (tenantType === "agency")
+    return listingRole ? ["mandated_units", "listings", "leads", "mandates", "co_broke", "deals", ...rest] : rest;
+  return ["portfolio", "listings", "leads", ...(listingRole ? ["mandates", "deals"] : []), ...rest];
 }
 
 export interface OperatorPersona {
@@ -256,6 +283,31 @@ export const OPERATORS: OperatorPersona[] = [
       lineLinked: false,
     },
     memberships: [{ tenant: "fresh", role: "owner" }],
+  },
+  {
+    key: "agency",
+    user: {
+      id: "3b241101-e2bb-4255-8caf-4136c566a908",
+      displayName: "ดารา นายหน้า",
+      phone: "+66810000008",
+      email: null,
+      language: "th",
+      lineLinked: false,
+    },
+    memberships: [{ tenant: "agency", role: "owner" }],
+  },
+  {
+    // Whoever signs up as an agency in the mock becomes this persona (G2).
+    key: "agencySignup",
+    user: {
+      id: "3b241101-e2bb-4255-8caf-4136c566a909",
+      displayName: "นายหน้าใหม่",
+      phone: "+66810000009",
+      email: null,
+      language: "th",
+      lineLinked: false,
+    },
+    memberships: [{ tenant: "freshAgency", role: "owner" }],
   },
 ];
 

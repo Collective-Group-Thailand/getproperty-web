@@ -233,18 +233,24 @@ export async function signOut(): Promise<ActionResult<null>> {
   return { ok: true, data: null };
 }
 
+/** Who signs up: a landlord (B7.1) or an estate agency (G2, D-293). */
+export type SignUpKind = "landlord" | "agency";
+
 /** Landlord self sign-up, step 1 (B7.1, D-251): an SMS code to any phone — no account or invitation needed. */
 export async function requestLandlordSignUpOtp(
   input: z.input<typeof otpRequestSchema>,
+  kind: SignUpKind = "landlord",
 ): Promise<ActionResult<{ challengeId: string; expiresAt: string; resendAvailableAt: string }>> {
   const parsed = otpRequestSchema.safeParse(input);
   if (!parsed.success) return invalid(parsed.error);
   try {
     const lang = await language();
+    const body = { phone: parsed.data.phone, language: lang };
+    const api = await apiClient(lang);
     const data = await unwrap(
-      (await apiClient(lang)).POST("/v1/public/signup/landlord/otp", {
-        body: { phone: parsed.data.phone, language: lang },
-      }),
+      kind === "agency"
+        ? api.POST("/v1/public/signup/agency/otp", { body })
+        : api.POST("/v1/public/signup/landlord/otp", { body }),
     );
     return { ok: true, data };
   } catch (error) {
@@ -259,21 +265,25 @@ export async function requestLandlordSignUpOtp(
  */
 export async function signUpLandlord(
   input: z.input<typeof landlordSignUpSchema>,
+  kind: SignUpKind = "landlord",
 ): Promise<ActionResult<{ created: boolean }>> {
   const parsed = landlordSignUpSchema.safeParse(input);
   if (!parsed.success) return invalid(parsed.error);
   try {
     const lang = await language();
+    const body = {
+      provider: "phone_otp" as const,
+      challengeId: parsed.data.challengeId,
+      code: parsed.data.code,
+      displayName: parsed.data.displayName,
+      language: isLocale(lang) ? lang : ("th" as const),
+    };
+    const api = await apiClient(lang);
+    // An estate agency signs up the same way and gets a tenant of type `agency` (G2, D-293).
     const result = await unwrap(
-      (await apiClient(lang)).POST("/v1/public/signup/landlord", {
-        body: {
-          provider: "phone_otp",
-          challengeId: parsed.data.challengeId,
-          code: parsed.data.code,
-          displayName: parsed.data.displayName,
-          language: isLocale(lang) ? lang : "th",
-        },
-      }),
+      kind === "agency"
+        ? api.POST("/v1/public/signup/agency", { body })
+        : api.POST("/v1/public/signup/landlord", { body }),
     );
     await writeSession(result.tokens);
     await writeTenant(result.tenant.id);

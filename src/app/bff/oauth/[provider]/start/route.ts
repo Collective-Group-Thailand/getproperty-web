@@ -8,7 +8,7 @@ import { isOAuthProvider } from "@/lib/auth/oauth/providers";
 export const dynamic = "force-dynamic";
 
 /**
- * `GET /bff/oauth/{google|apple|line}/start?intent=signin|signup|link&locale=&next=&name=` (owner zone, D-255,
+ * `GET /bff/oauth/{google|apple|line}/start?intent=signin|signup|link&locale=&next=&name=&as=agency` (owner zone, D-255,
  * D-283): remembers the attempt and redirects to the provider — or to the local test page with `OAUTH_MODE=fake`.
  */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ provider: string }> }) {
@@ -25,6 +25,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     locale,
     next: query.get("next") ?? undefined,
     displayName: query.get("name") ?? undefined,
+    signUpAs: query.get("as") === "agency" ? "agency" : undefined,
   });
   return NextResponse.redirect(target, { status: 303, headers: { "cache-control": "no-store" } });
 }

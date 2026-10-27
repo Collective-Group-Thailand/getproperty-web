@@ -19,5 +19,8 @@ export default async function Dashboard({ params }: { params: Promise<{ locale: 
   // Sign-in lands here; a landlord has no building dashboard — its home is the portfolio (B7.1, D-251).
   if (!context.me.menu.includes("dashboard") && context.me.menu.includes("portfolio"))
     redirect(getPathname({ href: "/portfolio", locale }));
+  // An estate agency's home is the units owners mandated to it (G2, D-293).
+  if (!context.me.menu.includes("dashboard") && context.me.menu.includes("mandated_units"))
+    redirect(getPathname({ href: "/mandated-units", locale }));
   return <DashboardView context={context} />;
 }

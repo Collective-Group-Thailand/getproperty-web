@@ -5,7 +5,7 @@ import { useState, useSyncExternalStore, useTransition } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 import { isDisplayName, isOtpCode, isPhone } from "@/domain/forms/auth-rules";
-import { requestLandlordSignUpOtp, signUpLandlord, type ActionProblem } from "@/lib/auth/actions";
+import { requestLandlordSignUpOtp, signUpLandlord, type ActionProblem, type SignUpKind } from "@/lib/auth/actions";
 import { formatPhone } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
 import { Button } from "@/ui/components/Button";
@@ -38,8 +38,15 @@ export function LandlordSignUp({
   locale,
   providers = [],
   oauthError,
+  kind = "landlord",
+  nameLabels,
 }: {
+  /** Where the new account starts: the portfolio (landlord) or the mandated units (agency). */
   portfolioHref: string;
+  /** An estate agency signs up the same way (G2, D-293) and gets a tenant of type `agency`. */
+  kind?: SignUpKind;
+  /** The name field's label and hint when they differ from a landlord's (agency: the business name). */
+  nameLabels?: { label: string; hint: string };
   locale: Locale;
   /** Google / Apple / LINE as the server offers them (D-255, D-283): the name typed here goes along. */
   providers?: readonly OAuthProviderKey[];
@@ -63,7 +70,7 @@ export function LandlordSignUp({
   const send = (displayName: string, phone: string) =>
     startTransition(async () => {
       setProblem(null);
-      const result = await requestLandlordSignUpOtp({ phone });
+      const result = await requestLandlordSignUpOtp({ phone }, kind);
       if (!result.ok) return setProblem(result.problem);
       setChallenge({
         challengeId: result.data.challengeId,
@@ -78,11 +85,14 @@ export function LandlordSignUp({
     startTransition(async () => {
       if (!challenge) return;
       setProblem(null);
-      const result = await signUpLandlord({
-        challengeId: challenge.challengeId,
-        code: value,
-        displayName: challenge.displayName,
-      });
+      const result = await signUpLandlord(
+        {
+          challengeId: challenge.challengeId,
+          code: value,
+          displayName: challenge.displayName,
+        },
+        kind,
+      );
       if (!result.ok) {
         setProblem(result.problem);
         code.reset({ code: "" });
@@ -92,7 +102,12 @@ export function LandlordSignUp({
     });
 
   return (
-    <div className="flex flex-col gap-6" data-testid="landlord-signup" data-ready={ready ? "true" : "false"}>
+    <div
+      className="flex flex-col gap-6"
+      data-testid="landlord-signup"
+      data-kind={kind}
+      data-ready={ready ? "true" : "false"}
+    >
       <OAuthError code={oauthError} />
       <Stepper
         label={t("signUp.steps.label")}
@@ -110,8 +125,8 @@ export function LandlordSignUp({
           noValidate
         >
           <Field
-            label={t("signUp.name")}
-            hint={t("signUp.nameHint")}
+            label={nameLabels?.label ?? t("signUp.name")}
+            hint={nameLabels?.hint ?? t("signUp.nameHint")}
             error={message(details.formState.errors.displayName?.message)}
             required
           >
@@ -145,6 +160,7 @@ export function LandlordSignUp({
             providers={providers}
             intent="signup"
             locale={locale}
+            signUpAs={kind === "agency" ? "agency" : undefined}
             beforeNavigate={() => {
               const name = details.getValues("displayName").trim();
               const valid = isDisplayName(name);

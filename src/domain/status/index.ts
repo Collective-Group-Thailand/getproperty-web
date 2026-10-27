@@ -66,6 +66,7 @@ export { MESSAGING_CHANNEL_STATUS, type MessagingChannelState } from "./messagin
 export { GUIDE_STATUS, type GuideState } from "./guide";
 export { MESSAGING_RATE_STATUS, type MessagingRateState } from "./messagingRate";
 export { STORAGE_PACKAGE_STATUS, type StoragePackageState } from "./storagePackage";
+export { CO_BROKE_STATUS, MANDATE_STATUS, type CoBrokeState, type MandateState } from "./mandate";
 
 import { COMMAND_STATUS } from "./command";
 import { DEPOSIT_STATUS } from "./deposit";
@@ -122,6 +123,7 @@ import { MESSAGING_CHANNEL_STATUS } from "./messagingChannel";
 import { GUIDE_STATUS } from "./guide";
 import { MESSAGING_RATE_STATUS } from "./messagingRate";
 import { STORAGE_PACKAGE_STATUS } from "./storagePackage";
+import { CO_BROKE_STATUS, MANDATE_STATUS } from "./mandate";
 import { LISTING_STATUS, LISTING_VERIFICATION_STATUS } from "./listing";
 
 /** Every status map by its domain key (the `status.<domain>` namespace of its labels). */
@@ -138,6 +140,8 @@ export const STATUS_MAPS = {
   guide: GUIDE_STATUS,
   messagingRate: MESSAGING_RATE_STATUS,
   storagePackage: STORAGE_PACKAGE_STATUS,
+  mandate: MANDATE_STATUS,
+  coBroke: CO_BROKE_STATUS,
   payment: PAYMENT_STATUS,
   deposit: DEPOSIT_STATUS,
   reading: READING_STATUS,

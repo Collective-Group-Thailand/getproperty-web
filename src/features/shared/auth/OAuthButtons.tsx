@@ -13,11 +13,12 @@ export function oauthStartHref(
   provider: OAuthProviderKey,
   intent: OAuthIntentKey,
   locale: Locale,
-  extra: { next?: string; name?: string } = {},
+  extra: { next?: string; name?: string; as?: "agency" } = {},
 ): string {
   const query = new URLSearchParams({ intent, locale });
   if (extra.next) query.set("next", extra.next);
   if (extra.name) query.set("name", extra.name);
+  if (extra.as) query.set("as", extra.as);
   return `/bff/oauth/${provider}/start?${query.toString()}`;
 }
 
@@ -31,6 +32,7 @@ export function OAuthButtons({
   intent,
   locale,
   next,
+  signUpAs,
   beforeNavigate,
   divider = true,
 }: {
@@ -38,6 +40,8 @@ export function OAuthButtons({
   intent: OAuthIntentKey;
   locale: Locale;
   next?: string;
+  /** Sign-up of an estate agency (G2) instead of a landlord. */
+  signUpAs?: "agency";
   /** Returns the name to carry (sign-up), or `false` to stay on the page. */
   beforeNavigate?: () => string | false | undefined;
   divider?: boolean;
@@ -56,14 +60,16 @@ export function OAuthButtons({
       {providers.map((provider) => (
         <Button key={provider} asChild variant="secondary" size="lg" block>
           <a
-            href={oauthStartHref(provider, intent, locale, { next })}
+            href={oauthStartHref(provider, intent, locale, { next, as: signUpAs })}
             data-testid={`oauth-${provider}`}
             onClick={(event) => {
               if (!beforeNavigate) return;
               const name = beforeNavigate();
               event.preventDefault();
               if (name === false) return;
-              window.location.assign(oauthStartHref(provider, intent, locale, { next, name: name || undefined }));
+              window.location.assign(
+                oauthStartHref(provider, intent, locale, { next, name: name || undefined, as: signUpAs }),
+              );
             }}
           >
             {t(`continueWith.${provider}`)}

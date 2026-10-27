@@ -156,6 +156,13 @@ describe("OAuth attempt cookie", () => {
     expect(decodeAttempt(undefined)).toBeNull();
   });
 
+  it("carries an agency sign-up (G2) and drops any other value", () => {
+    const attempt = { ...newAttempt(), provider: "google" as const, intent: "signup" as const, locale: "th" };
+    expect(decodeAttempt(encodeAttempt({ ...attempt, signUpAs: "agency" }))?.signUpAs).toBe("agency");
+    const forged = Buffer.from(JSON.stringify({ ...attempt, signUpAs: "admin" })).toString("base64url");
+    expect(decodeAttempt(forged)?.signUpAs).toBeUndefined();
+  });
+
   it("compares the echoed state exactly", () => {
     expect(sameState("abc", "abc")).toBe(true);
     expect(sameState("abc", "abd")).toBe(false);

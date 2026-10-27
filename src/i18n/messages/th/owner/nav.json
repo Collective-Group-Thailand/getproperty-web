@@ -40,6 +40,11 @@
     "units": "ห้อง",
     "invoices": "บิล",
     "money": "รับเงิน",
-    "more": "เพิ่มเติม"
-  }
+    "more": "เพิ่มเติม",
+    "mandatedUnits": "ห้องที่ดูแล"
+  },
+  "mandated_units": "ห้องที่ได้รับมอบหมาย",
+  "mandates": "การมอบหมายนายหน้า",
+  "co_broke": "Co-broke",
+  "deals": "ดีลที่ปิดแล้ว"
 }
