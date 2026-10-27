@@ -6,6 +6,7 @@ import { initialLeads, type MockLead } from "./owner/leads";
 import { initialListings, type MockListing, type MockVerification } from "./owner/listings";
 import { initialPortfolios } from "./owner/portfolio-world";
 import { initialR2World, type R2World } from "./r2/world";
+import { initialStorageWorld, type MockStorageWorld } from "./storage-world";
 import {
   initialChannels,
   initialDevices,
@@ -164,6 +165,8 @@ export interface MockState {
   leaseNotices: Record<string, Schemas["LeaseNoticeDto"][]>;
   /** Rent certificates (B7.5 part 3) by tenant id; filled on first read. */
   certificates: Record<string, Schemas["RentCertificateDto"][]>;
+  /** Storage quota, files and packages (G1): see storage-world.ts. */
+  storage: MockStorageWorld;
   webVitals: unknown[];
   log: LoggedRequest[];
   /** Access token lifetime; the suite shortens it to exercise refresh. */
@@ -210,6 +213,7 @@ function initial(): MockState {
     stampDuty: {},
     leaseNotices: {},
     certificates: {},
+    storage: initialStorageWorld(),
     webVitals: [],
     log: [],
     // 15 minutes like the API; a long Lighthouse run sets MOCK_ACCESS_TTL_MS so its fixed session cookie lasts.

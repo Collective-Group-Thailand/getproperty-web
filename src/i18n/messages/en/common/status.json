@@ -393,5 +393,11 @@
   "guide": {
     "draft": "Draft",
     "published": "Published"
+  },
+  "storagePackage": {
+    "pending_payment": "Awaiting payment",
+    "active": "Active",
+    "expired": "Expired",
+    "cancelled": "Cancelled"
   }
 }

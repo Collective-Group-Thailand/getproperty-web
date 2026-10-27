@@ -99,7 +99,45 @@
     "noAllowance": "No limit yet",
     "left": "{percent}% used · {bytes} left",
     "overBy": "{percent}% used · {bytes} over",
-    "files": "Files",
+    "files": {
+      "title": "Largest files",
+      "description": "Select files you no longer need to delete them. Deleted files can be restored until they are removed for good. Legal documents and evidence cannot be deleted.",
+      "tabs": {
+        "active": "Stored files",
+        "deleted": "Deleted files"
+      },
+      "columns": {
+        "file": "File",
+        "size": "Size",
+        "added": "Added",
+        "status": "Can be deleted"
+      },
+      "select": "Select {name}",
+      "selectAll": "Select every deletable file on this page",
+      "selected": "{count} selected · {bytes}",
+      "delete": "Delete selected",
+      "deleteTitle": "Delete {count} files ({bytes})",
+      "deleteBody": "The selected files move to \"Deleted files\". They still count and can be restored until they are removed for good; then the space is freed.",
+      "deleted": "Deleted — restorable until removed for good",
+      "restore": "Restore selected",
+      "restored": "Restored",
+      "purgeOn": "Removed for good {date}",
+      "empty": {
+        "active": "No files yet",
+        "deleted": "No files waiting to be removed"
+      },
+      "reason": {
+        "legal_hold": "Kept by law",
+        "system_file": "System file",
+        "evidence": "Evidence (meter, inspection, service)",
+        "listing_in_use": "Used by a live listing"
+      },
+      "heldUntil": "Kept until {date}",
+      "heldOpen": "Kept until its period after the lease ends",
+      "deletable": "Can be deleted",
+      "untitled": "Untitled file",
+      "locked": "Locked: {reason}"
+    },
     "filesHint": "Meter photos, slips, repair photos, contracts and uploads",
     "recordsLabel": "Records",
     "recordCount": "{count} records",
@@ -124,6 +162,66 @@
       "safe": "Your data is never deleted or locked, even when storage is full. Documents the law requires, such as receipts and leases, are always produced.",
       "full": "Everything you stored stays. Documents the law requires are produced as usual; only some optional uploads wait until you remove files you no longer need or add space.",
       "billed": "Extra storage is {price} per GB per month, on your monthly getproperty invoice. All your data stays."
+    },
+    "manage": "Manage storage",
+    "quotaFree": "{free} free",
+    "quotaWithPackages": "{free} free + {packages} from packages",
+    "categoriesTitle": "Where the space goes",
+    "category": {
+      "listing_media": "Listing photos",
+      "attachment": "Attachments and evidence",
+      "system_legal": "Legal documents",
+      "system_other": "Other system files"
+    },
+    "categoryObjects": "{count} files",
+    "legalHold": {
+      "title": "Documents the law requires you to keep: {bytes}",
+      "body": "Leases, receipts, tax invoices and payment slips count towards your storage and cannot be deleted until their legal retention period ends. They are always produced, even when storage is full."
+    },
+    "pendingPurge": "{bytes} waiting to be removed for good. It still counts until then and can be restored before that day.",
+    "banner": {
+      "warning": {
+        "title": "Storage almost full ({percent}% used)",
+        "body": "Delete files you no longer need or add space with a package. Your data and legal documents are not affected."
+      },
+      "full": {
+        "title": "Storage full ({percent}% used)",
+        "body": "Some optional uploads wait until you free space or add a package. Everything you stored stays; receipts and legal documents are produced as usual."
+      },
+      "action": "Manage storage"
+    },
+    "page": {
+      "title": "Storage",
+      "description": "See where the space goes, free space from files you no longer need, or add space with a package.",
+      "back": "Back to subscription"
+    },
+    "packages": {
+      "title": "Storage packages",
+      "description": "Package space adds to your free allowance. Nothing is deleted when a package ends.",
+      "mine": "My packages",
+      "offers": "Available packages",
+      "noOffers": "No storage packages yet",
+      "noOffersHint": "Free space by deleting files you no longer need below.",
+      "size": "+{size}",
+      "period": {
+        "month": "per month",
+        "year": "per year"
+      },
+      "price": "{total} {period}",
+      "priceVat": "incl. VAT · {price} before VAT",
+      "unpriced": "Not on sale yet",
+      "unpricedHint": "No price has been set yet. Meanwhile, free space by deleting files you no longer need.",
+      "buy": "Buy package",
+      "buyTitle": "Buy {name}",
+      "buyBody": "Adds {size} {period} for {total} incl. VAT. getproperty issues an invoice and the package starts on the day it is paid. If it is not paid the package simply does not start — nothing is suspended.",
+      "autoRenew": "Renew automatically",
+      "autoRenewHint": "Invoice the next period before the package ends",
+      "bought": "Ordered — pay the invoice to start the package",
+      "saved": "Saved",
+      "invoice": "Invoice {number}",
+      "runs": "Runs {from} – {to}",
+      "waiting": "Starts when the invoice is paid",
+      "ownedPending": "Awaiting payment"
     }
   }
 }

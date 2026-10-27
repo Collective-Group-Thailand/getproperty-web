@@ -24,6 +24,7 @@
         "http://localhost:3200/settings/privacy",
         "http://localhost:3200/billing/rate-plans",
         "http://localhost:3200/subscription",
+        "http://localhost:3200/subscription/storage",
         "http://localhost:3200/subscription/invoices/8b000000-0000-4000-8000-000000000001",
         "http://localhost:3200/reports",
         "http://localhost:3200/service-requests",

@@ -58,6 +58,11 @@ export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
   support_access: { href: "/settings/support-access", icon: IconChat, group: "settings" },
   audit_log: { href: "/settings/audit-log", icon: IconHistory, group: "settings" },
   subscription: { href: "/subscription", icon: IconWallet, group: "settings" },
+  // Agency workspace (api G2, D-293): pages arrive with GW2.
+  mandated_units: null,
+  mandates: null,
+  co_broke: null,
+  deals: null,
 };
 
 export const OWNER_MENU_GROUPS = ["operations", "money", "settings"] as const;

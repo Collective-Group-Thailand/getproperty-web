@@ -1,6 +1,7 @@
 import type { HttpHandler } from "msw";
 
 import { initialIdentities, state } from "../state";
+import { initialStorageWorld } from "../storage-world";
 import { assetHandlers } from "./assets";
 import { billingHandlers } from "./billing";
 import { dashboardHandlers } from "./dashboard";
@@ -18,6 +19,7 @@ import { portfolioHandlers } from "./portfolio";
 import { initialPortfolios } from "./portfolio-world";
 import { releaseHandlers } from "./release";
 import { settingsHandlers } from "./settings";
+import { storageHandlers } from "./storage";
 import { initialOwnerWorld, type OwnerWorld } from "./world";
 
 /** The owner surface's stateful handlers (F2); the contract-generated handlers answer what is not here. */
@@ -33,6 +35,7 @@ export const ownerHandlers: HttpHandler[] = [
   ...paymentHandlers,
   ...meteringHandlers,
   ...settingsHandlers,
+  ...storageHandlers,
   ...portfolioHandlers,
   ...listingHandlers,
   ...leadHandlers,
@@ -123,6 +126,11 @@ export function resetOwnerWorld(part: string | null): boolean {
     state.certificates = {};
     if (part) return true;
   }
+  if (!part || part === "storage") {
+    // Storage of G1 (files, packages, quota overrides) lives beside the owner world.
+    state.storage = initialStorageWorld();
+    if (part) return true;
+  }
   if (!part) {
     state.owner = fresh;
     state.stampDuty = {};
@@ -137,3 +145,4 @@ export function resetOwnerWorld(part: string | null): boolean {
 }
 
 export { providerPays, residentAnswers, residentSigns };
+export { storagePackagePaid, storagePricePublished } from "./storage";
