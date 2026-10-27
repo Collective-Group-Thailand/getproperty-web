@@ -27,6 +27,7 @@ import { IconRoom } from "@/ui/icons/glyphs/room";
 
 import { ownerPath } from "../shared/links";
 import { ownerCan, readOnly, section, type OwnerContext } from "../shared/server";
+import { StorageBanner } from "./StorageBanner";
 import { StorageCard } from "./StorageCard";
 import { UpgradeToSmart } from "./UpgradeAction";
 
@@ -73,6 +74,8 @@ export async function SubscriptionView({
           ) : null
         }
       />
+
+      <StorageBanner storage={storage.data ?? null} manageHref={ownerPath(locale, "/subscription/storage")} />
 
       {sub?.readOnly || readOnly(me) ? (
         <Callout tone="danger" title={t("readOnly.title")}>
@@ -201,7 +204,12 @@ export async function SubscriptionView({
         </>
       )}
 
-      <StorageCard storage={storage.data ?? null} error={storage.error} locale={locale} />
+      <StorageCard
+        storage={storage.data ?? null}
+        error={storage.error}
+        locale={locale}
+        manageHref={ownerPath(locale, "/subscription/storage")}
+      />
 
       <Card as="section" aria-labelledby="sub-invoices">
         <CardHeader title={<span id="sub-invoices">{t("invoices")}</span>} description={t("invoicesHint")} />

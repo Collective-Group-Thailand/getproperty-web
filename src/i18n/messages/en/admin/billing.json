@@ -232,7 +232,12 @@
       "per_meter_point": "per meter point/month",
       "per_building": "per building/month",
       "per_tenant": "per tenant/month",
-      "per_report": "per report"
+      "per_report": "per report",
+      "per_package": "per package/period",
+      "per_listing": "per listing",
+      "per_recipient": "per recipient",
+      "per_deal": "per deal",
+      "percent_of_amount": "% of amount"
     },
     "newVersion": "New version",
     "newVersionTitle": "New version of {name}",
@@ -271,24 +276,12 @@
     },
     "allowance": {
       "title": "Free allowance and overage price",
-      "description": "Per tenant type. For a custom deal with one tenant, set an override on that tenant's settings.",
+      "description": "Per tenant type. For a custom deal with one tenant, set its free quota in the usage table below.",
       "dialog": "Leave the free allowance empty for no limit on that type; leave the price empty to not sell extra space (only optional uploads are then held — legal documents are always stored).",
       "type": "Tenant type",
       "freeGb": "Free (GB)",
       "price": "Overage (THB/GB/month)",
       "hint": "Charged on the month's average overage, on the monthly getproperty invoice."
-    },
-    "packs": {
-      "title": "Add-on packs",
-      "description": "Extra space a tenant can buy by the month",
-      "none": "No packs yet",
-      "dialog": "Empty rows are not saved.",
-      "key": "Pack code",
-      "gb": "GB",
-      "price": "THB/month",
-      "hint": "Codes use lowercase letters, digits and hyphens, e.g. plus-20.",
-      "invalid": "Check the pack codes, sizes and prices.",
-      "size": "+{gb} GB"
     },
     "notices": {
       "title": "Notify at",
@@ -307,9 +300,97 @@
       "allowance": "Allowance",
       "level": "Level",
       "day": "As of",
-      "percent": "{percent}%"
+      "percent": "{percent}%",
+      "actions": "Actions"
     },
-    "gb": "{gb} GB"
+    "gb": "{gb} GB",
+    "packages": {
+      "title": "Storage packages",
+      "description": "Extra space tenants buy (price-plan add-ons). A package without a published price is shown to owners as \"Not on sale yet\".",
+      "none": "No storage packages yet",
+      "new": "New package",
+      "newTitle": "New storage package",
+      "newHint": "The price is saved as a draft price-plan version from the date set; publish it on Price plans to put the package on sale. Leave the price empty until it is decided.",
+      "key": "Key",
+      "keyHint": "Lowercase letters, digits and _, e.g. storage_plus_20",
+      "nameTh": "Name (Thai)",
+      "nameEn": "Name (English)",
+      "sizeGb": "Size (GB)",
+      "period": "Billing period",
+      "periodOption": {
+        "month": "Monthly",
+        "year": "Yearly"
+      },
+      "tenantType": "Tenant type",
+      "allTypes": "Every type",
+      "visibility": "Visibility",
+      "visibilityOption": {
+        "public": "Shown to owners",
+        "hidden": "Hidden (offered by support)"
+      },
+      "unitPrice": "Price per period before VAT (THB)",
+      "unitPriceHint": "Empty = not on sale yet",
+      "vatRate": "VAT rate",
+      "effectiveFrom": "Available from",
+      "create": "Create package",
+      "created": "Package created",
+      "edit": "Edit",
+      "editTitle": "Edit {name}",
+      "editHint": "Size, period and price change through a new price-plan version.",
+      "active": "Offered to tenants",
+      "activeHint": "Switching off stops new purchases; bought packages run to their end.",
+      "save": "Save",
+      "saved": "Saved",
+      "columns": {
+        "package": "Package",
+        "size": "Size",
+        "period": "Period",
+        "price": "Price",
+        "window": "Available",
+        "state": "State"
+      },
+      "onSale": "On sale",
+      "unpriced": "Not on sale yet",
+      "inactive": "Not offered",
+      "hidden": "Hidden",
+      "price": "{price} before VAT",
+      "noPrice": "No price",
+      "version": "Version: {state}",
+      "window": "{from} – {to}",
+      "windowOpen": "From {from}",
+      "pricePlans": "Change a price on Price plans"
+    },
+    "quota": {
+      "action": "Free quota",
+      "title": "Free quota of {name}",
+      "description": "A custom deal for this tenant: the free allowance becomes this size from the date set. Packages still add on top.",
+      "freeGb": "Free allowance (GB)",
+      "effectiveFrom": "Effective from",
+      "effectiveFromHint": "Empty = now. Never in the past.",
+      "reason": "Audit note",
+      "reasonHint": "Why this tenant gets a different allowance — kept in the audit log.",
+      "save": "Save quota",
+      "saved": "Quota saved"
+    },
+    "reconcile": {
+      "action": "Reconcile now",
+      "done": "Reconciled: drift {drift}"
+    },
+    "reconciliations": {
+      "title": "Reconciliation",
+      "description": "Each night the counters are compared with what object storage holds. Newest first.",
+      "empty": "No reconciliation yet",
+      "tenant": "Tenant",
+      "ranAt": "Ran",
+      "storage": "Object storage",
+      "counters": "Counters",
+      "drift": "Drift",
+      "corrected": "Corrected",
+      "orphans": "Orphans / missing",
+      "yes": "Corrected",
+      "no": "Reported only",
+      "objects": "{count} objects"
+    }
   },
   "messaging": {
     "title": "LINE message rates",

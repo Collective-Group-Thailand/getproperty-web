@@ -36,6 +36,7 @@ const base = (
   input: Partial<Schemas["ListingDto"]> & { id: string; unitId: string; slug: string; titleTh: string },
 ): Schemas["ListingDto"] => ({
   buildingId: "6a1f0c3e-2b4d-4e5f-8a9b-0c1d2e3f4a01",
+  mandateId: null,
   state: "draft",
   titleEn: null,
   descriptionTh: "",

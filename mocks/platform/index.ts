@@ -6,6 +6,7 @@ import { credentialHandlers } from "./credentials";
 import { advanceRollout, fleetHandlers } from "./fleet";
 import { guideHandlers } from "./guides";
 import { operationHandlers } from "./operations";
+import { storageAdminHandlers } from "./storage";
 import { initialPlatformWorld } from "./world";
 
 /** The admin surface's stateful handlers (F5); the contract-generated handlers answer what is not here. */
@@ -15,6 +16,7 @@ export const platformHandlers: HttpHandler[] = [
   ...fleetHandlers,
   ...credentialHandlers,
   ...guideHandlers,
+  ...storageAdminHandlers,
 ];
 
 export function resetPlatformWorld(): void {

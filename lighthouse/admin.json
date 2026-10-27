@@ -20,7 +20,8 @@
         "http://admin.localhost:3200/devices/2f6c1d7e-9a3b-4c5d-8e7f-0a1b2c3d4e03",
         "http://admin.localhost:3200/ota/rollouts/aa000000-0000-4000-8000-000000000001",
         "http://admin.localhost:3200/integration-events",
-        "http://admin.localhost:3200/privacy"
+        "http://admin.localhost:3200/privacy",
+        "http://admin.localhost:3200/subscriptions/storage"
       ],
       "numberOfRuns": 1,
       "settings": {

@@ -5,28 +5,36 @@ import { formatBytes, formatNumber, formatTHB } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
+import { Callout } from "@/ui/components/Callout";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { Progress } from "@/ui/components/Progress";
+import { IconShield } from "@/ui/icons/glyphs/shield";
 
 type Storage = Schemas["OwnerStorageDto"];
 
 const LEVEL_TONE = { ok: "success", warning: "warning", full: "danger", over: "danger" } as const;
 const BAR_TONE = { ok: "primary", warning: "warning", full: "danger", over: "danger" } as const;
 const RECORD_ORDER = ["invoice", "receipt", "payment", "meter_reading", "lease", "service_request"] as const;
+const CATEGORY_ORDER = ["listing_media", "attachment", "system_legal", "system_other"] as const;
 
 /**
  * Storage (D-276): one figure (what is used), the bar against the allowance, and what makes up the number — files at
  * their size and records at their counted size. The copy never threatens: data is never deleted or locked, documents
  * the law requires are always produced. Every number is the API's; nothing is computed here but the remainder.
+ * G1 (D-285, D-286): the quota as free allowance + packages, where the space goes by category, the legal-hold share
+ * (counted, never deletable, always issued) and what waits for its purge.
  */
 export async function StorageCard({
   storage,
   error,
   locale,
+  manageHref,
 }: {
   storage: Storage | null;
   error: unknown;
   locale: Locale;
+  /** The storage page (files, packages); omitted on that page itself. */
+  manageHref?: string;
 }) {
   const t = await getTranslations("owner.subscription.storage");
   if (!storage)
@@ -43,6 +51,12 @@ export async function StorageCard({
   const allowance = storage.allowanceBytes ? BigInt(storage.allowanceBytes) : null;
   const level = storage.level;
   const recordCount = Object.values(storage.records).reduce((sum, n) => sum + n, 0);
+  const packageBytes = BigInt(storage.packageBytes);
+  const legalHold = BigInt(storage.legalHoldBytes);
+  const pendingPurge = BigInt(storage.pendingPurgeBytes);
+  const categories = CATEGORY_ORDER.map(
+    (category) => storage.categories.find((row) => row.category === category) ?? { category, bytes: "0", objects: 0 },
+  );
   const recordList = RECORD_ORDER.filter((type) => (storage.records[type] ?? 0) > 0).map((type) =>
     t("recordItem", { label: t(`records.${type}`), count: formatNumber(storage.records[type] ?? 0, locale) }),
   );
@@ -53,15 +67,26 @@ export async function StorageCard({
         title={<span id="sub-storage">{t("title")}</span>}
         description={t("description")}
         action={
-          level ? (
-            <Badge tone={LEVEL_TONE[level]} size="sm">
-              <span data-testid="storage-level">{t(`level.${level}`)}</span>
-            </Badge>
-          ) : (
-            <Badge tone="neutral" size="sm">
-              <span data-testid="storage-level">{t("level.unmetered")}</span>
-            </Badge>
-          )
+          <span className="flex items-center gap-3">
+            {manageHref ? (
+              <a
+                href={manageHref}
+                className="text-primary text-sm font-medium hover:underline"
+                data-testid="storage-manage"
+              >
+                {t("manage")}
+              </a>
+            ) : null}
+            {level ? (
+              <Badge tone={LEVEL_TONE[level]} size="sm">
+                <span data-testid="storage-level">{t(`level.${level}`)}</span>
+              </Badge>
+            ) : (
+              <Badge tone="neutral" size="sm">
+                <span data-testid="storage-level">{t("level.unmetered")}</span>
+              </Badge>
+            )}
+          </span>
         }
       />
 
@@ -75,6 +100,16 @@ export async function StorageCard({
               ? t("ofAllowance", { allowance: formatBytes(storage.allowanceBytes!, locale) })
               : t("noAllowance")}
           </span>
+          {storage.freeBytes ? (
+            <span className="text-muted w-full text-sm" data-testid="storage-quota">
+              {packageBytes > 0n
+                ? t("quotaWithPackages", {
+                    free: formatBytes(storage.freeBytes, locale),
+                    packages: formatBytes(storage.packageBytes, locale),
+                  })
+                : t("quotaFree", { free: formatBytes(storage.freeBytes, locale) })}
+            </span>
+          ) : null}
         </p>
 
         {allowance !== null && level ? (
@@ -122,6 +157,55 @@ export async function StorageCard({
             ) : null}
           </div>
         </dl>
+
+        {files > 0n ? (
+          <section aria-labelledby="storage-categories" className="border-border flex flex-col gap-3 border-t pt-4">
+            <h3 id="storage-categories" className="text-sm font-semibold">
+              {t("categoriesTitle")}
+            </h3>
+            <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2" data-testid="storage-categories">
+              {categories.map((row) => (
+                <li
+                  key={row.category}
+                  className="flex flex-col gap-1"
+                  data-testid="storage-category"
+                  data-category={row.category}
+                >
+                  <span className="flex items-baseline justify-between gap-2 text-sm">
+                    <span>{t(`category.${row.category}`)}</span>
+                    <span className="font-semibold tabular-nums">{formatBytes(row.bytes, locale)}</span>
+                  </span>
+                  <Progress
+                    label={t(`category.${row.category}`)}
+                    value={Number(BigInt(row.bytes))}
+                    max={Number(files)}
+                    valueText={formatBytes(row.bytes, locale)}
+                    showCaption={false}
+                  />
+                  <span className="text-muted text-xs">
+                    {t("categoryObjects", { count: formatNumber(row.objects, locale) })}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        {legalHold > 0n ? (
+          <Callout
+            tone="info"
+            icon={IconShield}
+            title={t("legalHold.title", { bytes: formatBytes(storage.legalHoldBytes, locale) })}
+          >
+            <span data-testid="storage-legal-hold">{t("legalHold.body")}</span>
+          </Callout>
+        ) : null}
+
+        {pendingPurge > 0n ? (
+          <p className="text-muted text-sm" data-testid="storage-pending-purge">
+            {t("pendingPurge", { bytes: formatBytes(storage.pendingPurgeBytes, locale) })}
+          </p>
+        ) : null}
 
         <p className="text-muted text-sm" data-testid="storage-note">
           {allowance === null

@@ -1077,8 +1077,11 @@ export function initialPlatformWorld(): PlatformWorld {
       // D-276 / D-279 storage (5 GB free per tenant type; price and packs set by the platform admin)
       ...(
         [
-          ["storage.free_gb", { apartment: "5", condo_juristic: "5", pm_company: "5", landlord: "5" }],
-          ["storage.price_per_gb_month", { apartment: null, condo_juristic: null, pm_company: null, landlord: null }],
+          ["storage.free_gb", { apartment: "5", condo_juristic: "5", pm_company: "5", landlord: "5", agency: "5" }],
+          [
+            "storage.price_per_gb_month",
+            { apartment: null, condo_juristic: null, pm_company: null, landlord: null, agency: null },
+          ],
           ["storage.packs", []],
           ["storage.notice_at_percent", [80, 100]],
           ["storage.record_bytes", { _default: 1024, invoice: 2048, receipt: 2048, meter_reading: 256 }],

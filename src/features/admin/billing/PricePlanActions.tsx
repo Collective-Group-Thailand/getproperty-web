@@ -13,7 +13,14 @@ import { NativeSelect } from "@/ui/components/NativeSelect";
 import { IconAdd } from "@/ui/icons/glyphs/add";
 import { IconCheck } from "@/ui/icons/glyphs/check";
 
-const UNITS: Schemas["PlanBillingUnit"][] = ["per_unit", "per_meter_point", "per_building", "per_tenant", "per_report"];
+const UNITS: Schemas["PlanBillingUnit"][] = [
+  "per_unit",
+  "per_meter_point",
+  "per_building",
+  "per_tenant",
+  "per_report",
+  "per_package",
+];
 
 /** `POST /v1/admin/price-plans/{planId}/versions` — a draft version from a date not before today (D-204). */
 export function NewPlanVersion({ planId, name, today }: { planId: string; name: string; today: string }) {

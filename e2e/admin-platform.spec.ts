@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import { MOCK_API } from "../playwright.config";
+
 import {
   gotoAdmin,
   P,
@@ -120,9 +122,13 @@ test("platform settings: a new effective-dated version with a reason", async ({ 
   await expect(page.getByTestId("setting-value-support.grant_max_hours")).toHaveText("12");
 });
 
-test("storage (D-279): 5 GB free per type, an overage price and a pack set here; every tenant's usage", async ({
+test("storage (D-279, G1): free per type, overage price, packages, per-tenant quota, reconcile; every tenant's usage", async ({
   page,
 }) => {
+  // The storage world outlives the platform reset: start the juristic tenant from the default 5 GB again.
+  await fetch(`${MOCK_API}/__mock/owner/storage/quota?tenant=0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c55&gb=5`, {
+    method: "POST",
+  });
   await signInPlatform(page, "ops");
   await gotoAdmin(page, "/subscriptions/storage");
   const landlord = page.locator('[data-testid="storage-type-row"][data-type="landlord"]');
@@ -140,17 +146,60 @@ test("storage (D-279): 5 GB free per type, an overage price and a pack set here;
   await expect(dialog).toHaveCount(0);
   await expect(landlord).toContainText("2.50");
   const sent = (await platformReceived("admin.settings.update")).at(-1)?.body;
-  expect(sent?.value).toEqual({ apartment: null, condo_juristic: null, pm_company: null, landlord: "2.50" });
+  expect(sent?.value).toEqual({
+    apartment: null,
+    condo_juristic: null,
+    pm_company: null,
+    landlord: "2.50",
+    agency: null,
+  });
 
-  await page.getByTestId("edit-storage-packs").click();
+  // G1 (D-285): a storage package is defined without a price — owners see it "not on sale yet" (O-022).
+  // The storage world outlives the platform reset (owner specs use it in parallel): a key of this run.
+  const key = `storage_plus_50_${Date.now() % 1_000_000}`;
+  await page.getByTestId("new-storage-package").click();
   dialog = page.getByRole("dialog");
-  await dialog.getByLabel("Pack code 1").fill("plus-20");
-  await dialog.getByLabel("GB 1", { exact: true }).fill("20");
-  await dialog.getByLabel("THB/month 1").fill("49");
-  await dialog.getByTestId("storage-reason").fill("First pack");
+  await dialog.getByTestId("storage-package-key").fill(key);
+  await dialog.getByTestId("storage-package-name-th").fill("พื้นที่เพิ่ม 50 GB");
+  await dialog.getByTestId("storage-package-name-en").fill("Extra 50 GB");
+  await dialog.getByTestId("storage-package-size").fill("50");
   await dialog.getByTestId("form-submit").click();
   await expect(dialog).toHaveCount(0);
-  await expect(page.getByTestId("storage-packs")).toContainText("+20 GB");
+  const created = page.locator(`[data-testid="storage-package-row"][data-key="${key}"]`);
+  await expect(created).toContainText("50 GB");
+  await expect(created).toContainText("Not on sale yet");
+  const createdBody = (await platformReceived("admin.storage.createPackage")).at(-1)?.body;
+  expect(createdBody).toMatchObject({ key, sizeGb: "50", period: "month", unitPrice: null });
+
+  // Switched off: no new purchases (bought packages keep running).
+  await created.getByTestId("edit-storage-package").click();
+  dialog = page.getByRole("dialog");
+  await dialog.getByRole("switch").click();
+  await dialog.getByTestId("form-submit").click();
+  await expect(dialog).toHaveCount(0);
+  await expect(created).toContainText("Not offered");
+
+  // A custom free quota for one tenant, with the audit note; then reconcile it now.
+  const riverside = page.locator(
+    '[data-testid="storage-usage-row"][data-tenant="0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c55"]',
+  );
+  await riverside.getByTestId("storage-quota").click();
+  dialog = page.getByRole("dialog");
+  await dialog.getByTestId("storage-quota-gb").fill("20");
+  await dialog.getByTestId("storage-quota-reason").fill("Juristic contract: 20 GB free");
+  await dialog.getByTestId("form-submit").click();
+  await expect(dialog).toHaveCount(0);
+  await expect(riverside).toContainText("20 GB");
+  expect((await platformReceived("admin.storage.setQuota")).at(-1)?.body).toMatchObject({
+    freeGb: "20",
+    reason: "Juristic contract: 20 GB free",
+  });
+  const runs = await page.getByTestId("storage-reconciliation-row").count();
+  await riverside.getByTestId("storage-reconcile").click();
+  await expect(page.getByTestId("storage-reconciliation-row")).toHaveCount(runs + 1);
+  // From the top: a row scrolled under the sticky top bar is "obscured" for axe's target-size rule.
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await expectAxeClean(page);
 });
 
 test("templates: preview a draft with sample data, send a test, publish", async ({ page }) => {

@@ -393,5 +393,11 @@
   "guide": {
     "draft": "ร่าง",
     "published": "เผยแพร่แล้ว"
+  },
+  "storagePackage": {
+    "pending_payment": "รอชำระเงิน",
+    "active": "ใช้งานอยู่",
+    "expired": "หมดอายุ",
+    "cancelled": "ยกเลิก"
   }
 }

@@ -70,6 +70,7 @@ const CONTRACT_ENUM: Partial<Record<keyof typeof STATUS_MAPS, string>> = {
   etax: "EtaxStatus",
   tm30: "Tm30Status",
   linkRequest: "PartyLinkRequestState",
+  storagePackage: "StoragePackageState",
 };
 
 describe("status maps", () => {

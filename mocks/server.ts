@@ -53,9 +53,16 @@ import { pipeline } from "node:stream/promises";
 
 import { getResponse } from "msw";
 
-import { OPERATORS, PLATFORM_USERS } from "./fixtures";
+import { OPERATORS, PLATFORM_USERS, TENANTS } from "./fixtures";
 import { handlers } from "./handlers";
-import { providerPays, resetOwnerWorld, residentAnswers, residentSigns } from "./owner";
+import {
+  providerPays,
+  resetOwnerWorld,
+  residentAnswers,
+  residentSigns,
+  storagePackagePaid,
+  storagePricePublished,
+} from "./owner";
 import { phoneSignIn, qrDuplicateSlip } from "./owner/release";
 import { advanceRollout, resetPlatformWorld } from "./platform";
 import { resetR2World } from "./r2";
@@ -216,6 +223,28 @@ function ownerControl(url: URL, req: IncomingMessage): { status: number; body: u
     return resetOwnerWorld(url.searchParams.get("part"))
       ? { status: 200, body: { ok: true } }
       : { status: 400, body: { error: "unknown part" } };
+  }
+  // G1 storage: the founder publishes a package price (O-022), Finance records a purchase's payment, the
+  // platform admin overrides the sample tenant's free quota.
+  if (req.method === "POST" && parts[0] === "storage" && parts[1] === "price") {
+    const definition = storagePricePublished(url.searchParams.get("key") ?? "", url.searchParams.get("price") ?? "");
+    return definition ? { status: 200, body: definition } : { status: 404, body: { error: "no such package" } };
+  }
+  if (req.method === "POST" && parts[0] === "storage" && parts[1] === "pay") {
+    const pack = storagePackagePaid(url.searchParams.get("package") ?? "");
+    return pack ? { status: 200, body: pack } : { status: 409, body: { error: "no package waiting for payment" } };
+  }
+  if (req.method === "POST" && parts[0] === "storage" && parts[1] === "quota") {
+    const tenantId = url.searchParams.get("tenant") ?? TENANTS.sample.profile.id;
+    state.storage.quota[tenantId] = {
+      freeGb: url.searchParams.get("gb") ?? "5",
+      versionId: crypto.randomUUID(),
+      effectiveFrom: new Date().toISOString(),
+    };
+    return { status: 200, body: state.storage.quota[tenantId] };
+  }
+  if (req.method === "GET" && parts[0] === "storage") {
+    return { status: 200, body: state.storage };
   }
   if (req.method === "POST" && parts[0] === "leases" && parts[2] === "resident-sign") {
     return residentSigns(parts[1] ?? "")

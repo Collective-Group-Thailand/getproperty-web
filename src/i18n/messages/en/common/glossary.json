@@ -3,7 +3,8 @@
     "apartment": "Apartment",
     "condo_juristic": "Condominium juristic person",
     "pm_company": "Property management company",
-    "landlord": "Landlord"
+    "landlord": "Landlord",
+    "agency": "Estate agency"
   },
   "tenantRole": {
     "owner": "Owner",
