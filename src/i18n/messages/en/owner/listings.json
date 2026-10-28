@@ -222,19 +222,28 @@
       "facebook_group": "Facebook group",
       "facebook_marketplace": "Facebook Marketplace",
       "qr": "QR on the card",
-      "link": "Plain link"
+      "link": "Plain link",
+      "facebook_page": "Facebook Page"
     },
     "hints": {
       "line": "Opens LINE to pick the chat or group to send it to.",
       "facebook_group": "Copy the caption, attach the card and post in rental groups (Facebook does not allow automatic posting).",
       "facebook_marketplace": "Create a Marketplace listing, paste the caption and use the card as the first photo.",
       "qr": "This QR code is on the card; print it for the building entrance or the lift.",
-      "link": "For anywhere else, such as e-mail or forums."
+      "link": "For anywhere else, such as e-mail or forums.",
+      "facebook_page": "The link used in the automatic posts on your Page (Settings › Facebook Page)"
     },
     "shareLine": "Share in LINE",
     "copyCaption": "Copy caption",
     "copyLink": "Copy link",
     "copiedCaption": "Caption copied",
-    "copiedLink": "Link copied"
-  }
+    "copiedLink": "Link copied",
+    "photos": "Photos to post",
+    "photosHint": "Every photo of the listing at 1,600 px, in the listing's order, to post in groups or on Marketplace. Download links last 10 minutes — prepare the kit again when they expire.",
+    "photoAlt": "Listing photo {index}",
+    "downloadPhoto": "Download photo {index}",
+    "noPhotos": "This listing has no photos yet",
+    "downloadOne": "Download"
+  },
+  "promotion": "Promotion & photo services"
 }

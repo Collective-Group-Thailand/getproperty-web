@@ -244,3 +244,35 @@ test("a share-kit short link lands on the listing with its UTM; an unknown one o
   await page.goto(`${HOSTS.owner}/s/zzzzzzzz`);
   await expect(page).toHaveURL(`${HOSTS.owner}/rent`);
 });
+
+test("rent detail: the API's JSON-LD Offer and OG card, the verified-vacant badge (G4, D-296)", async ({ page }) => {
+  await page.goto(`${HOSTS.owner}/rent/condo-ari-1br-sunlit`);
+  const offer = (await jsonLdGraphs(page)).find((g) => g["@type"] === "Offer");
+  expect(offer).toMatchObject({ priceCurrency: "THB", price: "16500.00" });
+  expect((offer?.priceSpecification as { unitCode?: string } | undefined)?.unitCode).toBe("MON");
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+    "content",
+    /\/v1\/public\/listings\/condo-ari-1br-sunlit\/og-image$/,
+  );
+  await expect(page.getByTestId("listing-vacant")).toContainText("ว่างจริง");
+  await expect(page.getByTestId("listing-vacant")).toContainText("ไม่ได้มาจากการยืนยันของเจ้าของเอง");
+  await page.goto(`${HOSTS.owner}/rent/condo-onnut-studio-near-bts`);
+  await expect(page.getByTestId("listing-vacant")).toHaveCount(0);
+});
+
+test("rent search: a boosted listing on top carries the API's ad label; never on the detail (G5, D-297)", async ({
+  page,
+}) => {
+  await page.goto(`${HOSTS.owner}/rent`);
+  const first = page.getByTestId("listing-card").first();
+  await expect(first).toHaveAttribute("data-sponsored", "true");
+  await expect(first.getByTestId("listing-sponsored")).toHaveText("โฆษณา");
+  await expect(page.locator('[data-testid="listing-card"][data-sponsored="true"]')).toHaveCount(1);
+  await expect(page.locator('[data-testid="listing-card-vacant"]').first()).toContainText("ว่างจริง");
+  const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"]).analyze();
+  expect(results.violations).toEqual([]);
+  await page.goto(`${HOSTS.owner}/en/rent`);
+  await expect(page.getByTestId("listing-sponsored").first()).toHaveText("Ad");
+  await page.goto(`${HOSTS.owner}/rent/condo-ladprao-2br-family`);
+  await expect(page.getByTestId("listing-sponsored")).toHaveCount(0);
+});

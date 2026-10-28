@@ -2,7 +2,9 @@ import { http, type HttpHandler } from "msw";
 
 import type { components } from "../../src/lib/api/schema";
 import { state } from "../state";
-import { allowed, body, json, mutating, notFound, owner, validation } from "./support";
+import { TENANTS } from "../fixtures";
+import { addonGate } from "./growth";
+import { allowed, body, json, mutating, notFound, owner, record, validation, type Ok } from "./support";
 
 type Schemas = components["schemas"];
 
@@ -12,6 +14,16 @@ type Schemas = components["schemas"];
  * channel is kept as `failing` with the reason). One live channel per scope (the tenant, or one building).
  */
 const w = () => state.owner;
+
+/**
+ * The channels of the calling tenant: the sample tenant's in the owner world, the agency's beside it (G4, D-296 (6));
+ * every other tenant has none (and cannot connect one in the mock).
+ */
+function channelsOf(ok: Ok): Schemas["MessagingChannelDto"][] | null {
+  if (ok.own) return w().messagingChannels;
+  if (ok.tenantId === TENANTS.agency.profile.id) return state.growth.agencyChannels;
+  return null;
+}
 
 const WEBHOOK_BASE = "https://api.getproperty.test/webhooks/line/";
 
@@ -42,7 +54,7 @@ export const messagingHandlers: HttpHandler[] = [
   http.get("*/v1/owner/messaging/channels", ({ request }) => {
     const ok = owner(request, "owner.messagingChannels.list");
     if (ok instanceof Response) return ok;
-    return json(ok.own ? w().messagingChannels : []);
+    return json(channelsOf(ok) ?? []);
   }),
 
   // The month's usage (a sample near the free messages, for review): 812 of 1,000 through the shared OA.
@@ -50,7 +62,7 @@ export const messagingHandlers: HttpHandler[] = [
     const ok = owner(request, "owner.messagingUsage.get");
     if (ok instanceof Response) return ok;
     const month = new URL(request.url).searchParams.get("month") ?? new Date().toISOString().slice(0, 7);
-    const own = w().messagingChannels.some((channel) => channel.state === "verified");
+    const own = (channelsOf(ok) ?? []).some((channel) => channel.state === "verified");
     return json({
       month,
       shared: {
@@ -76,13 +88,22 @@ export const messagingHandlers: HttpHandler[] = [
     const forbidden = allowed(ok, op, "tenant.settings.update");
     if (forbidden) return forbidden;
     const input = await body<Partial<Schemas["MessagingChannelConnectDto"]>>(request);
+    // Secrets are never kept in the request log: only what the e2e suite checks (G4 add-on acceptance).
+    record(op, request, {
+      lineChannelId: input.lineChannelId,
+      acceptAddonVersionId: input.acceptAddonVersionId ?? null,
+    });
     if (!/^\d{6,20}$/.test(input.lineChannelId ?? "")) return validation(op, "lineChannelId", "6–20 digits");
     if ((input.channelSecret ?? "").length < 16) return validation(op, "channelSecret", "at least 16 characters");
     if ((input.accessToken ?? "").length < 20) return validation(op, "accessToken", "at least 20 characters");
     const buildingId = input.buildingId ?? null;
     if (buildingId && !w().buildings.some((building) => building.id === buildingId)) return notFound(op);
-    if (!ok.own) return notFound(op);
-    w().messagingChannels = w().messagingChannels.filter((channel) => channel.buildingId !== buildingId);
+    const list = channelsOf(ok);
+    if (!list) return notFound(op);
+    // G4: while the agency OA add-on is priced, connecting needs its prices accepted (setup fee invoiced once).
+    const gate = addonGate(ok.tenantId, op, input.acceptAddonVersionId);
+    if (gate) return gate;
+    for (let i = list.length - 1; i >= 0; i -= 1) if (list[i]!.buildingId === buildingId) list.splice(i, 1);
     const id = crypto.randomUUID();
     const channel = checked(
       {
@@ -102,7 +123,7 @@ export const messagingHandlers: HttpHandler[] = [
       input.accessToken!,
     );
     tokens.set(id, input.accessToken!);
-    w().messagingChannels.push(channel);
+    list.push(channel);
     return json(channel, 201);
   }),
 
@@ -114,14 +135,15 @@ export const messagingHandlers: HttpHandler[] = [
     if (ok instanceof Response) return ok;
     const forbidden = allowed(ok, op, "tenant.settings.update");
     if (forbidden) return forbidden;
-    const index = ok.own ? w().messagingChannels.findIndex((channel) => channel.id === params.channelId) : -1;
+    const list = channelsOf(ok) ?? [];
+    const index = list.findIndex((channel) => channel.id === params.channelId);
     if (index < 0) return notFound(op);
     if (action === "revoke") {
-      w().messagingChannels.splice(index, 1);
+      list.splice(index, 1);
       return new Response(null, { status: 204 });
     }
-    const channel = checked(w().messagingChannels[index]!, tokens.get(String(params.channelId)) ?? "");
-    w().messagingChannels[index] = channel;
+    const channel = checked(list[index]!, tokens.get(String(params.channelId)) ?? "");
+    list[index] = channel;
     return json(channel);
   }),
 ];

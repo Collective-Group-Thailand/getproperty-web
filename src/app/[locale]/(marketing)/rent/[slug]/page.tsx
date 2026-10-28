@@ -1,15 +1,15 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
-import type { PublicListingDetail } from "@/features/owner/marketing/listings/contract";
 import { JsonLdScript } from "@/features/owner/marketing/JsonLdScript";
 import { ChannelLink } from "@/features/owner/marketing/listings/ChannelLink";
 import { ListingCard } from "@/features/owner/marketing/listings/ListingCard";
 import { ListingImage } from "@/features/owner/marketing/listings/ListingImage";
 import { ListingUtility } from "@/features/owner/marketing/listings/ListingUtility";
+import { VerifiedVacantBadge } from "@/features/owner/marketing/listings/VerifiedVacant";
 import { publicListing, publicListings } from "@/features/owner/marketing/publicApi";
 import { liffRentHref, lineOaMessageHref, marketingOrigin, ownerHref } from "@/features/owner/marketing/seo";
-import { breadcrumbSchema, type JsonLd } from "@/features/owner/marketing/structured-data";
+import { breadcrumbSchema } from "@/features/owner/marketing/structured-data";
 import { formatDate, formatDecimal, formatTHB } from "@/i18n/format";
 import { getPathname } from "@/i18n/navigation";
 import { routing, type Locale } from "@/i18n/routing";
@@ -34,7 +34,8 @@ export async function generateMetadata({ params }: Props) {
   const listing = await publicListing(slug, locale);
   if (!listing) return { title: "getproperty", robots: { index: false } };
   const description = listing.description.slice(0, 160);
-  const image = listing.cover?.url ?? listing.photos[0]?.url;
+  // G4 (D-296): the API renders the 1200 × 630 card (photo, rent, place, badges) behind a stable URL.
+  const image = { url: listing.ogImageUrl, width: 1200, height: 630, alt: listing.title };
   return {
     title: { absolute: `${listing.title} · getproperty` },
     description,
@@ -45,35 +46,6 @@ export async function generateMetadata({ params }: Props) {
     },
     openGraph: { title: listing.title, description, url: url(slug, locale), type: "website", images: [image] },
     twitter: { card: "summary_large_image", title: listing.title, description, images: [image] },
-  };
-}
-
-/** schema.org for one rental: the home and the monthly offer, as the API published them. */
-function listingSchema(listing: PublicListingDetail, href: string): JsonLd {
-  return {
-    "@context": "https://schema.org",
-    "@type": "Offer",
-    url: href,
-    price: listing.rent,
-    priceCurrency: "THB",
-    businessFunction: "http://purl.org/goodrelations/v1#LeaseOut",
-    availabilityStarts: listing.availableFrom ?? undefined,
-    itemOffered: {
-      "@type": listing.unitKind === "house" || listing.unitKind === "townhouse" ? "House" : "Apartment",
-      name: listing.title,
-      description: listing.description,
-      numberOfRooms: listing.bedrooms,
-      numberOfBathroomsTotal: listing.bathrooms,
-      floorSize: { "@type": "QuantitativeValue", value: listing.sizeSqm, unitCode: "MTK" },
-      petsAllowed: listing.petsAllowed,
-      address: {
-        "@type": "PostalAddress",
-        streetAddress: listing.address,
-        addressRegion: listing.province,
-        addressCountry: "TH",
-      },
-      image: listing.photos.map((photo) => photo.url),
-    },
   };
 }
 
@@ -121,7 +93,8 @@ export default async function ListingPage({ params }: Props) {
     <>
       <JsonLdScript
         graphs={[
-          listingSchema(listing, href),
+          // G4 (D-296): the API's schema.org Offer, built from the facts already on this page.
+          listing.jsonLd,
           breadcrumbSchema([
             { name: nav("home"), url: `${marketingOrigin()}${getPathname({ href: "/", locale })}` },
             { name: nav("rent"), url: `${marketingOrigin()}${getPathname({ href: "/rent", locale })}` },
@@ -174,6 +147,9 @@ export default async function ListingPage({ params }: Props) {
                 .join(" · ")}
             </p>
             <h1 className="text-3xl">{listing.title}</h1>
+            {listing.verifiedVacant ? (
+              <VerifiedVacantBadge since={listing.vacantSince} locale={locale} explain />
+            ) : null}
             {listing.nearestTransit ? (
               <p className="text-muted">
                 {t("detail.transit", {
@@ -261,6 +237,9 @@ export default async function ListingPage({ params }: Props) {
                 <span className="text-muted">{t("card.perMonth")}</span>
               </p>
             </div>
+            {listing.verifiedVacant ? (
+              <VerifiedVacantBadge since={listing.vacantSince} locale={locale} testId="listing-vacant-aside" />
+            ) : null}
             <ul className="text-muted m-0 flex list-none flex-col gap-1 p-0 text-sm">
               <li>{t("detail.deposit", { months: listing.depositMonths })}</li>
               <li>{t("detail.advance", { months: listing.advanceMonths })}</li>

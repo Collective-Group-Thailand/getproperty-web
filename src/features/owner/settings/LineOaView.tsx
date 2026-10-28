@@ -1,20 +1,23 @@
 import { getTranslations } from "next-intl/server";
 
 import { MESSAGING_CHANNEL_STATUS } from "@/domain/status/messagingChannel";
+import { PLATFORM_INVOICE_STATUS } from "@/domain/status";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { SectionError } from "@/features/shared/console/SectionError";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
-import { formatDateTime, formatTHB } from "@/i18n/format";
+import { formatDate, formatDateTime, formatPercent, formatTHB } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
+import { Badge } from "@/ui/components/Badge";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Progress } from "@/ui/components/Progress";
 
+import { ownerPath } from "../shared/links";
 import { ownerCan, readOnly, section, type OwnerContext } from "../shared/server";
-import { ConnectLineOa, CopyWebhookUrl, RevokeLineOa, VerifyLineOa } from "./LineOaActions";
+import { ConnectLineOa, CopyWebhookUrl, RevokeLineOa, VerifyLineOa, type AddonTerms } from "./LineOaActions";
 import { SettingsNav } from "./SettingsNav";
 
 /**
@@ -25,10 +28,23 @@ import { SettingsNav } from "./SettingsNav";
 export async function LineOaView({ context }: { context: OwnerContext }) {
   const t = await getTranslations("owner.settings.lineOa");
   const { api, locale, me, buildings } = context;
-  const [channels, usage] = await Promise.all([
+  const [channels, usage, addons] = await Promise.all([
     section(unwrap(api.GET("/v1/owner/messaging/channels"))),
     section(unwrap(api.GET("/v1/owner/messaging/usage"))),
+    section(unwrap(api.GET("/v1/owner/messaging/addons"))),
   ]);
+  const offer = addons.data?.offer ?? null;
+  // G4 (D-287): while the agency add-on is priced, connecting restates its prices and asks for them to be accepted.
+  const terms: AddonTerms | null =
+    offer?.onSale && offer.versionId && offer.monthlyFee && offer.setupFee
+      ? {
+          versionId: offer.versionId,
+          monthlyFee: offer.monthlyFee,
+          setupFee: offer.setupFee,
+          vatRate: offer.vatRate,
+          setupCharged: addons.data?.setupCharged ?? false,
+        }
+      : null;
   const manage = ownerCan(me, "tenant.settings.update") && !readOnly(me);
   const scope = (id: string | null) =>
     id ? (buildings.find((building) => building.id === id)?.name ?? id.slice(0, 8)) : t("scopeAll");
@@ -39,11 +55,15 @@ export async function LineOaView({ context }: { context: OwnerContext }) {
         description={t("description")}
         actions={
           manage ? (
-            <ConnectLineOa buildings={buildings.map((building) => ({ id: building.id, name: building.name }))} />
+            <ConnectLineOa
+              buildings={buildings.map((building) => ({ id: building.id, name: building.name }))}
+              addon={terms}
+            />
           ) : null
         }
       />
       <SettingsNav me={me} current="/settings/line-oa" locale={locale} />
+      {addons.data?.offer ? <AddonCard addons={addons.data} locale={locale} t={t} /> : null}
       {usage.data ? <UsageCard usage={usage.data} locale={locale} t={t} /> : null}
       {!channels.data ? (
         <SectionError error={channels.error} />
@@ -174,6 +194,108 @@ function UsageCard({
       {usage.quotaFallbacks > 0 ? (
         <Callout tone="warning">{t("usage.fallbacks", { count: usage.quotaFallbacks })}</Callout>
       ) : null}
+    </Card>
+  );
+}
+
+/**
+ * The agency LINE OA integration add-on (G4, D-287, D-291): free while no price is published (O-027); otherwise the
+ * monthly and setup fee of the version in force (before VAT, from when), whether the setup fee was charged and the
+ * fee invoices. LINE bills its own message charges to the agency directly; an unpaid fee suspends nothing (D-250).
+ */
+function AddonCard({
+  addons,
+  locale,
+  t,
+}: {
+  addons: Schemas["MessagingAddonsDto"];
+  locale: Locale;
+  t: Awaited<ReturnType<typeof getTranslations<"owner.settings.lineOa">>>;
+}) {
+  const offer = addons.offer!;
+  const name = locale === "th" ? offer.nameTh : offer.nameEn;
+  const priced = offer.onSale && offer.monthlyFee !== null && offer.setupFee !== null;
+  return (
+    <Card className="flex flex-col gap-4" data-testid="line-oa-addon" data-on-sale={offer.onSale}>
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h2 className="font-display text-lg font-semibold">{name}</h2>
+        {priced ? null : (
+          <Badge tone="success" size="sm">
+            {t("addon.freeBadge")}
+          </Badge>
+        )}
+      </div>
+      {priced ? (
+        <div className="flex flex-col gap-3">
+          <dl className="m-0 grid gap-4 sm:grid-cols-3">
+            <div>
+              <dt className="text-muted text-sm">{t("addon.monthlyLabel")}</dt>
+              <dd className="m-0 text-xl font-semibold tabular-nums" data-testid="line-oa-addon-monthly">
+                {formatTHB(offer.monthlyFee!, locale)}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted text-sm">{t("addon.setupLabel")}</dt>
+              <dd className="m-0 text-xl font-semibold tabular-nums">{formatTHB(offer.setupFee!, locale)}</dd>
+              <dd className="text-muted m-0 text-xs">
+                {addons.setupCharged ? t("addon.setupChargedShort") : t("addon.setupOnce")}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-muted text-sm">{t("addon.vatLabel")}</dt>
+              <dd className="m-0 text-xl font-semibold tabular-nums">
+                {formatPercent(String(Number(offer.vatRate) * 100), locale)}
+              </dd>
+              {offer.effectiveFrom ? (
+                <dd className="text-muted m-0 text-xs">
+                  {t("addon.from", { date: formatDate(offer.effectiveFrom, locale) })}
+                </dd>
+              ) : null}
+            </div>
+          </dl>
+          <p className="text-muted m-0 text-sm">{t("addon.how")}</p>
+        </div>
+      ) : (
+        <p className="m-0" data-testid="line-oa-addon-free">
+          {t("addon.free")}
+        </p>
+      )}
+      {addons.invoices.length > 0 ? (
+        <section aria-labelledby="line-oa-addon-invoices" className="flex flex-col gap-2">
+          <h3 id="line-oa-addon-invoices" className="text-sm font-semibold">
+            {t("addon.invoices")}
+          </h3>
+          <ul className="divide-border m-0 list-none divide-y p-0">
+            {addons.invoices.map((invoice) => (
+              <li
+                key={invoice.id}
+                className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm"
+                data-testid="line-oa-addon-invoice"
+              >
+                <a
+                  href={ownerPath(locale, `/subscription/invoices/${invoice.id}`)}
+                  className="text-primary font-medium hover:underline"
+                >
+                  {invoice.number}
+                </a>
+                <span className="text-muted">
+                  {invoice.charge === "setup"
+                    ? t("addon.charge.setup")
+                    : t("addon.charge.monthly", {
+                        from: formatDate(invoice.periodStart, locale),
+                        to: formatDate(invoice.periodEnd, locale),
+                      })}
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className="font-semibold tabular-nums">{formatTHB(invoice.total, locale)}</span>
+                  <StatusBadgeOf map={PLATFORM_INVOICE_STATUS} value={invoice.state} size="sm" />
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+      <p className="text-muted m-0 text-xs">{t("addon.lineCharges")}</p>
     </Card>
   );
 }

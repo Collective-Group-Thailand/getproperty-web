@@ -21,7 +21,9 @@
         "http://admin.localhost:3200/ota/rollouts/aa000000-0000-4000-8000-000000000001",
         "http://admin.localhost:3200/integration-events",
         "http://admin.localhost:3200/privacy",
-        "http://admin.localhost:3200/subscriptions/storage"
+        "http://admin.localhost:3200/subscriptions/storage",
+        "http://admin.localhost:3200/subscriptions/fees",
+        "http://admin.localhost:3200/listings/media"
       ],
       "numberOfRuns": 1,
       "settings": {

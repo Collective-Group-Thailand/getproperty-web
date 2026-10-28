@@ -22,6 +22,7 @@ import { settingsHandlers } from "./settings";
 import { storageHandlers } from "./storage";
 import { agencyHandlers, initialAgencyWorld } from "./agency";
 import { contractHandlers, counterpartySignsContract, initialContractsWorld, residentAnswersOffer } from "./contracts";
+import { growthHandlers, initialGrowthWorld } from "./growth";
 import { initialOwnerWorld, type OwnerWorld } from "./world";
 
 /** The owner surface's stateful handlers (F2); the contract-generated handlers answer what is not here. */
@@ -40,6 +41,7 @@ export const ownerHandlers: HttpHandler[] = [
   ...storageHandlers,
   ...agencyHandlers,
   ...contractHandlers,
+  ...growthHandlers,
   ...portfolioHandlers,
   ...listingHandlers,
   ...leadHandlers,
@@ -136,6 +138,11 @@ export function resetOwnerWorld(part: string | null): boolean {
     state.agencySignedUp = false;
     if (part === "agency") return true;
   }
+  if (!part || part === "growth") {
+    // Facebook Page, boosts, media orders, the OA add-on and fee disputes (G4, G5) live beside the owner world.
+    state.growth = initialGrowthWorld();
+    if (part) return true;
+  }
   if (!part || part === "contracts") {
     // The contract library, signable contracts and renewal offers (G3) live beside the owner world.
     state.contracts = initialContractsWorld();
@@ -161,3 +168,4 @@ export function resetOwnerWorld(part: string | null): boolean {
 
 export { counterpartySignsContract, providerPays, residentAnswers, residentAnswersOffer, residentSigns };
 export { storagePackagePaid, storagePricePublished } from "./storage";
+export { failPost, growthPaid, publishGrowthPrice, setFacebookMode, setFreeBuildingBoost } from "./growth";

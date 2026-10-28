@@ -66,6 +66,18 @@ export { MESSAGING_CHANNEL_STATUS, type MessagingChannelState } from "./messagin
 export { GUIDE_STATUS, type GuideState } from "./guide";
 export { MESSAGING_RATE_STATUS, type MessagingRateState } from "./messagingRate";
 export { STORAGE_PACKAGE_STATUS, type StoragePackageState } from "./storagePackage";
+export {
+  FEE_ACCRUAL_STATUS,
+  FEE_ACCRUAL_VALUES,
+  MEDIA_SERVICE_STATUS,
+  MEDIA_SERVICE_VALUES,
+  SOCIAL_CHANNEL_STATUS,
+  SOCIAL_POST_STATUS,
+  type FeeAccrualState,
+  type MediaServiceState,
+  type SocialChannelState,
+  type SocialPostState,
+} from "./growth";
 export { CO_BROKE_STATUS, MANDATE_STATUS, type CoBrokeState, type MandateState } from "./mandate";
 export {
   CONTRACT_DOCUMENT_STATUS,
@@ -133,6 +145,7 @@ import { MESSAGING_CHANNEL_STATUS } from "./messagingChannel";
 import { GUIDE_STATUS } from "./guide";
 import { MESSAGING_RATE_STATUS } from "./messagingRate";
 import { STORAGE_PACKAGE_STATUS } from "./storagePackage";
+import { FEE_ACCRUAL_STATUS, MEDIA_SERVICE_STATUS, SOCIAL_CHANNEL_STATUS, SOCIAL_POST_STATUS } from "./growth";
 import { CO_BROKE_STATUS, MANDATE_STATUS } from "./mandate";
 import { CONTRACT_DOCUMENT_STATUS, LEGAL_REVIEW_STATUS, RENEWAL_OFFER_STATUS } from "./contract";
 import { LISTING_STATUS, LISTING_VERIFICATION_STATUS } from "./listing";
@@ -151,6 +164,10 @@ export const STATUS_MAPS = {
   guide: GUIDE_STATUS,
   messagingRate: MESSAGING_RATE_STATUS,
   storagePackage: STORAGE_PACKAGE_STATUS,
+  mediaService: MEDIA_SERVICE_STATUS,
+  feeAccrual: FEE_ACCRUAL_STATUS,
+  socialChannel: SOCIAL_CHANNEL_STATUS,
+  socialPost: SOCIAL_POST_STATUS,
   mandate: MANDATE_STATUS,
   coBroke: CO_BROKE_STATUS,
   contractDocument: CONTRACT_DOCUMENT_STATUS,

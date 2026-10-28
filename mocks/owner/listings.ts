@@ -323,6 +323,13 @@ export const listingHandlers: HttpHandler[] = [
         };
       }),
       cards: { th: card("th"), en: card("en") },
+      // G4 (D-268): the photo bundle — the listing's photos as 1600 px renditions, in order (signed links).
+      photos: l.dto.photos.map((p) => ({
+        documentId: p.documentId,
+        url: `${origin(request)}/__files/${p.documentId}`,
+        width: 1600,
+        height: 1067,
+      })),
     } satisfies Schemas["ShareKitDto"]);
   }),
   // D-269: comparable listings near the Ari one (enough for a band); every other listing has too few yet.

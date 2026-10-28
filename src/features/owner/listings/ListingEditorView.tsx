@@ -13,6 +13,7 @@ import { Callout } from "@/ui/components/Callout";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { IconExternal } from "@/ui/icons/glyphs/external";
 
+import { ListingGrowth } from "../growth/ListingGrowth";
 import { ownerPath } from "../shared/links";
 import { section, type OwnerContext } from "../shared/server";
 import { ListingActions } from "./ListingActions";
@@ -119,6 +120,9 @@ export async function ListingEditorView({ context, listingId }: { context: Owner
           <ListingSharePanel listingId={listing.id} />
         </Card>
       ) : null}
+
+      {/* G4 / G5: promote the listing, photo services, its Facebook Page posts. */}
+      <ListingGrowth context={context} listing={listing} />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card as="section" aria-labelledby="listing-availability" className="flex flex-col gap-4">

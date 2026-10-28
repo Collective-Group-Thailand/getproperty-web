@@ -104,7 +104,8 @@
     "profilesHint": "ค่าเช่า เงินประกัน และรายการในสัญญาเริ่มต้นของสัญญาใหม่",
     "editProfiles": "แก้ประเภทห้อง",
     "noProfiles": "ยังไม่มีประเภทห้อง",
-    "profileRent": "ค่าเช่า {rent}"
+    "profileRent": "ค่าเช่า {rent}",
+    "promote": "โปรโมตอาคาร"
   },
   "import": {
     "title": "นำเข้าห้องจาก Excel",

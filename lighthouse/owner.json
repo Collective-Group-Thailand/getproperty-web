@@ -51,7 +51,9 @@
         "http://localhost:3200/contracts",
         "http://localhost:3200/contracts/templates/c0a10000-0000-4000-8000-000000000012",
         "http://localhost:3200/contracts/documents",
-        "http://localhost:3200/renewals"
+        "http://localhost:3200/renewals",
+        "http://localhost:3200/promote",
+        "http://localhost:3200/settings/facebook-page"
       ],
       "numberOfRuns": 1,
       "settings": {

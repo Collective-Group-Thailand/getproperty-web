@@ -400,6 +400,30 @@
     "expired": "Expired",
     "cancelled": "Cancelled"
   },
+  "mediaService": {
+    "pending_payment": "Awaiting payment",
+    "requested": "Awaiting booking",
+    "scheduled": "Visit booked",
+    "delivered": "Delivered",
+    "cancelled": "Cancelled"
+  },
+  "feeAccrual": {
+    "uninvoiced": "Not invoiced yet",
+    "invoiced": "Invoiced",
+    "disputed": "Disputed",
+    "credited": "Credited"
+  },
+  "socialChannel": {
+    "verified": "Connected",
+    "failing": "Not working",
+    "revoked": "Disconnected"
+  },
+  "socialPost": {
+    "queued": "Queued",
+    "posted": "Posted",
+    "failed": "Failed",
+    "deleted": "Removed"
+  },
   "mandate": {
     "invited": "Awaiting the agency",
     "accepted": "Accepted — starts soon",

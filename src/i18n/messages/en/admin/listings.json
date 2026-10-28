@@ -5,7 +5,8 @@
     "queue": "Review queue",
     "hidden": "Hidden",
     "reported": "Reported",
-    "verifications": "Owner verification"
+    "verifications": "Owner verification",
+    "media": "Photo services"
   },
   "col": {
     "listing": "Listing",
