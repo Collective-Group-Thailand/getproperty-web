@@ -1,16 +1,21 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 import { text } from "@/features/shared/console/FormDialog";
 import { ProblemNotice, useApiAction } from "@/features/shared/console/useApiAction";
+import { formatPercent, formatTHB } from "@/i18n/format";
+import type { Locale } from "@/i18n/routing";
 import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
+import { isApiError } from "@/lib/api/errors";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
+import { Callout } from "@/ui/components/Callout";
+import { Checkbox } from "@/ui/components/Checkbox";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { NativeSelect } from "@/ui/components/NativeSelect";
@@ -23,17 +28,41 @@ import { IconRemove } from "@/ui/icons/glyphs/remove";
 
 type Channel = Schemas["MessagingChannelDto"];
 
+/** The LINE OA integration prices in force (G4, D-287): from the add-on offer or a `messaging.addon_terms_required`. */
+export interface AddonTerms {
+  versionId: string;
+  monthlyFee: string;
+  setupFee: string;
+  vatRate: string;
+  /** Whether the setup fee was invoiced already (it is charged once). */
+  setupCharged: boolean;
+}
+
+const ADDON_TERMS_REQUIRED = "messaging.addon_terms_required";
+
 /**
  * Connect an own LINE OA (D-254): the channel's id, secret and long-lived access token from LINE Developers →
  * `POST /v1/owner/messaging/channels`, which checks the token with LINE at once. A token LINE refuses is kept as
  * `failing` with the reason, so the owner fixes it on the channel and re-checks instead of typing it all again.
  */
-export function ConnectLineOa({ buildings }: { buildings: { id: string; name: string }[] }) {
+export function ConnectLineOa({
+  buildings,
+  addon = null,
+}: {
+  buildings: { id: string; name: string }[];
+  /** The agency add-on's prices while it is on sale (D-287); null = connecting is free. */
+  addon?: AddonTerms | null;
+}) {
   const t = useTranslations("owner.settings.lineOa");
   const common = useTranslations("common");
+  const locale = useLocale() as Locale;
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [terms, setTerms] = useState<AddonTerms | null>(addon);
+  const [accepted, setAccepted] = useState(false);
+  const [changed, setChanged] = useState(false);
   const action = useApiAction<Channel>({ refresh: false });
+  const termsError = isApiError(action.error) && action.error.code === ADDON_TERMS_REQUIRED;
   const close = () => {
     setOpen(false);
     router.refresh();
@@ -44,6 +73,8 @@ export function ConnectLineOa({ buildings }: { buildings: { id: string; name: st
         iconStart={IconAdd}
         onClick={() => {
           action.reset();
+          setAccepted(false);
+          setChanged(false);
           setOpen(true);
         }}
         data-testid="line-oa-connect"
@@ -62,7 +93,13 @@ export function ConnectLineOa({ buildings }: { buildings: { id: string; name: st
             <Button variant="secondary" onClick={close} disabled={action.busy}>
               {common("cancel")}
             </Button>
-            <Button type="submit" form="line-oa-form" loading={action.busy} data-testid="line-oa-submit">
+            <Button
+              type="submit"
+              form="line-oa-form"
+              loading={action.busy}
+              disabled={terms !== null && !accepted}
+              data-testid="line-oa-submit"
+            >
               {t("submit")}
             </Button>
           </>
@@ -83,9 +120,20 @@ export function ConnectLineOa({ buildings }: { buildings: { id: string; name: st
                       lineChannelId: (text(data, "lineChannelId") ?? "").replace(/\D/g, ""),
                       channelSecret: (text(data, "channelSecret") ?? "").trim(),
                       accessToken: (text(data, "accessToken") ?? "").trim(),
+                      ...(terms && accepted ? { acceptAddonVersionId: terms.versionId } : {}),
                     },
                   }),
-                ),
+                ).catch((failure: unknown) => {
+                  // The prices changed (or were published) since the page loaded: show the ones in force, ask again.
+                  const priced =
+                    isApiError(failure) && failure.code === ADDON_TERMS_REQUIRED ? failure.problem.addon : null;
+                  if (priced) {
+                    setTerms({ ...priced, setupCharged: terms?.setupCharged ?? false });
+                    setAccepted(false);
+                    setChanged(true);
+                  }
+                  throw failure;
+                }),
               (channel) => {
                 if (channel.state === "verified") toast.success(t("connected", { name: channel.botName ?? "LINE OA" }));
                 else toast.error(t("failedConnect"));
@@ -140,7 +188,34 @@ export function ConnectLineOa({ buildings }: { buildings: { id: string; name: st
             />
           </Field>
           <p className="text-muted text-sm">{t("replaceNote")}</p>
-          <ProblemNotice error={action.error} />
+          {terms ? (
+            <div
+              className="border-border rounded-card flex flex-col gap-3 border p-4"
+              data-testid="line-oa-addon-terms"
+            >
+              {changed ? <Callout tone="warning">{t("addon.changed")}</Callout> : null}
+              <p className="m-0 font-semibold">{t("addon.termsTitle")}</p>
+              <ul className="m-0 flex list-none flex-col gap-1 p-0 text-sm tabular-nums">
+                <li>{t("addon.monthly", { amount: formatTHB(terms.monthlyFee, locale) })}</li>
+                <li>
+                  {terms.setupCharged
+                    ? t("addon.setupCharged")
+                    : t("addon.setup", { amount: formatTHB(terms.setupFee, locale) })}
+                </li>
+                <li className="text-muted">
+                  {t("addon.vat", { rate: formatPercent(String(Number(terms.vatRate) * 100), locale) })}
+                </li>
+              </ul>
+              <p className="text-muted m-0 text-sm">{t("addon.how")}</p>
+              <Checkbox
+                checked={accepted}
+                onCheckedChange={(value) => setAccepted(value === true)}
+                label={t("addon.accept")}
+                data-testid="line-oa-addon-accept"
+              />
+            </div>
+          ) : null}
+          <ProblemNotice error={termsError ? null : action.error} />
         </form>
       </LazyDialog>
     </>

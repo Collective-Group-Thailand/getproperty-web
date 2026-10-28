@@ -104,7 +104,8 @@
     "profilesHint": "Default rent, deposit and lease lines of new leases",
     "editProfiles": "Edit unit types",
     "noProfiles": "No unit type yet.",
-    "profileRent": "Rent {rent}"
+    "profileRent": "Rent {rent}",
+    "promote": "Promote building"
   },
   "import": {
     "title": "Import units from Excel",

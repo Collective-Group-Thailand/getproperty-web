@@ -15,6 +15,7 @@ import { IconAdd } from "@/ui/icons/glyphs/add";
 import { IconRoom } from "@/ui/icons/glyphs/room";
 import { IconSettings } from "@/ui/icons/glyphs/settings";
 import { IconTag } from "@/ui/icons/glyphs/tag";
+import { IconMegaphone } from "@/ui/icons/glyphs/megaphone";
 import { IconUpload } from "@/ui/icons/glyphs/upload";
 
 import { ownerPath } from "../shared/links";
@@ -84,6 +85,12 @@ export async function BuildingDetail({ context, buildingId }: { context: OwnerCo
             </Button>
             {readOnly ? null : (
               <>
+                {/* G5 (D-297): the building boost — every public listing of this tenant in the building. */}
+                <Button asChild variant="secondary" iconStart={IconMegaphone}>
+                  <a href={ownerPath(locale, "/promote#building-boost")} data-testid="open-promote">
+                    {t("promote")}
+                  </a>
+                </Button>
                 <Button asChild variant="secondary" iconStart={IconUpload}>
                   <a href={href("/import")} data-testid="open-import">
                     {t("import")}

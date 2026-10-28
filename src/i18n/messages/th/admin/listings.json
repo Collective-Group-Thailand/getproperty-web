@@ -5,7 +5,8 @@
     "queue": "คิวตรวจประกาศ",
     "hidden": "ซ่อนอยู่",
     "reported": "มีรายงาน",
-    "verifications": "ยืนยันเจ้าของ"
+    "verifications": "ยืนยันเจ้าของ",
+    "media": "บริการถ่ายภาพ"
   },
   "col": {
     "listing": "ประกาศ",

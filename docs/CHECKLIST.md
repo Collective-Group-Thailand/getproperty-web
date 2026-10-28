@@ -1,4 +1,4 @@
-# getproperty: Master checklist (อัปเดต 28 ต.ค. 2026 11:30)
+# getproperty: Master checklist (อัปเดต 28 ต.ค. 2026 20:30)
 
 สัญลักษณ์: ✅ เสร็จและ commit แล้ว · 🟡 เสร็จบน cloud รอ commit · 🔄 กำลังทำ · ⬜ ยังไม่เริ่ม · ⛔ รออย่างอื่นก่อน (บอกไว้ว่ารออะไร)
 
@@ -10,9 +10,10 @@
 ---
 
 ## 0. G-AUTORUN — pack G Listing & Growth (สถานะละเอียด: `getproperty-api/docs/G-AUTORUN-STATE.md`)
-- ✅ G0 docs · G1 storage quota · G2 agency + asset-core 0.7.0 · G3 contract library (api 36c7c79) · GW1 storage · GW2 agency workspace (web d326a41) · GW3 contract library, signable contracts, renewals (web, 28 ต.ค.)
-- 🔄 GL3 LIFF contracts & renewals · G7 api self-viewing (เริ่มใหม่ 28 ต.ค. 10:30 จาก main บน Mac)
-- ⬜ GL2 → G4 → G5 → GW4 → G8 → G6 → GW5 + GL1 → G9 → GW6 + GL4 → review → `G-AUTORUN-REPORT.md`
+- ✅ G0 docs · G1 storage quota · G2 agency + asset-core 0.7.0 · G3 contract library (api 36c7c79) · GW1 storage · GW2 agency workspace (web d326a41) · GW3 contract library, signable contracts, renewals (web b65047e) · GL3 สัญญา + ต่อสัญญาฝั่งผู้เช่า (liff 0e341e9) · G7 self-viewing (api d69d6c8, ปิดไว้จนกว่าจะได้พาร์ทเนอร์ประกัน) · GL2 self-viewing ฝั่งผู้หาห้อง (liff e97e41f) · G4 FB Page auto-post, OG card, badge ว่างจริง, ค่า LINE OA agency (api 65e874d) · G5 boost, sponsored slot, success/co-broke fee, งานถ่ายรูป verified/360° — ยังไม่ตั้งราคา (api 8195e78) · GW4 หน้า Facebook Page, badge ว่างจริง, JSON-LD/OG, โปรโมตประกาศ, งานถ่ายรูป, admin ค่าธรรมเนียม (web)
+- 🔄 G8 api getbuild handoff, หอพักแรงงาน, relocation (เริ่ม 18:50)
+- ⏸ e2e (Playwright web/LIFF และ api test:e2e) ข้ามไว้ตามที่สั่ง 28 ต.ค. — เขียน spec ไว้ครบ รันรวมทีเดียวก่อน review
+- ⬜ G6 → GW5 + GL1 → G9 → GW6 + GL4 → review → `G-AUTORUN-REPORT.md`
 - ⛔ payment gateway (O-020), e-KYC provider (O-021), ราคา storage package, LINE ยืนยัน sponsored broadcast, พาร์ทเนอร์ประกัน, ฝ่ายกฎหมายรีวิว draft สัญญา
 
 ---

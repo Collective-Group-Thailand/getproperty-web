@@ -893,6 +893,11 @@
       "empty": "No homes available right now.",
       "note": "This page shows no phone number or private contact. Reach the owner from a listing's button.",
       "identityVerified": "Identity verified"
+    },
+    "vacant": {
+      "badge": "Verified vacant",
+      "since": "Verified vacant since {date}",
+      "explain": "Checked against the lease records on getproperty: nobody lives there and no lease is in force or awaiting signature — not the owner's own word."
     }
   },
   "guides": {

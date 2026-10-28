@@ -7,7 +7,8 @@
     "field-work": "Field work",
     "plans": "Price plans",
     "storage": "Storage",
-    "messaging": "LINE messages"
+    "messaging": "LINE messages",
+    "fees": "Growth fees"
   },
   "description": {
     "invoices": "Collective Group's invoices to its tenants, with payments, receipts and credit notes.",
@@ -15,7 +16,8 @@
     "field-work": "Install and de-install orders, and the site surveys owners asked for to upgrade to Smart.",
     "plans": "Price plans and their effective-dated versions. Published versions never change.",
     "storage": "Free allowance, overage price, add-on packs and each tenant's usage — every value effective-dated with a reason.",
-    "messaging": "Free messages per month and the price per message of getproperty’s shared LINE OA. Entered by one user, published by another"
+    "messaging": "Free messages per month and the price per message of getproperty’s shared LINE OA. Entered by one user, published by another",
+    "fees": "Agencies' success and co-broke fees, their monthly invoices and disputes through credit notes."
   },
   "subscriptions": {
     "title": "Subscriptions",

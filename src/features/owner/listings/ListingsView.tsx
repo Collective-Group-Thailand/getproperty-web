@@ -30,9 +30,15 @@ export async function ListingsView({ context }: { context: OwnerContext }) {
   const { api, locale } = context;
   const listings = await section(unwrap(api.GET("/v1/owner/listings")));
   const create = (
-    <Button asChild iconStart={IconAdd} data-testid="listing-new">
-      <a href={ownerPath(locale, "/listings/new")}>{t("new")}</a>
-    </Button>
+    <>
+      {/* G5: boosts, photo services and their invoices (no owner menu key yet — contract request). */}
+      <Button asChild variant="secondary" iconStart={IconMegaphone} data-testid="listing-promotion">
+        <a href={ownerPath(locale, "/promote")}>{t("promotion")}</a>
+      </Button>
+      <Button asChild iconStart={IconAdd} data-testid="listing-new">
+        <a href={ownerPath(locale, "/listings/new")}>{t("new")}</a>
+      </Button>
+    </>
   );
   return (
     <OwnerPage testId="listings">

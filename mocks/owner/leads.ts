@@ -38,7 +38,18 @@ function viewing(
   state: Schemas["ListingViewingState"],
   note: string | null = null,
 ): Schemas["LeadViewingDto"] {
-  return { id, ...at, state, note, reason: null, cancelledBy: null, rescheduledTo: null };
+  // G7 (D-295): self viewings are GW6; every sample is an accompanied viewing without door codes.
+  return {
+    id,
+    ...at,
+    state,
+    note,
+    reason: null,
+    cancelledBy: null,
+    rescheduledTo: null,
+    mode: "accompanied",
+    access: null,
+  };
 }
 
 function lead(input: {

@@ -27,19 +27,35 @@ export const MODERATION_TABS: ModerationTab[] = ["queue", "hidden", "reported", 
  */
 export async function ModerationView({ context, tab }: { context: AdminContext; tab: ModerationTab }) {
   const t = await getTranslations("admin.listings");
-  const href = (next: ModerationTab) => (next === "queue" ? "/listings" : `/listings?tab=${next}`);
   return (
     <ConsolePage testId="admin-listings">
       <PageHeader title={t("title")} description={t("description")} />
-      <LinkTabs
-        label={t("tabsLabel")}
-        current={href(tab)}
-        tabs={MODERATION_TABS.filter((one) =>
-          one === "verifications" ? can(context.me, "admin.listing.verify") : can(context.me, "admin.listing.moderate"),
-        ).map((one) => ({ href: href(one), label: t(`tab.${one}`), testId: `listings-tab-${one}` }))}
-      />
+      <ListingsTabs context={context} current={moderationHref(tab)} />
       {tab === "verifications" ? <Verifications context={context} /> : <Queue context={context} tab={tab} />}
     </ConsolePage>
+  );
+}
+
+const moderationHref = (next: ModerationTab) => (next === "queue" ? "/listings" : `/listings?tab=${next}`);
+
+/**
+ * The listings section's tabs: the moderation queues (`admin.listing.moderate`), owner verification and the photo
+ * service orders of G5 (`admin.listing.verify` — the team that checks owners books the photographer, D-297).
+ */
+export async function ListingsTabs({ context, current }: { context: AdminContext; current: string }) {
+  const t = await getTranslations("admin.listings");
+  const verify = can(context.me, "admin.listing.verify");
+  return (
+    <LinkTabs
+      label={t("tabsLabel")}
+      current={current}
+      tabs={[
+        ...MODERATION_TABS.filter((one) =>
+          one === "verifications" ? verify : can(context.me, "admin.listing.moderate"),
+        ).map((one) => ({ href: moderationHref(one), label: t(`tab.${one}`), testId: `listings-tab-${one}` })),
+        ...(verify ? [{ href: "/listings/media", label: t("tab.media"), testId: "listings-tab-media" }] : []),
+      ]}
+    />
   );
 }
 

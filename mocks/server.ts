@@ -32,6 +32,12 @@
  *   POST /__mock/owner/slips/qr-duplicate  a slip of the same amount as a QR payment already booked (D-220)
  *   POST /__mock/owner/link-requests?party=<id>  a phone sign-in matched the party: a pending link request (D-226)
  *   GET  /__mock/owner/received?op=  requests the owner world received (body, Idempotency-Key)
+ *   POST /__mock/owner/growth/price?product=<key>|all|addon   publish a growth price (G4/G5, O-027)
+ *   POST /__mock/owner/growth/pay?boost=<id>|order=<id>        Finance records a boost / photo order payment
+ *   POST /__mock/owner/growth/free-building[?on=0]             `boost.building.free` for the sample tenant
+ *   POST /__mock/owner/growth/facebook?mode=off|fake           FACEBOOK_MODE (O-029)
+ *   POST /__mock/owner/growth/post-fail?listing=<id>           the listing's Page post fails
+ *   GET  /__mock/owner/growth                                  boosts, orders, Pages, posts, fees (G4/G5)
  *   GET  /__mock/owner/state         leases, deposits, invoices, slips, cycles, units (A/B) as held
  *   POST /__mock/platform/reset      reset the platform admin's world (tenants, billing, tariffs, fleet…)
  *   POST /__mock/platform/ota/upload?key=releases/edge/<version>/<file>&size=<bytes>  a release engineer uploads an
@@ -57,7 +63,12 @@ import { OPERATORS, PLATFORM_USERS, TENANTS } from "./fixtures";
 import { handlers } from "./handlers";
 import {
   counterpartySignsContract,
+  failPost,
+  growthPaid,
   providerPays,
+  publishGrowthPrice,
+  setFacebookMode,
+  setFreeBuildingBoost,
   resetOwnerWorld,
   residentAnswersOffer,
   residentAnswers,
@@ -245,6 +256,34 @@ function ownerControl(url: URL, req: IncomingMessage): { status: number; body: u
     };
     return { status: 200, body: state.storage.quota[tenantId] };
   }
+  // G4 / G5: a growth price is published (O-027), Finance records a boost / media order payment, the sample tenant
+  // gets the free building boost, Facebook is switched off (O-029), a listing's Page post fails.
+  if (req.method === "POST" && parts[0] === "growth") {
+    const p = url.searchParams;
+    if (parts[1] === "price")
+      return publishGrowthPrice(p.get("product") ?? "all")
+        ? { status: 200, body: { ok: true } }
+        : { status: 404, body: { error: "no such product" } };
+    if (parts[1] === "pay") {
+      const paid = p.get("boost") ? growthPaid("boost", p.get("boost")!) : growthPaid("order", p.get("order") ?? "");
+      return paid
+        ? { status: 200, body: { ok: true } }
+        : { status: 409, body: { error: "nothing waiting for payment" } };
+    }
+    if (parts[1] === "free-building") {
+      setFreeBuildingBoost(p.get("on") !== "0");
+      return { status: 200, body: { ok: true } };
+    }
+    if (parts[1] === "facebook") {
+      setFacebookMode(p.get("mode") ?? "fake");
+      return { status: 200, body: { ok: true } };
+    }
+    if (parts[1] === "post-fail")
+      return failPost(p.get("listing") ?? "")
+        ? { status: 200, body: { ok: true } }
+        : { status: 409, body: { error: "no post" } };
+  }
+  if (req.method === "GET" && parts[0] === "growth") return { status: 200, body: state.growth };
   if (req.method === "GET" && parts[0] === "storage") {
     return { status: 200, body: state.storage };
   }

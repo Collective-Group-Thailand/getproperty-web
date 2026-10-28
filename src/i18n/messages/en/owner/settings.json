@@ -11,7 +11,8 @@
     "audit_log": "Audit log",
     "sign_in": "Ways to sign in",
     "line_oa": "LINE OA",
-    "verification": "Identity"
+    "verification": "Identity",
+    "facebook_page": "Facebook Page"
   },
   "general": {
     "title": "Settings",
@@ -554,6 +555,30 @@
       "own": "{count, number} messages through your OA — LINE bills you; getproperty charges nothing",
       "fallbacks": "{count, plural, one {LINE refused # message for quota; it went by SMS where a phone was known} other {LINE refused # messages for quota; they went by SMS where a phone was known}}",
       "repliesFree": "Replies are not counted"
+    },
+    "addon": {
+      "changed": "The prices just changed — read the new ones and accept again.",
+      "termsTitle": "Agency LINE OA integration fee",
+      "monthly": "Monthly {amount} before VAT, from next month — the month you connect is free",
+      "setup": "One-off setup {amount} before VAT, invoiced once connected",
+      "setupCharged": "The setup fee was charged already — never twice",
+      "vat": "VAT {rate}",
+      "how": "Fees are invoiced by getproperty; LINE bills message charges to your LINE OA account directly.",
+      "accept": "I accept these fees",
+      "freeBadge": "Free for now",
+      "monthlyLabel": "Monthly fee (before VAT)",
+      "setupLabel": "Setup fee (before VAT)",
+      "setupChargedShort": "Charged",
+      "setupOnce": "Charged once",
+      "vatLabel": "VAT",
+      "from": "From {date}",
+      "free": "Connecting the agency's own LINE OA has no fee yet — it stays free until getproperty publishes a price.",
+      "invoices": "Fee invoices",
+      "charge": {
+        "setup": "Setup",
+        "monthly": "Monthly {from} – {to}"
+      },
+      "lineCharges": "An unpaid fee never stops the system. LINE bills the messages sent through your OA to you directly."
     }
   },
   "verification": {

@@ -30,39 +30,89 @@ const P = {
   bedroomDesk: "1652882860938-f90aa298e644",
 };
 
+const OG_BASE = "https://api.getproperty.test/v1/public/listings";
+
+/** The API's schema.org Offer (G4, D-296) built from the facts on the page, like `listing-json-ld.ts`. */
+const offerJsonLd = (listing: Omit<PublicListingDetail, "jsonLd">): PublicListingDetail["jsonLd"] => ({
+  "@context": "https://schema.org",
+  "@type": "Offer",
+  url: `https://getproperty.test/rent/${listing.slug}`,
+  price: listing.rent,
+  priceCurrency: "THB",
+  businessFunction: "http://purl.org/goodrelations/v1#LeaseOut",
+  priceSpecification: {
+    "@type": "UnitPriceSpecification",
+    price: listing.rent,
+    priceCurrency: "THB",
+    unitCode: "MON",
+    referenceQuantity: { "@type": "QuantitativeValue", value: 1, unitCode: "MON" },
+  },
+  ...(listing.availableFrom ? { availabilityStarts: listing.availableFrom } : {}),
+  itemOffered: {
+    "@type":
+      listing.unitKind === "house" || listing.unitKind === "townhouse"
+        ? "House"
+        : listing.unitKind === "room"
+          ? "Room"
+          : "Apartment",
+    name: listing.title,
+    ...(listing.bedrooms !== null ? { numberOfBedrooms: listing.bedrooms } : {}),
+    ...(listing.sizeSqm
+      ? { floorSize: { "@type": "QuantitativeValue", value: listing.sizeSqm, unitCode: "MTK" } }
+      : {}),
+    petsAllowed: listing.petsAllowed,
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: listing.district,
+      addressRegion: listing.province,
+      addressCountry: "TH",
+    },
+    image: [listing.ogImageUrl],
+  },
+});
+
 const base = (
   slug: string,
-  over: Partial<PublicListingDetail> & Pick<PublicListingDetail, "title" | "rent" | "cover">,
-): PublicListingDetail => ({
-  slug,
-  unitKind: "condo_unit",
-  depositMonths: 2,
-  advanceMonths: 1,
-  minTermMonths: 12,
-  sizeSqm: "30.00",
-  bedrooms: 1,
-  bathrooms: 1,
-  furnishing: "fully_furnished",
-  petsAllowed: false,
-  smokingAllowed: false,
-  availableFrom: "2026-11-01",
-  province: "กรุงเทพมหานคร",
-  district: "พญาไท",
-  address: "",
-  nearestTransit: null,
-  verifiedOwner: true,
-  ownerIdentityVerified: false,
-  publishedAt: "2026-10-20T09:00:00+07:00",
-  description: "",
-  facilities: ["สระว่ายน้ำ", "ฟิตเนส", "ที่จอดรถ", "รปภ. 24 ชม.", "คีย์การ์ด"],
-  photos: [],
-  floor: null,
-  geo: null,
-  ownerDisplayName: "คุณนภา",
-  ownerProfileSlug: null,
-  utility: null,
-  ...over,
-});
+  over: Partial<Omit<PublicListingDetail, "jsonLd" | "ogImageUrl">> &
+    Pick<PublicListingDetail, "title" | "rent" | "cover">,
+): PublicListingDetail => {
+  const listing: Omit<PublicListingDetail, "jsonLd"> = {
+    slug,
+    unitKind: "condo_unit",
+    depositMonths: 2,
+    advanceMonths: 1,
+    minTermMonths: 12,
+    sizeSqm: "30.00",
+    bedrooms: 1,
+    bathrooms: 1,
+    furnishing: "fully_furnished",
+    petsAllowed: false,
+    smokingAllowed: false,
+    availableFrom: "2026-11-01",
+    province: "กรุงเทพมหานคร",
+    district: "พญาไท",
+    address: "",
+    nearestTransit: null,
+    verifiedOwner: true,
+    ownerIdentityVerified: false,
+    publishedAt: "2026-10-20T09:00:00+07:00",
+    description: "",
+    facilities: ["สระว่ายน้ำ", "ฟิตเนส", "ที่จอดรถ", "รปภ. 24 ชม.", "คีย์การ์ด"],
+    photos: [],
+    floor: null,
+    geo: null,
+    ownerDisplayName: "คุณนภา",
+    ownerProfileSlug: null,
+    utility: null,
+    verifiedVacant: false,
+    vacantSince: null,
+    sponsored: false,
+    sponsoredLabel: null,
+    ogImageUrl: `${OG_BASE}/${slug}/og-image`,
+    ...over,
+  };
+  return { ...listing, jsonLd: offerJsonLd(listing) };
+};
 
 const LISTINGS: PublicListingDetail[] = [
   base("condo-ari-1br-sunlit", {
@@ -75,6 +125,9 @@ const LISTINGS: PublicListingDetail[] = [
     nearestTransit: { name: "อารีย์", line: "BTS สายสุขุมวิท", distanceM: 350 },
     ownerProfileSlug: "landlord-0a1b2c3d4e",
     ownerIdentityVerified: true,
+    // D-296: the last lease on getproperty ended at the end of September, nobody lives there since.
+    verifiedVacant: true,
+    vacantSince: "2026-10-01",
     utility: {
       electricity: {
         kind: "tiered",
@@ -116,6 +169,8 @@ const LISTINGS: PublicListingDetail[] = [
     ownerDisplayName: "คุณต้น",
   }),
   base("townhouse-srinakarin-3br", {
+    verifiedVacant: true,
+    vacantSince: "2026-09-16",
     title: "ทาวน์โฮม 3 ห้องนอน ศรีนครินทร์ จอดรถได้ 2 คัน",
     unitKind: "townhouse",
     rent: "28000.00",
@@ -206,11 +261,23 @@ const summary = ({
   ownerProfileSlug,
   smokingAllowed,
   utility,
+  jsonLd,
+  ogImageUrl,
   ...rest
 }: PublicListingDetail): PublicListingSummary => {
   void [description, facilities, photos, floor, geo, ownerDisplayName, ownerProfileSlug, smokingAllowed, utility];
+  void [jsonLd, ogImageUrl];
   return rest;
 };
+
+/**
+ * G5 (D-297): the boosted sample — paid, in force — takes the sponsored slot on top of the first search page when it
+ * matches the query (`boost.search.max_per_page` slots; one boosted listing in the mock), labelled by Accept-Language;
+ * its organic duplicate is dropped from that page. The detail and the owner page never carry a sponsored slot.
+ */
+const BOOSTED = "condo-ladprao-2br-family";
+const adLabel = (request: Request) =>
+  (request.headers.get("accept-language") ?? "th").toLowerCase().startsWith("en") ? "Ad" : "โฆษณา";
 
 /** Areas (D-272): districts and transit stations with published listings, like `GET /v1/public/listings/areas`. */
 const AREAS: (Omit<PublicListingArea, "count" | "band" | "indexable"> & {
@@ -360,6 +427,13 @@ export const listingHandlers: HttpHandler[] = [
     const sort = p.get("sort");
     if (sort === "rent_asc") rows = [...rows].sort((a, b) => Number(a.rent) - Number(b.rent));
     if (sort === "rent_desc") rows = [...rows].sort((a, b) => Number(b.rent) - Number(a.rent));
-    return HttpResponse.json({ data: rows.map(summary), total: rows.length, nextCursor: null });
+    const boosted = !p.get("cursor") ? rows.find((l) => l.slug === BOOSTED) : undefined;
+    const data = boosted
+      ? [
+          { ...summary(boosted), sponsored: true, sponsoredLabel: adLabel(request) },
+          ...rows.filter((l) => l !== boosted).map(summary),
+        ]
+      : rows.map(summary);
+    return HttpResponse.json({ data, total: rows.length, nextCursor: null });
   }),
 ];

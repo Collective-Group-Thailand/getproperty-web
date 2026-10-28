@@ -20,8 +20,9 @@ type Link = Schemas["ShareKitLinkDto"];
 
 /**
  * The share kit of a published listing (D-268): the square photo card to download, then one row per channel with its
- * own short link and the caption to paste. Facebook groups and Marketplace forbid automatic posting, so the owner
- * copies and downloads; LINE opens its share picker. Clicks and enquiries per channel come from the API.
+ * own short link and the caption to paste, then the listing's photos in order (G4 bundle). Facebook groups and
+ * Marketplace forbid automatic posting (D-288), so the owner copies and downloads; LINE opens its share picker. Clicks
+ * and enquiries per channel come from the API.
  */
 export function ListingSharePanel({ listingId }: { listingId: string }) {
   const t = useTranslations("owner.listings.share");
@@ -129,6 +130,47 @@ export function ListingSharePanel({ listingId }: { listingId: string }) {
           ))}
         </ul>
       </div>
+
+      <section
+        aria-labelledby="listing-share-photos"
+        className="flex flex-col gap-3"
+        data-testid="listing-share-photos"
+      >
+        <div className="flex flex-col gap-1">
+          <h3 id="listing-share-photos" className="m-0 text-base font-semibold">
+            {t("photos")}
+          </h3>
+          <p className="text-muted m-0 text-sm">{t("photosHint")}</p>
+        </div>
+        {kit.photos.length === 0 ? (
+          <p className="text-muted m-0 text-sm">{t("noPhotos")}</p>
+        ) : (
+          <ol className="m-0 grid list-none grid-cols-2 gap-3 p-0 sm:grid-cols-3 lg:grid-cols-4">
+            {kit.photos.map((photo, index) => (
+              <li key={photo.documentId} className="flex flex-col gap-2" data-testid="listing-share-photo">
+                {/* eslint-disable-next-line @next/next/no-img-element -- a signed object-storage link that expires */}
+                <img
+                  src={photo.url}
+                  alt={t("photoAlt", { index: index + 1 })}
+                  width={photo.width}
+                  height={photo.height}
+                  loading="lazy"
+                  className="border-border rounded-card bg-bg-subtle aspect-[4/3] w-full border object-cover"
+                />
+                <Button asChild size="sm" variant="ghost" iconStart={IconDownload}>
+                  <a
+                    href={photo.url}
+                    download={`photo-${String(index + 1).padStart(2, "0")}.webp`}
+                    aria-label={t("downloadPhoto", { index: index + 1 })}
+                  >
+                    {t("downloadOne")}
+                  </a>
+                </Button>
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
     </div>
   );
 }

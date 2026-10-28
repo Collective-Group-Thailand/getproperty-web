@@ -400,6 +400,30 @@
     "expired": "หมดอายุ",
     "cancelled": "ยกเลิก"
   },
+  "mediaService": {
+    "pending_payment": "รอชำระเงิน",
+    "requested": "รอนัดช่างภาพ",
+    "scheduled": "นัดถ่ายแล้ว",
+    "delivered": "ส่งงานแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "feeAccrual": {
+    "uninvoiced": "รอออกใบแจ้งหนี้",
+    "invoiced": "ออกใบแจ้งหนี้แล้ว",
+    "disputed": "โต้แย้ง รออนุมัติ",
+    "credited": "ลดหนี้แล้ว"
+  },
+  "socialChannel": {
+    "verified": "เชื่อมต่อแล้ว",
+    "failing": "เชื่อมต่อไม่ได้",
+    "revoked": "ยกเลิกการเชื่อมต่อ"
+  },
+  "socialPost": {
+    "queued": "รอโพสต์",
+    "posted": "โพสต์แล้ว",
+    "failed": "โพสต์ไม่สำเร็จ",
+    "deleted": "ลบโพสต์แล้ว"
+  },
   "mandate": {
     "invited": "รอนายหน้าตอบรับ",
     "accepted": "ตอบรับแล้ว รอวันเริ่ม",
