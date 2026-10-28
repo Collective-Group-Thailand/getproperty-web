@@ -304,7 +304,7 @@ function leaseDto(
 ): Schemas["LeaseDto"] {
   return {
     addendum: [],
-    template: { key: "ocpb_2568_residential_th", version: 1, language: "th" },
+    template: { key: "ocpb_2568_residential_th", version: 1, language: "th", versionId: TEMPLATE_VERSION },
     stampDutyPayer: "lessor",
     bilingual: false,
     advanceRentAmount: "4500.00",

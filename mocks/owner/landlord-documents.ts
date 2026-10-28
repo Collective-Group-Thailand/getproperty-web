@@ -160,7 +160,10 @@ export const landlordDocumentHandlers: HttpHandler[] = [
     const ok = owner(request, op);
     if (ok instanceof Response) return ok;
     const lease = ok.own ? state.owner.leases.find((candidate) => candidate.id === params.leaseId) : undefined;
-    return lease ? json(state.leaseNotices[lease.id] ?? []) : notFound(op);
+    // G3: renewal offer letters live with the contracts world (reset with the part `contracts`).
+    return lease
+      ? json([...(state.contracts.letters[lease.id] ?? []), ...(state.leaseNotices[lease.id] ?? [])])
+      : notFound(op);
   }),
 
   http.post("*/v1/owner/leases/:leaseId/notices", async ({ request, params }) => {
@@ -242,7 +245,7 @@ export const landlordDocumentHandlers: HttpHandler[] = [
     const op = "owner.leaseNotices.document";
     const ok = owner(request, op);
     if (ok instanceof Response) return ok;
-    const notice = Object.values(state.leaseNotices)
+    const notice = [...Object.values(state.leaseNotices), ...Object.values(state.contracts.letters)]
       .flat()
       .find((candidate) => candidate.id === params.noticeId);
     return notice && ok.own ? json(documentDownload(request, notice.documentId!, notice.number)) : notFound(op);

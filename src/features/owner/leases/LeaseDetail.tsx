@@ -27,10 +27,11 @@ import { DocumentButton } from "../shared/DocumentButton";
 import { ownerPath } from "../shared/links";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { bangkokToday } from "@/features/shared/console/time";
-import { ownerCan, section, type OwnerContext } from "../shared/server";
+import { ownerCan, readOnly, section, type OwnerContext } from "../shared/server";
 import { ComplianceChecks } from "./ComplianceChecks";
 import { LeaseActions } from "./LeaseActions";
 import { LeaseInviteButton } from "./LeaseInvite";
+import { LeaseRenewals } from "../contracts/LeaseRenewals";
 import { LeaseNotices } from "./LeaseNotices";
 import { LeaseStampDuty } from "./LeaseStampDuty";
 
@@ -337,6 +338,15 @@ export async function LeaseDetail({ context, leaseId }: { context: OwnerContext;
 
         {notices.data && lease.status !== "draft" && lease.status !== "cancelled" ? (
           <LeaseNotices lease={lease} notices={notices.data} canManage={ownerCan(context.me, "lease.manage")} />
+        ) : null}
+
+        {lease.status !== "draft" && lease.status !== "cancelled" ? (
+          <LeaseRenewals
+            api={context.api}
+            lease={lease}
+            locale={locale}
+            canManage={!readOnly(context.me) && ownerCan(context.me, "lease.manage")}
+          />
         ) : null}
 
         <Card as="section" aria-labelledby="lease-lines" data-testid="lease-lines">

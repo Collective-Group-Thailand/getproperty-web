@@ -80,6 +80,7 @@ function mandate(
     endedAt: null,
     revokedAt: null,
     endReason: null,
+    contractDocumentId: null,
     createdAt: now(),
     ...input,
   };
@@ -167,6 +168,7 @@ function w(): MockAgencyWorld {
       listingAgencyName: CO_AGENCY.displayName,
       coAgencyTenantId: AGENCY.id,
       coAgencyName: AGENCY.displayName,
+      contractDocumentId: null,
       listingId: AGENCY_IDS.coListing,
       listingSlug: "house-3br-coagent77",
       unitId: "0199f2a0-0000-7000-8000-00000000d002",
@@ -422,6 +424,7 @@ export const agencyHandlers: HttpHandler[] = [
         listingAgencyName: AGENCY.displayName,
         coAgencyTenantId: co.id,
         coAgencyName: co.displayName,
+        contractDocumentId: null,
         listingId: input.listingId,
         listingSlug: unit.listingSlug ?? "",
         unitId: unit.unitId,

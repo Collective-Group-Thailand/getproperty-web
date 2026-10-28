@@ -412,5 +412,22 @@
     "signed": "เซ็นแล้ว",
     "ended": "สิ้นสุดแล้ว",
     "cancelled": "ยกเลิก"
+  },
+  "contractDocument": {
+    "draft": "ร่าง",
+    "pending_signature": "รอลงนาม",
+    "signed": "ลงนามครบแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "legalReview": {
+    "pending_legal_verification": "รอตรวจทางกฎหมาย",
+    "reviewed": "ทนายตรวจแล้ว"
+  },
+  "renewalOffer": {
+    "offered": "รอผู้เช่าตอบ",
+    "accepted": "ผู้เช่าตอบรับ",
+    "declined": "ผู้เช่าไม่ต่อ",
+    "expired": "หมดเวลาตอบ",
+    "withdrawn": "ถอนข้อเสนอ"
   }
 }

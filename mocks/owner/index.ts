@@ -21,6 +21,7 @@ import { releaseHandlers } from "./release";
 import { settingsHandlers } from "./settings";
 import { storageHandlers } from "./storage";
 import { agencyHandlers, initialAgencyWorld } from "./agency";
+import { contractHandlers, counterpartySignsContract, initialContractsWorld, residentAnswersOffer } from "./contracts";
 import { initialOwnerWorld, type OwnerWorld } from "./world";
 
 /** The owner surface's stateful handlers (F2); the contract-generated handlers answer what is not here. */
@@ -38,6 +39,7 @@ export const ownerHandlers: HttpHandler[] = [
   ...settingsHandlers,
   ...storageHandlers,
   ...agencyHandlers,
+  ...contractHandlers,
   ...portfolioHandlers,
   ...listingHandlers,
   ...leadHandlers,
@@ -134,6 +136,11 @@ export function resetOwnerWorld(part: string | null): boolean {
     state.agencySignedUp = false;
     if (part === "agency") return true;
   }
+  if (!part || part === "contracts") {
+    // The contract library, signable contracts and renewal offers (G3) live beside the owner world.
+    state.contracts = initialContractsWorld();
+    if (part) return true;
+  }
   if (!part || part === "storage") {
     // Storage of G1 (files, packages, quota overrides) lives beside the owner world.
     state.storage = initialStorageWorld();
@@ -152,5 +159,5 @@ export function resetOwnerWorld(part: string | null): boolean {
   return true;
 }
 
-export { providerPays, residentAnswers, residentSigns };
+export { counterpartySignsContract, providerPays, residentAnswers, residentAnswersOffer, residentSigns };
 export { storagePackagePaid, storagePricePublished } from "./storage";

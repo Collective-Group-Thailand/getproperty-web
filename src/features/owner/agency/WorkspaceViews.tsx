@@ -196,6 +196,25 @@ export async function CoBrokeView({ context }: { context: OwnerContext }) {
                   {asListing && a.state === "proposed" ? (
                     <CoBrokeAction agreement={a} action="cancel" partner={partner} />
                   ) : null}
+                  {a.contractDocumentId ? (
+                    <Button asChild variant="secondary" size="sm">
+                      <a
+                        href={ownerPath(locale, `/contracts/documents/${a.contractDocumentId}`)}
+                        data-testid="co-broke-contract"
+                      >
+                        {t("contract.open")}
+                      </a>
+                    </Button>
+                  ) : asListing && a.state === "proposed" ? (
+                    <Button asChild variant="secondary" size="sm">
+                      <a
+                        href={ownerPath(locale, `/contracts/documents?new=co_broke&agreement=${a.id}`)}
+                        data-testid="co-broke-write-contract"
+                      >
+                        {t("contract.writeCoBroke")}
+                      </a>
+                    </Button>
+                  ) : null}
                   {a.state === "signed" ? <CoBrokeAction agreement={a} action="end" partner={partner} /> : null}
                 </span>
               ) : null,

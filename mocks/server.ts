@@ -56,8 +56,10 @@ import { getResponse } from "msw";
 import { OPERATORS, PLATFORM_USERS, TENANTS } from "./fixtures";
 import { handlers } from "./handlers";
 import {
+  counterpartySignsContract,
   providerPays,
   resetOwnerWorld,
+  residentAnswersOffer,
   residentAnswers,
   residentSigns,
   storagePackagePaid,
@@ -250,6 +252,19 @@ function ownerControl(url: URL, req: IncomingMessage): { status: number; body: u
     return residentSigns(parts[1] ?? "")
       ? { status: 200, body: { ok: true } }
       : { status: 409, body: { error: "not awaiting a signature" } };
+  }
+  // G3: the other side signs a contract (resident / prospect in LINE, the counterparty tenant); the resident answers
+  // a renewal offer (`?answer=accept|decline`).
+  if (req.method === "POST" && parts[0] === "contracts" && parts[2] === "counterparty-sign") {
+    return counterpartySignsContract(parts[1] ?? "")
+      ? { status: 200, body: { ok: true } }
+      : { status: 409, body: { error: "not awaiting a signature" } };
+  }
+  if (req.method === "POST" && parts[0] === "renewal-offers" && parts[2] === "answer") {
+    const answer = url.searchParams.get("answer") === "decline" ? "decline" : "accept";
+    return residentAnswersOffer(parts[1] ?? "", answer)
+      ? { status: 200, body: { ok: true } }
+      : { status: 409, body: { error: "no open offer" } };
   }
   if (req.method === "POST" && parts[0] === "deposits" && parts[2] === "resident-response") {
     const answer = url.searchParams.get("answer") === "disputed" ? "disputed" : "accepted";

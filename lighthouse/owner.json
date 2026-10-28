@@ -47,7 +47,11 @@
         "http://localhost:3200/reports/etax/e7a00000-0000-4000-8000-000000000002",
         "http://localhost:3200/reports/insights",
         "http://localhost:3200/mandates",
-        "http://localhost:3200/deals"
+        "http://localhost:3200/deals",
+        "http://localhost:3200/contracts",
+        "http://localhost:3200/contracts/templates/c0a10000-0000-4000-8000-000000000012",
+        "http://localhost:3200/contracts/documents",
+        "http://localhost:3200/renewals"
       ],
       "numberOfRuns": 1,
       "settings": {

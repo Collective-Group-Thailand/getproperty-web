@@ -73,6 +73,9 @@ const CONTRACT_ENUM: Partial<Record<keyof typeof STATUS_MAPS, string>> = {
   storagePackage: "StoragePackageState",
   mandate: "MandateState",
   coBroke: "CoBrokeState",
+  contractDocument: "ContractDocumentState",
+  legalReview: "LegalReviewState",
+  renewalOffer: "RenewalOfferState",
 };
 
 describe("status maps", () => {

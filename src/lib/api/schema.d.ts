@@ -110,6 +110,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/contract-library": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Platform contract drafts
+         * @description Every platform template of the library (lease kinds, reservation, brokerage mandate, co-broke, addendum, notice texts; th / en) with each version’s legal-review state (D-290, D-294, O-025).
+         *
+         *     Implements: D-290, D-294.
+         */
+        get: operations["admin.contractLibrary.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/contract-library/versions/{versionId}/legal-review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Record the legal review of a draft
+         * @description Marks a published (or retired) platform version `reviewed` once counsel signed it off — with who, when and a note — or back to `pending_legal_verification`; the text never changes (a new text is a new version). Audited (O-025, D-294).
+         *
+         *     Implements: D-294.
+         */
+        put: operations["admin.contractLibrary.setLegalReview"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/data-subject-requests": {
         parameters: {
             query?: never;
@@ -5014,6 +5058,326 @@ export interface paths {
         patch: operations["owner.contacts.update"];
         trace?: never;
     };
+    "/v1/owner/contract-library": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Contract library
+         * @description Platform drafts (lease kinds, reservation, brokerage mandate, co-broke, addendum, renewal / termination notice texts; th / en) and the tenant’s own templates with their versions and legal-review state — every draft is `pending_legal_verification` until counsel signs it off and shows the disclaimer (D-290, D-294, O-025).
+         *
+         *     Implements: D-290, D-294.
+         */
+        get: operations["owner.contractLibrary.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/contract-templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Copy a library version into my templates
+         * @description A new template of the tenant with a draft version 1 holding the copied text; `derivedFromVersionId` keeps the base for the clause diff and the compliance check (D-294).
+         *
+         *     Implements: D-294.
+         */
+        post: operations["owner.contractTemplates.copy"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/contract-templates/{templateId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One template with its text
+         * @description A platform draft or an own template: versions, the text of the open draft (else the latest published), its base and the variables its kind allows (D-294).
+         *
+         *     Implements: D-294.
+         */
+        get: operations["owner.contractTemplates.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Edit my template
+         * @description Renames the template or replaces the draft text (allowed HTML only, variables of the kind only — `contract.template_invalid`, `contract.unknown_variable`); editing a published template opens its next draft version. Platform drafts are read-only (404).
+         *
+         *     Implements: D-294.
+         */
+        patch: operations["owner.contractTemplates.update"];
+        trace?: never;
+    };
+    "/v1/owner/contract-templates/{templateId}/actions/check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Check my template
+         * @description Structure, variables and the forbidden clause types of the สคบ. 2568 announcement (protective wording removed, forbidden wording added): `block` inside the scope of D-158, `warn` with the legal reason outside it. Nothing is written (D-294).
+         *
+         *     Implements: D-294, D-158, D-020.
+         */
+        post: operations["owner.contractTemplates.check"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/contract-templates/{templateId}/actions/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Publish my template
+         * @description Publishes the open draft after the check: inside the สคบ. scope (D-158) a forbidden clause is refused (422 `compliance.forbidden_clause` with the legal reference); outside it the findings come back as warnings. The version stays `pending_legal_verification` (O-025) and is immutable once published (D-294).
+         *
+         *     Implements: D-294, D-158, D-020.
+         */
+        post: operations["owner.contractTemplates.publish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/contract-templates/{templateId}/diff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Clause diff against the base
+         * @description Clause by clause (a clause = a section keyed by its heading): unchanged, changed, added or removed against the library version the template was copied from (D-294).
+         *
+         *     Implements: D-294.
+         */
+        get: operations["owner.contractTemplates.diff"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/contract-templates/{templateId}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Preview a template as PDF
+         * @description The open draft (else the latest published) filled with sample values, marked as a draft with the disclaimer; not stored (D-294).
+         *
+         *     Implements: D-294.
+         */
+        get: operations["owner.contractTemplates.preview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/contracts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Contract documents
+         * @description Documents the tenant wrote or must sign as the counterparty (agency ↔ owner / co-agency), newest first; filter by kind, state or lease (D-294).
+         *
+         *     Implements: D-294.
+         */
+        get: operations["owner.contracts.list"];
+        put?: never;
+        /**
+         * Draft a contract document
+         * @description A reservation (unit + party), a brokerage mandate (mandate, written by the owner), a co-broke contract (agreement, written by the listing agency) or a lease addendum (lease): signers and facts are filled from those records, the typed values are checked (unknown keys → `contract.unknown_variable`) and the template version is pinned (D-294).
+         *
+         *     Implements: D-294, D-062.
+         */
+        post: operations["owner.contracts.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/contracts/{contractId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One contract document
+         * @description A document of the tenant or of which it is the counterparty; anyone else gets 404 (D-294, D-152).
+         *
+         *     Implements: D-294, D-152.
+         */
+        get: operations["owner.contracts.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/contracts/{contractId}/actions/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel a contract document
+         * @description A draft or a document not yet fully signed; the stored PDF stays (legal hold, D-286, D-294).
+         *
+         *     Implements: D-294.
+         */
+        post: operations["owner.contracts.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/contracts/{contractId}/actions/send-for-signature": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send for signature
+         * @description Numbers the document (series `contract`), renders the PDF from the pinned version, stores it under legal hold with its sha256 (D-286) and tells the signers (LINE for parties, the counterparty tenant’s owners) (D-062, D-294).
+         *
+         *     Implements: D-062, D-294, D-286.
+         */
+        post: operations["owner.contracts.sendForSignature"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/contracts/{contractId}/actions/sign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign for my tenant
+         * @description An operator signs for the tenant’s signer role (lessor, owner, agency, co-agency) with a drawn signature (PNG ≤ 200 KB) and the sha256 of the PDF read (409 `contract.changed` when it differs). The last signature renders the signed PDF; a signed co-broke contract signs its agreement (D-062, D-294).
+         *
+         *     Implements: D-062, D-294, D-293.
+         */
+        post: operations["owner.contracts.sign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/contracts/{contractId}/document": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download the document
+         * @description A 5-minute signed URL of the signed PDF (else the one to sign) with its sha256 — the value a signer confirms; audited `document.downloaded` (D-062, D-294).
+         *
+         *     Implements: D-062, D-294.
+         */
+        get: operations["owner.contracts.document"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/contracts/{contractId}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Preview the document PDF
+         * @description Rendered now from the pinned template version and current facts, marked as a draft; not stored (D-294).
+         *
+         *     Implements: D-294.
+         */
+        get: operations["owner.contracts.preview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/owner/credit-notes/{noteId}/document": {
         parameters: {
             query?: never;
@@ -7016,6 +7380,56 @@ export interface paths {
          *     Implements: D-253, D-020, D-024.
          */
         post: operations["owner.leases.issueNotice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/leases/{leaseId}/renewal-offers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Renewal offers of a lease
+         * @description Every offer made on the lease with its answer, newest first (D-294).
+         *
+         *     Implements: D-294.
+         */
+        get: operations["owner.renewals.listForLease"];
+        put?: never;
+        /**
+         * Offer a renewal
+         * @description Offers rent (default the suggestion) and term (default the current one) for the period after the lease ends; issues the B7.5 renewal letter (numbered PDF, LINE to the resident) in the same transaction; one open offer per lease (`renewal.offer_exists`). The resident answers in LIFF by `respondBy` (`lease.notice.renewal_response_days`) (D-294, D-253).
+         *
+         *     Implements: D-294, D-253.
+         */
+        post: operations["owner.renewals.offer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/leases/{leaseId}/renewal-suggestion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Suggested renewal rent
+         * @description Candidates in order: the k ≥ 5 `rent_per_m2` benchmark of the district × unit area (only when the tenant shares anonymised analytics, give to get), the median of the comparables of the unit’s listing (D-269), the current rent; the first available is the suggestion (D-294).
+         *
+         *     Implements: D-294, D-269.
+         */
+        get: operations["owner.renewals.suggestion"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -9410,6 +9824,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/owner/renewal-offers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Renewal offers
+         * @description All offers of the tenant (filter by state), newest first — the renewal workflow board (D-294).
+         *
+         *     Implements: D-294.
+         */
+        get: operations["owner.renewals.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/renewal-offers/{offerId}/actions/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Withdraw a renewal offer
+         * @description An offer not yet answered; the letter stays on record (D-294).
+         *
+         *     Implements: D-294.
+         */
+        post: operations["owner.renewals.withdraw"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/owner/rent-certificates": {
         parameters: {
             query?: never;
@@ -11178,6 +11636,116 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/prospect/contracts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Contracts I sign
+         * @description Reservations and other documents for me from owners I enquired with (D-294, D-281).
+         *
+         *     Implements: D-294, D-281.
+         */
+        get: operations["prospect.contracts.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/prospect/contracts/{contractId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One contract I sign
+         * @description With the legal-review state and the disclaimer; 404 unless I am a signer (D-294).
+         *
+         *     Implements: D-294.
+         */
+        get: operations["prospect.contracts.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/prospect/contracts/{contractId}/document": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Open the contract PDF
+         * @description A 5-minute signed URL and the sha256 to send back when signing (D-062); audited.
+         *
+         *     Implements: D-062, D-294.
+         */
+        get: operations["prospect.contracts.document"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/prospect/contracts/{contractId}/sign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign the contract
+         * @description Step 2: OTP, the sha256 of the PDF I read and my drawn signature; evidence kept (D-062, D-294).
+         *
+         *     Implements: D-062, D-294.
+         */
+        post: operations["prospect.contracts.sign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/prospect/contracts/{contractId}/signature/otp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send my signature OTP
+         * @description Step 1: a 6-digit SMS code to the phone the owner recorded for me (D-062).
+         *
+         *     Implements: D-062, D-294.
+         */
+        post: operations["prospect.contracts.requestSignatureOtp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/prospect/enquiries": {
         parameters: {
             query?: never;
@@ -12108,6 +12676,116 @@ export interface paths {
         get: operations["resident.community.contacts"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/contracts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Contracts I sign
+         * @description Reservation, addendum and other library documents waiting for my signature or signed by me, across tenants (parties linked to my login); drafts and cancelled ones are never shown (D-294).
+         *
+         *     Implements: D-294, D-062.
+         */
+        get: operations["resident.contracts.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/contracts/{contractId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One contract I sign
+         * @description With the legal-review state and the disclaimer as the API returns them; 404 unless I am a signer (D-294).
+         *
+         *     Implements: D-294.
+         */
+        get: operations["resident.contracts.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/contracts/{contractId}/document": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Open the contract PDF
+         * @description A 5-minute signed URL and the sha256 to send back when signing (D-062); audited.
+         *
+         *     Implements: D-062, D-294.
+         */
+        get: operations["resident.contracts.document"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/contracts/{contractId}/sign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign the contract
+         * @description Step 2: the OTP, the sha256 of the PDF I read (409 `contract.changed` otherwise) and my drawn signature; evidence kept (OTP challenge, LINE user id, hash, time, IP, device) (D-062, D-294).
+         *
+         *     Implements: D-062, D-294.
+         */
+        post: operations["resident.contracts.sign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/contracts/{contractId}/signature/otp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Send my signature OTP
+         * @description Step 1: a 6-digit SMS code to the phone the office recorded for me (D-062).
+         *
+         *     Implements: D-062, D-294.
+         */
+        post: operations["resident.contracts.requestSignatureOtp"];
         delete?: never;
         options?: never;
         head?: never;
@@ -13410,6 +14088,94 @@ export interface paths {
         get: operations["resident.receipts.document"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/renewal-offers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Renewal offers for me
+         * @description Offers on the leases of my token, newest first; `nextActions` has accept / decline while an offer is open and I am a lessee (D-294).
+         *
+         *     Implements: D-294.
+         */
+        get: operations["resident.renewals.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/renewal-offers/{offerId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One renewal offer
+         * @description An offer on a lease of mine (404 otherwise, contract §8) (D-294).
+         *
+         *     Implements: D-294.
+         */
+        get: operations["resident.renewals.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/renewal-offers/{offerId}/actions/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Accept the renewal
+         * @description The renewal lease is drafted from my lease at the offered rent and term (deposit carried, no renewal fee) and sent to me for e-signature (`newLeaseId`; refresh my session to open it); the current lease closes by itself at its end once the renewal is signed. `renewal.invalid_state` after `respondBy` or once answered (D-294, D-020).
+         *
+         *     Implements: D-294, D-020, D-062.
+         */
+        post: operations["resident.renewals.accept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/renewal-offers/{offerId}/actions/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Decline the renewal
+         * @description With 30 days or more left, my notice to the end date is recorded and the move-out follows (D-219); with fewer days the lease simply ends on its end date. The owner is told (D-294).
+         *
+         *     Implements: D-294, D-219, D-020.
+         */
+        post: operations["resident.renewals.decline"];
         delete?: never;
         options?: never;
         head?: never;
@@ -15868,6 +16634,9 @@ export interface components {
             /** @example set_log_level */
             type: components["schemas"]["CommandType"];
         };
+        AdminContractLibraryDto: {
+            data: components["schemas"]["ContractTemplateDto"][];
+        };
         AdminEvidenceLinkDto: {
             /** Format: uuid */
             documentId: string;
@@ -17576,11 +18345,64 @@ export interface components {
              */
             vatAmount: string;
         };
+        ClauseDiffDto: {
+            /** @example ผู้จองชำระเงินจองจำนวน 5,000.00 บาท */
+            baseText: string | null;
+            /**
+             * @description Normalised heading of the clause (`_frame` = text outside sections).
+             * @example เงินจอง
+             */
+            key: string;
+            /** @example changed */
+            status: components["schemas"]["ClauseStatus"];
+            /** @example ผู้จองชำระเงินจองจำนวน 3,000.00 บาท */
+            text: string | null;
+            /** @example เงินจอง */
+            title: string;
+        };
+        ClauseFindingDto: {
+            /** @example ข้อ ๑๒ ข้อปฏิบัติของผู้ให้เช่า */
+            clauseKey: string;
+            /** @example ข้อ ๑๒ ข้อปฏิบัติของผู้ให้เช่า */
+            clauseTitle: string;
+            /**
+             * @description Forbidden clause type of the announcement (D-020).
+             * @example renewal_fee
+             */
+            clauseType: string;
+            /** @example ค่าต่อสัญญา */
+            excerpt: string;
+            /** @example ประกาศคณะกรรมการว่าด้วยสัญญา … พ.ศ. 2568 ข้อ 5 (11) ⚖ */
+            legalRef: string;
+            /**
+             * @description `block` inside the สคบ. 2568 scope (D-158), else `warn`.
+             * @example block
+             */
+            severity: components["schemas"]["ComplianceSeverity"];
+            /** @example added_wording */
+            source: components["schemas"]["ClauseFindingSource"];
+        };
+        /** @enum {string} */
+        ClauseFindingSource: "removed_protection" | "added_wording";
+        ClauseInputDto: {
+            /** @example อนุญาตแมวได้ 1 ตัว */
+            text: string;
+            /** @example สัตว์เลี้ยง */
+            title: string;
+        };
+        /** @enum {string} */
+        ClauseStatus: "unchanged" | "changed" | "added" | "removed";
         CoBrokeDto: {
             /** @example นายหน้าร่วม จำกัด */
             coAgencyName: string;
             /** Format: uuid */
             coAgencyTenantId: string;
+            /**
+             * Format: uuid
+             * @description G3 (D-294): the co-broke contract; once both agencies e-signed it the agreement is `signed`.
+             * @example null
+             */
+            contractDocumentId: string | null;
             /**
              * Format: date-time
              * @example 2026-11-01T00:15:00+07:00
@@ -17980,6 +18802,48 @@ export interface components {
             /** @example 0 */
             sortOrder?: number;
         };
+        ContractCreateDto: {
+            /**
+             * Format: uuid
+             * @description co_broke: the agreement (the listing agency writes it).
+             */
+            coBrokeAgreementId?: string;
+            /** @example reservation */
+            kind: components["schemas"]["SignableContractKind"];
+            /** @example th */
+            language?: components["schemas"]["Language"];
+            /**
+             * Format: uuid
+             * @description addendum: the lease.
+             */
+            leaseId?: string;
+            /**
+             * Format: uuid
+             * @description brokerage_mandate: the mandate (the owner writes it).
+             */
+            mandateId?: string;
+            /**
+             * Format: uuid
+             * @description reservation: the person reserving (a party of the tenant).
+             */
+            partyId?: string;
+            /**
+             * Format: uuid
+             * @description A published version of this kind (own or platform); default the platform draft in `language`.
+             */
+            templateVersionId?: string;
+            /** @example สัญญาจองห้อง A-101 */
+            title?: string;
+            /**
+             * Format: uuid
+             * @description reservation: the unit.
+             */
+            unitId?: string;
+            /** @description Values typed by the user; everything else is filled from the unit, lease, mandate or agreement. Unknown keys → `contract.unknown_variable`. */
+            variables?: components["schemas"]["ContractVariablesDto"];
+        };
+        /** @enum {string} */
+        ContractDocumentState: "draft" | "pending_signature" | "signed" | "cancelled";
         ContractDownloadDto: {
             /**
              * Format: uuid
@@ -18005,6 +18869,360 @@ export interface components {
              * @example https://storage.example.com/contract.pdf?X-Amz-Signature=abc
              */
             url: string;
+        };
+        ContractDto: {
+            /**
+             * Format: date-time
+             * @example null
+             */
+            cancelledAt: string | null;
+            /**
+             * Format: uuid
+             * @example null
+             */
+            coBrokeAgreementId: string | null;
+            /**
+             * Format: uuid
+             * @example null
+             */
+            counterpartyTenantId: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            createdAt: string;
+            disclaimer: components["schemas"]["DisclaimerDto"];
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example reservation */
+            kind: components["schemas"]["SignableContractKind"];
+            /** @example th */
+            language: components["schemas"]["Language"];
+            /**
+             * Format: uuid
+             * @example null
+             */
+            leaseId: string | null;
+            /** @example pending_legal_verification */
+            legalReviewState: components["schemas"]["LegalReviewState"];
+            /**
+             * Format: uuid
+             * @example null
+             */
+            mandateId: string | null;
+            /**
+             * @example [
+             *       "sign",
+             *       "download"
+             *     ]
+             */
+            nextActions: string[];
+            /** @example CTR-2026-00002 */
+            number: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            sentAt: string | null;
+            /**
+             * @description sha256 of the PDF to sign.
+             * @example 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
+             */
+            sha256: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            signedAt: string | null;
+            signers: components["schemas"]["ContractSignerDto"][];
+            /** @example pending_signature */
+            state: components["schemas"]["ContractDocumentState"];
+            /** @example library_reservation */
+            templateKey: string;
+            /** @example 1 */
+            templateVersion: number;
+            /**
+             * Format: uuid
+             * @description The pinned template version.
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            templateVersionId: string;
+            /** @example สัญญาจองห้องเช่า (ร่างจากคลังสัญญา) A-101 */
+            title: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            unitId: string | null;
+            /** @description The values typed when it was drafted. */
+            variables: components["schemas"]["ContractVariablesDto"];
+        };
+        /** @enum {string} */
+        ContractKind: "lease_apartment_ocpb" | "lease_condo_private" | "lease_house" | "lease_room" | "reservation" | "brokerage_mandate" | "co_broke" | "addendum" | "notice_termination" | "notice_renewal";
+        ContractLibraryDto: {
+            data: components["schemas"]["ContractTemplateDto"][];
+            /** @description Shown with every draft (`contract.library.disclaimer`, D-290). */
+            disclaimer: components["schemas"]["DisclaimerDto"];
+        };
+        ContractOperatorSignDto: {
+            /**
+             * @description sha256 of the contract PDF read (from `…/document`).
+             * @example 9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08
+             */
+            contractSha256: string;
+            /**
+             * @description Drawn signature, base64 PNG ≤ 200 KB.
+             * @example iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==
+             */
+            signaturePng: string;
+        };
+        ContractsDto: {
+            data: components["schemas"]["ContractDto"][];
+        };
+        ContractSignerDto: {
+            /** @example 0 */
+            index: number;
+            /** @example มาลี มีสุข */
+            name: string;
+            /**
+             * Format: uuid
+             * @example null
+             */
+            partyId: string | null;
+            /** @example lessor */
+            role: components["schemas"]["ContractSignerRole"];
+            /**
+             * Format: date-time
+             * @example null
+             */
+            signedAt: string | null;
+            /**
+             * Format: uuid
+             * @example 0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11
+             */
+            tenantId: string | null;
+        };
+        /** @enum {string} */
+        ContractSignerRole: "lessor" | "lessee" | "co_tenant" | "prospect" | "owner" | "agency" | "co_agency";
+        ContractTemplateCheckDto: {
+            findings: components["schemas"]["ClauseFindingDto"][];
+            /**
+             * @description The tenant is in scope of the announcement (D-158).
+             * @example true
+             */
+            inScope: boolean;
+            problems: components["schemas"]["ProblemFieldError"][];
+            /** @example true */
+            publishable: boolean;
+            /** @example [] */
+            unknownVariables: string[];
+        };
+        ContractTemplateCopyDto: {
+            /**
+             * Format: uuid
+             * @description A published version to copy (platform or own).
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            derivedFromVersionId: string;
+            /** @example สัญญาจองของบ้านมาลี */
+            name?: string;
+        };
+        ContractTemplateDetailDto: {
+            /** @description The library version this template was copied from. */
+            base: components["schemas"]["ContractTemplateVersionDto"] | null;
+            /** @example <article class="contract"><section><h2>คู่สัญญา</h2>…</section></article> */
+            bodyHtml: string;
+            /** @description The version shown: the open draft, else the latest published. */
+            current: components["schemas"]["ContractTemplateVersionDto"];
+            disclaimer: components["schemas"]["DisclaimerDto"];
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example library_reservation */
+            key: string;
+            /** @example reservation */
+            kind: components["schemas"]["ContractKind"];
+            /** @example สัญญาจองห้องเช่า (ร่างจากคลังสัญญา) */
+            name: string;
+            /**
+             * @description A platform draft (read-only; copy it to edit).
+             * @example true
+             */
+            platform: boolean;
+            /**
+             * @description Variables a text of this kind may use; anything else is refused (`contract.unknown_variable`).
+             * @example [
+             *       "premises.unitNo",
+             *       "reservation.fee"
+             *     ]
+             */
+            variables: string[];
+            versions: components["schemas"]["ContractTemplateVersionDto"][];
+        };
+        ContractTemplateDiffDto: {
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            baseVersionId: string | null;
+            clauses: components["schemas"]["ClauseDiffDto"][];
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            versionId: string;
+        };
+        ContractTemplateDto: {
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example library_reservation */
+            key: string;
+            /** @example reservation */
+            kind: components["schemas"]["ContractKind"];
+            /** @example สัญญาจองห้องเช่า (ร่างจากคลังสัญญา) */
+            name: string;
+            /**
+             * @description A platform draft (read-only; copy it to edit).
+             * @example true
+             */
+            platform: boolean;
+            versions: components["schemas"]["ContractTemplateVersionDto"][];
+        };
+        ContractTemplatePublishedDto: {
+            /** @description The library version this template was copied from. */
+            base: components["schemas"]["ContractTemplateVersionDto"] | null;
+            /** @example <article class="contract"><section><h2>คู่สัญญา</h2>…</section></article> */
+            bodyHtml: string;
+            /** @description Warnings (outside the scope) stay visible. */
+            check: components["schemas"]["ContractTemplateCheckDto"];
+            /** @description The version shown: the open draft, else the latest published. */
+            current: components["schemas"]["ContractTemplateVersionDto"];
+            disclaimer: components["schemas"]["DisclaimerDto"];
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example library_reservation */
+            key: string;
+            /** @example reservation */
+            kind: components["schemas"]["ContractKind"];
+            /** @example สัญญาจองห้องเช่า (ร่างจากคลังสัญญา) */
+            name: string;
+            /**
+             * @description A platform draft (read-only; copy it to edit).
+             * @example true
+             */
+            platform: boolean;
+            /**
+             * @description Variables a text of this kind may use; anything else is refused (`contract.unknown_variable`).
+             * @example [
+             *       "premises.unitNo",
+             *       "reservation.fee"
+             *     ]
+             */
+            variables: string[];
+            versions: components["schemas"]["ContractTemplateVersionDto"][];
+        };
+        ContractTemplateUpdateDto: {
+            /**
+             * @description The Handlebars text: allowed HTML only (no script, style, links, handlers), variables of the kind, if / unless / each / with. Editing a published template opens its next draft version.
+             * @example <article class="contract"><section><h2>คู่สัญญา</h2><p>{{lessor.legalName}}</p></section></article>
+             */
+            bodyHtml?: string;
+            /** @example สัญญาจองของบ้านมาลี */
+            name?: string;
+        };
+        ContractTemplateVersionDto: {
+            /**
+             * Format: uuid
+             * @description The library version this text was copied from (D-294).
+             * @example null
+             */
+            derivedFromVersionId: string | null;
+            /**
+             * Format: date
+             * @example 2026-11-01
+             */
+            effectiveFrom: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example th */
+            language: components["schemas"]["Language"];
+            /** @example ⚖ ร่างโดยระบบ รอการตรวจสอบทางกฎหมาย (O-025) */
+            legalRef: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            legalReviewedAt: string | null;
+            /**
+             * @description Every draft is `pending_legal_verification` until counsel signs this version off (O-025).
+             * @example pending_legal_verification
+             */
+            legalReviewState: components["schemas"]["LegalReviewState"];
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            publishedAt: string | null;
+            /** @example published */
+            state: components["schemas"]["TemplateVersionState"];
+            /** @example 1 */
+            version: number;
+        };
+        ContractVariablesDto: {
+            /** @description addendum: 1–20 added clauses. */
+            clauses?: components["schemas"]["ClauseInputDto"][];
+            /**
+             * Format: date
+             * @description addendum: effective date (default today).
+             * @example 2026-11-01
+             */
+            effectiveDate?: string;
+            /**
+             * Format: date
+             * @description reservation: held until.
+             * @example 2026-11-15
+             */
+            expiresOn?: string;
+            /**
+             * @description reservation: reservation fee (THB, decimal string).
+             * @example 5000.00
+             */
+            fee?: string;
+            /**
+             * Format: date
+             * @description reservation: move-in date.
+             * @example 2026-12-01
+             */
+            moveInDate?: string;
+            /**
+             * @description brokerage_mandate / co_broke: further terms.
+             * @example แบ่งค่านายหน้า 60/40
+             */
+            note?: string;
+            /**
+             * @description reservation: extra refund terms.
+             * @example คืนเต็มจำนวนหากผู้ให้เช่าไม่ทำสัญญา
+             */
+            refundTerms?: string;
+            /**
+             * @description reservation: monthly rent (default the unit’s base rent).
+             * @example 15000.00
+             */
+            rent?: string;
         };
         CostLineCreateDto: {
             /** @example ก๊อกน้ำ */
@@ -19231,6 +20449,17 @@ export interface components {
              * @example 3b241101-e2bb-4255-8caf-4136c566a962
              */
             readingId: string;
+        };
+        DisclaimerDto: {
+            /** @example A sample contract provided for convenience; not legal advice. */
+            en: string;
+            /**
+             * @description The platform setting the text comes from (edited by the platform admin, D-290).
+             * @example contract.library.disclaimer
+             */
+            settingKey: string;
+            /** @example ตัวอย่างสัญญาเพื่ออำนวยความสะดวก ไม่ใช่คำแนะนำทางกฎหมาย */
+            th: string;
         };
         DocumentDownloadDto: {
             /**
@@ -22561,6 +23790,11 @@ export interface components {
              */
             startDate: string;
             /**
+             * Format: uuid
+             * @description G3 (D-294): write the lease on a published lease-kind version of the contract library — the tenant’s own template (checked when published) or a platform draft — instead of the default template; the version is pinned.
+             */
+            templateVersionId?: string;
+            /**
              * @description Agreed terms not modelled elsewhere.
              * @example {
              *       "petsAllowed": true
@@ -23183,6 +24417,12 @@ export interface components {
             language: components["schemas"]["Language"];
             /** @example 1 */
             version: number;
+            /**
+             * Format: uuid
+             * @description G3 (D-294): the template version pinned on the lease (contract library).
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            versionId: string;
         };
         LeaseTemplateVersionDto: {
             /**
@@ -23292,6 +24532,17 @@ export interface components {
                 [key: string]: unknown;
             };
             utilityBillingMode?: components["schemas"]["UtilityBillingMode"];
+        };
+        /**
+         * @description Every draft is `pending_legal_verification` until counsel signs this version off (O-025).
+         * @enum {string}
+         */
+        LegalReviewState: "pending_legal_verification" | "reviewed";
+        LegalReviewUpdateDto: {
+            /** @example ตรวจโดยสำนักงานกฎหมาย … 2026-12-01 */
+            note?: string | null;
+            /** @example reviewed */
+            state: components["schemas"]["LegalReviewState"];
         };
         /** @enum {string} */
         LessorReason: "lessee_breach" | "disturbance" | "end_of_term" | "mutual_agreement" | "unlawful_use";
@@ -24082,6 +25333,12 @@ export interface components {
             commissionPercent: string | null;
             /** @example ค่านายหน้า 1 เดือน */
             commissionTerms: string | null;
+            /**
+             * Format: uuid
+             * @description G3 (D-294): the brokerage-mandate contract sent for e-signature (evidence; the accept flow stays).
+             * @example null
+             */
+            contractDocumentId: string | null;
             /**
              * Format: date-time
              * @example 2026-11-01T00:15:00+07:00
@@ -29002,6 +30259,119 @@ export interface components {
             /** @example บัญชีรับเงินของ หอพักตัวอย่าง ถูกเปลี่ยนเป็น xxxxxx1234 */
             text: string;
         };
+        RenewalOfferCreateDto: {
+            language?: components["schemas"]["Language"];
+            /** @example ขอบคุณที่ดูแลห้องอย่างดีค่ะ */
+            message?: string | null;
+            /**
+             * @description Term of the renewal in months (default the current term).
+             * @example 12
+             */
+            months?: number;
+            /**
+             * @description Offered rent (default the suggestion). Unit: THB, decimal string (D-046).
+             * @example 15500.00
+             */
+            rent?: string;
+        };
+        RenewalOfferDto: {
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            createdAt: string;
+            /**
+             * @description Rent when offered. Unit: THB, decimal string (D-046).
+             * @example 15000.00
+             */
+            currentRent: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            decidedAt: string | null;
+            /** @example null */
+            declineReason: string | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            leaseId: string;
+            /** @example null */
+            message: string | null;
+            /** @example 12 */
+            months: number;
+            /**
+             * Format: uuid
+             * @description The renewal lease.
+             * @example null
+             */
+            newLeaseId: string | null;
+            /**
+             * @example [
+             *       "accept",
+             *       "decline"
+             *     ]
+             */
+            nextActions: string[];
+            /**
+             * Format: uuid
+             * @description The B7.5 letter.
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            noticeId: string | null;
+            /**
+             * @description Offered monthly rent. Unit: THB, decimal string (D-046).
+             * @example 15500.00
+             */
+            offeredRent: string;
+            /**
+             * Format: date
+             * @example 2027-08-15
+             */
+            respondBy: string;
+            /**
+             * Format: date
+             * @example 2027-10-01
+             */
+            startDate: string;
+            /** @example offered */
+            state: components["schemas"]["RenewalOfferState"];
+            /**
+             * @description The suggestion shown to the owner. Unit: THB, decimal string (D-046).
+             * @example 15500.00
+             */
+            suggestedRent: string | null;
+            /** @example benchmark */
+            suggestionSource: components["schemas"]["RenewalRentSource"];
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            unitId: string;
+        };
+        RenewalOffersDto: {
+            data: components["schemas"]["RenewalOfferDto"][];
+        };
+        /** @enum {string} */
+        RenewalOfferState: "offered" | "accepted" | "declined" | "expired" | "withdrawn";
+        /** @enum {string} */
+        RenewalRentSource: "benchmark" | "comparables" | "current_rent";
+        RenewalSuggestionDto: {
+            candidates: components["schemas"]["RentSuggestionDto"][];
+            /**
+             * @description Current monthly rent. Unit: THB, decimal string (D-046).
+             * @example 15000.00
+             */
+            currentRent: string;
+            /** @description The first available of the candidates. */
+            suggested: components["schemas"]["RentSuggestionDto"];
+        };
         RenewLeaseDto: {
             /** @example [] */
             acknowledgementIds?: string[];
@@ -29223,6 +30593,17 @@ export interface components {
         };
         /** @enum {string} */
         RentRecordShareState: "live" | "revoked" | "expired";
+        RentSuggestionDto: {
+            /** @example rent_per_m2 p50 516.67 × 30.00 m² (k = 7, 2026-10-26) */
+            basis: string;
+            /**
+             * @description Suggested monthly rent. Unit: THB, decimal string (D-046).
+             * @example 15500.00
+             */
+            rent: string;
+            /** @example benchmark */
+            source: components["schemas"]["RenewalRentSource"];
+        };
         ResendResultDto: {
             /**
              * @description The billed party receives the invoice Flex message again.
@@ -31806,6 +33187,8 @@ export interface components {
              */
             url: string;
         };
+        /** @enum {string} */
+        SignableContractKind: "reservation" | "brokerage_mandate" | "co_broke" | "addendum";
         /** @enum {string} */
         SignatureMethod: "draw_liff" | "draw_web" | "scan_upload";
         /** @enum {string} */
@@ -35930,6 +37313,229 @@ export interface operations {
             };
             /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
             403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.contractLibrary.list": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Library */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "key": "library_reservation",
+                     *           "kind": "reservation",
+                     *           "name": "สัญญาจองห้องเช่า (ร่างจากคลังสัญญา)",
+                     *           "platform": true,
+                     *           "versions": [
+                     *             {
+                     *               "derivedFromVersionId": null,
+                     *               "effectiveFrom": "2026-11-01",
+                     *               "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *               "language": "th",
+                     *               "legalRef": "⚖ ร่างโดยระบบ รอการตรวจสอบทางกฎหมาย (O-025)",
+                     *               "legalReviewState": "pending_legal_verification",
+                     *               "legalReviewedAt": null,
+                     *               "publishedAt": "2026-11-01T00:15:00+07:00",
+                     *               "state": "published",
+                     *               "version": 1
+                     *             }
+                     *           ]
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminContractLibraryDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.contractLibrary.setLegalReview": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                versionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LegalReviewUpdateDto"];
+            };
+        };
+        responses: {
+            /** @description Recorded */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "derivedFromVersionId": null,
+                     *       "effectiveFrom": "2026-11-01",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "language": "th",
+                     *       "legalRef": "⚖ ร่างโดยระบบ รอการตรวจสอบทางกฎหมาย (O-025)",
+                     *       "legalReviewState": "reviewed",
+                     *       "legalReviewedAt": "2026-11-01T00:15:00+07:00",
+                     *       "publishedAt": "2026-11-01T00:15:00+07:00",
+                     *       "state": "published",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ContractTemplateVersionDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `contract.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -64225,6 +65831,7 @@ export interface operations {
                      *         {
                      *           "coAgencyName": "นายหน้าร่วม จำกัด",
                      *           "coAgencyTenantId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *           "contractDocumentId": null,
                      *           "createdAt": "2026-11-01T00:15:00+07:00",
                      *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *           "listingAgencyName": "บ้านดี พร็อพเพอร์ตี้",
@@ -64344,6 +65951,7 @@ export interface operations {
                      * @example {
                      *       "coAgencyName": "นายหน้าร่วม จำกัด",
                      *       "coAgencyTenantId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "contractDocumentId": null,
                      *       "createdAt": "2026-11-01T00:15:00+07:00",
                      *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "listingAgencyName": "บ้านดี พร็อพเพอร์ตี้",
@@ -64476,6 +66084,7 @@ export interface operations {
                      * @example {
                      *       "coAgencyName": "นายหน้าร่วม จำกัด",
                      *       "coAgencyTenantId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "contractDocumentId": null,
                      *       "createdAt": "2026-11-01T00:15:00+07:00",
                      *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "listingAgencyName": "บ้านดี พร็อพเพอร์ตี้",
@@ -64598,6 +66207,7 @@ export interface operations {
                      * @example {
                      *       "coAgencyName": "นายหน้าร่วม จำกัด",
                      *       "coAgencyTenantId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "contractDocumentId": null,
                      *       "createdAt": "2026-11-01T00:15:00+07:00",
                      *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "listingAgencyName": "บ้านดี พร็อพเพอร์ตี้",
@@ -64730,6 +66340,7 @@ export interface operations {
                      * @example {
                      *       "coAgencyName": "นายหน้าร่วม จำกัด",
                      *       "coAgencyTenantId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "contractDocumentId": null,
                      *       "createdAt": "2026-11-01T00:15:00+07:00",
                      *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "listingAgencyName": "บ้านดี พร็อพเพอร์ตี้",
@@ -64865,6 +66476,7 @@ export interface operations {
                      * @example {
                      *       "coAgencyName": "นายหน้าร่วม จำกัด",
                      *       "coAgencyTenantId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "contractDocumentId": null,
                      *       "createdAt": "2026-11-01T00:15:00+07:00",
                      *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "listingAgencyName": "บ้านดี พร็อพเพอร์ตี้",
@@ -66045,6 +67657,2387 @@ export interface operations {
                 };
             };
             /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.contractLibrary.list": {
+        parameters: {
+            query?: {
+                kind?: components["schemas"]["ContractKind"];
+                language?: components["schemas"]["Language"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Library */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "key": "library_reservation",
+                     *           "kind": "reservation",
+                     *           "name": "สัญญาจองห้องเช่า (ร่างจากคลังสัญญา)",
+                     *           "platform": true,
+                     *           "versions": [
+                     *             {
+                     *               "derivedFromVersionId": null,
+                     *               "effectiveFrom": "2026-11-01",
+                     *               "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *               "language": "th",
+                     *               "legalRef": "⚖ ร่างโดยระบบ รอการตรวจสอบทางกฎหมาย (O-025)",
+                     *               "legalReviewState": "pending_legal_verification",
+                     *               "legalReviewedAt": null,
+                     *               "publishedAt": "2026-11-01T00:15:00+07:00",
+                     *               "state": "published",
+                     *               "version": 1
+                     *             }
+                     *           ]
+                     *         }
+                     *       ],
+                     *       "disclaimer": {
+                     *         "en": "A sample contract provided for convenience; not legal advice.",
+                     *         "settingKey": "contract.library.disclaimer",
+                     *         "th": "ตัวอย่างสัญญาเพื่ออำนวยความสะดวก ไม่ใช่คำแนะนำทางกฎหมาย"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ContractLibraryDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.contractTemplates.copy": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContractTemplateCopyDto"];
+            };
+        };
+        responses: {
+            /** @description Copied */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "base": {
+                     *         "derivedFromVersionId": null,
+                     *         "effectiveFrom": "2026-11-01",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "language": "th",
+                     *         "legalRef": "⚖ ร่างโดยระบบ รอการตรวจสอบทางกฎหมาย (O-025)",
+                     *         "legalReviewState": "pending_legal_verification",
+                     *         "legalReviewedAt": null,
+                     *         "publishedAt": "2026-11-01T00:15:00+07:00",
+                     *         "state": "published",
+                     *         "version": 1
+                     *       },
+                     *       "bodyHtml": "<article class=\"contract\"><section><h2>เงินจอง</h2><p>{{reservation.fee}}</p></section></article>",
+                     *       "current": {
+                     *         "derivedFromVersionId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "effectiveFrom": "2026-11-01",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "language": "th",
+                     *         "legalRef": "⚖ ร่างโดยระบบ รอการตรวจสอบทางกฎหมาย (O-025)",
+                     *         "legalReviewState": "pending_legal_verification",
+                     *         "legalReviewedAt": null,
+                     *         "publishedAt": null,
+                     *         "state": "draft",
+                     *         "version": 1
+                     *       },
+                     *       "disclaimer": {
+                     *         "en": "A sample contract provided for convenience; not legal advice.",
+                     *         "settingKey": "contract.library.disclaimer",
+                     *         "th": "ตัวอย่างสัญญาเพื่ออำนวยความสะดวก ไม่ใช่คำแนะนำทางกฎหมาย"
+                     *       },
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "key": "my_reservation_1",
+                     *       "kind": "reservation",
+                     *       "name": "สัญญาจองของบ้านมาลี",
+                     *       "platform": false,
+                     *       "variables": [
+                     *         "premises.unitNo",
+                     *         "reservation.fee"
+                     *       ],
+                     *       "versions": [
+                     *         {
+                     *           "derivedFromVersionId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "effectiveFrom": "2026-11-01",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "language": "th",
+                     *           "legalRef": "⚖ ร่างโดยระบบ รอการตรวจสอบทางกฎหมาย (O-025)",
+                     *           "legalReviewState": "pending_legal_verification",
+                     *           "legalReviewedAt": null,
+                     *           "publishedAt": null,
+                     *           "state": "draft",
+                     *           "version": 1
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ContractTemplateDetailDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.contractTemplates.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                templateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Template */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "base": {
+                     *         "derivedFromVersionId": null,
+                     *         "effectiveFrom": "2026-11-01",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "language": "th",
+                     *         "legalRef": "⚖ ร่างโดยระบบ รอการตรวจสอบทางกฎหมาย (O-025)",
+                     *         "legalReviewState": "pending_legal_verification",
+                     *         "legalReviewedAt": null,
+                     *         "publishedAt": "2026-11-01T00:15:00+07:00",
+                     *         "state": "published",
+                     *         "version": 1
+                     *       },
+                     *       "bodyHtml": "<article class=\"contract\"><section><h2>เงินจอง</h2><p>{{reservation.fee}}</p></section></article>",
+                     *       "current": {
+                     *         "derivedFromVersionId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "effectiveFrom": "2026-11-01",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "language": "th",
+                     *         "legalRef": "⚖ ร่างโดยระบบ รอการตรวจสอบทางกฎหมาย (O-025)",
+                     *         "legalReviewState": "pending_legal_verification",
+                     *         "legalReviewedAt": null,
+                     *         "publishedAt": null,
+                     *         "state": "draft",
+                     *         "version": 1
+                     *       },
+                     *       "disclaimer": {
+                     *         "en": "A sample contract provided for convenience; not legal advice.",
+                     *         "settingKey": "contract.library.disclaimer",
+                     *         "th": "ตัวอย่างสัญญาเพื่ออำนวยความสะดวก ไม่ใช่คำแนะนำทางกฎหมาย"
+                     *       },
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "key": "my_reservation_1",
+                     *       "kind": "reservation",
+                     *       "name": "สัญญาจองของบ้านมาลี",
+                     *       "platform": false,
+                     *       "variables": [
+                     *         "premises.unitNo",
+                     *         "reservation.fee"
+                     *       ],
+                     *       "versions": [
+                     *         {
+                     *           "derivedFromVersionId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "effectiveFrom": "2026-11-01",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "language": "th",
+                     *           "legalRef": "⚖ ร่างโดยระบบ รอการตรวจสอบทางกฎหมาย (O-025)",
+                     *           "legalReviewState": "pending_legal_verification",
+                     *           "legalReviewedAt": null,
+                     *           "publishedAt": null,
+                     *           "state": "draft",
+                     *           "version": 1
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ContractTemplateDetailDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.contractTemplates.update": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                templateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContractTemplateUpdateDto"];
+            };
+        };
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "base": {
+                     *         "derivedFromVersionId": null,
+                     *         "effectiveFrom": "2026-11-01",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "language": "th",
+                     *         "legalRef": "⚖ ร่างโดยระบบ รอการตรวจสอบทางกฎหมาย (O-025)",
+                     *         "legalReviewState": "pending_legal_verification",
+                     *         "legalReviewedAt": null,
+                     *         "publishedAt": "2026-11-01T00:15:00+07:00",
+                     *         "state": "published",
+                     *         "version": 1
+                     *       },
+                     *       "bodyHtml": "<article class=\"contract\"><section><h2>เงินจอง</h2><p>{{reservation.fee}}</p></section></article>",
+                     *       "current": {
+                     *         "derivedFromVersionId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "effectiveFrom": "2026-11-01",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "language": "th",
+                     *         "legalRef": "⚖ ร่างโดยระบบ รอการตรวจสอบทางกฎหมาย (O-025)",
+                     *         "legalReviewState": "pending_legal_verification",
+                     *         "legalReviewedAt": null,
+                     *         "publishedAt": null,
+                     *         "state": "draft",
+                     *         "version": 1
+                     *       },
+                     *       "disclaimer": {
+                     *         "en": "A sample contract provided for convenience; not legal advice.",
+                     *         "settingKey": "contract.library.disclaimer",
+                     *         "th": "ตัวอย่างสัญญาเพื่ออำนวยความสะดวก ไม่ใช่คำแนะนำทางกฎหมาย"
+                     *       },
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "key": "my_reservation_1",
+                     *       "kind": "reservation",
+                     *       "name": "สัญญาจองของบ้านมาลี",
+                     *       "platform": false,
+                     *       "variables": [
+                     *         "premises.unitNo",
+                     *         "reservation.fee"
+                     *       ],
+                     *       "versions": [
+                     *         {
+                     *           "derivedFromVersionId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "effectiveFrom": "2026-11-01",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "language": "th",
+                     *           "legalRef": "⚖ ร่างโดยระบบ รอการตรวจสอบทางกฎหมาย (O-025)",
+                     *           "legalReviewState": "pending_legal_verification",
+                     *           "legalReviewedAt": null,
+                     *           "publishedAt": null,
+                     *           "state": "draft",
+                     *           "version": 1
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ContractTemplateDetailDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `contract.template_invalid`, `contract.unknown_variable`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.contractTemplates.check": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                templateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Check */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "findings": [
+                     *         {
+                     *           "clauseKey": "ข้อ ๑๒ ข้อปฏิบัติของผู้ให้เช่า",
+                     *           "clauseTitle": "ข้อ ๑๒ ข้อปฏิบัติของผู้ให้เช่า",
+                     *           "clauseType": "renewal_fee",
+                     *           "excerpt": "ค่าต่อสัญญา",
+                     *           "legalRef": "ประกาศคณะกรรมการว่าด้วยสัญญา … พ.ศ. 2568 ข้อ 5 (11) ⚖",
+                     *           "severity": "warn",
+                     *           "source": "added_wording"
+                     *         }
+                     *       ],
+                     *       "inScope": false,
+                     *       "problems": [],
+                     *       "publishable": true,
+                     *       "unknownVariables": []
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ContractTemplateCheckDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.contractTemplates.publish": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                templateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Published */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "base": {
+                     *         "derivedFromVersionId": null,
+                     *         "effectiveFrom": "2026-11-01",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "language": "th",
+                     *         "legalRef": "⚖ ร่างโดยระบบ รอการตรวจสอบทางกฎหมาย (O-025)",
+                     *         "legalReviewState": "pending_legal_verification",
+                     *         "legalReviewedAt": null,
+                     *         "publishedAt": "2026-11-01T00:15:00+07:00",
+                     *         "state": "published",
+                     *         "version": 1
+                     *       },
+                     *       "bodyHtml": "<article class=\"contract\"><section><h2>เงินจอง</h2><p>{{reservation.fee}}</p></section></article>",
+                     *       "check": {
+                     *         "findings": [
+                     *           {
+                     *             "clauseKey": "ข้อ ๑๒ ข้อปฏิบัติของผู้ให้เช่า",
+                     *             "clauseTitle": "ข้อ ๑๒ ข้อปฏิบัติของผู้ให้เช่า",
+                     *             "clauseType": "renewal_fee",
+                     *             "excerpt": "ค่าต่อสัญญา",
+                     *             "legalRef": "ประกาศคณะกรรมการว่าด้วยสัญญา … พ.ศ. 2568 ข้อ 5 (11) ⚖",
+                     *             "severity": "warn",
+                     *             "source": "added_wording"
+                     *           }
+                     *         ],
+                     *         "inScope": false,
+                     *         "problems": [],
+                     *         "publishable": true,
+                     *         "unknownVariables": []
+                     *       },
+                     *       "current": {
+                     *         "derivedFromVersionId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "effectiveFrom": "2026-11-01",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "language": "th",
+                     *         "legalRef": "⚖ ร่างโดยระบบ รอการตรวจสอบทางกฎหมาย (O-025)",
+                     *         "legalReviewState": "pending_legal_verification",
+                     *         "legalReviewedAt": null,
+                     *         "publishedAt": null,
+                     *         "state": "draft",
+                     *         "version": 1
+                     *       },
+                     *       "disclaimer": {
+                     *         "en": "A sample contract provided for convenience; not legal advice.",
+                     *         "settingKey": "contract.library.disclaimer",
+                     *         "th": "ตัวอย่างสัญญาเพื่ออำนวยความสะดวก ไม่ใช่คำแนะนำทางกฎหมาย"
+                     *       },
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "key": "my_reservation_1",
+                     *       "kind": "reservation",
+                     *       "name": "สัญญาจองของบ้านมาลี",
+                     *       "platform": false,
+                     *       "variables": [
+                     *         "premises.unitNo",
+                     *         "reservation.fee"
+                     *       ],
+                     *       "versions": [
+                     *         {
+                     *           "derivedFromVersionId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "effectiveFrom": "2026-11-01",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "language": "th",
+                     *           "legalRef": "⚖ ร่างโดยระบบ รอการตรวจสอบทางกฎหมาย (O-025)",
+                     *           "legalReviewState": "pending_legal_verification",
+                     *           "legalReviewedAt": null,
+                     *           "publishedAt": null,
+                     *           "state": "draft",
+                     *           "version": 1
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ContractTemplatePublishedDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `contract.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `compliance.forbidden_clause`, `contract.template_invalid`, `contract.unknown_variable`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.contractTemplates.diff": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                templateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Diff */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "baseVersionId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "clauses": [
+                     *         {
+                     *           "baseText": "เงินจอง 5,000 บาท",
+                     *           "key": "เงินจอง",
+                     *           "status": "changed",
+                     *           "text": "เงินจอง 3,000 บาท",
+                     *           "title": "เงินจอง"
+                     *         }
+                     *       ],
+                     *       "versionId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ContractTemplateDiffDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.contractTemplates.preview": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                templateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The PDF */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example JVBERi0xLjcK… (pdf bytes) */
+                    "application/pdf": string;
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.contracts.list": {
+        parameters: {
+            query?: {
+                kind?: components["schemas"]["SignableContractKind"];
+                leaseId?: string;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                state?: components["schemas"]["ContractDocumentState"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "cancelledAt": null,
+                     *           "coBrokeAgreementId": null,
+                     *           "counterpartyTenantId": null,
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "disclaimer": {
+                     *             "en": "A sample contract provided for convenience; not legal advice.",
+                     *             "settingKey": "contract.library.disclaimer",
+                     *             "th": "ตัวอย่างสัญญาเพื่ออำนวยความสะดวก ไม่ใช่คำแนะนำทางกฎหมาย"
+                     *           },
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "kind": "reservation",
+                     *           "language": "th",
+                     *           "leaseId": null,
+                     *           "legalReviewState": "pending_legal_verification",
+                     *           "mandateId": null,
+                     *           "nextActions": [
+                     *             "sign",
+                     *             "download",
+                     *             "cancel"
+                     *           ],
+                     *           "number": "CTR-2026-00002",
+                     *           "sentAt": "2026-11-01T00:15:00+07:00",
+                     *           "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                     *           "signedAt": null,
+                     *           "signers": [
+                     *             {
+                     *               "index": 0,
+                     *               "name": "มาลี มีสุข",
+                     *               "partyId": null,
+                     *               "role": "lessor",
+                     *               "signedAt": null,
+                     *               "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11"
+                     *             },
+                     *             {
+                     *               "index": 1,
+                     *               "name": "สมศรี ใจดี",
+                     *               "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *               "role": "prospect",
+                     *               "signedAt": null,
+                     *               "tenantId": null
+                     *             }
+                     *           ],
+                     *           "state": "pending_signature",
+                     *           "templateKey": "library_reservation",
+                     *           "templateVersion": 1,
+                     *           "templateVersionId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "title": "สัญญาจองห้องเช่า (ร่างจากคลังสัญญา) A-101",
+                     *           "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "variables": {
+                     *             "expiresOn": "2026-11-15",
+                     *             "fee": "5000.00",
+                     *             "moveInDate": "2026-12-01",
+                     *             "rent": "15000.00"
+                     *           }
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["ContractDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.contracts.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContractCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Drafted */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelledAt": null,
+                     *       "coBrokeAgreementId": null,
+                     *       "counterpartyTenantId": null,
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "disclaimer": {
+                     *         "en": "A sample contract provided for convenience; not legal advice.",
+                     *         "settingKey": "contract.library.disclaimer",
+                     *         "th": "ตัวอย่างสัญญาเพื่ออำนวยความสะดวก ไม่ใช่คำแนะนำทางกฎหมาย"
+                     *       },
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "reservation",
+                     *       "language": "th",
+                     *       "leaseId": null,
+                     *       "legalReviewState": "pending_legal_verification",
+                     *       "mandateId": null,
+                     *       "nextActions": [
+                     *         "sign",
+                     *         "download",
+                     *         "cancel"
+                     *       ],
+                     *       "number": null,
+                     *       "sentAt": null,
+                     *       "sha256": null,
+                     *       "signedAt": null,
+                     *       "signers": [
+                     *         {
+                     *           "index": 0,
+                     *           "name": "มาลี มีสุข",
+                     *           "partyId": null,
+                     *           "role": "lessor",
+                     *           "signedAt": null,
+                     *           "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11"
+                     *         },
+                     *         {
+                     *           "index": 1,
+                     *           "name": "สมศรี ใจดี",
+                     *           "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "role": "prospect",
+                     *           "signedAt": null,
+                     *           "tenantId": null
+                     *         }
+                     *       ],
+                     *       "state": "draft",
+                     *       "templateKey": "library_reservation",
+                     *       "templateVersion": 1,
+                     *       "templateVersionId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "title": "สัญญาจองห้องเช่า (ร่างจากคลังสัญญา) A-101",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "variables": {
+                     *         "expiresOn": "2026-11-15",
+                     *         "fee": "5000.00",
+                     *         "moveInDate": "2026-12-01",
+                     *         "rent": "15000.00"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ContractDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `co_broke.invalid_state`, `lease.invalid_state`, `mandate.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `contract.unknown_variable`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.contracts.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                contractId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Contract */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelledAt": null,
+                     *       "coBrokeAgreementId": null,
+                     *       "counterpartyTenantId": null,
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "disclaimer": {
+                     *         "en": "A sample contract provided for convenience; not legal advice.",
+                     *         "settingKey": "contract.library.disclaimer",
+                     *         "th": "ตัวอย่างสัญญาเพื่ออำนวยความสะดวก ไม่ใช่คำแนะนำทางกฎหมาย"
+                     *       },
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "reservation",
+                     *       "language": "th",
+                     *       "leaseId": null,
+                     *       "legalReviewState": "pending_legal_verification",
+                     *       "mandateId": null,
+                     *       "nextActions": [
+                     *         "sign",
+                     *         "download",
+                     *         "cancel"
+                     *       ],
+                     *       "number": "CTR-2026-00002",
+                     *       "sentAt": "2026-11-01T00:15:00+07:00",
+                     *       "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                     *       "signedAt": null,
+                     *       "signers": [
+                     *         {
+                     *           "index": 0,
+                     *           "name": "มาลี มีสุข",
+                     *           "partyId": null,
+                     *           "role": "lessor",
+                     *           "signedAt": null,
+                     *           "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11"
+                     *         },
+                     *         {
+                     *           "index": 1,
+                     *           "name": "สมศรี ใจดี",
+                     *           "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "role": "prospect",
+                     *           "signedAt": null,
+                     *           "tenantId": null
+                     *         }
+                     *       ],
+                     *       "state": "pending_signature",
+                     *       "templateKey": "library_reservation",
+                     *       "templateVersion": 1,
+                     *       "templateVersionId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "title": "สัญญาจองห้องเช่า (ร่างจากคลังสัญญา) A-101",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "variables": {
+                     *         "expiresOn": "2026-11-15",
+                     *         "fee": "5000.00",
+                     *         "moveInDate": "2026-12-01",
+                     *         "rent": "15000.00"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ContractDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.contracts.cancel": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                contractId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MandateReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Cancelled */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelledAt": "2026-11-01T00:15:00+07:00",
+                     *       "coBrokeAgreementId": null,
+                     *       "counterpartyTenantId": null,
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "disclaimer": {
+                     *         "en": "A sample contract provided for convenience; not legal advice.",
+                     *         "settingKey": "contract.library.disclaimer",
+                     *         "th": "ตัวอย่างสัญญาเพื่ออำนวยความสะดวก ไม่ใช่คำแนะนำทางกฎหมาย"
+                     *       },
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "reservation",
+                     *       "language": "th",
+                     *       "leaseId": null,
+                     *       "legalReviewState": "pending_legal_verification",
+                     *       "mandateId": null,
+                     *       "nextActions": [],
+                     *       "number": "CTR-2026-00002",
+                     *       "sentAt": "2026-11-01T00:15:00+07:00",
+                     *       "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                     *       "signedAt": null,
+                     *       "signers": [
+                     *         {
+                     *           "index": 0,
+                     *           "name": "มาลี มีสุข",
+                     *           "partyId": null,
+                     *           "role": "lessor",
+                     *           "signedAt": null,
+                     *           "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11"
+                     *         },
+                     *         {
+                     *           "index": 1,
+                     *           "name": "สมศรี ใจดี",
+                     *           "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "role": "prospect",
+                     *           "signedAt": null,
+                     *           "tenantId": null
+                     *         }
+                     *       ],
+                     *       "state": "cancelled",
+                     *       "templateKey": "library_reservation",
+                     *       "templateVersion": 1,
+                     *       "templateVersionId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "title": "สัญญาจองห้องเช่า (ร่างจากคลังสัญญา) A-101",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "variables": {
+                     *         "expiresOn": "2026-11-15",
+                     *         "fee": "5000.00",
+                     *         "moveInDate": "2026-12-01",
+                     *         "rent": "15000.00"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ContractDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `contract.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.contracts.sendForSignature": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                contractId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Sent */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelledAt": null,
+                     *       "coBrokeAgreementId": null,
+                     *       "counterpartyTenantId": null,
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "disclaimer": {
+                     *         "en": "A sample contract provided for convenience; not legal advice.",
+                     *         "settingKey": "contract.library.disclaimer",
+                     *         "th": "ตัวอย่างสัญญาเพื่ออำนวยความสะดวก ไม่ใช่คำแนะนำทางกฎหมาย"
+                     *       },
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "reservation",
+                     *       "language": "th",
+                     *       "leaseId": null,
+                     *       "legalReviewState": "pending_legal_verification",
+                     *       "mandateId": null,
+                     *       "nextActions": [
+                     *         "sign",
+                     *         "download",
+                     *         "cancel"
+                     *       ],
+                     *       "number": "CTR-2026-00002",
+                     *       "sentAt": "2026-11-01T00:15:00+07:00",
+                     *       "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                     *       "signedAt": null,
+                     *       "signers": [
+                     *         {
+                     *           "index": 0,
+                     *           "name": "มาลี มีสุข",
+                     *           "partyId": null,
+                     *           "role": "lessor",
+                     *           "signedAt": null,
+                     *           "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11"
+                     *         },
+                     *         {
+                     *           "index": 1,
+                     *           "name": "สมศรี ใจดี",
+                     *           "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "role": "prospect",
+                     *           "signedAt": null,
+                     *           "tenantId": null
+                     *         }
+                     *       ],
+                     *       "state": "pending_signature",
+                     *       "templateKey": "library_reservation",
+                     *       "templateVersion": 1,
+                     *       "templateVersionId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "title": "สัญญาจองห้องเช่า (ร่างจากคลังสัญญา) A-101",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "variables": {
+                     *         "expiresOn": "2026-11-15",
+                     *         "fee": "5000.00",
+                     *         "moveInDate": "2026-12-01",
+                     *         "rent": "15000.00"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ContractDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `contract.invalid_state`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.contracts.sign": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                contractId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContractOperatorSignDto"];
+            };
+        };
+        responses: {
+            /** @description Signed */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelledAt": null,
+                     *       "coBrokeAgreementId": null,
+                     *       "counterpartyTenantId": null,
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "disclaimer": {
+                     *         "en": "A sample contract provided for convenience; not legal advice.",
+                     *         "settingKey": "contract.library.disclaimer",
+                     *         "th": "ตัวอย่างสัญญาเพื่ออำนวยความสะดวก ไม่ใช่คำแนะนำทางกฎหมาย"
+                     *       },
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "reservation",
+                     *       "language": "th",
+                     *       "leaseId": null,
+                     *       "legalReviewState": "pending_legal_verification",
+                     *       "mandateId": null,
+                     *       "nextActions": [
+                     *         "download"
+                     *       ],
+                     *       "number": "CTR-2026-00002",
+                     *       "sentAt": "2026-11-01T00:15:00+07:00",
+                     *       "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                     *       "signedAt": null,
+                     *       "signers": [
+                     *         {
+                     *           "index": 0,
+                     *           "name": "มาลี มีสุข",
+                     *           "partyId": null,
+                     *           "role": "lessor",
+                     *           "signedAt": null,
+                     *           "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11"
+                     *         },
+                     *         {
+                     *           "index": 1,
+                     *           "name": "สมศรี ใจดี",
+                     *           "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "role": "prospect",
+                     *           "signedAt": null,
+                     *           "tenantId": null
+                     *         }
+                     *       ],
+                     *       "state": "pending_signature",
+                     *       "templateKey": "library_reservation",
+                     *       "templateVersion": 1,
+                     *       "templateVersionId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "title": "สัญญาจองห้องเช่า (ร่างจากคลังสัญญา) A-101",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "variables": {
+                     *         "expiresOn": "2026-11-15",
+                     *         "fee": "5000.00",
+                     *         "moveInDate": "2026-12-01",
+                     *         "rent": "15000.00"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ContractDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `contract.not_signer`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `contract.already_signed`, `contract.changed`, `contract.invalid_state`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `contract.signature_invalid`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.contracts.document": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                contractId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Download */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "expiresAt": "2026-11-01T00:20:00+07:00",
+                     *       "number": "CTR-2026-00002",
+                     *       "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                     *       "signed": false,
+                     *       "url": "https://storage.example.com/contract.pdf?X-Amz-Signature=abc"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ContractDownloadDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `contract.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.contracts.preview": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                contractId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The PDF */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example JVBERi0xLjcK… (pdf bytes) */
+                    "application/pdf": string;
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
             400: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -78132,7 +82125,8 @@ export interface operations {
                      *           "template": {
                      *             "key": "ocpb_2568_residential_th",
                      *             "language": "th",
-                     *             "version": 1
+                     *             "version": 1,
+                     *             "versionId": "3b241101-e2bb-4255-8caf-4136c566a962"
                      *           },
                      *           "termination": null,
                      *           "terms": {},
@@ -78337,7 +82331,8 @@ export interface operations {
                      *       "template": {
                      *         "key": "ocpb_2568_residential_th",
                      *         "language": "th",
-                     *         "version": 1
+                     *         "version": 1,
+                     *         "versionId": "3b241101-e2bb-4255-8caf-4136c566a962"
                      *       },
                      *       "termination": null,
                      *       "terms": {},
@@ -78551,7 +82546,8 @@ export interface operations {
                      *       "template": {
                      *         "key": "ocpb_2568_residential_th",
                      *         "language": "th",
-                     *         "version": 1
+                     *         "version": 1,
+                     *         "versionId": "3b241101-e2bb-4255-8caf-4136c566a962"
                      *       },
                      *       "termination": null,
                      *       "terms": {},
@@ -78761,7 +82757,8 @@ export interface operations {
                      *       "template": {
                      *         "key": "ocpb_2568_residential_th",
                      *         "language": "th",
-                     *         "version": 1
+                     *         "version": 1,
+                     *         "versionId": "3b241101-e2bb-4255-8caf-4136c566a962"
                      *       },
                      *       "termination": null,
                      *       "terms": {},
@@ -78994,7 +82991,8 @@ export interface operations {
                      *       "template": {
                      *         "key": "ocpb_2568_residential_th",
                      *         "language": "th",
-                     *         "version": 1
+                     *         "version": 1,
+                     *         "versionId": "3b241101-e2bb-4255-8caf-4136c566a962"
                      *       },
                      *       "termination": null,
                      *       "terms": {},
@@ -79211,7 +83209,8 @@ export interface operations {
                      *       "template": {
                      *         "key": "ocpb_2568_residential_th",
                      *         "language": "th",
-                     *         "version": 1
+                     *         "version": 1,
+                     *         "versionId": "3b241101-e2bb-4255-8caf-4136c566a962"
                      *       },
                      *       "termination": null,
                      *       "terms": {},
@@ -79431,7 +83430,8 @@ export interface operations {
                      *       "template": {
                      *         "key": "ocpb_2568_residential_th",
                      *         "language": "th",
-                     *         "version": 1
+                     *         "version": 1,
+                     *         "versionId": "3b241101-e2bb-4255-8caf-4136c566a962"
                      *       },
                      *       "termination": null,
                      *       "terms": {},
@@ -79651,7 +83651,8 @@ export interface operations {
                      *       "template": {
                      *         "key": "ocpb_2568_residential_th",
                      *         "language": "th",
-                     *         "version": 1
+                     *         "version": 1,
+                     *         "versionId": "3b241101-e2bb-4255-8caf-4136c566a962"
                      *       },
                      *       "termination": null,
                      *       "terms": {},
@@ -79868,7 +83869,8 @@ export interface operations {
                      *       "template": {
                      *         "key": "ocpb_2568_residential_th",
                      *         "language": "th",
-                     *         "version": 1
+                     *         "version": 1,
+                     *         "versionId": "3b241101-e2bb-4255-8caf-4136c566a962"
                      *       },
                      *       "termination": null,
                      *       "terms": {},
@@ -80085,7 +84087,8 @@ export interface operations {
                      *       "template": {
                      *         "key": "ocpb_2568_residential_th",
                      *         "language": "th",
-                     *         "version": 1
+                     *         "version": 1,
+                     *         "versionId": "3b241101-e2bb-4255-8caf-4136c566a962"
                      *       },
                      *       "termination": null,
                      *       "terms": {},
@@ -80290,7 +84293,8 @@ export interface operations {
                      *       "template": {
                      *         "key": "ocpb_2568_residential_th",
                      *         "language": "th",
-                     *         "version": 1
+                     *         "version": 1,
+                     *         "versionId": "3b241101-e2bb-4255-8caf-4136c566a962"
                      *       },
                      *       "termination": null,
                      *       "terms": {},
@@ -80510,7 +84514,8 @@ export interface operations {
                      *       "template": {
                      *         "key": "ocpb_2568_residential_th",
                      *         "language": "th",
-                     *         "version": 1
+                     *         "version": 1,
+                     *         "versionId": "3b241101-e2bb-4255-8caf-4136c566a962"
                      *       },
                      *       "termination": null,
                      *       "terms": {},
@@ -81424,6 +85429,398 @@ export interface operations {
                 };
             };
             /** @description Problem: `compliance.termination_notice`, `idempotency.key_reused`, `lease.notice_nothing_overdue`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.renewals.listForLease": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                leaseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Offers */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "currentRent": "15000.00",
+                     *           "decidedAt": null,
+                     *           "declineReason": null,
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "leaseId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "message": null,
+                     *           "months": 12,
+                     *           "newLeaseId": null,
+                     *           "nextActions": [
+                     *             "withdraw"
+                     *           ],
+                     *           "noticeId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "offeredRent": "15500.00",
+                     *           "respondBy": "2027-08-15",
+                     *           "startDate": "2027-10-01",
+                     *           "state": "offered",
+                     *           "suggestedRent": "15500.00",
+                     *           "suggestionSource": "benchmark",
+                     *           "unitId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RenewalOffersDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.renewals.offer": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                leaseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RenewalOfferCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Offered */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "currentRent": "15000.00",
+                     *       "decidedAt": null,
+                     *       "declineReason": null,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "leaseId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "message": null,
+                     *       "months": 12,
+                     *       "newLeaseId": null,
+                     *       "nextActions": [
+                     *         "withdraw"
+                     *       ],
+                     *       "noticeId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "offeredRent": "15500.00",
+                     *       "respondBy": "2027-08-15",
+                     *       "startDate": "2027-10-01",
+                     *       "state": "offered",
+                     *       "suggestedRent": "15500.00",
+                     *       "suggestionSource": "benchmark",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RenewalOfferDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `lease.invalid_state`, `renewal.offer_exists` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.renewals.suggestion": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                leaseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Suggestion */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "candidates": [
+                     *         {
+                     *           "basis": "the current rent",
+                     *           "rent": "15000.00",
+                     *           "source": "current_rent"
+                     *         }
+                     *       ],
+                     *       "currentRent": "15000.00",
+                     *       "suggested": {
+                     *         "basis": "the current rent",
+                     *         "rent": "15000.00",
+                     *         "source": "current_rent"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RenewalSuggestionDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -87247,6 +91644,7 @@ export interface operations {
                      *             "commissionAmount": null,
                      *             "commissionPercent": "100.0000",
                      *             "commissionTerms": "ค่านายหน้า 1 เดือนต่อสัญญาเช่า 1 ปี",
+                     *             "contractDocumentId": null,
                      *             "createdAt": "2026-11-01T00:15:00+07:00",
                      *             "endReason": null,
                      *             "endedAt": null,
@@ -87377,6 +91775,7 @@ export interface operations {
                      *           "commissionAmount": null,
                      *           "commissionPercent": "100.0000",
                      *           "commissionTerms": "ค่านายหน้า 1 เดือนต่อสัญญาเช่า 1 ปี",
+                     *           "contractDocumentId": null,
                      *           "createdAt": "2026-11-01T00:15:00+07:00",
                      *           "endReason": null,
                      *           "endedAt": null,
@@ -87503,6 +91902,7 @@ export interface operations {
                      *       "commissionAmount": null,
                      *       "commissionPercent": "100.0000",
                      *       "commissionTerms": "ค่านายหน้า 1 เดือนต่อสัญญาเช่า 1 ปี",
+                     *       "contractDocumentId": null,
                      *       "createdAt": "2026-11-01T00:15:00+07:00",
                      *       "endReason": null,
                      *       "endedAt": null,
@@ -87642,6 +92042,7 @@ export interface operations {
                      *       "commissionAmount": null,
                      *       "commissionPercent": "100.0000",
                      *       "commissionTerms": "ค่านายหน้า 1 เดือนต่อสัญญาเช่า 1 ปี",
+                     *       "contractDocumentId": null,
                      *       "createdAt": "2026-11-01T00:15:00+07:00",
                      *       "endReason": null,
                      *       "endedAt": null,
@@ -87774,6 +92175,7 @@ export interface operations {
                      *       "commissionAmount": null,
                      *       "commissionPercent": "100.0000",
                      *       "commissionTerms": "ค่านายหน้า 1 เดือนต่อสัญญาเช่า 1 ปี",
+                     *       "contractDocumentId": null,
                      *       "createdAt": "2026-11-01T00:15:00+07:00",
                      *       "endReason": null,
                      *       "endedAt": null,
@@ -87917,6 +92319,7 @@ export interface operations {
                      *       "commissionAmount": null,
                      *       "commissionPercent": "100.0000",
                      *       "commissionTerms": "ค่านายหน้า 1 เดือนต่อสัญญาเช่า 1 ปี",
+                     *       "contractDocumentId": null,
                      *       "createdAt": "2026-11-01T00:15:00+07:00",
                      *       "endReason": "ไม่รับพื้นที่นี้",
                      *       "endedAt": null,
@@ -88063,6 +92466,7 @@ export interface operations {
                      *       "commissionAmount": null,
                      *       "commissionPercent": "100.0000",
                      *       "commissionTerms": "ค่านายหน้า 1 เดือนต่อสัญญาเช่า 1 ปี",
+                     *       "contractDocumentId": null,
                      *       "createdAt": "2026-11-01T00:15:00+07:00",
                      *       "endReason": "ครบตามที่ตกลง",
                      *       "endedAt": "2026-11-01T00:15:00+07:00",
@@ -88209,6 +92613,7 @@ export interface operations {
                      *       "commissionAmount": null,
                      *       "commissionPercent": "100.0000",
                      *       "commissionTerms": "ค่านายหน้า 1 เดือนต่อสัญญาเช่า 1 ปี",
+                     *       "contractDocumentId": null,
                      *       "createdAt": "2026-11-01T00:15:00+07:00",
                      *       "endReason": "ขายห้องแล้ว",
                      *       "endedAt": null,
@@ -98422,6 +102827,260 @@ export interface operations {
                 };
             };
             /** @description Problem: `idempotency.key_reused`, `refund.exceeds_credit`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.renewals.list": {
+        parameters: {
+            query?: {
+                state?: components["schemas"]["RenewalOfferState"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Offers */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "currentRent": "15000.00",
+                     *           "decidedAt": null,
+                     *           "declineReason": null,
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "leaseId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "message": null,
+                     *           "months": 12,
+                     *           "newLeaseId": null,
+                     *           "nextActions": [
+                     *             "withdraw"
+                     *           ],
+                     *           "noticeId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "offeredRent": "15500.00",
+                     *           "respondBy": "2027-08-15",
+                     *           "startDate": "2027-10-01",
+                     *           "state": "offered",
+                     *           "suggestedRent": "15500.00",
+                     *           "suggestionSource": "benchmark",
+                     *           "unitId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RenewalOffersDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.renewals.withdraw": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                offerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Withdrawn */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "currentRent": "15000.00",
+                     *       "decidedAt": null,
+                     *       "declineReason": null,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "leaseId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "message": null,
+                     *       "months": 12,
+                     *       "newLeaseId": null,
+                     *       "nextActions": [],
+                     *       "noticeId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "offeredRent": "15500.00",
+                     *       "respondBy": "2027-08-15",
+                     *       "startDate": "2027-10-01",
+                     *       "state": "withdrawn",
+                     *       "suggestedRent": "15500.00",
+                     *       "suggestionSource": "benchmark",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RenewalOfferDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `renewal.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -111232,6 +115891,699 @@ export interface operations {
             };
         };
     };
+    "prospect.contracts.list": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Contracts */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "cancelledAt": null,
+                     *           "coBrokeAgreementId": null,
+                     *           "counterpartyTenantId": null,
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "disclaimer": {
+                     *             "en": "A sample contract provided for convenience; not legal advice.",
+                     *             "settingKey": "contract.library.disclaimer",
+                     *             "th": "ตัวอย่างสัญญาเพื่ออำนวยความสะดวก ไม่ใช่คำแนะนำทางกฎหมาย"
+                     *           },
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "kind": "reservation",
+                     *           "language": "th",
+                     *           "leaseId": null,
+                     *           "legalReviewState": "pending_legal_verification",
+                     *           "mandateId": null,
+                     *           "nextActions": [
+                     *             "sign",
+                     *             "download",
+                     *             "cancel"
+                     *           ],
+                     *           "number": "CTR-2026-00002",
+                     *           "sentAt": "2026-11-01T00:15:00+07:00",
+                     *           "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                     *           "signedAt": null,
+                     *           "signers": [
+                     *             {
+                     *               "index": 0,
+                     *               "name": "มาลี มีสุข",
+                     *               "partyId": null,
+                     *               "role": "lessor",
+                     *               "signedAt": null,
+                     *               "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11"
+                     *             },
+                     *             {
+                     *               "index": 1,
+                     *               "name": "สมศรี ใจดี",
+                     *               "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *               "role": "prospect",
+                     *               "signedAt": null,
+                     *               "tenantId": null
+                     *             }
+                     *           ],
+                     *           "state": "pending_signature",
+                     *           "templateKey": "library_reservation",
+                     *           "templateVersion": 1,
+                     *           "templateVersionId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "title": "สัญญาจองห้องเช่า (ร่างจากคลังสัญญา) A-101",
+                     *           "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "variables": {
+                     *             "expiresOn": "2026-11-15",
+                     *             "fee": "5000.00",
+                     *             "moveInDate": "2026-12-01",
+                     *             "rent": "15000.00"
+                     *           }
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ContractsDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "prospect.contracts.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                contractId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Contract */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelledAt": null,
+                     *       "coBrokeAgreementId": null,
+                     *       "counterpartyTenantId": null,
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "disclaimer": {
+                     *         "en": "A sample contract provided for convenience; not legal advice.",
+                     *         "settingKey": "contract.library.disclaimer",
+                     *         "th": "ตัวอย่างสัญญาเพื่ออำนวยความสะดวก ไม่ใช่คำแนะนำทางกฎหมาย"
+                     *       },
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "reservation",
+                     *       "language": "th",
+                     *       "leaseId": null,
+                     *       "legalReviewState": "pending_legal_verification",
+                     *       "mandateId": null,
+                     *       "nextActions": [
+                     *         "sign",
+                     *         "download",
+                     *         "cancel"
+                     *       ],
+                     *       "number": "CTR-2026-00002",
+                     *       "sentAt": "2026-11-01T00:15:00+07:00",
+                     *       "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                     *       "signedAt": null,
+                     *       "signers": [
+                     *         {
+                     *           "index": 0,
+                     *           "name": "มาลี มีสุข",
+                     *           "partyId": null,
+                     *           "role": "lessor",
+                     *           "signedAt": null,
+                     *           "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11"
+                     *         },
+                     *         {
+                     *           "index": 1,
+                     *           "name": "สมศรี ใจดี",
+                     *           "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "role": "prospect",
+                     *           "signedAt": null,
+                     *           "tenantId": null
+                     *         }
+                     *       ],
+                     *       "state": "pending_signature",
+                     *       "templateKey": "library_reservation",
+                     *       "templateVersion": 1,
+                     *       "templateVersionId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "title": "สัญญาจองห้องเช่า (ร่างจากคลังสัญญา) A-101",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "variables": {
+                     *         "expiresOn": "2026-11-15",
+                     *         "fee": "5000.00",
+                     *         "moveInDate": "2026-12-01",
+                     *         "rent": "15000.00"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ContractDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "prospect.contracts.document": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                contractId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Download */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "expiresAt": "2026-11-01T00:20:00+07:00",
+                     *       "number": "CTR-2026-00002",
+                     *       "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                     *       "signed": false,
+                     *       "url": "https://storage.example.com/contract.pdf?X-Amz-Signature=abc"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ContractDownloadDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `contract.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "prospect.contracts.sign": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                contractId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResidentSignDto"];
+            };
+        };
+        responses: {
+            /** @description Signed */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelledAt": null,
+                     *       "coBrokeAgreementId": null,
+                     *       "counterpartyTenantId": null,
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "disclaimer": {
+                     *         "en": "A sample contract provided for convenience; not legal advice.",
+                     *         "settingKey": "contract.library.disclaimer",
+                     *         "th": "ตัวอย่างสัญญาเพื่ออำนวยความสะดวก ไม่ใช่คำแนะนำทางกฎหมาย"
+                     *       },
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "reservation",
+                     *       "language": "th",
+                     *       "leaseId": null,
+                     *       "legalReviewState": "pending_legal_verification",
+                     *       "mandateId": null,
+                     *       "nextActions": [
+                     *         "download"
+                     *       ],
+                     *       "number": "CTR-2026-00002",
+                     *       "sentAt": "2026-11-01T00:15:00+07:00",
+                     *       "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                     *       "signedAt": null,
+                     *       "signers": [
+                     *         {
+                     *           "index": 0,
+                     *           "name": "มาลี มีสุข",
+                     *           "partyId": null,
+                     *           "role": "lessor",
+                     *           "signedAt": null,
+                     *           "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11"
+                     *         },
+                     *         {
+                     *           "index": 1,
+                     *           "name": "สมศรี ใจดี",
+                     *           "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "role": "prospect",
+                     *           "signedAt": null,
+                     *           "tenantId": null
+                     *         }
+                     *       ],
+                     *       "state": "pending_signature",
+                     *       "templateKey": "library_reservation",
+                     *       "templateVersion": 1,
+                     *       "templateVersionId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "title": "สัญญาจองห้องเช่า (ร่างจากคลังสัญญา) A-101",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "variables": {
+                     *         "expiresOn": "2026-11-15",
+                     *         "fee": "5000.00",
+                     *         "moveInDate": "2026-12-01",
+                     *         "rent": "15000.00"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ContractDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.otp_expired`, `auth.otp_invalid`, `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `contract.already_signed`, `contract.changed`, `contract.invalid_state`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `contract.signature_invalid`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.otp_attempts_exceeded`, `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "prospect.contracts.requestSignatureOtp": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                contractId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResidentSignatureOtpRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Code sent */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "challengeId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "expiresAt": "2026-11-01T00:20:00+07:00",
+                     *       "phoneMasked": "+66•••••1234",
+                     *       "resendAvailableAt": "2026-11-01T00:16:00+07:00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ResidentSignatureOtpDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `contract.already_signed`, `contract.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `lease.lessee_identity_missing`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.otp_rate_limited`, `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `provider.unavailable` */
+            503: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "prospect.enquiries.list": {
         parameters: {
             query?: never;
@@ -116019,6 +121371,699 @@ export interface operations {
             };
             /** @description Problem: `internal.unexpected` */
             500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.contracts.list": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Contracts */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "cancelledAt": null,
+                     *           "coBrokeAgreementId": null,
+                     *           "counterpartyTenantId": null,
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "disclaimer": {
+                     *             "en": "A sample contract provided for convenience; not legal advice.",
+                     *             "settingKey": "contract.library.disclaimer",
+                     *             "th": "ตัวอย่างสัญญาเพื่ออำนวยความสะดวก ไม่ใช่คำแนะนำทางกฎหมาย"
+                     *           },
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "kind": "reservation",
+                     *           "language": "th",
+                     *           "leaseId": null,
+                     *           "legalReviewState": "pending_legal_verification",
+                     *           "mandateId": null,
+                     *           "nextActions": [
+                     *             "sign",
+                     *             "download",
+                     *             "cancel"
+                     *           ],
+                     *           "number": "CTR-2026-00002",
+                     *           "sentAt": "2026-11-01T00:15:00+07:00",
+                     *           "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                     *           "signedAt": null,
+                     *           "signers": [
+                     *             {
+                     *               "index": 0,
+                     *               "name": "มาลี มีสุข",
+                     *               "partyId": null,
+                     *               "role": "lessor",
+                     *               "signedAt": null,
+                     *               "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11"
+                     *             },
+                     *             {
+                     *               "index": 1,
+                     *               "name": "สมศรี ใจดี",
+                     *               "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *               "role": "prospect",
+                     *               "signedAt": null,
+                     *               "tenantId": null
+                     *             }
+                     *           ],
+                     *           "state": "pending_signature",
+                     *           "templateKey": "library_reservation",
+                     *           "templateVersion": 1,
+                     *           "templateVersionId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "title": "สัญญาจองห้องเช่า (ร่างจากคลังสัญญา) A-101",
+                     *           "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "variables": {
+                     *             "expiresOn": "2026-11-15",
+                     *             "fee": "5000.00",
+                     *             "moveInDate": "2026-12-01",
+                     *             "rent": "15000.00"
+                     *           }
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ContractsDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.contracts.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                contractId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Contract */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelledAt": null,
+                     *       "coBrokeAgreementId": null,
+                     *       "counterpartyTenantId": null,
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "disclaimer": {
+                     *         "en": "A sample contract provided for convenience; not legal advice.",
+                     *         "settingKey": "contract.library.disclaimer",
+                     *         "th": "ตัวอย่างสัญญาเพื่ออำนวยความสะดวก ไม่ใช่คำแนะนำทางกฎหมาย"
+                     *       },
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "reservation",
+                     *       "language": "th",
+                     *       "leaseId": null,
+                     *       "legalReviewState": "pending_legal_verification",
+                     *       "mandateId": null,
+                     *       "nextActions": [
+                     *         "sign",
+                     *         "download",
+                     *         "cancel"
+                     *       ],
+                     *       "number": "CTR-2026-00002",
+                     *       "sentAt": "2026-11-01T00:15:00+07:00",
+                     *       "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                     *       "signedAt": null,
+                     *       "signers": [
+                     *         {
+                     *           "index": 0,
+                     *           "name": "มาลี มีสุข",
+                     *           "partyId": null,
+                     *           "role": "lessor",
+                     *           "signedAt": null,
+                     *           "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11"
+                     *         },
+                     *         {
+                     *           "index": 1,
+                     *           "name": "สมศรี ใจดี",
+                     *           "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "role": "prospect",
+                     *           "signedAt": null,
+                     *           "tenantId": null
+                     *         }
+                     *       ],
+                     *       "state": "pending_signature",
+                     *       "templateKey": "library_reservation",
+                     *       "templateVersion": 1,
+                     *       "templateVersionId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "title": "สัญญาจองห้องเช่า (ร่างจากคลังสัญญา) A-101",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "variables": {
+                     *         "expiresOn": "2026-11-15",
+                     *         "fee": "5000.00",
+                     *         "moveInDate": "2026-12-01",
+                     *         "rent": "15000.00"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ContractDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.contracts.document": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                contractId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Download */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "expiresAt": "2026-11-01T00:20:00+07:00",
+                     *       "number": "CTR-2026-00002",
+                     *       "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                     *       "signed": false,
+                     *       "url": "https://storage.example.com/contract.pdf?X-Amz-Signature=abc"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ContractDownloadDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `contract.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.contracts.sign": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                contractId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResidentSignDto"];
+            };
+        };
+        responses: {
+            /** @description Signed */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "cancelledAt": null,
+                     *       "coBrokeAgreementId": null,
+                     *       "counterpartyTenantId": null,
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "disclaimer": {
+                     *         "en": "A sample contract provided for convenience; not legal advice.",
+                     *         "settingKey": "contract.library.disclaimer",
+                     *         "th": "ตัวอย่างสัญญาเพื่ออำนวยความสะดวก ไม่ใช่คำแนะนำทางกฎหมาย"
+                     *       },
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "reservation",
+                     *       "language": "th",
+                     *       "leaseId": null,
+                     *       "legalReviewState": "pending_legal_verification",
+                     *       "mandateId": null,
+                     *       "nextActions": [
+                     *         "download"
+                     *       ],
+                     *       "number": "CTR-2026-00002",
+                     *       "sentAt": "2026-11-01T00:15:00+07:00",
+                     *       "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+                     *       "signedAt": null,
+                     *       "signers": [
+                     *         {
+                     *           "index": 0,
+                     *           "name": "มาลี มีสุข",
+                     *           "partyId": null,
+                     *           "role": "lessor",
+                     *           "signedAt": null,
+                     *           "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11"
+                     *         },
+                     *         {
+                     *           "index": 1,
+                     *           "name": "สมศรี ใจดี",
+                     *           "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "role": "prospect",
+                     *           "signedAt": null,
+                     *           "tenantId": null
+                     *         }
+                     *       ],
+                     *       "state": "pending_signature",
+                     *       "templateKey": "library_reservation",
+                     *       "templateVersion": 1,
+                     *       "templateVersionId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "title": "สัญญาจองห้องเช่า (ร่างจากคลังสัญญา) A-101",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "variables": {
+                     *         "expiresOn": "2026-11-15",
+                     *         "fee": "5000.00",
+                     *         "moveInDate": "2026-12-01",
+                     *         "rent": "15000.00"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ContractDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.otp_expired`, `auth.otp_invalid`, `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `contract.already_signed`, `contract.changed`, `contract.invalid_state`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `contract.signature_invalid`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.otp_attempts_exceeded`, `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.contracts.requestSignatureOtp": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                contractId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResidentSignatureOtpRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Code sent */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "challengeId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "expiresAt": "2026-11-01T00:20:00+07:00",
+                     *       "phoneMasked": "+66•••••1234",
+                     *       "resendAvailableAt": "2026-11-01T00:16:00+07:00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ResidentSignatureOtpDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `contract.already_signed`, `contract.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `lease.lessee_identity_missing`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.otp_rate_limited`, `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `provider.unavailable` */
+            503: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -123779,6 +129824,492 @@ export interface operations {
                 };
             };
             /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.renewals.list": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Offers */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "currentRent": "15000.00",
+                     *           "decidedAt": null,
+                     *           "declineReason": null,
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "leaseId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "message": null,
+                     *           "months": 12,
+                     *           "newLeaseId": null,
+                     *           "nextActions": [
+                     *             "accept",
+                     *             "decline"
+                     *           ],
+                     *           "noticeId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "offeredRent": "15500.00",
+                     *           "respondBy": "2027-08-15",
+                     *           "startDate": "2027-10-01",
+                     *           "state": "offered",
+                     *           "suggestedRent": "15500.00",
+                     *           "suggestionSource": "benchmark",
+                     *           "unitId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RenewalOffersDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.renewals.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                offerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Offer */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "currentRent": "15000.00",
+                     *       "decidedAt": null,
+                     *       "declineReason": null,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "leaseId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "message": null,
+                     *       "months": 12,
+                     *       "newLeaseId": null,
+                     *       "nextActions": [
+                     *         "accept",
+                     *         "decline"
+                     *       ],
+                     *       "noticeId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "offeredRent": "15500.00",
+                     *       "respondBy": "2027-08-15",
+                     *       "startDate": "2027-10-01",
+                     *       "state": "offered",
+                     *       "suggestedRent": "15500.00",
+                     *       "suggestionSource": "benchmark",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RenewalOfferDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.renewals.accept": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                offerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Accepted */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "currentRent": "15000.00",
+                     *       "decidedAt": "2026-11-01T00:15:00+07:00",
+                     *       "declineReason": null,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "leaseId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "message": null,
+                     *       "months": 12,
+                     *       "newLeaseId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "nextActions": [],
+                     *       "noticeId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "offeredRent": "15500.00",
+                     *       "respondBy": "2027-08-15",
+                     *       "startDate": "2027-10-01",
+                     *       "state": "accepted",
+                     *       "suggestedRent": "15500.00",
+                     *       "suggestionSource": "benchmark",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RenewalOfferDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `lease.not_signer` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `compliance.acknowledgement_required`, `idempotency.in_progress`, `renewal.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.renewals.decline": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                offerId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MandateReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Declined */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "currentRent": "15000.00",
+                     *       "decidedAt": "2026-11-01T00:15:00+07:00",
+                     *       "declineReason": "ย้ายไปทำงานต่างจังหวัด",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "leaseId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "message": null,
+                     *       "months": 12,
+                     *       "newLeaseId": null,
+                     *       "nextActions": [],
+                     *       "noticeId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "offeredRent": "15500.00",
+                     *       "respondBy": "2027-08-15",
+                     *       "startDate": "2027-10-01",
+                     *       "state": "declined",
+                     *       "suggestedRent": "15500.00",
+                     *       "suggestionSource": "benchmark",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RenewalOfferDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `lease.not_signer` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `lease.invalid_state`, `renewal.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];

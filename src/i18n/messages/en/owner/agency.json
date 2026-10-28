@@ -187,5 +187,10 @@
     "state": "State",
     "validity": "Period",
     "actions": "Actions"
+  },
+  "contract": {
+    "open": "Open the contract",
+    "writeMandate": "Write the mandate contract",
+    "writeCoBroke": "Write the co-broke contract"
   }
 }

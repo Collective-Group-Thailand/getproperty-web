@@ -412,5 +412,22 @@
     "signed": "Signed",
     "ended": "Ended",
     "cancelled": "Cancelled"
+  },
+  "contractDocument": {
+    "draft": "Draft",
+    "pending_signature": "Awaiting signatures",
+    "signed": "Fully signed",
+    "cancelled": "Cancelled"
+  },
+  "legalReview": {
+    "pending_legal_verification": "Pending legal review",
+    "reviewed": "Reviewed by counsel"
+  },
+  "renewalOffer": {
+    "offered": "Awaiting the resident",
+    "accepted": "Accepted",
+    "declined": "Declined",
+    "expired": "Expired",
+    "withdrawn": "Withdrawn"
   }
 }
