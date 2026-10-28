@@ -18,6 +18,7 @@ import { ownerPath } from "../shared/links";
 import { ListPagination } from "@/features/shared/console/ListPagination";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { focusedBuilding, pageParam, param, type OwnerContext } from "../shared/server";
+import { ContractsNav } from "../contracts/ContractsNav";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -58,6 +59,7 @@ export async function LeasesView({ context, searchParams }: { context: OwnerCont
           </Button>
         }
       />
+      <ContractsNav current="/leases" locale={locale} />
       <FilterBar
         fields={[
           { name: "q", label: t("filter.search"), type: "search", placeholder: t("filter.searchPlaceholder") },

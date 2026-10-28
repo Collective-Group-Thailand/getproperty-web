@@ -198,9 +198,20 @@ function leaseFromInput(input: Schemas["LeaseCreateDto"]): Schemas["LeaseDto"] |
     rentIncreases: input.rentIncreases ?? [],
     terms: input.terms ?? {},
     // B7.5: a language only reaches the API from a landlord (the standard contract is Thai only)
+    // G3 (D-294): the template version pinned on the lease — the one picked (own or platform), else the default.
     template: input.language
-      ? { key: "landlord_condo_unit", version: 1, language: input.language }
-      : { key: "ocpb_2568_residential_th", version: 1, language: "th" },
+      ? {
+          key: "landlord_condo_unit",
+          version: 1,
+          language: input.language,
+          versionId: input.templateVersionId ?? TEMPLATE_VERSION,
+        }
+      : {
+          key: "ocpb_2568_residential_th",
+          version: 1,
+          language: "th",
+          versionId: input.templateVersionId ?? TEMPLATE_VERSION,
+        },
     stampDutyPayer: input.stampDutyPayer ?? "lessor",
     bilingual: input.bilingual ?? false,
     parties,

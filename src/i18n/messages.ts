@@ -22,6 +22,7 @@ export const MESSAGE_FILES = {
     "certificates",
     "common",
     "community",
+    "contracts",
     "dashboard",
     "deposits",
     "devices",

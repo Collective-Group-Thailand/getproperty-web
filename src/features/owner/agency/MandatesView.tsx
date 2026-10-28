@@ -9,6 +9,7 @@ import type { Locale } from "@/i18n/routing";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
+import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
@@ -194,6 +195,25 @@ function MandateRow({
                 owner: mandate.ownerName,
               })}
             />
+          ) : null}
+          {mandate.contractDocumentId ? (
+            <Button asChild variant="secondary" size="sm" iconStart={IconSign}>
+              <a
+                href={ownerPath(locale, `/contracts/documents/${mandate.contractDocumentId}`)}
+                data-testid="mandate-contract"
+              >
+                {t("contract.open")}
+              </a>
+            </Button>
+          ) : !isAgency && held ? (
+            <Button asChild variant="secondary" size="sm" iconStart={IconSign}>
+              <a
+                href={ownerPath(locale, `/contracts/documents?new=brokerage_mandate&mandate=${mandate.id}`)}
+                data-testid="mandate-write-contract"
+              >
+                {t("contract.writeMandate")}
+              </a>
+            </Button>
           ) : null}
           {!isAgency && (held || mandate.state === "invited") ? <StopMandate mandate={mandate} mode="revoke" /> : null}
           {isAgency && held ? <StopMandate mandate={mandate} mode="end" /> : null}

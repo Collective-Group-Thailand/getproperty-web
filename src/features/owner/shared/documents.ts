@@ -19,6 +19,9 @@ export type DocumentRef =
   | { kind: "leasePreview"; id: string }
   | { kind: "inspectionReport"; id: string }
   | { kind: "leaseNotice"; id: string }
+  | { kind: "contract"; id: string }
+  | { kind: "contractPreview"; id: string }
+  | { kind: "contractTemplatePreview"; id: string }
   | { kind: "file"; id: string; purpose?: string };
 
 export interface ResolvedDocument {
@@ -82,6 +85,20 @@ export async function resolveDocument(ref: DocumentRef): Promise<ResolvedDocumen
           api.GET("/v1/owner/lease-notices/{noticeId}/document", { params: { path: { noticeId: ref.id } } }),
         ),
       );
+    case "contract":
+      return signed(
+        await unwrap(
+          api.GET("/v1/owner/contracts/{contractId}/document", { params: { path: { contractId: ref.id } } }),
+        ),
+      );
+    case "contractPreview":
+      return { url: `/bff/v1/owner/contracts/${encodeURIComponent(ref.id)}/preview`, number: null, local: true };
+    case "contractTemplatePreview":
+      return {
+        url: `/bff/v1/owner/contract-templates/${encodeURIComponent(ref.id)}/preview`,
+        number: null,
+        local: true,
+      };
     case "file": {
       const file = await unwrap(
         api.GET("/v1/owner/files/{fileId}", {

@@ -8,6 +8,7 @@ import { initialPortfolios } from "./owner/portfolio-world";
 import { initialR2World, type R2World } from "./r2/world";
 import { initialStorageWorld, type MockStorageWorld } from "./storage-world";
 import { initialAgencyWorld, type MockAgencyWorld } from "./owner/agency";
+import { initialContractsWorld, type MockContractsWorld } from "./owner/contracts";
 import {
   initialChannels,
   initialDevices,
@@ -172,6 +173,8 @@ export interface MockState {
   storage: MockStorageWorld;
   /** Agencies, mandates, co-broke agreements and deals (G2): see owner/agency.ts. */
   agency: MockAgencyWorld;
+  /** Contract library, signable contracts and renewal offers (G3): see owner/contracts.ts. */
+  contracts: MockContractsWorld;
   webVitals: unknown[];
   log: LoggedRequest[];
   /** Access token lifetime; the suite shortens it to exercise refresh. */
@@ -221,6 +224,7 @@ function initial(): MockState {
     certificates: {},
     storage: initialStorageWorld(),
     agency: initialAgencyWorld(),
+    contracts: initialContractsWorld(),
     webVitals: [],
     log: [],
     // 15 minutes like the API; a long Lighthouse run sets MOCK_ACCESS_TTL_MS so its fixed session cookie lasts.

@@ -67,6 +67,16 @@ export { GUIDE_STATUS, type GuideState } from "./guide";
 export { MESSAGING_RATE_STATUS, type MessagingRateState } from "./messagingRate";
 export { STORAGE_PACKAGE_STATUS, type StoragePackageState } from "./storagePackage";
 export { CO_BROKE_STATUS, MANDATE_STATUS, type CoBrokeState, type MandateState } from "./mandate";
+export {
+  CONTRACT_DOCUMENT_STATUS,
+  CONTRACT_DOCUMENT_VALUES,
+  LEGAL_REVIEW_STATUS,
+  RENEWAL_OFFER_STATUS,
+  RENEWAL_OFFER_VALUES,
+  type ContractDocumentState,
+  type LegalReviewState,
+  type RenewalOfferState,
+} from "./contract";
 
 import { COMMAND_STATUS } from "./command";
 import { DEPOSIT_STATUS } from "./deposit";
@@ -124,6 +134,7 @@ import { GUIDE_STATUS } from "./guide";
 import { MESSAGING_RATE_STATUS } from "./messagingRate";
 import { STORAGE_PACKAGE_STATUS } from "./storagePackage";
 import { CO_BROKE_STATUS, MANDATE_STATUS } from "./mandate";
+import { CONTRACT_DOCUMENT_STATUS, LEGAL_REVIEW_STATUS, RENEWAL_OFFER_STATUS } from "./contract";
 import { LISTING_STATUS, LISTING_VERIFICATION_STATUS } from "./listing";
 
 /** Every status map by its domain key (the `status.<domain>` namespace of its labels). */
@@ -142,6 +153,9 @@ export const STATUS_MAPS = {
   storagePackage: STORAGE_PACKAGE_STATUS,
   mandate: MANDATE_STATUS,
   coBroke: CO_BROKE_STATUS,
+  contractDocument: CONTRACT_DOCUMENT_STATUS,
+  legalReview: LEGAL_REVIEW_STATUS,
+  renewalOffer: RENEWAL_OFFER_STATUS,
   payment: PAYMENT_STATUS,
   deposit: DEPOSIT_STATUS,
   reading: READING_STATUS,
