@@ -1,6 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
@@ -9,6 +10,7 @@ import { formatDate, formatDateTime } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
 import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
+import { isApiError } from "@/lib/api/errors";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
@@ -16,18 +18,24 @@ import { Checkbox } from "@/ui/components/Checkbox";
 
 type Insight = Schemas["EnergyInsightDto"];
 
+/** The consent text changed while the page was open: the old version is refused. */
+const CONSENT_REQUIRED = "energy.consent_required";
+
 /**
  * Sharing a building's energy figures with getenergy (G9, D-301, O-036): nothing leaves before the building's owner
  * reads the consent text the API sends and ticks the box (never pre-ticked); the opt-in carries that text's version
  * and an Idempotency-Key. Only aggregates go (no names, contacts, units or residents). Opting out stops it and asks
- * getenergy to delete what it had.
+ * getenergy to delete what it had. When the text changed while the page was open (409 `energy.consent_required`),
+ * the tick is cleared, the page re-reads the new text and asks for a fresh tick (review L2).
  */
 export function EnergyOptIn({ insight }: { insight: Insight }) {
   const t = useTranslations("owner.insight.energy.share");
   const locale = useLocale() as Locale;
   const action = useApiAction();
   const idempotency = useIdempotencyKey();
+  const router = useRouter();
   const [agreed, setAgreed] = useState(false);
+  const [textChanged, setTextChanged] = useState(false);
   const optin = insight.optin;
   const path = { params: { path: { buildingId: insight.buildingId } } };
 
@@ -103,10 +111,20 @@ export function EnergyOptIn({ insight }: { insight: Insight }) {
                         },
                         body: { consentVersion: consent.version },
                       }),
-                    ),
+                    ).catch((error: unknown) => {
+                      if (isApiError(error) && error.code === CONSENT_REQUIRED) {
+                        // New text: read it again and tick again — the old tick never carries over.
+                        setAgreed(false);
+                        setTextChanged(true);
+                        idempotency.renew();
+                        router.refresh();
+                      }
+                      throw error;
+                    }),
                   () => {
                     idempotency.renew();
                     setAgreed(false);
+                    setTextChanged(false);
                   },
                 )
               }
@@ -119,7 +137,15 @@ export function EnergyOptIn({ insight }: { insight: Insight }) {
       ) : (
         <p className="text-muted m-0 text-sm">{t("noText")}</p>
       )}
-      <ProblemNotice error={action.error} />
+      {textChanged ? (
+        <div data-testid="energy-text-changed">
+          <Callout tone="warning" title={t("textChanged.title")}>
+            {t("textChanged.body")}
+          </Callout>
+        </div>
+      ) : (
+        <ProblemNotice error={action.error} />
+      )}
     </div>
   );
 }

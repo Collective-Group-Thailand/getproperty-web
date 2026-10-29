@@ -99,7 +99,11 @@
       "stop": "Stop sharing",
       "stopTitle": "Stop sharing this building's figures?",
       "stopBody": "Nothing more is sent, anything waiting is cancelled and getenergy is asked to delete what it received.",
-      "stopped": "Sharing stopped"
+      "stopped": "Sharing stopped",
+      "textChanged": {
+        "title": "The consent text has changed",
+        "body": "We have loaded the new text above. Please read it again and tick the box if you agree."
+      }
     }
   },
   "assistant": {
@@ -130,19 +134,19 @@
     "photosUsed": "{count, plural, one {# photo was read.} other {# photos were read.}}",
     "off": "AI drafts are switched off for your account.",
     "problem": {
-      "assistant.limit_reached": {
+      "limit_reached": {
         "title": "Monthly drafts used up",
         "body": "Your account has used this month's AI drafts. You can still write the listing yourself; the count starts again next month."
       },
-      "assistant.unavailable": {
+      "unavailable": {
         "title": "The AI service is not available",
         "body": "Nothing was counted. Try again in a few minutes, or write the text yourself."
       },
-      "assistant.output_rejected": {
+      "output_rejected": {
         "title": "The draft was not usable",
         "body": "It contained contact or account details, so we did not show it. Try again — it did not count towards your drafts."
       },
-      "assistant.disabled": {
+      "disabled": {
         "title": "AI drafts are switched off",
         "body": "The getproperty team has switched the assistant off for now."
       }

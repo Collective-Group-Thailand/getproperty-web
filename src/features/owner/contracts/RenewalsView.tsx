@@ -13,6 +13,7 @@ import { ownerPath } from "../shared/links";
 import { ownerCan, param, readOnly, section, type OwnerContext } from "../shared/server";
 import { ContractsNav } from "./ContractsNav";
 import { RenewalOfferRow } from "./RenewalOfferRow";
+import { renewalReminder } from "./reminders";
 
 type Tab = "open" | "decided";
 
@@ -30,12 +31,21 @@ export async function RenewalsView({
 }) {
   const t = await getTranslations("owner.contracts");
   const { api, locale, me } = context;
-  const [offers, leases] = await Promise.all([
+  const [offers, leases, settings] = await Promise.all([
     section(unwrap(api.GET("/v1/owner/renewal-offers"))),
     section(
       unwrap(api.GET("/v1/owner/leases", { params: { query: { perPage: 100, sort: "startDate", order: "desc" } } })),
     ),
+    // The reminder days are a tenant setting (D-294): the empty state names them only as the API sends them.
+    section(unwrap(api.GET("/v1/owner/settings"))),
   ]);
+  const reminder = renewalReminder(settings.data);
+  const reminderHint =
+    reminder.kind === "days"
+      ? t("renewals.emptyHint.days", {
+          days: new Intl.ListFormat(locale, { type: "conjunction" }).format(reminder.days.map(String)),
+        })
+      : t(`renewals.emptyHint.${reminder.kind}`);
   const tab: Tab = param(searchParams.view) === "decided" ? "decided" : "open";
   const all = offers.data?.data ?? [];
   const shown = all.filter((offer) => (tab === "open") === (offer.state === "offered"));
@@ -62,7 +72,7 @@ export async function RenewalsView({
         <SectionError error={offers.error} />
       ) : shown.length === 0 ? (
         <Card padding="lg">
-          <EmptyState icon={IconCalendar} title={t(`renewals.empty.${tab}`)} description={t("renewals.emptyHint")} />
+          <EmptyState icon={IconCalendar} title={t(`renewals.empty.${tab}`)} description={reminderHint} />
         </Card>
       ) : (
         <Card padding="none">

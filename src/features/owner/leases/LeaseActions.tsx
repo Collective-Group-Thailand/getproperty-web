@@ -11,7 +11,7 @@ import type { Schemas } from "@/lib/api/types";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { NativeSelect } from "@/ui/components/NativeSelect";
-import { blobToBase64, SignaturePad } from "@/ui/components/SignaturePad";
+import { blobToBase64 } from "@/ui/components/SignaturePad";
 import { toast } from "@/ui/components/Toast";
 import { IconCalendar } from "@/ui/icons/glyphs/calendar";
 import { IconCheck } from "@/ui/icons/glyphs/check";
@@ -20,6 +20,7 @@ import { IconSign } from "@/ui/icons/glyphs/sign";
 import { IconXCircle } from "@/ui/icons/glyphs/x-circle";
 
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
+import { DialogSignaturePad } from "@/features/shared/console/DialogSignaturePad";
 import { DateField } from "@/features/shared/console/DateField";
 import { FormDialog, integer, text } from "@/features/shared/console/FormDialog";
 import { useSignatureLabels } from "@/features/shared/console/labels";
@@ -115,7 +116,12 @@ export function LeaseActions({ lease }: { lease: LeaseView }) {
             )
           }
         >
-          <SignaturePad label={t("signatureLabel")} labels={signatureLabels} onChange={setSignature} height={180} />
+          <DialogSignaturePad
+            label={t("signatureLabel")}
+            labels={signatureLabels}
+            onChange={setSignature}
+            height={180}
+          />
         </ConfirmAction>
       ) : null}
 

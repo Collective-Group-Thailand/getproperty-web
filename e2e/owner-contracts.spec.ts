@@ -222,6 +222,12 @@ test("a renewal offered from the lease with the benchmark suggestion, listed and
   await expect(dialog.getByTestId("renewal-rent")).toHaveValue("6750.00");
   await dialog.locator('[data-testid="renewal-candidate"][data-source="current_rent"]').click();
   await expect(dialog.getByTestId("renewal-rent")).toHaveValue("6500.00");
+  // Review M3: a blank rent is refused on the field — never sent for the API to fill with a suggestion.
+  const before = (await received("owner.renewals.offer")).length;
+  await dialog.getByTestId("renewal-rent").fill("  ");
+  await dialog.getByTestId("form-submit").click();
+  await expect(dialog.getByTestId("renewal-rent")).toHaveAttribute("aria-invalid", "true");
+  expect(await received("owner.renewals.offer")).toHaveLength(before);
   await dialog.getByTestId("renewal-rent").fill("6700");
   await expectAxeClean(page);
   await dialog.getByTestId("form-submit").click();

@@ -5,13 +5,14 @@ import { useEffect, useState } from "react";
 
 import { useSignatureLabels } from "@/features/shared/console/labels";
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
+import { DialogSignaturePad } from "@/features/shared/console/DialogSignaturePad";
 import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
 import { Textarea } from "@/ui/components/Input";
-import { blobToBase64, SignaturePad } from "@/ui/components/SignaturePad";
+import { blobToBase64 } from "@/ui/components/SignaturePad";
 import { Spinner } from "@/ui/components/Spinner";
 import { IconExternal } from "@/ui/icons/glyphs/external";
 import { IconSign } from "@/ui/icons/glyphs/sign";
@@ -94,7 +95,12 @@ export function ContractActions({ contract }: { contract: Contract }) {
           }
         >
           <DocumentToSign contractId={contract.id} onSha={setSha} />
-          <SignaturePad label={t("signatureLabel")} labels={signatureLabels} onChange={setSignature} height={180} />
+          <DialogSignaturePad
+            label={t("signatureLabel")}
+            labels={signatureLabels}
+            onChange={setSignature}
+            height={180}
+          />
         </ConfirmAction>
       ) : null}
       {can("cancel") ? (

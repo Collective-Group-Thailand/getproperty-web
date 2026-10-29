@@ -1,4 +1,4 @@
-import { formatTHB } from "@/i18n/format";
+import { formatPercent, formatTHB } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
 
 /**
@@ -25,9 +25,16 @@ export function perRecipient(price: string, locale: Locale): string {
 
 /** A rate as the API sends it ("0.0700") as a percentage text ("7", "7.5") — the decimal point moved, as text. */
 export function ratePercent(rate: string): string {
-  const match = /^(\d+)\.(\d{2})(\d*)$/.exec(rate);
+  const match = /^(\d+)(?:\.(\d*))?$/.exec(rate);
   if (!match) return rate;
-  const whole = `${match[1]}${match[2]}`.replace(/^0+(?=\d)/, "");
-  const fraction = match[3]!.replace(/0+$/, "");
+  // Any number of decimals ("0.07", "0.1", "1"): pad to two so the point can move two places (no float, review L3).
+  const digits = (match[2] ?? "").padEnd(2, "0");
+  const whole = `${match[1]}${digits.slice(0, 2)}`.replace(/^0+(?=\d)/, "");
+  const fraction = digits.slice(2).replace(/0+$/, "");
   return fraction ? `${whole}.${fraction}` : whole;
+}
+
+/** A VAT rate as the API sends it ("0.0725") as "7.25%" — moved as text and never through float arithmetic. */
+export function vatPercent(rate: string, locale: Locale): string {
+  return formatPercent(ratePercent(rate), locale);
 }

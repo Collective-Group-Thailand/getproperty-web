@@ -195,3 +195,42 @@ export function useIdempotencyKey(): { key: string; renew: () => void; renewUnle
     },
   };
 }
+
+/** A stable text form of a request body: object keys sorted, so `{a, b}` and `{b, a}` are the same submission. */
+export function fingerprint(value: unknown): string {
+  return JSON.stringify(value, (_key, inner: unknown) =>
+    inner && typeof inner === "object" && !Array.isArray(inner)
+      ? Object.fromEntries(Object.entries(inner as Record<string, unknown>).sort(([a], [b]) => a.localeCompare(b)))
+      : inner,
+  );
+}
+
+/**
+ * The key holder behind `useSubmissionKey` (pure, unit-tested): one Idempotency-Key per **logical submission**. The
+ * same body sent again (a retry after no answer) keeps its key, so the API replays instead of acting twice; a changed
+ * body is a new submission and gets a new key — reusing the old one would be refused with `idempotency.key_reused`
+ * for as long as the page stays open (review L10). `answered()` after a success starts afresh.
+ */
+export class SubmissionKey {
+  private key = crypto.randomUUID();
+  private body: string | null = null;
+
+  for(payload: unknown): string {
+    const next = fingerprint(payload);
+    if (this.body !== null && this.body !== next) this.key = crypto.randomUUID();
+    this.body = next;
+    return this.key;
+  }
+
+  answered(): void {
+    this.key = crypto.randomUUID();
+    this.body = null;
+  }
+}
+
+/** `const submission = useSubmissionKey()` → `submission.for(body)` as the header, `submission.answered()` on success. */
+export function useSubmissionKey(): SubmissionKey {
+  // One holder for the component's life; it mutates itself, so it never needs a re-render.
+  const [submission] = useState(() => new SubmissionKey());
+  return submission;
+}

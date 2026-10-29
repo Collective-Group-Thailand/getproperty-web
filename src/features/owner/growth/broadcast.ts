@@ -56,6 +56,15 @@ export function segmentBody(form: SegmentForm): Schemas["SponsoredSegmentDto"] {
 }
 
 /** A whole number of recipients typed with separators ("1,000") → 1000; null when it is not one. */
+/**
+ * The reach a new campaign starts with (review L7): the API's own minimum — the smallest campaign it sells — and never
+ * a number invented here; the owner raises it. Empty when the API sent no usable minimum.
+ */
+export function initialReach(product: Pick<Schemas["SponsoredProductDto"], "minimumRecipients">): string {
+  const minimum = product.minimumRecipients;
+  return Number.isInteger(minimum) && minimum >= 1 ? String(minimum) : "";
+}
+
 export function recipientsOrNull(value: string): number | null {
   const plain = value.replace(/[,\s]/g, "");
   if (!/^\d{1,7}$/.test(plain)) return null;

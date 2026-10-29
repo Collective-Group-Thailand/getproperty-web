@@ -1,7 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useActionState, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useActionState, useEffect, useState } from "react";
 
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
@@ -10,14 +11,20 @@ import { declineHandoff, type DeclineState } from "./actions";
 
 /**
  * "Not now" on a getbuild rental invitation (G8, D-299): one more tap to confirm, then the Server Action tells the
- * API. The page re-reads the invitation afterwards, so the declined state is the API's own.
+ * API. The page then re-reads the invitation (review L5), so the claim and sign-up buttons go and the closed state
+ * shown is the API's own.
  */
 export function DeclineHandoff({ token }: { token: string }) {
   const t = useTranslations("owner.marketing.handoff.decline");
   const [asking, setAsking] = useState(false);
   const [state, action, pending] = useActionState<DeclineState, FormData>(declineHandoff, { status: "idle" });
+  const router = useRouter();
+  const answered = state.status === "declined" || state.status === "closed";
+  useEffect(() => {
+    if (answered) router.refresh();
+  }, [answered, router]);
 
-  if (state.status === "declined" || state.status === "closed") {
+  if (answered) {
     return (
       <div data-testid="handoff-declined" role="status">
         <Callout tone="neutral" title={t(`${state.status}Title`)}>

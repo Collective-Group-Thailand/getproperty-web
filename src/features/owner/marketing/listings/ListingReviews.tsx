@@ -29,8 +29,8 @@ export async function ListingReviews({
   if (summary.count === 0) return null;
   const pages = Math.max(1, Math.ceil(meta.total / meta.perPage));
   return (
-    <section aria-labelledby="reviews" id="reviews" className="scroll-mt-24" data-testid="listing-reviews">
-      <h2 id="reviews" className="text-xl">
+    <section aria-labelledby="reviews-title" id="reviews" className="scroll-mt-24" data-testid="listing-reviews">
+      <h2 id="reviews-title" className="text-xl">
         {t("title")}
       </h2>
       <p className="text-muted mt-1 text-sm">{t("intro")}</p>

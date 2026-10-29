@@ -166,6 +166,10 @@ async function complete(attempt: OAuthAttempt, locale: Locale, identity: Provide
       );
       await writeSession(result.tokens);
       await writeTenant(result.tenant.id);
+      // The page the sign-up came from (validated with `safeNextPath` when the attempt started) — e.g. a getbuild
+      // buyer's invitation claim (GW6) — wins over the usual first page, as on the phone path and the sign-in branch.
+      const next = safeNextPath(attempt.next);
+      if (next) return `${ownerOrigin()}${next}`;
       return path(attempt.signUpAs === "agency" ? "/mandated-units?welcome=1" : "/portfolio", locale);
     }
     case "link": {

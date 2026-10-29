@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
-import { FormDialog, text } from "@/features/shared/console/FormDialog";
+import { FormDialog, invalidField, text } from "@/features/shared/console/FormDialog";
 import { formatTHB } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
 import { browserApi } from "@/lib/api/browser";
@@ -18,6 +18,30 @@ import { IconMail } from "@/ui/icons/glyphs/mail";
 import { IconUndo } from "@/ui/icons/glyphs/undo";
 
 import { LANGUAGES } from "./labels";
+
+const RENT = /^\d{1,12}(\.\d{1,2})?$/;
+const MONTHS = /^\d{1,2}$/;
+
+/**
+ * The offer body exactly as the owner sees it (review M3): the rent is always sent — prefilled visibly from the
+ * suggestion, never left to a server-side default the owner was not shown — and the term is a whole number of months.
+ * Throws a field error (nothing is sent) when either is missing or malformed.
+ */
+export function renewalOfferBody(
+  input: { rent: string; months: string | undefined; language: string | undefined; message: string | undefined },
+  messages: { rent: string; months: string },
+): Schemas["RenewalOfferCreateDto"] {
+  const rent = input.rent.replace(/,/g, "").trim();
+  if (!RENT.test(rent)) invalidField("rent", messages.rent);
+  const months = input.months ?? "";
+  if (!MONTHS.test(months) || Number(months) < 1 || Number(months) > 36) invalidField("months", messages.months);
+  return {
+    rent,
+    months: Number(months),
+    language: input.language as Schemas["Language"] | undefined,
+    message: input.message ?? null,
+  };
+}
 
 /**
  * Offer a renewal (G3, D-294): the API's suggestion — the k ≥ 5 `rent_per_m2` benchmark when the tenant shares
@@ -55,15 +79,19 @@ export function OfferRenewal({
       submitLabel={t("offerSubmit")}
       successMessage={t("offered")}
       onSubmit={(data, _ack, idempotencyKey) =>
+        // The body is built (and checked) before the request: an empty rent never reaches the API.
         unwrap(
           browserApi().POST("/v1/owner/leases/{leaseId}/renewal-offers", {
             params: { path: { leaseId }, header: { "Idempotency-Key": idempotencyKey } },
-            body: {
-              rent: rent.replace(/,/g, "").trim() || undefined,
-              months: Number(text(data, "months")) || undefined,
-              language: text(data, "language") as Schemas["Language"] | undefined,
-              message: text(data, "message") ?? null,
-            },
+            body: renewalOfferBody(
+              {
+                rent,
+                months: text(data, "months"),
+                language: text(data, "language"),
+                message: text(data, "message"),
+              },
+              { rent: t("rentInvalid"), months: t("monthsInvalid") },
+            ),
           }),
         )
       }
@@ -114,11 +142,21 @@ export function OfferRenewal({
                 onChange={(event) => setRent(event.target.value)}
                 inputMode="decimal"
                 className="tabular-nums"
+                aria-required="true"
                 data-testid="renewal-rent"
               />
             </Field>
             <Field label={t("months")} required error={errors.months}>
-              <Input name="months" type="number" min={1} max={36} defaultValue={months} data-testid="renewal-months" />
+              <Input
+                name="months"
+                type="number"
+                min={1}
+                max={36}
+                step={1}
+                required
+                defaultValue={months}
+                data-testid="renewal-months"
+              />
             </Field>
             <Field label={t("language")} error={errors.language}>
               <NativeSelect
