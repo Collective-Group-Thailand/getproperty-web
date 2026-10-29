@@ -5,7 +5,8 @@ import { PLATFORM_INVOICE_STATUS } from "@/domain/status";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { SectionError } from "@/features/shared/console/SectionError";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
-import { formatDate, formatDateTime, formatPercent, formatTHB } from "@/i18n/format";
+import { vatPercent } from "@/features/shared/growth/sponsored";
+import { formatDate, formatDateTime, formatTHB } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
@@ -243,9 +244,7 @@ function AddonCard({
             </div>
             <div>
               <dt className="text-muted text-sm">{t("addon.vatLabel")}</dt>
-              <dd className="m-0 text-xl font-semibold tabular-nums">
-                {formatPercent(String(Number(offer.vatRate) * 100), locale)}
-              </dd>
+              <dd className="m-0 text-xl font-semibold tabular-nums">{vatPercent(offer.vatRate, locale)}</dd>
               {offer.effectiveFrom ? (
                 <dd className="text-muted m-0 text-xs">
                   {t("addon.from", { date: formatDate(offer.effectiveFrom, locale) })}

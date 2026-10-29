@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { fieldErrors } from "@/features/shared/console/FormDialog";
-import { ProblemNotice, useApiAction, useIdempotencyKey } from "@/features/shared/console/useApiAction";
+import { ProblemNotice, useApiAction, useSubmissionKey } from "@/features/shared/console/useApiAction";
 import { handoffNeedsAddress, type HandoffFacts } from "@/features/shared/growth/handoff";
 import type { Locale } from "@/i18n/routing";
 import { browserApi } from "@/lib/api/browser";
@@ -24,7 +24,8 @@ const trimmed = (form: FormData, name: string) => String(form.get(name) ?? "").t
 /**
  * Claim a getbuild handoff (G8, D-299): the rent (typed by the owner — getbuild sends no price), the headline in
  * Thai (prefilled from getbuild's facts, editable) and English, and the address only when getbuild could not tell
- * it. One Idempotency-Key per page: a retry after a lost answer is recognised. On success the listing draft opens —
+ * it. One Idempotency-Key per claim as typed: a retry of the same claim after a lost answer is recognised, an edited
+ * claim is a new request with a new key (review L10). On success the listing draft opens —
  * photos and publishing as any listing. Refusals that are states of the invitation get the screen's own words.
  */
 export function HandoffClaimForm({
@@ -39,7 +40,7 @@ export function HandoffClaimForm({
   const t = useTranslations("owner.network.claim");
   const locale = useLocale() as Locale;
   const action = useApiAction<Schemas["RentalHandoffDto"]>({ refresh: false });
-  const idempotency = useIdempotencyKey();
+  const submission = useSubmissionKey();
   const errors = fieldErrors(action.error);
   const [rentError, setRentError] = useState<string | null>(null);
   const askAddress = handoffNeedsAddress(facts) || Object.keys(errors).some((key) => key.startsWith("address"));
@@ -64,21 +65,24 @@ export function HandoffClaimForm({
           postcode: trimmed(form, "postcode"),
         }
       : undefined;
+    const body = {
+      token,
+      rent,
+      titleTh: trimmed(form, "titleTh") || undefined,
+      titleEn: titleEn || null,
+      ...(address ? { address } : {}),
+    };
+    const key = submission.for(body);
     void action.run(
       () =>
         unwrap(
           browserApi().POST("/v1/owner/rental-handoffs/actions/claim", {
-            params: { header: { "Idempotency-Key": idempotency.key } },
-            body: {
-              token,
-              rent,
-              titleTh: trimmed(form, "titleTh") || undefined,
-              titleEn: titleEn || null,
-              ...(address ? { address } : {}),
-            },
+            params: { header: { "Idempotency-Key": key } },
+            body,
           }),
         ),
       (handoff) => {
+        submission.answered();
         window.location.assign(
           handoff.listingId
             ? ownerPath(locale, `/listings/${handoff.listingId}?from=getbuild`)

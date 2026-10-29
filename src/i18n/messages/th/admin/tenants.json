@@ -141,9 +141,9 @@
     "history": "ประวัติ",
     "noHistory": "ยังไม่มีเหตุการณ์",
     "event": {
-      "subscription.created": "สมัครใช้งาน",
-      "subscription.plan_changed": "เปลี่ยนแพ็กเกจ",
-      "subscription.state_changed": "เปลี่ยนสถานะ"
+      "created": "สมัครใช้งาน",
+      "plan_changed": "เปลี่ยนแพ็กเกจ",
+      "state_changed": "เปลี่ยนสถานะ"
     },
     "reason": "เหตุผล",
     "changePlan": "เปลี่ยนแพ็กเกจ",

@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { messageKey } from "@/i18n/keys";
 import { SUBSCRIPTION_STATUS } from "@/domain/status/subscription";
 import { SectionError } from "@/features/shared/console/SectionError";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
@@ -154,7 +155,9 @@ export async function TenantSubscription({
             <Timeline
               events={events.data.map((event) => ({
                 id: event.id,
-                title: t.has(`event.${event.type}`) ? t(`event.${event.type}`) : event.type,
+                title: t.has(`event.${messageKey(event.type, "subscription.")}`)
+                  ? t(`event.${messageKey(event.type, "subscription.")}`)
+                  : event.type,
                 time: formatDateTime(event.occurredAt, locale),
                 description: describe(event.data),
               }))}

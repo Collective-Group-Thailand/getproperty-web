@@ -4,12 +4,11 @@ import { useLocale, useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
-import { FormDialog, text } from "@/features/shared/console/FormDialog";
+import { FormDialog, invalidField as invalid, text } from "@/features/shared/console/FormDialog";
 import { ProblemNotice, useApiAction } from "@/features/shared/console/useApiAction";
 import type { Locale } from "@/i18n/routing";
 import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
-import { problemError } from "@/lib/api/errors";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Field } from "@/ui/components/Field";
@@ -27,16 +26,6 @@ import { validDeductPercent, workersBody, type WorkerRow } from "./employer";
 type Agreement = Schemas["EmployerAgreementDto"];
 type SplitRule = Schemas["EmployerSplitRule"];
 const SPLIT_RULES: SplitRule[] = ["per_occupant", "per_unit"];
-
-/** A local field error in the API's problem shape, so the dialog shows it on its field without a request. */
-function invalid(path: string, message: string): never {
-  throw problemError(422, {
-    status: 422,
-    code: "validation.failed",
-    title: message,
-    errors: [{ path, code: "invalid", message }],
-  });
-}
 
 function SplitRuleField({ defaultValue, error }: { defaultValue: SplitRule; error?: string }) {
   const t = useTranslations("owner.network.employers.form");

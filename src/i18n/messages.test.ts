@@ -28,6 +28,23 @@ describe("messages", () => {
     expect(en.sort()).toEqual(th.sort());
   });
 
+  // Review M2: next-intl splits keys on "." — a dotted key never resolves and the raw path shows instead.
+  it.each(LOCALES.flatMap((locale) => pairs.map(([area, file]) => [locale, area, file] as const)))(
+    "%s/%s/%s has no key containing a dot (look codes up with messageKey)",
+    (locale, area, file) => {
+      const dotted: string[] = [];
+      const walk = (value: unknown, path: string) => {
+        if (typeof value !== "object" || value === null) return;
+        for (const [key, child] of Object.entries(value)) {
+          if (key.includes(".")) dotted.push(`${path}[${key}]`);
+          walk(child, path ? `${path}.${key}` : key);
+        }
+      };
+      walk(read(locale, area, file), "");
+      expect(dotted).toEqual([]);
+    },
+  );
+
   it("the file list in messages.ts matches the files on disk", () => {
     for (const locale of LOCALES) {
       const areas = readdirSync(join(dir, locale)).sort();

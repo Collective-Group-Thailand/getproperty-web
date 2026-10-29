@@ -39,10 +39,10 @@
   "policyHint": "The policy in force; it is changed in the settings.",
   "changeSettings": "Change in settings",
   "setting": {
-    "reminders.schedule": "Reminder schedule",
-    "late_fee.enabled": "Late fee",
-    "late_fee.amount": "Late fee amount",
-    "payments.allow_partial": "Partial payments"
+    "reminders_schedule": "Reminder schedule",
+    "late_fee_enabled": "Late fee",
+    "late_fee_amount": "Late fee amount",
+    "payments_allow_partial": "Partial payments"
   },
   "remind": {
     "button": "Send reminder",

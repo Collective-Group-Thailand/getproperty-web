@@ -261,7 +261,11 @@
       "open": "No offers awaiting an answer",
       "decided": "No answered offers yet"
     },
-    "emptyHint": "You are reminded 60 and 30 days before a lease ends.",
+    "emptyHint": {
+      "days": "You are reminded {days} days before a lease ends.",
+      "off": "Reminders before a lease ends are switched off in your settings.",
+      "unknown": "Offer a renewal from the lease page when a lease is coming to an end."
+    },
     "rents": "Rent {current} → {offered}",
     "suggestedLine": "Suggested {rent} from {source}",
     "term": "{months} months from {start} · answer by {respondBy}",
@@ -280,7 +284,7 @@
     "useCandidate": "{rent} ({source})",
     "noSuggestion": "No suggestion yet — enter the rent you want to offer.",
     "rent": "Offered monthly rent (THB)",
-    "rentHint": "The suggestion by default",
+    "rentHint": "Prefilled with the suggestion — the letter states exactly the rent shown here.",
     "months": "Term (months)",
     "language": "Letter language",
     "message": "Message to the resident",
@@ -292,6 +296,8 @@
     "leaseTitle": "Renewal and addenda",
     "leaseHint": "Offer a renewal with the suggested rent, or write an addendum to this lease.",
     "addendum": "Write an addendum",
-    "none": "No renewal offered yet"
+    "none": "No renewal offered yet",
+    "rentInvalid": "Enter the monthly rent to offer, for example 12000 or 12000.50.",
+    "monthsInvalid": "Enter a whole number of months from 1 to 36."
   }
 }

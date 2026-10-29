@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { messageKey } from "@/i18n/keys";
 import { formatDate, formatNumber, formatTHB } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
@@ -205,7 +206,9 @@ export async function ArrearsView({ context, searchParams }: { context: OwnerCon
         <DescriptionList
           items={policy.map((setting) => ({
             id: setting.key,
-            term: t.has(`setting.${setting.key}` as never) ? t(`setting.${setting.key}` as never) : setting.key,
+            term: t.has(`setting.${messageKey(setting.key)}` as never)
+              ? t(`setting.${messageKey(setting.key)}` as never)
+              : setting.key,
             description: <SettingValue setting={setting} locale={locale} />,
           }))}
         />

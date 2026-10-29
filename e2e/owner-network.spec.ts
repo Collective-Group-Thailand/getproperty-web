@@ -69,14 +69,15 @@ test("a landlord claims an invitation and finishes the listing draft", async ({ 
   await expect(page.getByTestId("handoff-title-th")).not.toHaveValue("");
   await expect(page.getByTestId("handoff-address")).toHaveCount(0);
   await expectAxeClean(page);
-  // No rent typed: refused on the field, nothing sent.
+  // No rent typed: refused on the field, nothing sent (the log keeps the apartment account's attempt above).
+  const before = (await received("owner.rentalHandoffs.claim")).length;
   await page.getByTestId("handoff-claim-submit").click();
   await expect(page.getByTestId("handoff-rent")).toHaveAttribute("aria-invalid", "true");
-  expect(await received("owner.rentalHandoffs.claim")).toHaveLength(0);
+  expect(await received("owner.rentalHandoffs.claim")).toHaveLength(before);
   await page.getByTestId("handoff-rent").fill("15,000");
   await page.getByTestId("handoff-claim-submit").click();
   await page.waitForURL(/\/listings\/[0-9a-f-]{36}\?from=getbuild$/);
-  const [claim] = await received("owner.rentalHandoffs.claim");
+  const claim = (await received("owner.rentalHandoffs.claim")).at(-1);
   expect(claim?.idempotencyKey).toBeTruthy();
   expect(claim?.body.rent).toBe("15000");
 
@@ -90,6 +91,21 @@ test("a landlord claims an invitation and finishes the listing draft", async ({ 
   await expect(page.getByTestId("handoff-closed")).toBeVisible();
 });
 
+test("a buyer signs up with LINE from the invitation and lands on the claim form (review M1)", async ({ page }) => {
+  await fetch(`${MOCK_API}/__mock/owner/reset?part=identities`, { method: "POST" });
+  await page.goto(`${HOSTS.owner}/handoff/${TOKEN.noAddress}`);
+  await page.getByTestId("handoff-signup").click();
+  await expect(page.getByTestId("landlord-signup")).toHaveAttribute("data-ready", "true");
+  await page.getByTestId("signup-name").fill("สมชาย ซื้อห้อง");
+  await page.getByTestId("oauth-line").click();
+  const fake = page.getByTestId("oauth-fake");
+  await expect(fake).toBeVisible();
+  await fake.getByTestId("oauth-fake-uid").fill("U0000000000000000000000000buyer1");
+  await fake.getByTestId("oauth-fake-continue").click();
+  await page.waitForURL(/\/listings\/handoffs\/claim\?token=/);
+  await expect(page.getByTestId("handoff-claim-form")).toBeVisible();
+});
+
 test("an invitation without an address asks for it; the buyer may also say not now", async ({ page }) => {
   await signInLandlord(page);
   await gotoOwner(page, `/listings/handoffs/claim?token=${TOKEN.noAddress}`);
@@ -98,7 +114,11 @@ test("an invitation without an address asks for it; the buyer may also say not n
   await page.goto(`${HOSTS.owner}/handoff/${TOKEN.noAddress}`);
   await page.getByTestId("handoff-decline").click();
   await page.getByTestId("handoff-decline-submit").click();
-  await expect(page.getByTestId("handoff-declined")).toBeVisible();
+  // Review L5: the page re-reads the invitation — no way left into a claim that would end at "declined".
+  await expect(page.getByTestId("handoff-closed")).toBeVisible();
+  await expect(page.getByTestId("handoff-invitation")).toHaveAttribute("data-state", "declined");
+  await expect(page.getByTestId("handoff-claim")).toHaveCount(0);
+  await expect(page.getByTestId("handoff-signup")).toHaveCount(0);
 });
 
 test("employer housing: attach a lease, payroll numbers, statement, payroll file, TM30 of the workers", async ({

@@ -141,9 +141,9 @@
     "history": "History",
     "noHistory": "No events yet",
     "event": {
-      "subscription.created": "Subscribed",
-      "subscription.plan_changed": "Plan changed",
-      "subscription.state_changed": "State changed"
+      "created": "Subscribed",
+      "plan_changed": "Plan changed",
+      "state_changed": "State changed"
     },
     "reason": "Reason",
     "changePlan": "Change plan",

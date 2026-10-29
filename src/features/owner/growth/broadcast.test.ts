@@ -12,6 +12,7 @@ import {
   perRecipientDigits,
   problemKey,
   ratePercent,
+  initialReach,
   recipientsOrNull,
   scheduleProblem,
   segmentBody,
@@ -100,5 +101,13 @@ describe("sponsored broadcast helpers (G6, D-300)", () => {
     }
     expect(scheduleProblem("validation.failed")).toBeNull();
     expect(scheduleProblem(undefined)).toBeNull();
+  });
+});
+
+describe("initial reach of a new campaign (review L7)", () => {
+  it("starts at the API's minimum, never an invented default", () => {
+    expect(initialReach({ minimumRecipients: 50 })).toBe("50");
+    expect(initialReach({ minimumRecipients: 1500 })).toBe("1500");
+    expect(initialReach({ minimumRecipients: 0 })).toBe("");
   });
 });

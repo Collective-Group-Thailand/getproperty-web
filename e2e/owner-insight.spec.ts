@@ -68,6 +68,9 @@ test("reviews: reply (screened), report, hidden with the reason — never hide o
   await expect(block.getByTestId("listing-review")).toHaveCount(3);
   await expect(block).toContainText("ผู้เช่ายืนยันแล้ว");
   await expect(block).toContainText("ขอบคุณมากค่ะ");
+  // Review L8: one element per id, and the region is named by its heading.
+  await expect(page.locator('[id="reviews"]')).toHaveCount(1);
+  await expect(block).toHaveAccessibleName("รีวิวจากผู้เช่าที่ยืนยันแล้ว");
   await expectAxeClean(page);
 });
 
@@ -92,6 +95,9 @@ test("Draft with AI: drafts go into the Thai fields, nothing is saved; the month
   await fetch(`${MOCK_API}/__mock/owner/insight/assistant?fail=limit`, { method: "POST" });
   await assistant.getByTestId("assistant-generate").click();
   await expect(assistant.getByTestId("assistant-problem")).toHaveAttribute("data-code", "assistant.limit_reached");
+  // Review M2: the designed words, never a message key path.
+  await expect(assistant.getByTestId("assistant-problem")).toContainText("ใช้สิทธิ์ร่างของเดือนนี้ครบแล้ว");
+  await expect(assistant.getByTestId("assistant-problem")).not.toContainText("problem.");
 });
 
 test("energy insight: score and penalties; opt in only after ticking the consent; opt out; too little data", async ({

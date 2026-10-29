@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
 
-import { isApiError, toFieldName } from "@/lib/api/errors";
+import { isApiError, problemError, toFieldName } from "@/lib/api/errors";
 import { Button, type ButtonProps } from "@/ui/components/Button";
 import { LazyDialog } from "@/ui/components/overlays";
 import { toast } from "@/ui/components/Toast";
@@ -15,6 +15,19 @@ import { ProblemNotice, useApiAction, useIdempotencyKey } from "./useApiAction";
 export function fieldErrors(error: unknown): Record<string, string> {
   if (!isApiError(error)) return {};
   return Object.fromEntries(error.errors.map((fieldError) => [toFieldName(fieldError.path), fieldError.message]));
+}
+
+/**
+ * A local field error in the API's problem shape, thrown from `onSubmit` before any request: the dialog shows it on
+ * its field and nothing is sent.
+ */
+export function invalidField(path: string, message: string): never {
+  throw problemError(422, {
+    status: 422,
+    code: "validation.failed",
+    title: message,
+    errors: [{ path, code: "invalid", message }],
+  });
 }
 
 export interface FormDialogProps {

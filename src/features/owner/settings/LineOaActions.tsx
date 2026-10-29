@@ -6,8 +6,10 @@ import { useState } from "react";
 
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 import { text } from "@/features/shared/console/FormDialog";
+import { SECRET_FIELD_PROPS } from "@/features/shared/console/secret-field";
 import { ProblemNotice, useApiAction } from "@/features/shared/console/useApiAction";
-import { formatPercent, formatTHB } from "@/i18n/format";
+import { vatPercent } from "@/features/shared/growth/sponsored";
+import { formatTHB } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
 import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
@@ -166,26 +168,10 @@ export function ConnectLineOa({
             />
           </Field>
           <Field label={t("channelSecret")} required>
-            <Input
-              name="channelSecret"
-              type="password"
-              required
-              minLength={16}
-              autoComplete="off"
-              spellCheck={false}
-              data-testid="line-oa-secret"
-            />
+            <Input name="channelSecret" {...SECRET_FIELD_PROPS} required minLength={16} data-testid="line-oa-secret" />
           </Field>
           <Field label={t("accessToken")} required>
-            <Input
-              name="accessToken"
-              type="password"
-              required
-              minLength={20}
-              autoComplete="off"
-              spellCheck={false}
-              data-testid="line-oa-token"
-            />
+            <Input name="accessToken" {...SECRET_FIELD_PROPS} required minLength={20} data-testid="line-oa-token" />
           </Field>
           <p className="text-muted text-sm">{t("replaceNote")}</p>
           {terms ? (
@@ -202,9 +188,7 @@ export function ConnectLineOa({
                     ? t("addon.setupCharged")
                     : t("addon.setup", { amount: formatTHB(terms.setupFee, locale) })}
                 </li>
-                <li className="text-muted">
-                  {t("addon.vat", { rate: formatPercent(String(Number(terms.vatRate) * 100), locale) })}
-                </li>
+                <li className="text-muted">{t("addon.vat", { rate: vatPercent(terms.vatRate, locale) })}</li>
               </ul>
               <p className="text-muted m-0 text-sm">{t("addon.how")}</p>
               <Checkbox

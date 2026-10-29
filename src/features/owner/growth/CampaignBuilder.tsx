@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import { useDateLabels } from "@/features/shared/console/labels";
-import { ProblemNotice, useApiAction, useIdempotencyKey } from "@/features/shared/console/useApiAction";
+import { ProblemNotice, useApiAction, useSubmissionKey } from "@/features/shared/console/useApiAction";
 import { bangkokToday } from "@/features/shared/console/time";
 import { formatNumber, formatTHB } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
@@ -32,6 +32,7 @@ import {
   EMPTY_SEGMENT,
   LANGUAGES,
   UNIT_KINDS,
+  initialReach,
   invalidAmount,
   perRecipientDigits,
   recipientsOrNull,
@@ -88,14 +89,14 @@ export function CampaignBuilder({
     preselect && listings.some((listing) => listing.id === preselect) ? [preselect] : [],
   );
   const [segment, setSegment] = useState<SegmentForm>(EMPTY_SEGMENT);
-  const [max, setMax] = useState(String(Math.max(product.minimumRecipients * 2, 1000)));
+  const [max, setMax] = useState(() => initialReach(product));
   const [areaFilter, setAreaFilter] = useState("");
   const [allAreas, setAllAreas] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [attempt, setAttempt] = useState(0);
   const [result, setResult] = useState<EstimateResult | null>(null);
   const action = useApiAction<Schemas["SponsoredCampaignDto"]>({ refresh: false });
-  const idempotency = useIdempotencyKey();
+  const submission = useSubmissionKey();
 
   const update = (patch: Partial<SegmentForm>) => setSegment((current) => ({ ...current, ...patch }));
   const toggle = <T,>(list: T[], value: T) =>
@@ -155,16 +156,19 @@ export function CampaignBuilder({
   const save = () => {
     setSubmitted(true);
     if (Object.values(errors).some(Boolean) || moveInInverted || !canSave || maxRecipients === null) return;
+    const body = { name: name.trim(), listingIds: chosen, segment: segmentBody(segment), maxRecipients };
+    // One key per campaign body: the same save after no answer keeps it, an edited one gets a new key (review L10).
+    const key = submission.for(body);
     void action.run(
       () =>
         unwrap(
           browserApi().POST("/v1/owner/sponsored-campaigns", {
-            params: { header: { "Idempotency-Key": idempotency.key } },
-            body: { name: name.trim(), listingIds: chosen, segment: segmentBody(segment), maxRecipients },
+            params: { header: { "Idempotency-Key": key } },
+            body,
           }),
         ),
       (campaign) => {
-        idempotency.renew();
+        submission.answered();
         toast.success(t("builder.saved"));
         router.push(ownerPath(locale, `/promote/broadcasts/${campaign.id}`));
       },

@@ -57,6 +57,8 @@ test("not available yet: the product says why, drafting and the estimate still w
   const listing = page.locator(`[data-testid="campaign-listing"][data-id="${LISTING}"]`);
   // From the list's "new" nothing is chosen yet (only `?listing=` preselects one); the owner picks the room.
   await expect(listing.getByRole("checkbox")).not.toBeChecked();
+  // Review L7: the reach starts at the API's minimum (500 in the mock), not a number made up in the browser.
+  await expect(page.getByTestId("campaign-max")).toHaveValue("500");
   await listing.getByRole("checkbox").click();
   await expect(listing.getByRole("checkbox")).toBeChecked();
   // Everyone who fits → a number; a narrow area → withheld below the minimum, never a small count.

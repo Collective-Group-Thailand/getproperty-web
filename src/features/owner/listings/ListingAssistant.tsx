@@ -3,7 +3,8 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { ProblemNotice, useApiAction, useIdempotencyKey } from "@/features/shared/console/useApiAction";
+import { messageKey } from "@/i18n/keys";
+import { ProblemNotice, useApiAction, useSubmissionKey } from "@/features/shared/console/useApiAction";
 import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/errors";
@@ -52,7 +53,7 @@ export function ListingAssistant({
 }) {
   const t = useTranslations("owner.insight.assistant");
   const action = useApiAction<Schemas["ListingAssistantResultDto"]>({ refresh: false });
-  const idempotency = useIdempotencyKey();
+  const submission = useSubmissionKey();
   const [languages, setLanguages] = useState<Language[]>(["th", "en"]);
   const [photos, setPhotos] = useState(false);
   const [result, setResult] = useState<Schemas["ListingAssistantResultDto"] | null>(null);
@@ -70,21 +71,25 @@ export function ListingAssistant({
     );
   }
 
-  const generate = () =>
-    action.run(
+  const generate = () => {
+    const body = { languages, includePhotos: photos && hasPhotos };
+    // One key per request body: a retry of the same request keeps it, a changed one gets a new key (review L10).
+    const key = submission.for(body);
+    return action.run(
       () =>
         unwrap(
           browserApi().POST("/v1/owner/listings/{listingId}/assistant", {
-            params: { path: { listingId }, header: { "Idempotency-Key": idempotency.key } },
-            body: { languages, includePhotos: photos && hasPhotos },
+            params: { path: { listingId }, header: { "Idempotency-Key": key } },
+            body,
           }),
         ),
       (answer) => {
-        idempotency.renew();
+        submission.answered();
         setResult(answer);
         setUsed(answer.usedThisMonth);
       },
     );
+  };
 
   const copy = (draft: Draft) =>
     void navigator.clipboard
@@ -161,9 +166,9 @@ export function ListingAssistant({
         <div data-testid="assistant-problem" data-code={code}>
           <Callout
             tone={code === "assistant.output_rejected" ? "warning" : "neutral"}
-            title={t(`problem.${code}.title`)}
+            title={t(`problem.${messageKey(code, "assistant.")}.title`)}
           >
-            {t(`problem.${code}.body`)}
+            {t(`problem.${messageKey(code, "assistant.")}.body`)}
           </Callout>
         </div>
       ) : (

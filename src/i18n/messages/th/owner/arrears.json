@@ -39,10 +39,10 @@
   "policyHint": "นโยบายที่ใช้อยู่ เปลี่ยนได้ในหน้าตั้งค่า",
   "changeSettings": "เปลี่ยนในตั้งค่า",
   "setting": {
-    "reminders.schedule": "รอบการแจ้งเตือน",
-    "late_fee.enabled": "ค่าปรับชำระล่าช้า",
-    "late_fee.amount": "อัตราค่าปรับ",
-    "payments.allow_partial": "รับชำระบางส่วน"
+    "reminders_schedule": "รอบการแจ้งเตือน",
+    "late_fee_enabled": "ค่าปรับชำระล่าช้า",
+    "late_fee_amount": "อัตราค่าปรับ",
+    "payments_allow_partial": "รับชำระบางส่วน"
   },
   "remind": {
     "button": "ส่งแจ้งเตือน",

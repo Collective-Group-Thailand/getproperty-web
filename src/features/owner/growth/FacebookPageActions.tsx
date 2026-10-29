@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
+import { SECRET_FIELD_PROPS } from "@/features/shared/console/secret-field";
 import { FormDialog, text } from "@/features/shared/console/FormDialog";
 import { ProblemNotice, useApiAction } from "@/features/shared/console/useApiAction";
 import { browserApi } from "@/lib/api/browser";
@@ -65,11 +66,9 @@ export function ConnectFacebookPage({ replacing }: { replacing: boolean }) {
           <Field label={t("token")} hint={t("tokenHint")} error={errors.pageAccessToken} required>
             <Input
               name="pageAccessToken"
-              type="password"
+              {...SECRET_FIELD_PROPS}
               required
               minLength={10}
-              autoComplete="off"
-              spellCheck={false}
               data-testid="facebook-token"
             />
           </Field>
