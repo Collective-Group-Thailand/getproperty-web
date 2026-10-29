@@ -105,6 +105,25 @@ test("move-out beside the move-in, photos, offline checklist kept on the device 
   }
   await item(page, "meter:electric").getByRole("button", { name: "Save the register" }).click();
   await expect(page.getByTestId("sync-line")).toContainText("No signal");
+  // "No signal" already shows from the earlier lines: wait for the register itself to reach IndexedDB before the
+  // reload, or the reload can win the race with the write.
+  await expect
+    .poll(() =>
+      page.evaluate(
+        (id) =>
+          new Promise<unknown>((resolve) => {
+            const open = indexedDB.open("gp-staff-inspections");
+            open.onsuccess = () => {
+              const request = open.result.transaction("drafts").objectStore("drafts").get(id);
+              request.onsuccess = () =>
+                resolve((request.result as { items?: Record<string, { meterRegister?: string | null }> } | undefined)
+                  ?.items?.["meter:electric"]?.meterRegister ?? null);
+            };
+          }),
+        MOVE_OUT_A201,
+      ),
+    )
+    .toBe("9850.5");
 
   expect((await inspection(MOVE_OUT_A201)).items.find((line) => line.itemKey === "floor")!.condition).toBeNull();
 

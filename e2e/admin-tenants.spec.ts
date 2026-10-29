@@ -172,6 +172,8 @@ test("support: request a grant; view as tenant is read-only with no mutation con
   await dialog.getByTestId("form-submit").click();
   await expect(dialog).toHaveCount(0);
   await expect(page.getByTestId("support-grant").first()).toBeVisible();
+  // Let the confirmation toast mount first, so axe measures it at rest rather than mid fade-in.
+  await expect(page.locator("[data-sonner-toast]").first()).toBeVisible();
   await expectAxeClean(page);
 
   await gotoAdmin(page, `/tenants/${P.sample}/view`);

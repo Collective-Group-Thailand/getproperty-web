@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 import { createApiClient, unwrap } from "./client";
 import { ApiError, applyFieldErrors, problemError, SubscriptionSuspendedError, toFieldName } from "./errors";
+import { IDEMPOTENT_OPERATIONS } from "./generated/idempotent";
 import { OPERATIONS } from "./generated/operations";
 
 describe("ApiError", () => {
@@ -59,6 +60,7 @@ describe("createApiClient", () => {
     baseUrl: "http://api",
     headers: () => ({ authorization: "Bearer t", "x-tenant-id": undefined }),
     fetch: fetchImpl as unknown as typeof fetch,
+    idempotentOperations: IDEMPOTENT_OPERATIONS,
   });
 
   it("adds X-Request-Id and the static headers, skipping undefined ones", async () => {
