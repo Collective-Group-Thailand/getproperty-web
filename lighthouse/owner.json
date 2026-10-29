@@ -53,7 +53,9 @@
         "http://localhost:3200/contracts/documents",
         "http://localhost:3200/renewals",
         "http://localhost:3200/promote",
-        "http://localhost:3200/settings/facebook-page"
+        "http://localhost:3200/settings/facebook-page",
+        "http://localhost:3200/promote/broadcasts",
+        "http://localhost:3200/promote/broadcasts/new"
       ],
       "numberOfRuns": 1,
       "settings": {

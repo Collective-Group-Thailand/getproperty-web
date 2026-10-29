@@ -15,6 +15,7 @@ import { IconMegaphone } from "@/ui/icons/glyphs/megaphone";
 
 import { ownerPath } from "../shared/links";
 import { ownerCan, param, readOnly, section, type OwnerContext } from "../shared/server";
+import { PromoteTabs } from "./BroadcastParts";
 import { BoostOffer, BoostRow, MediaOffer, MediaOrderRow } from "./GrowthRows";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -66,6 +67,7 @@ export async function PromotionView({ context, searchParams }: { context: OwnerC
           ) : null
         }
       />
+      {menu.has("listings") ? <PromoteTabs locale={locale} current="boosts" /> : null}
       <Callout tone="info">{t("noWallet")}</Callout>
 
       <Card as="section" aria-labelledby="promotion-boosts" className="flex flex-col gap-4">

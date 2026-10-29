@@ -75,6 +75,7 @@ const CONTRACT_ENUM: Partial<Record<keyof typeof STATUS_MAPS, string>> = {
   feeAccrual: "FeeAccrualState",
   socialChannel: "SocialChannelState",
   socialPost: "SocialPostState",
+  sponsoredCampaign: "SponsoredCampaignState",
   mandate: "MandateState",
   coBroke: "CoBrokeState",
   contractDocument: "ContractDocumentState",

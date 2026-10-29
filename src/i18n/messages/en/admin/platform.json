@@ -47,7 +47,8 @@
       "tenant": "Tenant",
       "property": "Property"
     },
-    "credentialsLink": "Provider credentials"
+    "credentialsLink": "Provider credentials",
+    "broadcastLink": "Sponsored LINE broadcasts"
   },
   "templates": {
     "title": "Message templates",

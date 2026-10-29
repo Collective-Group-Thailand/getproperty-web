@@ -15,6 +15,7 @@ const EXTENSION: Record<Schemas["ExportKind"], string> = {
   tm30: "zip",
   document_archive_zip: "zip",
   loss_report_csv: "csv",
+  payroll_deduction: "csv",
   etax_monthly_xlsx: "xlsx",
 };
 

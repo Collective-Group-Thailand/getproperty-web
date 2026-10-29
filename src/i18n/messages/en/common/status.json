@@ -424,6 +424,14 @@
     "failed": "Failed",
     "deleted": "Removed"
   },
+  "sponsoredCampaign": {
+    "draft": "Draft",
+    "scheduled": "Scheduled",
+    "sending": "Sending",
+    "sent": "Sent",
+    "cancelled": "Cancelled",
+    "rejected": "Stopped by getproperty"
+  },
   "mandate": {
     "invited": "Awaiting the agency",
     "accepted": "Accepted — starts soon",

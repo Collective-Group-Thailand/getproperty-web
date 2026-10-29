@@ -1,6 +1,18 @@
 "use client";
 
-const CHANNELS = new Set(["line", "facebook_group", "facebook_marketplace", "qr", "link"]);
+import type { Schemas } from "@/lib/api/types";
+
+/** Every channel the API counts an enquiry for (D-268; G4 `facebook_page`, G6 `line_sponsored` — D-300). */
+const CHANNEL_LIST: Record<Schemas["ListingChannel"], true> = {
+  line: true,
+  facebook_group: true,
+  facebook_marketplace: true,
+  qr: true,
+  link: true,
+  facebook_page: true,
+  line_sponsored: true,
+};
+const CHANNELS = new Set<string>(Object.keys(CHANNEL_LIST));
 
 /** The LIFF link with the `ch` of this page's URL added, when there is a valid one. */
 export function withChannel(href: string, search: string): string {
