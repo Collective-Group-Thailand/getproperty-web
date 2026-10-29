@@ -1,0 +1,263 @@
+{
+  "title": "LINE broadcasts",
+  "description": "Send your listings as recommended places through getproperty’s LINE to people who opted in and are looking for what you have.",
+  "tabs": {
+    "label": "Promotion",
+    "boosts": "Boosts & photo services",
+    "broadcasts": "LINE broadcasts"
+  },
+  "new": "New campaign",
+  "invoice": "Invoice {number}",
+  "product": {
+    "title": "Recommended-places messages",
+    "state": {
+      "open": "Available",
+      "off": "Not available yet",
+      "unpriced": "Not on sale yet",
+      "off_unpriced": "Not available yet"
+    },
+    "body": {
+      "open": "You can schedule campaigns now. You pay for the people actually reached, after sending.",
+      "off": "getproperty is waiting for LINE Thailand to confirm the terms. Meanwhile you can draft campaigns and see the estimated reach; sending opens once the service is switched on.",
+      "unpriced": "The price per recipient has not been published yet. You can draft campaigns and see the estimated reach; the price appears here once it is on sale.",
+      "off_unpriced": "getproperty is waiting for LINE Thailand to confirm the terms, and no price has been published yet. Meanwhile you can draft campaigns and see the estimated reach."
+    },
+    "price": "Price per recipient",
+    "priceValue": "{price} per person",
+    "priceNote": "before {vat}% VAT",
+    "noPrice": "Not published",
+    "minimum": "Minimum per campaign",
+    "minimumValue": "{count, plural, one {# person} other {# people}}",
+    "maxListings": "Listings per campaign",
+    "maxListingsValue": "{count, plural, one {Up to # listing} other {Up to # listings}}",
+    "cap": "Frequency per person",
+    "capValue": "{count, plural, one {At most # message a week} other {At most # messages a week}}",
+    "capHint": "Across every campaign on the platform",
+    "billing": "Billed after sending, for the people actually reached, as an invoice on your subscription page. Nothing is prepaid; cancelled or stopped campaigns cost nothing."
+  },
+  "how": {
+    "title": "Who gets it, and what you see",
+    "consent": "Only people who chose to receive recommendations from getproperty themselves — they can stop any time with one tap.",
+    "match": "Matched only on what they typed — areas, budget, room type, move-in window and language. No sensitive data or rent history.",
+    "numbers": "You see totals only, never names or LINE accounts. Interested people contact you through the listing.",
+    "ad": "Every message is labelled \"Ad\" and has a stop button."
+  },
+  "list": {
+    "title": "My campaigns",
+    "tabs": {
+      "all": "All",
+      "draft": "Drafts",
+      "scheduled": "Scheduled",
+      "sending": "Sending",
+      "sent": "Sent"
+    },
+    "empty": {
+      "all": "No campaigns yet",
+      "draft": "No draft campaigns",
+      "scheduled": "No scheduled campaigns",
+      "sending": "No campaign is being sent",
+      "sent": "No finished campaigns yet"
+    },
+    "emptyHint": "Pick published listings, describe who is looking for them, and see the estimated reach before you decide.",
+    "listings": "{count, plural, one {# listing} other {# listings}}",
+    "estimated": "{count, plural, one {About # person} other {About # people}}",
+    "withheld": "Below the minimum",
+    "delivered": "{count, plural, one {Reached # person} other {Reached # people}}",
+    "clicks": "{count, plural, one {# click} other {# clicks}}",
+    "scheduledFor": "Starts {date}",
+    "completed": "Finished {date}",
+    "created": "Created {date}",
+    "open": "Open campaign {name}"
+  },
+  "builder": {
+    "title": "New campaign",
+    "description": "Pick listings, describe who is looking, and see the estimated reach and cost. Save it as a draft first; you schedule it from the campaign page.",
+    "step": {
+      "name": "Campaign name",
+      "listings": "Listings to send",
+      "audience": "Who receives it",
+      "size": "Maximum recipients"
+    },
+    "name": "Campaign name",
+    "nameHint": "Only you and your team see it, e.g. \"Ari condos, early December\"",
+    "namePlaceholder": "e.g. Ari vacancies, December",
+    "listingsHint": "{max, plural, one {Up to # listing; it must be published and visible on the site} other {Up to # listings; they must be published and visible on the site}}",
+    "listingsChosen": "{count, plural, other {# of {max} chosen}}",
+    "rent": "{rent}/month",
+    "noListings": "No published listings yet",
+    "noListingsHint": "Campaigns can only send listings that are published and visible on the site. Publish a listing first, then come back.",
+    "toListings": "My listings",
+    "audienceHint": "Every field is optional — a field left empty does not narrow the group. Matching uses only what recipients typed themselves.",
+    "areas": "Areas or stations they want",
+    "areasHint": "None chosen = every area",
+    "areasFilter": "Find an area or station",
+    "areasNone": "No area matches",
+    "areasChosen": "{count, plural, one {# area chosen} other {# areas chosen}}",
+    "areasMore": "{count, plural, one {Show # more area} other {Show # more areas}}",
+    "areaCount": "{count, plural, one {# listing} other {# listings}}",
+    "budget": "Their rent budget (THB/month)",
+    "budgetMin": "Budget from",
+    "budgetMax": "Budget up to",
+    "budgetHint": "Matches people whose budget range overlaps this one; at least one listing’s rent must also be within their own budget.",
+    "budgetInvalid": "Type a number, e.g. 12000",
+    "kinds": "Room types they look for",
+    "moveIn": "When they move in",
+    "moveInFrom": "From",
+    "moveInTo": "To",
+    "languages": "Their language",
+    "languagesHint": "Each person gets the message in their chosen language. None chosen = every language.",
+    "max": "Send to at most",
+    "maxUnit": "people",
+    "maxHint": "{minimum, plural, one {At least # person is needed to schedule. The number reached may be lower: everyone’s weekly limit and quiet hours are respected.} other {At least # people are needed to schedule. The number reached may be lower: everyone’s weekly limit and quiet hours are respected.}}",
+    "maxInvalid": "Type a number of people from 1 to 1,000,000",
+    "nameRequired": "Name the campaign",
+    "listingsRequired": "Pick at least 1 listing",
+    "fix": "Fix these before saving",
+    "save": "Save as draft",
+    "saved": "Campaign saved as a draft",
+    "cannotSave": "Only people who manage this account’s subscription can create campaigns",
+    "baht": "THB",
+    "moveInInverted": "The end must not be before the start"
+  },
+  "estimate": {
+    "title": "Estimated reach",
+    "pick": "Pick at least 1 listing to see the estimated reach",
+    "loading": "Counting…",
+    "people": "{count, plural, one {# person} other {# people}}",
+    "peopleHint": "People who opted in and fit right now; counted again when sending.",
+    "capped": "{count, plural, other {More people fit; it is sent to at most # as you set.}}",
+    "withheld": "{minimum, plural, one {Fewer than # person} other {Fewer than # people}}",
+    "withheldHint": "To protect recipients’ privacy, the number is not shown below the minimum. Try a wider group, e.g. more areas or a wider budget.",
+    "cost": "Estimated cost",
+    "subtotal": "Before VAT",
+    "vat": "VAT",
+    "total": "Total at most",
+    "costHint": "Billed for the people actually reached after sending, so it may be less.",
+    "noCost": "Not on sale yet, so there is no price",
+    "error": "Could not count",
+    "retry": "Try again",
+    "privacy": "Totals only — never who",
+    "costLine": "{count} people × {price}"
+  },
+  "detail": {
+    "what": "What, to whom",
+    "listings": "Listings",
+    "notPublic": "No longer on the site",
+    "notPublicHint": "A listing is unpublished or hidden. The campaign cannot be scheduled until it is visible again — or create a new campaign without it.",
+    "areas": "Areas",
+    "anyArea": "Every area",
+    "budget": "Recipients’ budget",
+    "anyBudget": "Any",
+    "budgetFrom": "From {min}",
+    "budgetTo": "Up to {max}",
+    "budgetRange": "{min} – {max}",
+    "kinds": "Room types",
+    "anyKind": "Every type",
+    "moveIn": "Move-in window",
+    "anyTime": "Any time",
+    "moveInFrom": "From {from}",
+    "moveInTo": "Until {to}",
+    "moveInRange": "{from} – {to}",
+    "languages": "Languages",
+    "anyLanguage": "Every language",
+    "max": "Send to at most",
+    "estimated": "Estimated reach",
+    "scheduledAt": "Starts",
+    "notScheduled": "Not scheduled",
+    "priceSnapshot": "Price per recipient (locked when scheduled)",
+    "priceSnapshotValue": "{price} before {vat}% VAT",
+    "created": "Created",
+    "costTitle": "Cost if sent now",
+    "costBody": "Reaching the estimated {count} people would cost at most {total} incl. VAT. You are billed for the people actually reached after sending.",
+    "rejected": "getproperty stopped this campaign",
+    "rejectedBody": "Reason: {reason} · Messages not yet sent were cancelled and the campaign costs nothing.",
+    "cancelled": "Campaign cancelled",
+    "cancelledBody": "Nothing was sent and nothing is billed.",
+    "scheduled": "Scheduled",
+    "scheduledBody": "Sending starts {date}, in batches within the platform’s send window, respecting everyone’s quiet hours and weekly limit. You can cancel until it starts.",
+    "draftHint": "This campaign is a draft. Schedule it when you are ready.",
+    "back": "All campaigns",
+    "numbers": "Reach and timing"
+  },
+  "report": {
+    "title": "Results",
+    "privacy": "Totals only — no personal data. Interested people contact you through the listing.",
+    "sent": "Reached",
+    "sentHint": "People who received the message",
+    "opened": "Opened",
+    "openedValue": "Not available",
+    "openedHint": "LINE gives no read data for messages sent to a group",
+    "clicks": "Clicks to the listing",
+    "clicksHint": "Links in this campaign’s message",
+    "leads": "Enquiries",
+    "leadsHint": "{days, plural, one {Recipients who enquired on these listings within # day} other {Recipients who enquired on these listings within # days}}",
+    "people": "{count, plural, one {# person} other {# people}}",
+    "sending": "Sending in batches — the numbers grow until it finishes",
+    "billed": "Cost of this campaign",
+    "notBilledYet": "Invoiced when sending finishes, for the people actually reached",
+    "nobody": "Nobody fitting the group could be reached during the send window, so this campaign costs nothing."
+  },
+  "schedule": {
+    "action": "Schedule",
+    "title": "Schedule {name}",
+    "body": "Sends to about {count} people who opted in and fit, at {price} per recipient before VAT. This price is locked from now on; you are billed for the people actually reached after sending{total, select, none {} other { (at most {total} incl. VAT)}}.",
+    "bodyUnknown": "Recipients are counted again when you schedule. The price per recipient is locked from now on; you are billed for the people actually reached after sending.",
+    "when": "Start",
+    "now": "Send now",
+    "nowHint": "Starts within minutes, outside each person’s quiet hours",
+    "later": "Pick a date and time",
+    "laterHint": "Thailand time, within 90 days",
+    "at": "Start date and time",
+    "confirm": "Confirm and schedule",
+    "done": "Campaign scheduled",
+    "waiting": "Scheduling opens once the service is switched on and priced"
+  },
+  "cancel": {
+    "action": "Cancel campaign",
+    "title": "Cancel {name}",
+    "body": "The campaign will not be sent and costs nothing. To send again, create a new campaign.",
+    "confirm": "Cancel campaign",
+    "done": "Campaign cancelled"
+  },
+  "problems": {
+    "sponsored_disabled": {
+      "title": "Not available yet",
+      "body": "getproperty is still waiting for LINE Thailand’s confirmation. The campaign stays a draft and can be scheduled once the service opens. Nothing is charged."
+    },
+    "not_on_sale": {
+      "title": "Not on sale yet",
+      "body": "No price per recipient has been published. The campaign stays a draft and can be scheduled once it is priced."
+    },
+    "below_minimum": {
+      "title": "Below the minimum",
+      "body": "Fewer people fit than the minimum right now, or the maximum you set is below it. Create a new campaign with a wider group — more areas, a wider budget or any language."
+    },
+    "listing_not_public": {
+      "title": "A listing is no longer on the site",
+      "body": "Only published, visible listings can be sent. Publish it again, or create a new campaign without it."
+    },
+    "invalid_state": {
+      "title": "This campaign has changed",
+      "body": "It may already be scheduled, cancelled or stopped. Reload the page to see where it stands."
+    }
+  },
+  "fromListing": {
+    "title": "Send this listing on LINE",
+    "body": "As a recommended place to people who opted in and are looking for one like it — see the estimated reach before you decide.",
+    "action": "New campaign"
+  },
+  "kinds": {
+    "condo_unit": "Condo",
+    "room": "Room / apartment",
+    "house": "House",
+    "townhouse": "Townhouse"
+  },
+  "languages": {
+    "th": "Thai",
+    "en": "English",
+    "my": "Burmese",
+    "km": "Khmer",
+    "lo": "Lao",
+    "zh": "Chinese"
+  }
+}

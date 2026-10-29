@@ -23,6 +23,7 @@ import { storageHandlers } from "./storage";
 import { agencyHandlers, initialAgencyWorld } from "./agency";
 import { contractHandlers, counterpartySignsContract, initialContractsWorld, residentAnswersOffer } from "./contracts";
 import { growthHandlers, initialGrowthWorld } from "./growth";
+import { broadcastHandlers, initialBroadcastWorld } from "./broadcast";
 import { initialOwnerWorld, type OwnerWorld } from "./world";
 
 /** The owner surface's stateful handlers (F2); the contract-generated handlers answer what is not here. */
@@ -42,6 +43,7 @@ export const ownerHandlers: HttpHandler[] = [
   ...agencyHandlers,
   ...contractHandlers,
   ...growthHandlers,
+  ...broadcastHandlers,
   ...portfolioHandlers,
   ...listingHandlers,
   ...leadHandlers,
@@ -143,6 +145,11 @@ export function resetOwnerWorld(part: string | null): boolean {
     state.growth = initialGrowthWorld();
     if (part) return true;
   }
+  if (!part || part === "broadcast") {
+    // Sponsored LINE broadcasts, their settings and consent text (G6) live beside the owner world.
+    state.broadcast = initialBroadcastWorld();
+    if (part) return true;
+  }
   if (!part || part === "contracts") {
     // The contract library, signable contracts and renewal offers (G3) live beside the owner world.
     state.contracts = initialContractsWorld();
@@ -169,3 +176,4 @@ export function resetOwnerWorld(part: string | null): boolean {
 export { counterpartySignsContract, providerPays, residentAnswers, residentAnswersOffer, residentSigns };
 export { storagePackagePaid, storagePricePublished } from "./storage";
 export { failPost, growthPaid, publishGrowthPrice, setFacebookMode, setFreeBuildingBoost } from "./growth";
+export { sendCampaign, setBroadcastEnabled, setBroadcastPrice } from "./broadcast";

@@ -40,6 +40,11 @@ export interface ConfirmActionProps {
    * acknowledgement ids of D-021a warnings acknowledged in the dialog.
    */
   onConfirm: (idempotencyKey: string, acknowledgementIds: string[]) => Promise<unknown>;
+  /**
+   * Explains some refusals in the screen's own words (a designed state rather than the API's detail); return null to
+   * fall back to the standard problem notice.
+   */
+  explain?: (error: unknown) => React.ReactNode | null;
   /** Toast after success. */
   successMessage?: string;
   onDone?: (result: unknown) => void;
@@ -61,6 +66,7 @@ export function ConfirmAction({
   children,
   ready = true,
   onConfirm,
+  explain,
   successMessage,
   onDone,
 }: ConfirmActionProps) {
@@ -69,6 +75,7 @@ export function ConfirmAction({
   const [open, setOpen] = useState(false);
   const idempotency = useIdempotencyKey();
   const action = useApiAction();
+  const explained = action.error && explain ? explain(action.error) : null;
 
   return (
     <>
@@ -114,12 +121,14 @@ export function ConfirmAction({
         }}
       >
         {children ? <div className="mt-4 flex flex-col gap-3">{children}</div> : null}
-        <ProblemNotice
-          error={action.error}
-          onAcknowledge={action.acknowledge}
-          acknowledging={action.acknowledging}
-          className="mt-4"
-        />
+        {explained ?? (
+          <ProblemNotice
+            error={action.error}
+            onAcknowledge={action.acknowledge}
+            acknowledging={action.acknowledging}
+            className="mt-4"
+          />
+        )}
       </LazyAlertDialog>
     </>
   );

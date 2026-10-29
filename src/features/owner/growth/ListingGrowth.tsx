@@ -30,6 +30,7 @@ const OPEN_MEDIA: Schemas["MediaServiceState"][] = ["pending_payment", "requeste
  */
 export async function ListingGrowth({ context, listing }: { context: OwnerContext; listing: Schemas["ListingDto"] }) {
   const t = await getTranslations("owner.growth");
+  const broadcast = await getTranslations("owner.broadcast.fromListing");
   const { api, locale, me } = context;
   const live = listing.state === "published" && !listing.hidden;
   const [products, boosts, media, orders, posts, pages] = await Promise.all([
@@ -100,6 +101,29 @@ export async function ListingGrowth({ context, listing }: { context: OwnerContex
             </ul>
           ) : null}
           <p className="text-muted m-0 text-xs">{t("boost.howRanked")}</p>
+        </section>
+
+        <section
+          aria-labelledby="listing-broadcast"
+          className="border-border flex flex-col gap-3 border-t pt-6 sm:flex-row sm:items-center sm:justify-between"
+          data-testid="listing-broadcast"
+        >
+          <span className="flex flex-col gap-1">
+            <h3 id="listing-broadcast" className="m-0 text-sm font-semibold">
+              {broadcast("title")}
+            </h3>
+            <span className="text-muted text-sm">{broadcast("body")}</span>
+          </span>
+          {live && ownerCan(me, "tenant.subscription.manage") && !readOnly(me) ? (
+            <Button asChild variant="secondary" size="sm" iconStart={IconMegaphone}>
+              <a
+                href={ownerPath(locale, `/promote/broadcasts/new?listing=${listing.id}`)}
+                data-testid="listing-broadcast-new"
+              >
+                {broadcast("action")}
+              </a>
+            </Button>
+          ) : null}
         </section>
 
         <section aria-labelledby="listing-media" className="flex flex-col gap-3">

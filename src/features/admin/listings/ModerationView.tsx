@@ -40,7 +40,8 @@ const moderationHref = (next: ModerationTab) => (next === "queue" ? "/listings" 
 
 /**
  * The listings section's tabs: the moderation queues (`admin.listing.moderate`), owner verification and the photo
- * service orders of G5 (`admin.listing.verify` — the team that checks owners books the photographer, D-297).
+ * service orders of G5 (`admin.listing.verify` — the team that checks owners books the photographer, D-297) and the
+ * sponsored LINE campaigns of G6 (D-300).
  */
 export async function ListingsTabs({ context, current }: { context: AdminContext; current: string }) {
   const t = await getTranslations("admin.listings");
@@ -54,6 +55,10 @@ export async function ListingsTabs({ context, current }: { context: AdminContext
           one === "verifications" ? verify : can(context.me, "admin.listing.moderate"),
         ).map((one) => ({ href: moderationHref(one), label: t(`tab.${one}`), testId: `listings-tab-${one}` })),
         ...(verify ? [{ href: "/listings/media", label: t("tab.media"), testId: "listings-tab-media" }] : []),
+        // G6 (D-300): sponsored LINE campaigns (read with `admin.tenant.read`, stopped with `admin.listing.moderate`).
+        ...(can(context.me, "admin.tenant.read")
+          ? [{ href: "/listings/broadcasts", label: t("tab.broadcasts"), testId: "listings-tab-broadcasts" }]
+          : []),
       ]}
     />
   );

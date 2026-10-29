@@ -38,6 +38,10 @@
  *   POST /__mock/owner/growth/facebook?mode=off|fake           FACEBOOK_MODE (O-029)
  *   POST /__mock/owner/growth/post-fail?listing=<id>           the listing's Page post fails
  *   GET  /__mock/owner/growth                                  boosts, orders, Pages, posts, fees (G4/G5)
+ *   POST /__mock/owner/broadcast/enable[?on=0]                 `broadcast.sponsored.enabled` (G6, O-023)
+ *   POST /__mock/owner/broadcast/price[?price=0.5000|none][&minimum=]  price per recipient (G6, O-027)
+ *   POST /__mock/owner/broadcast/send?campaign=<id>            the send job runs a scheduled campaign to the end
+ *   GET  /__mock/owner/broadcast                               campaigns, settings, consent text (G6)
  *   GET  /__mock/owner/state         leases, deposits, invoices, slips, cycles, units (A/B) as held
  *   POST /__mock/platform/reset      reset the platform admin's world (tenants, billing, tariffs, fleet…)
  *   POST /__mock/platform/ota/upload?key=releases/edge/<version>/<file>&size=<bytes>  a release engineer uploads an
@@ -66,6 +70,9 @@ import {
   failPost,
   growthPaid,
   providerPays,
+  sendCampaign,
+  setBroadcastEnabled,
+  setBroadcastPrice,
   publishGrowthPrice,
   setFacebookMode,
   setFreeBuildingBoost,
@@ -284,6 +291,25 @@ function ownerControl(url: URL, req: IncomingMessage): { status: number; body: u
         : { status: 409, body: { error: "no post" } };
   }
   if (req.method === "GET" && parts[0] === "growth") return { status: 200, body: state.growth };
+  // G6: the sponsored broadcast switch (O-023), the price per recipient (O-027), the send job.
+  if (req.method === "POST" && parts[0] === "broadcast") {
+    const p = url.searchParams;
+    if (parts[1] === "enable") {
+      setBroadcastEnabled(p.get("on") !== "0");
+      return { status: 200, body: { ok: true } };
+    }
+    if (parts[1] === "price") {
+      const price = p.get("price") ?? "0.5000";
+      const minimum = p.get("minimum") ? Number(p.get("minimum")) : undefined;
+      setBroadcastPrice(price === "none" ? null : price, minimum);
+      return { status: 200, body: { ok: true } };
+    }
+    if (parts[1] === "send")
+      return sendCampaign(p.get("campaign") ?? "")
+        ? { status: 200, body: { ok: true } }
+        : { status: 409, body: { error: "not scheduled" } };
+  }
+  if (req.method === "GET" && parts[0] === "broadcast") return { status: 200, body: state.broadcast };
   if (req.method === "GET" && parts[0] === "storage") {
     return { status: 200, body: state.storage };
   }

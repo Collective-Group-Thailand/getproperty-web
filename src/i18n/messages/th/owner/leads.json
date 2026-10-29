@@ -59,7 +59,9 @@
       "facebook_group": "กลุ่ม Facebook",
       "facebook_marketplace": "Facebook Marketplace",
       "qr": "QR บนการ์ด",
-      "link": "ลิงก์ที่คัดลอกไปแชร์"
+      "link": "ลิงก์ที่คัดลอกไปแชร์",
+      "facebook_page": "เพจ Facebook",
+      "line_sponsored": "ข้อความแนะนำห้องทาง LINE (โฆษณา)"
     },
     "identity": "ยืนยันตัวตน",
     "identityYes": "ยืนยันตัวตนแล้ว",

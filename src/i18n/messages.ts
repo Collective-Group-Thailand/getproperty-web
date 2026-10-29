@@ -18,6 +18,7 @@ export const MESSAGE_FILES = {
     "agency",
     "arrears",
     "billing",
+    "broadcast",
     "buildings",
     "certificates",
     "common",
@@ -66,6 +67,7 @@ export const MESSAGE_FILES = {
   ],
   admin: [
     "billing",
+    "broadcast",
     "credentials",
     "fleet",
     "growth",

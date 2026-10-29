@@ -59,7 +59,9 @@
       "facebook_group": "Facebook group",
       "facebook_marketplace": "Facebook Marketplace",
       "qr": "QR on the card",
-      "link": "Copied link"
+      "link": "Copied link",
+      "facebook_page": "Facebook Page",
+      "line_sponsored": "Sponsored LINE message"
     },
     "identity": "Identity",
     "identityYes": "Verified",

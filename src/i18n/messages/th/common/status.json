@@ -424,6 +424,14 @@
     "failed": "โพสต์ไม่สำเร็จ",
     "deleted": "ลบโพสต์แล้ว"
   },
+  "sponsoredCampaign": {
+    "draft": "ร่าง",
+    "scheduled": "ตั้งเวลาส่งแล้ว",
+    "sending": "กำลังส่ง",
+    "sent": "ส่งครบแล้ว",
+    "cancelled": "ยกเลิกแล้ว",
+    "rejected": "ถูกระงับโดยทีม getproperty"
+  },
   "mandate": {
     "invited": "รอนายหน้าตอบรับ",
     "accepted": "ตอบรับแล้ว รอวันเริ่ม",

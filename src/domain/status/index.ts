@@ -73,10 +73,13 @@ export {
   MEDIA_SERVICE_VALUES,
   SOCIAL_CHANNEL_STATUS,
   SOCIAL_POST_STATUS,
+  SPONSORED_CAMPAIGN_STATUS,
+  SPONSORED_CAMPAIGN_VALUES,
   type FeeAccrualState,
   type MediaServiceState,
   type SocialChannelState,
   type SocialPostState,
+  type SponsoredCampaignState,
 } from "./growth";
 export { CO_BROKE_STATUS, MANDATE_STATUS, type CoBrokeState, type MandateState } from "./mandate";
 export {
@@ -145,7 +148,13 @@ import { MESSAGING_CHANNEL_STATUS } from "./messagingChannel";
 import { GUIDE_STATUS } from "./guide";
 import { MESSAGING_RATE_STATUS } from "./messagingRate";
 import { STORAGE_PACKAGE_STATUS } from "./storagePackage";
-import { FEE_ACCRUAL_STATUS, MEDIA_SERVICE_STATUS, SOCIAL_CHANNEL_STATUS, SOCIAL_POST_STATUS } from "./growth";
+import {
+  FEE_ACCRUAL_STATUS,
+  MEDIA_SERVICE_STATUS,
+  SOCIAL_CHANNEL_STATUS,
+  SOCIAL_POST_STATUS,
+  SPONSORED_CAMPAIGN_STATUS,
+} from "./growth";
 import { CO_BROKE_STATUS, MANDATE_STATUS } from "./mandate";
 import { CONTRACT_DOCUMENT_STATUS, LEGAL_REVIEW_STATUS, RENEWAL_OFFER_STATUS } from "./contract";
 import { LISTING_STATUS, LISTING_VERIFICATION_STATUS } from "./listing";
@@ -168,6 +177,7 @@ export const STATUS_MAPS = {
   feeAccrual: FEE_ACCRUAL_STATUS,
   socialChannel: SOCIAL_CHANNEL_STATUS,
   socialPost: SOCIAL_POST_STATUS,
+  sponsoredCampaign: SPONSORED_CAMPAIGN_STATUS,
   mandate: MANDATE_STATUS,
   coBroke: CO_BROKE_STATUS,
   contractDocument: CONTRACT_DOCUMENT_STATUS,

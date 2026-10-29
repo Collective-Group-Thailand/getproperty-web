@@ -47,7 +47,8 @@
       "tenant": "ลูกค้า",
       "property": "โครงการ"
     },
-    "credentialsLink": "ข้อมูลรับรองผู้ให้บริการ"
+    "credentialsLink": "ข้อมูลรับรองผู้ให้บริการ",
+    "broadcastLink": "ข้อความแนะนำห้องทาง LINE"
   },
   "templates": {
     "title": "แม่แบบข้อความ",

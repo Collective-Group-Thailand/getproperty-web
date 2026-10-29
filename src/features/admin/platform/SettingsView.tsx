@@ -10,6 +10,7 @@ import { unwrap } from "@/lib/api/client";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { IconKey } from "@/ui/icons/glyphs/key";
+import { IconMegaphone } from "@/ui/icons/glyphs/megaphone";
 import { Input } from "@/ui/components/Input";
 
 import { can, param, section, type AdminContext } from "../shared/server";
@@ -45,13 +46,21 @@ export async function SettingsView({
         title={t("title")}
         description={t("description")}
         actions={
-          can(me, "admin.provider_credential.manage") ? (
-            <Button asChild variant="secondary" iconStart={IconKey}>
-              <Link href="/provider-credentials" data-testid="provider-credentials-link">
-                {t("credentialsLink")}
+          <>
+            {/* G6 (D-300): sponsored LINE broadcasts have their own page (switch, caps, consent text). */}
+            <Button asChild variant="secondary" iconStart={IconMegaphone}>
+              <Link href="/settings/broadcast" data-testid="broadcast-settings-link">
+                {t("broadcastLink")}
               </Link>
             </Button>
-          ) : null
+            {can(me, "admin.provider_credential.manage") ? (
+              <Button asChild variant="secondary" iconStart={IconKey}>
+                <Link href="/provider-credentials" data-testid="provider-credentials-link">
+                  {t("credentialsLink")}
+                </Link>
+              </Button>
+            ) : null}
+          </>
         }
       />
       <form method="get" className="flex flex-wrap items-end gap-2" role="search">

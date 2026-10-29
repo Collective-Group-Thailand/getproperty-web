@@ -23,7 +23,9 @@
         "http://admin.localhost:3200/privacy",
         "http://admin.localhost:3200/subscriptions/storage",
         "http://admin.localhost:3200/subscriptions/fees",
-        "http://admin.localhost:3200/listings/media"
+        "http://admin.localhost:3200/listings/media",
+        "http://admin.localhost:3200/listings/broadcasts",
+        "http://admin.localhost:3200/settings/broadcast"
       ],
       "numberOfRuns": 1,
       "settings": {
