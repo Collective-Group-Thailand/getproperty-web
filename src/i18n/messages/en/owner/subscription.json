@@ -138,6 +138,7 @@
       "untitled": "Untitled file",
       "locked": "Locked: {reason}"
     },
+    "filesLabel": "Files",
     "filesHint": "Meter photos, slips, repair photos, contracts and uploads",
     "recordsLabel": "Records",
     "recordCount": "{count} records",

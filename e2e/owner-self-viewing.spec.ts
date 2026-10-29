@@ -33,7 +33,9 @@ async function signInLandlord(page: Page) {
   await hydrated(page);
 }
 
-test.beforeAll(reset);
+// Each test starts from the seeded world: the calendar counts every self viewing of the week, so one left by the
+// previous test (serial mode, same mock) would be counted too.
+test.beforeEach(reset);
 test.afterAll(reset);
 
 test("availability: self viewing is not available yet, then a window is marked self and saved", async ({ page }) => {
@@ -42,7 +44,10 @@ test("availability: self viewing is not available yet, then a window is marked s
   const editor = page.getByTestId("listing-availability");
   await expect(editor.getByTestId("self-viewing-off")).toBeVisible();
   const mode = editor.getByTestId("listing-slot-mode").first();
-  await expect(mode.locator('option[value="self"]')).toBeDisabled();
+  // A native <option disabled>: Playwright's toBeDisabled() follows ARIA and reports an option as enabled, so read
+  // the state the browser enforces (a disabled option cannot be picked by the user) and that it is not the value.
+  await expect(mode.locator('option[value="self"]')).toHaveJSProperty("disabled", true);
+  await expect(mode).not.toHaveValue("self");
   await expectAxeClean(page);
 
   await control("viewings/self-enabled?on=1");
@@ -50,8 +55,9 @@ test("availability: self viewing is not available yet, then a window is marked s
   await expect(editor.getByTestId("self-viewing-on")).toContainText("5");
   await editor.getByTestId("listing-slot-mode").first().selectOption("self");
   await editor.getByTestId("listing-availability-save").click();
-  await expect(editor.getByRole("status")).toBeVisible();
-  const [put] = (await received("owner.listings.availability")).slice(-1);
+  // The "self viewing is on" callout is a status too: wait for the save confirmation itself.
+  await expect(editor.getByRole("status").filter({ hasText: /บันทึกแล้ว|Saved/ })).toBeVisible();
+  const [put] = (await received("owner.listings.setAvailability")).slice(-1);
   expect((put?.body.weekly as { mode?: string }[])[0]?.mode).toBe("self");
 });
 
@@ -93,6 +99,7 @@ test("a self viewing is confirmed: codes issued but never shown; the entry log i
 });
 
 test("a visitor inside and an incident need the owner: enquiries, calendar, work order", async ({ page }) => {
+  await control("viewings/self-enabled?on=1");
   const inside = await selfLead("entered");
   const incident = await selfLead("incident");
   await signInLandlord(page);

@@ -4,6 +4,7 @@ import { getLocale } from "next-intl/server";
 import { cache } from "react";
 
 import { getPlatformActor } from "@/lib/auth/actor";
+import { requirePlatform } from "@/lib/auth/guards";
 import { unwrap, type ApiClient } from "@/lib/api/client";
 import { serverApi } from "@/lib/api/server";
 import type { AdminMe } from "@/lib/api/types";
@@ -24,7 +25,12 @@ export interface AdminContext {
  */
 export const adminContext = cache(async (): Promise<AdminContext> => {
   const [api, actor, locale] = await Promise.all([serverApi("admin"), getPlatformActor(), getLocale()]);
-  if (!actor) throw new Error("adminContext outside the signed-in console");
+  // Signed out while the page renders next to the layout's guard: redirect like the guard instead of throwing (a
+  // throw logged a server error for every signed-out visit).
+  if (!actor) {
+    const signedIn = await requirePlatform("/login");
+    return { api, me: signedIn.me, locale: locale as Locale };
+  }
   return { api, me: actor.me, locale: locale as Locale };
 });
 

@@ -73,7 +73,14 @@
       "ai_overage": "OCR beyond allowance",
       "inspection": "Inspection report",
       "discount": "Discount",
-      "adjustment": "Adjustment"
+      "adjustment": "Adjustment",
+      "storage": "Extra storage",
+      "boost": "Listing boost",
+      "success_fee": "Success fee",
+      "co_broke_fee": "Co-broke fee",
+      "media_service": "Photo service",
+      "messaging_addon": "LINE messages",
+      "sponsored_broadcast": "Sponsored LINE broadcast"
     },
     "method": {
       "qr": "Thai QR",

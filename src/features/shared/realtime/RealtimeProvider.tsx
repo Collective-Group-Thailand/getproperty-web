@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 
 import { peekQueryClient } from "@/lib/api/query-runtime";
 import { connectRealtime, invalidationKeys, type DomainEvent, type RealtimeStatus } from "@/lib/realtime/client";
+import { refreshQueries } from "@/lib/realtime/refresh";
 import type { Zone } from "@/lib/zones";
 
 const StatusContext = createContext<RealtimeStatus>("closed");
@@ -13,7 +14,8 @@ const ListenersContext = createContext<Set<Listener> | null>(null);
 
 /**
  * One realtime stream per tab and zone (contract §6). Events carry ids only: each one invalidates the
- * TanStack Query keys it concerns (`invalidationKeys`) and the screens refetch through the API.
+ * TanStack Query keys it concerns (`invalidationKeys`) and the screens refetch through the API — a fetch already in
+ * flight is restarted, since it began before the event (`refreshQueries`).
  * Query Client loads on demand (D-179): before it exists nothing is cached, so there is nothing to
  * invalidate. Components that keep their own state (the notification badge) listen with
  * `useRealtimeEvents`.
@@ -39,7 +41,7 @@ export function RealtimeProvider({
           const client = peekQueryClient();
           if (client) {
             for (const queryKey of invalidationKeys(zone, tenantId, event.type)) {
-              void client.invalidateQueries({ queryKey });
+              void refreshQueries(client, queryKey);
             }
           }
           for (const listener of listeners) listener(event);
