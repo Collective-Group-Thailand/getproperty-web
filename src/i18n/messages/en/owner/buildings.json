@@ -105,7 +105,8 @@
     "editProfiles": "Edit unit types",
     "noProfiles": "No unit type yet.",
     "profileRent": "Rent {rent}",
-    "promote": "Promote building"
+    "promote": "Promote building",
+    "reviews": "Reviews"
   },
   "import": {
     "title": "Import units from Excel",

@@ -32,6 +32,7 @@ import { ComplianceChecks } from "./ComplianceChecks";
 import { LeaseActions } from "./LeaseActions";
 import { LeaseInviteButton } from "./LeaseInvite";
 import { LeaseRenewals } from "../contracts/LeaseRenewals";
+import { LeaseEmployerCard } from "../employers/LeaseEmployerCard";
 import { LeaseNotices } from "./LeaseNotices";
 import { LeaseStampDuty } from "./LeaseStampDuty";
 
@@ -348,6 +349,14 @@ export async function LeaseDetail({ context, leaseId }: { context: OwnerContext;
             canManage={!readOnly(context.me) && ownerCan(context.me, "lease.manage")}
           />
         ) : null}
+
+        {/* G8 (D-299): an employer may pay this lease's invoices (worker housing). */}
+        <LeaseEmployerCard
+          api={context.api}
+          lease={lease}
+          locale={locale}
+          canManage={!readOnly(context.me) && ownerCan(context.me, "lease.manage")}
+        />
 
         <Card as="section" aria-labelledby="lease-lines" data-testid="lease-lines">
           <CardHeader title={<span id="lease-lines">{wizard("linesTitle")}</span>} />

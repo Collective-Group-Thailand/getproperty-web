@@ -122,6 +122,9 @@ export const CURATED_ICONS = {
   book: "book-open",
   globe: "globe",
   percent: "percent",
+  // G9 (D-301): verified reviews, AI listing drafts
+  star: "star",
+  sparkles: "sparkles",
   // theme & language
   "theme-system": "monitor",
   "theme-light": "sun",

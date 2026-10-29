@@ -6,6 +6,10 @@ import type { Zone } from "@/lib/zones";
  * Paths are the zone's own (the owner zone adds its locale prefix: `/en/...` for English, none for Thai).
  */
 const OWNER_LINKS: Record<string, string> = {
+  // G7 (D-295): urgent self-viewing alerts open the viewing calendar (the attention list is at the top)
+  "listing.self_viewing_entered": "/leads/viewings",
+  "listing.self_viewing_incident": "/leads/viewings",
+  "listing.self_viewing_overstayed": "/leads/viewings",
   // Release fixes (triage F7)
   "payment.held": "/payments/held", // D-220
   "party.link_requested": "/parties/link-requests", // D-226

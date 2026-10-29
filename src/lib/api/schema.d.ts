@@ -2288,6 +2288,160 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Reviews to moderate
+         * @description Every building review, oldest first; `state=pending_moderation` is the queue, `reported=true` the owner reports (D-301).
+         *
+         *     Implements: D-301.
+         */
+        get: operations["admin.reviews.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/reviews/{reviewId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * A building review
+         * @description One review with its moderation state (D-301).
+         *
+         *     Implements: D-301.
+         */
+        get: operations["admin.reviews.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/reviews/{reviewId}/actions/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Publish a review
+         * @description A review waiting for moderation becomes public. Other states: `review.invalid_state` (D-301).
+         *
+         *     Implements: D-301.
+         */
+        post: operations["admin.reviews.approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/reviews/{reviewId}/actions/dismiss-report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Dismiss an owner report
+         * @description The moderator found nothing wrong: the review stays public and the owner’s report is closed. No open report: `review.invalid_state` (D-301).
+         *
+         *     Implements: D-301.
+         */
+        post: operations["admin.reviews.dismissReport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/reviews/{reviewId}/actions/hide": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Hide a published review
+         * @description Takes a published review off the public pages for abuse (reason kept and shown to the owner); closes an open owner report. Not published: `review.invalid_state` (D-301, O-035).
+         *
+         *     Implements: D-301.
+         */
+        post: operations["admin.reviews.hide"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/reviews/{reviewId}/actions/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reject a review
+         * @description A review waiting for moderation is not published; the reviewer reads the reason. Other states: `review.invalid_state` (D-301, O-035).
+         *
+         *     Implements: D-301.
+         */
+        post: operations["admin.reviews.reject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/reviews/{reviewId}/actions/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Restore a hidden review
+         * @description A hidden review is public again. Not hidden: `review.invalid_state` (D-301).
+         *
+         *     Implements: D-301.
+         */
+        post: operations["admin.reviews.restore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/settings": {
         parameters: {
             query?: never;
@@ -4680,6 +4834,72 @@ export interface paths {
          *     Implements: D-287, D-297, D-250.
          */
         post: operations["owner.boosts.boostBuilding"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/buildings/{buildingId}/energy-insight": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Energy score of a building
+         * @description The building’s energy score (0–100, model `energy.insight.score_model`, O-036) from its hourly electricity rollups of the last `energy.insight.window_days` full days — total and common-area kWh, peak demand, load factor, pump hours — with the points taken off per factor; `insufficient_data` below `energy.insight.min_days` of data. Also whether it is shared with getenergy and the `energy.insight` consent text. Owner and operator tenants; others: 404 (D-301, D-289 (6)).
+         *
+         *     Implements: D-301, D-289, D-030.
+         */
+        get: operations["owner.buildings.energyInsight"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/buildings/{buildingId}/energy-insight/actions/opt-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Share energy figures with getenergy
+         * @description The building owner opts in with the current `energy.insight` consent version (`energy.consent_required` otherwise): getproperty then sends getenergy (Collective) the score and building-level aggregates — never names, contacts, units, residents or per-unit use — and refreshes them every `energy.insight.share_every_days`. Without a score (`insufficient_data`) nothing is sent until there is one. An operator that does not own the building: `energy.owner_required`; others: 404. A repeated opt-in changes nothing (D-301, D-289 (6), O-028).
+         *
+         *     Implements: D-301, D-289, D-025, D-238.
+         */
+        post: operations["owner.buildings.energyInsightOptIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/buildings/{buildingId}/energy-insight/actions/opt-out": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Stop sharing energy figures with getenergy
+         * @description Records the withdrawal of `energy.insight`; nothing more is sent (unsent snapshots are dropped) and getenergy is told to delete this building’s lead (`energy.insight.withdrawn`). Not opted in: `energy.invalid_state`; not the owner: `energy.owner_required`; others: 404 (D-301, D-025).
+         *
+         *     Implements: D-301, D-025.
+         */
+        post: operations["owner.buildings.energyInsightOptOut"];
         delete?: never;
         options?: never;
         head?: never;
@@ -8076,6 +8296,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/owner/listing-assistant": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Listing assistant: availability and quota
+         * @description Whether the AI listing assistant is on for this tenant (`listing.assistant.enabled`) and how many drafts it used this Bangkok month out of `listing.assistant.monthly_limit` (D-301, D-161).
+         *
+         *     Implements: D-301, D-161.
+         */
+        get: operations["owner.listingAssistant.quota"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/owner/listing-viewings": {
         parameters: {
             query?: never;
@@ -8368,6 +8610,28 @@ export interface paths {
          *     Implements: D-252.
          */
         post: operations["owner.listings.submit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/listings/{listingId}/assistant": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Draft the listing text with AI
+         * @description Drafts a title and a description per language (th / en / zh) from the listing’s own facts — unit kind, size, rooms, rent and terms, facilities, area, transit — and, with `includePhotos`, its first photos (read only; photos are never changed). **Nothing is saved**: edit the drafts and save them with `PATCH /v1/owner/listings/{listingId}`. Every call is recorded as AI usage of this tenant (D-161); monthly limit: `assistant.limit_reached`; switched off: `assistant.disabled`; AI gateway not available: `assistant.unavailable`; an unusable answer: `assistant.output_rejected`. Another tenant’s listing: 404 (D-301).
+         *
+         *     Implements: D-301, D-161.
+         */
+        post: operations["owner.listings.assistant"];
         delete?: never;
         options?: never;
         head?: never;
@@ -10744,6 +11008,94 @@ export interface paths {
          *     Implements: D-289, D-299, D-284, D-252.
          */
         post: operations["owner.rentalHandoffs.claim"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Reviews of my buildings
+         * @description Published and hidden reviews of leases of this tenant, newest first (no reviewer identity). Filter by building and state (D-301).
+         *
+         *     Implements: D-301.
+         */
+        get: operations["owner.reviews.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/reviews/{reviewId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * A review of my building
+         * @description One published or hidden review of this tenant’s leases; another tenant’s: 404 (D-301).
+         *
+         *     Implements: D-301.
+         */
+        get: operations["owner.reviews.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/reviews/{reviewId}/actions/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Report a review to the moderators
+         * @description Asks the platform moderators to look at a published review (abuse, false facts, personal data). The review stays public until a moderator hides it — the owner can never hide or delete a review. Another tenant’s: 404 (D-301, O-035).
+         *
+         *     Implements: D-301.
+         */
+        post: operations["owner.reviews.report"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/reviews/{reviewId}/reply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Reply publicly to a review
+         * @description Sets or edits this tenant’s one public reply under a published review (right of reply); no contact or account data (`review.personal_data`). Not published: `review.invalid_state`; another tenant’s: 404 (D-301).
+         *
+         *     Implements: D-301.
+         */
+        put: operations["owner.reviews.reply"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -13532,6 +13884,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/public/listings/{slug}/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Verified reviews of the building
+         * @description Published reviews of the listing’s building by people who lived there under a lease on getproperty (label "verified tenant"), newest first, with the owner’s reply and the rating summary. Tenure as months only — never the reviewer’s name, unit or exact dates. Unknown or unpublished listing: 404 (D-301).
+         *
+         *     Implements: D-301, D-025.
+         */
+        get: operations["public.listings.reviews"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/public/listings/{slug}/viewing-slots": {
         parameters: {
             query?: never;
@@ -14832,6 +15206,56 @@ export interface paths {
         get: operations["resident.leases.rentCertificateDocument"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/leases/{leaseId}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Can I review this building?
+         * @description Whether I may review the building of this lease now (verified tenure: moved out within `review.window_after_end_days`, or `review.min_tenure_months` of living there — `eligibleFrom` says when), my review if I wrote one, and the `review.publish` consent text to accept with it. Not my lease: 404 (D-301).
+         *
+         *     Implements: D-301, D-025.
+         */
+        get: operations["resident.reviews.get"];
+        put?: never;
+        /**
+         * Review the building of my lease
+         * @description One review per lease (`review.already_submitted`), only with verified tenure (`review.not_eligible` + `reviewEligibleFrom`), with my explicit consent to the current `review.publish` version (`review.consent_required`). Text with phone numbers, e-mail, LINE ids, links, bank accounts or ID numbers is refused (`review.personal_data`). It waits for the platform moderators while `review.moderation.premoderate` is on (O-035). Not my lease: 404 (D-301).
+         *
+         *     Implements: D-301, D-025.
+         */
+        post: operations["resident.reviews.submit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/leases/{leaseId}/review/actions/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Withdraw my review
+         * @description Takes my review down for good: its text is erased at once and it leaves the building’s rating (the lease cannot be reviewed again). Repeating it answers the same. No review of mine: 404 (D-301, D-025).
+         *
+         *     Implements: D-301, D-025.
+         */
+        post: operations["resident.reviews.withdraw"];
         delete?: never;
         options?: never;
         head?: never;
@@ -18504,6 +18928,43 @@ export interface components {
             /** @example u-101 */
             unitRef: string;
         };
+        AdminReviewDto: {
+            body: string | null;
+            /** Format: uuid */
+            buildingId: string;
+            /** @example ไอดีโอ โมบิ อารีย์ */
+            buildingName: string;
+            /** Format: uuid */
+            id: string;
+            /** @example th */
+            language: string;
+            /** Format: date-time */
+            moderatedAt: string | null;
+            /** @description With `hidden`: the moderator’s reason. */
+            moderationReason: string | null;
+            /** Format: date-time */
+            ownerRepliedAt: string | null;
+            ownerReply: string | null;
+            /** Format: date-time */
+            publishedAt: string | null;
+            /** @example 4 */
+            rating: number;
+            /**
+             * Format: date-time
+             * @description When this tenant reported the review to the moderators (open report).
+             */
+            reportedAt: string | null;
+            reportReason: string | null;
+            state: components["schemas"]["BuildingReviewState"];
+            /** Format: date-time */
+            submittedAt: string;
+            /**
+             * Format: uuid
+             * @description The lessor tenant of the reviewed lease.
+             */
+            tenantId: string;
+            tenure: components["schemas"]["ReviewTenureDto"];
+        };
         AdminSponsoredCampaignDto: {
             /**
              * @description Clicks on the campaign’s links (aggregate).
@@ -19041,6 +19502,11 @@ export interface components {
          * @enum {string}
          */
         AssigneeType: "user" | "party";
+        /**
+         * @description Languages to draft (1–3).
+         * @enum {string}
+         */
+        AssistantLanguage: "th" | "en" | "zh";
         AudienceFilterDto: {
             /**
              * @example [
@@ -20233,6 +20699,8 @@ export interface components {
              */
             version: number;
         };
+        /** @enum {string} */
+        BuildingReviewState: "pending_moderation" | "published" | "rejected" | "hidden" | "withdrawn";
         BuildingRuleCreateDto: {
             /** @example ห้ามส่งเสียงดังหลัง 22:00 น. */
             bodyTh: string;
@@ -20737,6 +21205,22 @@ export interface components {
             /** @example การใช้ข้อมูลเพื่อให้บริการผู้พักอาศัย */
             title: string;
             /** @example 1 */
+            version: number;
+        };
+        ConsentPurposeTextDto: {
+            /**
+             * @description Plain-language purpose (Markdown, ⚖ draft).
+             * @example ร่าง ⚖ — เลือกได้ …
+             */
+            bodyMarkdown: string;
+            /** @example review.publish */
+            purposeKey: string;
+            /** @example เผยแพร่รีวิวอาคารของฉัน */
+            title: string;
+            /**
+             * @description The current version; send it as `consentVersion`.
+             * @example 1
+             */
             version: number;
         };
         ConsentTextDto: {
@@ -22823,6 +23307,129 @@ export interface components {
             /** @description Replaces the whole list. */
             workers: components["schemas"]["EmployerWorkerDto"][];
         };
+        /**
+         * @description `main` = the building’s main meters; `sum` = unit + common-area meters.
+         * @enum {string}
+         */
+        EnergyBasis: "main" | "sum";
+        EnergyInsightDto: {
+            /** Format: uuid */
+            buildingId: string;
+            /** @example อาคาร A */
+            buildingName: string;
+            /**
+             * @description This tenant owns the building and may opt in / out (operators read).
+             * @example true
+             */
+            canOptIn: boolean;
+            /** @description The `energy.insight` text to accept. */
+            consent: components["schemas"]["ConsentPurposeTextDto"] | null;
+            metrics: components["schemas"]["EnergyMetricsDto"];
+            /** @description Sharing with getenergy; null = never opted in. */
+            optin: components["schemas"]["EnergyOptinDto"] | null;
+            /** @description Points taken off per factor. */
+            penalties: components["schemas"]["EnergyPenaltiesDto"];
+            reason: components["schemas"]["EnergyScoreReason"];
+            /**
+             * @description Energy score (100 = best); null with `insufficient_data`.
+             * @example 82
+             */
+            score: number | null;
+            /**
+             * @description Version of `energy.insight.score_model` (O-036).
+             * @example v1
+             */
+            scoreModel: string;
+            /**
+             * Format: date
+             * @description First day of the window.
+             * @example 2026-10-01
+             */
+            windowFrom: string;
+            /**
+             * Format: date
+             * @description Last day of the window.
+             * @example 2026-10-30
+             */
+            windowTo: string;
+        };
+        /** @enum {string} */
+        EnergyInsightState: "opted_in" | "opted_out";
+        EnergyMetricsDto: {
+            /**
+             * @description Average hourly demand (kW).
+             * @example 25.347
+             */
+            averageKw: string;
+            /** @description `main` = the building’s main meters; `sum` = unit + common-area meters. */
+            basis: components["schemas"]["EnergyBasis"];
+            /**
+             * @description kWh of common-area meters.
+             * @example 4380.120
+             */
+            commonAreaKwh: string;
+            /**
+             * @description Common-area share (0–1).
+             * @example 0.2400
+             */
+            commonAreaShare: string | null;
+            /**
+             * @description Days in the window with electricity data.
+             * @example 30
+             */
+            dataDays: number;
+            /**
+             * @description Average ÷ peak (0–1).
+             * @example 0.5259
+             */
+            loadFactor: string | null;
+            /**
+             * @description Highest hourly demand (kW).
+             * @example 48.200
+             */
+            peakKw: string;
+            /**
+             * @description Pump running hours per day (common-area meters labelled pump); null without such a meter.
+             * @example 9.50
+             */
+            pumpHoursPerDay: string | null;
+            /**
+             * @description kWh in the window.
+             * @example 18250.500
+             */
+            totalKwh: string;
+        };
+        EnergyOptinDto: {
+            /** @example 82 */
+            lastScore: number | null;
+            /**
+             * Format: date-time
+             * @description Last snapshot sent to getenergy.
+             */
+            lastSharedAt: string | null;
+            /** Format: date-time */
+            optedInAt: string;
+            /** Format: date-time */
+            optedOutAt: string | null;
+            state: components["schemas"]["EnergyInsightState"];
+        };
+        EnergyOptInDto: {
+            /**
+             * @description The `energy.insight` version the owner read and accepts (must be the current one).
+             * @example 1
+             */
+            consentVersion: number;
+        };
+        EnergyPenaltiesDto: {
+            /** @example 5.3 */
+            commonShare: string;
+            /** @example 0.0 */
+            lowLoadFactor: string;
+            /** @example 3.8 */
+            pumpHours: string;
+        };
+        /** @enum {string} */
+        EnergyScoreReason: "ok" | "insufficient_data";
         EnquiryCreateDto: {
             /**
              * @description D-268: the share-kit channel the prospect came from (the `ch` of the short link). Kept on a new enquiry only.
@@ -26821,6 +27428,59 @@ export interface components {
              */
             handled: number;
         };
+        ListingAssistantDraftsDto: {
+            en: components["schemas"]["ListingDraftDto"] | null;
+            th: components["schemas"]["ListingDraftDto"] | null;
+            /** @description Simplified Chinese (not stored on the listing). */
+            zh: components["schemas"]["ListingDraftDto"] | null;
+        };
+        ListingAssistantQuotaDto: {
+            /**
+             * @description `listing.assistant.enabled` for this tenant.
+             * @example true
+             */
+            enabled: boolean;
+            /** @example 30 */
+            monthlyLimit: number;
+            /** @example 4 */
+            usedThisMonth: number;
+        };
+        ListingAssistantRequestDto: {
+            /**
+             * @description Also let the assistant look at the first `listing.assistant.max_photos` photos (read only — photos are never changed).
+             * @example true
+             */
+            includePhotos?: boolean;
+            /**
+             * @description Languages to draft (1–3).
+             * @example [
+             *       "th",
+             *       "en",
+             *       "zh"
+             *     ]
+             */
+            languages: components["schemas"]["AssistantLanguage"][];
+        };
+        ListingAssistantResultDto: {
+            /** @example ข้อความนี้ร่างโดย AI จากข้อมูลประกาศของคุณ กรุณาตรวจทานให้ถูกต้องก่อนบันทึก */
+            disclaimer: string;
+            /** @description Drafts per requested language; null for the others. */
+            drafts: components["schemas"]["ListingAssistantDraftsDto"];
+            /** @example text-default */
+            model: string;
+            /**
+             * @description `listing.assistant.monthly_limit`.
+             * @example 30
+             */
+            monthlyLimit: number;
+            /**
+             * @description Photos the assistant looked at.
+             * @example 3
+             */
+            photosUsed: number;
+            /** @example 4 */
+            usedThisMonth: number;
+        };
         ListingAvailabilityDto: {
             exceptions: components["schemas"]["AvailabilityExceptionDto"][];
             /**
@@ -26910,6 +27570,12 @@ export interface components {
             transit?: components["schemas"]["ListingTransitDto"] | null;
             /** Format: uuid */
             unitId: string;
+        };
+        ListingDraftDto: {
+            /** @example ห้องมุม แสงดี เฟอร์นิเจอร์ครบ … */
+            description: string;
+            /** @example คอนโด 1 ห้องนอน 28.5 ตร.ม. ใกล้ BTS อารีย์ */
+            title: string;
         };
         ListingDto: {
             /** @description The public address line (D-252). */
@@ -28936,6 +29602,28 @@ export interface components {
             /** @description Everything I shared, newest first. */
             shares: components["schemas"]["RentRecordShareDto"][];
         };
+        MyReviewDto: {
+            /** @description Null once withdrawn (erased). */
+            body: string | null;
+            /** Format: uuid */
+            id: string;
+            /** @example th */
+            language: string;
+            /** @description With `rejected`: the moderator’s reason. */
+            moderationReason: string | null;
+            /** Format: date-time */
+            ownerRepliedAt: string | null;
+            /** @description The building owner’s public reply. */
+            ownerReply: string | null;
+            /** Format: date-time */
+            publishedAt: string | null;
+            /** @example 4 */
+            rating: number;
+            state: components["schemas"]["BuildingReviewState"];
+            /** Format: date-time */
+            submittedAt: string;
+            tenure: components["schemas"]["ReviewTenureDto"];
+        };
         NewMeterDto: {
             /** @example Eastron */
             manufacturer?: string | null;
@@ -29639,6 +30327,36 @@ export interface components {
          * @enum {string}
          */
         OwnerMenuKey: "portfolio" | "listings" | "leads" | "mandated_units" | "mandates" | "co_broke" | "deals" | "dashboard" | "buildings" | "units" | "parties" | "leases" | "deposits" | "readings" | "devices" | "rate_plans" | "invoices" | "payments" | "reports" | "utility_loss" | "service_requests" | "access" | "parcels" | "announcements" | "members" | "bank_accounts" | "settings" | "notifications" | "privacy" | "access_grants" | "support_access" | "audit_log" | "subscription";
+        OwnerReviewDto: {
+            body: string | null;
+            /** Format: uuid */
+            buildingId: string;
+            /** @example ไอดีโอ โมบิ อารีย์ */
+            buildingName: string;
+            /** Format: uuid */
+            id: string;
+            /** @example th */
+            language: string;
+            /** @description With `hidden`: the moderator’s reason. */
+            moderationReason: string | null;
+            /** Format: date-time */
+            ownerRepliedAt: string | null;
+            ownerReply: string | null;
+            /** Format: date-time */
+            publishedAt: string | null;
+            /** @example 4 */
+            rating: number;
+            /**
+             * Format: date-time
+             * @description When this tenant reported the review to the moderators (open report).
+             */
+            reportedAt: string | null;
+            reportReason: string | null;
+            state: components["schemas"]["BuildingReviewState"];
+            tenure: components["schemas"]["ReviewTenureDto"];
+        };
+        /** @enum {string} */
+        OwnerReviewState: "published" | "hidden";
         /** @enum {string} */
         OwnershipEvidence: "title_deed" | "condo_title" | "sale_contract";
         OwnerStorageDto: {
@@ -31451,6 +32169,12 @@ export interface components {
             /** @example 6f1c2d8e-2c7b-4d0e-9d1c-3f1a2b3c4d5e */
             requestId: string;
             /**
+             * Format: date
+             * @description `review.not_eligible` only (G9, D-301): the first day this lease may be reviewed (after `review.min_tenure_months` of tenure); null = no longer (the review window after move-out closed, or the lease never started)
+             * @example 2026-12-01
+             */
+            reviewEligibleFrom?: string | null;
+            /**
              * @description `compliance.*` only: the rule id in the compliance registry
              * @example compliance.tariff_cap
              */
@@ -32175,6 +32899,32 @@ export interface components {
              */
             issuedAt: string;
             record: components["schemas"]["RentRecordDto"];
+        };
+        PublicReviewDto: {
+            /** @example ตึกสะอาด ลิฟต์เร็ว นิติฯ ตอบไว แต่ที่จอดรถน้อย */
+            body: string;
+            /** Format: uuid */
+            id: string;
+            /** @example th */
+            language: string;
+            /** Format: date-time */
+            ownerRepliedAt: string | null;
+            ownerReply: string | null;
+            /** Format: date-time */
+            publishedAt: string;
+            /** @example 4 */
+            rating: number;
+            tenure: components["schemas"]["ReviewTenureDto"];
+            /**
+             * @description Always true: only people who lived under a lease on getproperty can review (D-301).
+             * @example true
+             */
+            verifiedTenant: boolean;
+        };
+        PublicReviewsDto: {
+            data: components["schemas"]["PublicReviewDto"][];
+            meta: components["schemas"]["PageMeta"];
+            summary: components["schemas"]["ReviewSummaryDto"];
         };
         PublicShareLinkDto: {
             /** @example facebook_group */
@@ -34406,6 +35156,13 @@ export interface components {
         };
         /** @enum {string} */
         ResidentResponse: "accepted" | "disputed";
+        ResidentReviewDto: {
+            /** @description The `review.publish` text to show and accept with the review (never pre-ticked). */
+            consent: components["schemas"]["ConsentPurposeTextDto"] | null;
+            eligibility: components["schemas"]["ReviewEligibilityDto"];
+            /** @description My review of this lease, if any (one per lease). */
+            review: components["schemas"]["MyReviewDto"] | null;
+        };
         ResidentRulesDto: {
             /**
              * Format: date-time
@@ -34906,10 +35663,83 @@ export interface components {
              */
             register?: string;
         };
+        ReviewEligibilityDto: {
+            /** @example true */
+            eligible: boolean;
+            /**
+             * Format: date
+             * @description With `too_early`: the first day a review is possible.
+             * @example null
+             */
+            eligibleFrom: string | null;
+            /** @description `not_started` (never lived under this lease, or only as a guarantor), `too_early` (before `review.min_tenure_months`), `window_closed` (more than `review.window_after_end_days` after moving out). */
+            reason: components["schemas"]["ReviewIneligibleReason"] | null;
+            tenure: components["schemas"]["ReviewTenureDto"] | null;
+        };
+        /**
+         * @description `not_started` (never lived under this lease, or only as a guarantor), `too_early` (before `review.min_tenure_months`), `window_closed` (more than `review.window_after_end_days` after moving out).
+         * @enum {string}
+         */
+        ReviewIneligibleReason: "not_started" | "too_early" | "window_closed";
         /** @enum {string} */
         ReviewReason: "non_monotonic" | "out_of_band" | "ocr_low_confidence" | "clock_suspect" | "missing_photo" | "manual_flag" | "decreasing_without_swap";
+        ReviewReplyDto: {
+            /**
+             * @description Public; no contact or account data (`review.personal_data`).
+             * @example ขอบคุณสำหรับรีวิวครับ เดือนหน้าเราจะเพิ่มที่จอดรถอีก 10 คัน
+             */
+            reply: string;
+        };
         /** @enum {string} */
         ReviewStatus: "open" | "accepted" | "corrected" | "rejected";
+        ReviewSubmitDto: {
+            /**
+             * @description No phone numbers, e-mail, LINE ids, links, bank accounts or ID numbers (`review.personal_data`).
+             * @example ตึกสะอาด ลิฟต์เร็ว นิติฯ ตอบไว แต่ที่จอดรถน้อย
+             */
+            body: string;
+            /**
+             * @description The `review.publish` version I read and accept (must be the current one).
+             * @example 1
+             */
+            consentVersion: number;
+            /** @example th */
+            language?: components["schemas"]["ResidentLanguage"];
+            /** @example 4 */
+            rating: number;
+        };
+        ReviewSummaryDto: {
+            /**
+             * @description Average rating, one decimal.
+             * @example 4.3
+             */
+            average: string | null;
+            /** @example 12 */
+            count: number;
+            /**
+             * @description Published reviews per star, index 0 = 1 star.
+             * @example [
+             *       0,
+             *       1,
+             *       1,
+             *       4,
+             *       6
+             *     ]
+             */
+            distribution: number[];
+        };
+        ReviewTenureDto: {
+            /**
+             * @description Month the reviewer started living there (`YYYY-MM`).
+             * @example 2025-01
+             */
+            from: string;
+            /**
+             * @description Month they moved out (`YYYY-MM`); null = still living there. Exact dates are never shown.
+             * @example 2026-03
+             */
+            to: string | null;
+        };
         RoleGrantDto: {
             /**
              * Format: date-time
@@ -54146,6 +54976,935 @@ export interface operations {
             };
         };
     };
+    "admin.reviews.list": {
+        parameters: {
+            query?: {
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description true = with an open owner report only. */
+                reported?: boolean;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                state?: components["schemas"]["BuildingReviewState"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "body": "ตึกสะอาด ลิฟต์เร็ว นิติฯ ตอบไว แต่ที่จอดรถน้อย",
+                     *           "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *           "buildingName": "ไอดีโอ โมบิ อารีย์",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "language": "th",
+                     *           "moderatedAt": null,
+                     *           "moderationReason": null,
+                     *           "ownerRepliedAt": null,
+                     *           "ownerReply": null,
+                     *           "publishedAt": null,
+                     *           "rating": 4,
+                     *           "reportReason": null,
+                     *           "reportedAt": null,
+                     *           "state": "pending_moderation",
+                     *           "submittedAt": "2026-11-01T00:15:00+07:00",
+                     *           "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11",
+                     *           "tenure": {
+                     *             "from": "2025-01",
+                     *             "to": "2026-03"
+                     *           }
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["AdminReviewDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.reviews.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                reviewId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Review */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "body": "ตึกสะอาด ลิฟต์เร็ว นิติฯ ตอบไว แต่ที่จอดรถน้อย",
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "ไอดีโอ โมบิ อารีย์",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "language": "th",
+                     *       "moderatedAt": null,
+                     *       "moderationReason": null,
+                     *       "ownerRepliedAt": null,
+                     *       "ownerReply": null,
+                     *       "publishedAt": null,
+                     *       "rating": 4,
+                     *       "reportReason": null,
+                     *       "reportedAt": null,
+                     *       "state": "pending_moderation",
+                     *       "submittedAt": "2026-11-01T00:15:00+07:00",
+                     *       "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11",
+                     *       "tenure": {
+                     *         "from": "2025-01",
+                     *         "to": "2026-03"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminReviewDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.reviews.approve": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                reviewId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Published */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "body": "ตึกสะอาด ลิฟต์เร็ว นิติฯ ตอบไว แต่ที่จอดรถน้อย",
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "ไอดีโอ โมบิ อารีย์",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "language": "th",
+                     *       "moderatedAt": null,
+                     *       "moderationReason": null,
+                     *       "ownerRepliedAt": null,
+                     *       "ownerReply": null,
+                     *       "publishedAt": "2026-11-01T00:15:00+07:00",
+                     *       "rating": 4,
+                     *       "reportReason": null,
+                     *       "reportedAt": null,
+                     *       "state": "published",
+                     *       "submittedAt": "2026-11-01T00:15:00+07:00",
+                     *       "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11",
+                     *       "tenure": {
+                     *         "from": "2025-01",
+                     *         "to": "2026-03"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminReviewDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `review.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.reviews.dismissReport": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                reviewId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Report dismissed */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "body": "ตึกสะอาด ลิฟต์เร็ว นิติฯ ตอบไว แต่ที่จอดรถน้อย",
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "ไอดีโอ โมบิ อารีย์",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "language": "th",
+                     *       "moderatedAt": null,
+                     *       "moderationReason": null,
+                     *       "ownerRepliedAt": null,
+                     *       "ownerReply": null,
+                     *       "publishedAt": "2026-11-01T00:15:00+07:00",
+                     *       "rating": 4,
+                     *       "reportReason": null,
+                     *       "reportedAt": null,
+                     *       "state": "published",
+                     *       "submittedAt": "2026-11-01T00:15:00+07:00",
+                     *       "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11",
+                     *       "tenure": {
+                     *         "from": "2025-01",
+                     *         "to": "2026-03"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminReviewDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `review.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.reviews.hide": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                reviewId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModerationReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Hidden */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "body": "ตึกสะอาด ลิฟต์เร็ว นิติฯ ตอบไว แต่ที่จอดรถน้อย",
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "ไอดีโอ โมบิ อารีย์",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "language": "th",
+                     *       "moderatedAt": null,
+                     *       "moderationReason": null,
+                     *       "ownerRepliedAt": null,
+                     *       "ownerReply": null,
+                     *       "publishedAt": "2026-11-01T00:15:00+07:00",
+                     *       "rating": 4,
+                     *       "reportReason": null,
+                     *       "reportedAt": null,
+                     *       "state": "hidden",
+                     *       "submittedAt": "2026-11-01T00:15:00+07:00",
+                     *       "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11",
+                     *       "tenure": {
+                     *         "from": "2025-01",
+                     *         "to": "2026-03"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminReviewDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `review.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.reviews.reject": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                reviewId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModerationReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Rejected */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "body": "ตึกสะอาด ลิฟต์เร็ว นิติฯ ตอบไว แต่ที่จอดรถน้อย",
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "ไอดีโอ โมบิ อารีย์",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "language": "th",
+                     *       "moderatedAt": null,
+                     *       "moderationReason": "ถ้อยคำหยาบคาย",
+                     *       "ownerRepliedAt": null,
+                     *       "ownerReply": null,
+                     *       "publishedAt": null,
+                     *       "rating": 4,
+                     *       "reportReason": null,
+                     *       "reportedAt": null,
+                     *       "state": "rejected",
+                     *       "submittedAt": "2026-11-01T00:15:00+07:00",
+                     *       "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11",
+                     *       "tenure": {
+                     *         "from": "2025-01",
+                     *         "to": "2026-03"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminReviewDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `review.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.reviews.restore": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                reviewId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Restored */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "body": "ตึกสะอาด ลิฟต์เร็ว นิติฯ ตอบไว แต่ที่จอดรถน้อย",
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "ไอดีโอ โมบิ อารีย์",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "language": "th",
+                     *       "moderatedAt": null,
+                     *       "moderationReason": null,
+                     *       "ownerRepliedAt": null,
+                     *       "ownerReply": null,
+                     *       "publishedAt": "2026-11-01T00:15:00+07:00",
+                     *       "rating": 4,
+                     *       "reportReason": null,
+                     *       "reportedAt": null,
+                     *       "state": "published",
+                     *       "submittedAt": "2026-11-01T00:15:00+07:00",
+                     *       "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11",
+                     *       "tenure": {
+                     *         "from": "2025-01",
+                     *         "to": "2026-03"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AdminReviewDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `review.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "admin.settings.list": {
         parameters: {
             query?: never;
@@ -68192,6 +69951,456 @@ export interface operations {
                 };
             };
             /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.buildings.energyInsight": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                buildingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Energy insight */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "canOptIn": true,
+                     *       "consent": {
+                     *         "bodyMarkdown": "ร่าง ⚖ — เลือกได้ ปิดได้ทุกเมื่อ …",
+                     *         "purposeKey": "energy.insight",
+                     *         "title": "ส่งข้อมูลพลังงานของอาคารให้ getenergy",
+                     *         "version": 1
+                     *       },
+                     *       "metrics": {
+                     *         "averageKw": "25.347",
+                     *         "basis": "sum",
+                     *         "commonAreaKwh": "4380.120",
+                     *         "commonAreaShare": "0.2400",
+                     *         "dataDays": 30,
+                     *         "loadFactor": "0.5259",
+                     *         "peakKw": "48.200",
+                     *         "pumpHoursPerDay": "9.50",
+                     *         "totalKwh": "18250.500"
+                     *       },
+                     *       "optin": null,
+                     *       "penalties": {
+                     *         "commonShare": "5.3",
+                     *         "lowLoadFactor": "0.0",
+                     *         "pumpHours": "3.8"
+                     *       },
+                     *       "reason": "ok",
+                     *       "score": 82,
+                     *       "scoreModel": "v1",
+                     *       "windowFrom": "2026-10-01",
+                     *       "windowTo": "2026-10-30"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["EnergyInsightDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.buildings.energyInsightOptIn": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                buildingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnergyOptInDto"];
+            };
+        };
+        responses: {
+            /** @description Opted in */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "canOptIn": true,
+                     *       "consent": {
+                     *         "bodyMarkdown": "ร่าง ⚖ — เลือกได้ ปิดได้ทุกเมื่อ …",
+                     *         "purposeKey": "energy.insight",
+                     *         "title": "ส่งข้อมูลพลังงานของอาคารให้ getenergy",
+                     *         "version": 1
+                     *       },
+                     *       "metrics": {
+                     *         "averageKw": "25.347",
+                     *         "basis": "sum",
+                     *         "commonAreaKwh": "4380.120",
+                     *         "commonAreaShare": "0.2400",
+                     *         "dataDays": 30,
+                     *         "loadFactor": "0.5259",
+                     *         "peakKw": "48.200",
+                     *         "pumpHoursPerDay": "9.50",
+                     *         "totalKwh": "18250.500"
+                     *       },
+                     *       "optin": {
+                     *         "lastScore": null,
+                     *         "lastSharedAt": null,
+                     *         "optedInAt": "2026-11-01T00:15:00+07:00",
+                     *         "optedOutAt": null,
+                     *         "state": "opted_in"
+                     *       },
+                     *       "penalties": {
+                     *         "commonShare": "5.3",
+                     *         "lowLoadFactor": "0.0",
+                     *         "pumpHours": "3.8"
+                     *       },
+                     *       "reason": "ok",
+                     *       "score": 82,
+                     *       "scoreModel": "v1",
+                     *       "windowFrom": "2026-10-01",
+                     *       "windowTo": "2026-10-30"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["EnergyInsightDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `energy.owner_required`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `energy.consent_required`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.buildings.energyInsightOptOut": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                buildingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Opted out */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "canOptIn": true,
+                     *       "consent": {
+                     *         "bodyMarkdown": "ร่าง ⚖ — เลือกได้ ปิดได้ทุกเมื่อ …",
+                     *         "purposeKey": "energy.insight",
+                     *         "title": "ส่งข้อมูลพลังงานของอาคารให้ getenergy",
+                     *         "version": 1
+                     *       },
+                     *       "metrics": {
+                     *         "averageKw": "25.347",
+                     *         "basis": "sum",
+                     *         "commonAreaKwh": "4380.120",
+                     *         "commonAreaShare": "0.2400",
+                     *         "dataDays": 30,
+                     *         "loadFactor": "0.5259",
+                     *         "peakKw": "48.200",
+                     *         "pumpHoursPerDay": "9.50",
+                     *         "totalKwh": "18250.500"
+                     *       },
+                     *       "optin": {
+                     *         "lastScore": null,
+                     *         "lastSharedAt": null,
+                     *         "optedInAt": "2026-11-01T00:15:00+07:00",
+                     *         "optedOutAt": "2026-11-01T00:15:00+07:00",
+                     *         "state": "opted_out"
+                     *       },
+                     *       "penalties": {
+                     *         "commonShare": "5.3",
+                     *         "lowLoadFactor": "0.0",
+                     *         "pumpHours": "3.8"
+                     *       },
+                     *       "reason": "ok",
+                     *       "score": 82,
+                     *       "scoreModel": "v1",
+                     *       "windowFrom": "2026-10-01",
+                     *       "windowTo": "2026-10-30"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["EnergyInsightDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `energy.owner_required`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `energy.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -93691,6 +95900,93 @@ export interface operations {
             };
         };
     };
+    "owner.listingAssistant.quota": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Quota */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "enabled": true,
+                     *       "monthlyLimit": 30,
+                     *       "usedThisMonth": 4
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ListingAssistantQuotaDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "owner.listingViewings.list": {
         parameters: {
             query?: {
@@ -96280,6 +98576,165 @@ export interface operations {
             };
             /** @description Problem: `internal.unexpected` */
             500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.listings.assistant": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                listingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ListingAssistantRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Drafts */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "disclaimer": "ข้อความนี้ร่างโดย AI จากข้อมูลประกาศของคุณ กรุณาตรวจทานให้ถูกต้องก่อนบันทึก",
+                     *       "drafts": {
+                     *         "en": {
+                     *           "description": "1-bedroom condo of 28.5 sqm in Phaya Thai.\nRent 12,000 THB a month, 2 months deposit.",
+                     *           "title": "Condo 28.5 sqm, Phaya Thai"
+                     *         },
+                     *         "th": {
+                     *           "description": "คอนโด 1 ห้องนอน 28.5 ตร.ม. ย่านพญาไท\nค่าเช่า 12,000 บาท/เดือน มัดจำ 2 เดือน",
+                     *           "title": "คอนโด 28.5 ตร.ม. พญาไท, กรุงเทพมหานคร"
+                     *         },
+                     *         "zh": null
+                     *       },
+                     *       "model": "text-default",
+                     *       "monthlyLimit": 30,
+                     *       "photosUsed": 3,
+                     *       "usedThisMonth": 4
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ListingAssistantResultDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `assistant.disabled`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `assistant.limit_reached`, `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `assistant.output_rejected` */
+            502: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `assistant.unavailable` */
+            503: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -112283,6 +114738,536 @@ export interface operations {
                 };
             };
             /** @description Problem: `handoff.landlord_required`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.reviews.list": {
+        parameters: {
+            query?: {
+                buildingId?: string;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                state?: components["schemas"]["OwnerReviewState"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "body": "ตึกสะอาด ลิฟต์เร็ว นิติฯ ตอบไว แต่ที่จอดรถน้อย",
+                     *           "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *           "buildingName": "ไอดีโอ โมบิ อารีย์",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "language": "th",
+                     *           "moderationReason": null,
+                     *           "ownerRepliedAt": null,
+                     *           "ownerReply": null,
+                     *           "publishedAt": "2026-11-01T00:15:00+07:00",
+                     *           "rating": 4,
+                     *           "reportReason": null,
+                     *           "reportedAt": null,
+                     *           "state": "published",
+                     *           "tenure": {
+                     *             "from": "2025-01",
+                     *             "to": "2026-03"
+                     *           }
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["OwnerReviewDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.reviews.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                reviewId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Review */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "body": "ตึกสะอาด ลิฟต์เร็ว นิติฯ ตอบไว แต่ที่จอดรถน้อย",
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "ไอดีโอ โมบิ อารีย์",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "language": "th",
+                     *       "moderationReason": null,
+                     *       "ownerRepliedAt": null,
+                     *       "ownerReply": null,
+                     *       "publishedAt": "2026-11-01T00:15:00+07:00",
+                     *       "rating": 4,
+                     *       "reportReason": null,
+                     *       "reportedAt": null,
+                     *       "state": "published",
+                     *       "tenure": {
+                     *         "from": "2025-01",
+                     *         "to": "2026-03"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["OwnerReviewDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.reviews.report": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                reviewId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModerationReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Reported */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "body": "ตึกสะอาด ลิฟต์เร็ว นิติฯ ตอบไว แต่ที่จอดรถน้อย",
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "ไอดีโอ โมบิ อารีย์",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "language": "th",
+                     *       "moderationReason": null,
+                     *       "ownerRepliedAt": null,
+                     *       "ownerReply": null,
+                     *       "publishedAt": "2026-11-01T00:15:00+07:00",
+                     *       "rating": 4,
+                     *       "reportReason": "ข้อความกล่าวหาที่ไม่เป็นความจริง",
+                     *       "reportedAt": "2026-11-01T00:15:00+07:00",
+                     *       "state": "published",
+                     *       "tenure": {
+                     *         "from": "2025-01",
+                     *         "to": "2026-03"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["OwnerReviewDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `review.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.reviews.reply": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                reviewId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewReplyDto"];
+            };
+        };
+        responses: {
+            /** @description Replied */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "body": "ตึกสะอาด ลิฟต์เร็ว นิติฯ ตอบไว แต่ที่จอดรถน้อย",
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "ไอดีโอ โมบิ อารีย์",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "language": "th",
+                     *       "moderationReason": null,
+                     *       "ownerRepliedAt": "2026-11-01T00:15:00+07:00",
+                     *       "ownerReply": "ขอบคุณสำหรับรีวิวครับ เดือนหน้าเราจะเพิ่มที่จอดรถอีก 10 คัน",
+                     *       "publishedAt": "2026-11-01T00:15:00+07:00",
+                     *       "rating": 4,
+                     *       "reportReason": null,
+                     *       "reportedAt": null,
+                     *       "state": "published",
+                     *       "tenure": {
+                     *         "from": "2025-01",
+                     *         "to": "2026-03"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["OwnerReviewDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `review.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `review.personal_data`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -130978,6 +133963,120 @@ export interface operations {
             };
         };
     };
+    "public.listings.reviews": {
+        parameters: {
+            query?: {
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Reviews */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "body": "ตึกสะอาด ลิฟต์เร็ว นิติฯ ตอบไว แต่ที่จอดรถน้อย",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "language": "th",
+                     *           "ownerRepliedAt": "2026-11-01T00:15:00+07:00",
+                     *           "ownerReply": "ขอบคุณสำหรับรีวิวครับ เดือนหน้าเราจะเพิ่มที่จอดรถอีก 10 คัน",
+                     *           "publishedAt": "2026-11-01T00:15:00+07:00",
+                     *           "rating": 4,
+                     *           "tenure": {
+                     *             "from": "2025-01",
+                     *             "to": "2026-03"
+                     *           },
+                     *           "verifiedTenant": true
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       },
+                     *       "summary": {
+                     *         "average": "4.0",
+                     *         "count": 1,
+                     *         "distribution": [
+                     *           0,
+                     *           0,
+                     *           0,
+                     *           1,
+                     *           0
+                     *         ]
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PublicReviewsDto"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "public.listings.viewingSlots": {
         parameters: {
             query?: {
@@ -138307,6 +141406,359 @@ export interface operations {
                      *     }
                      */
                     "application/json": components["schemas"]["DocumentDownloadDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.reviews.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                leaseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Eligibility and my review */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "consent": {
+                     *         "bodyMarkdown": "ร่าง ⚖ — เลือกได้ ไม่มีผลต่อการเช่าหรือบริการอื่น …",
+                     *         "purposeKey": "review.publish",
+                     *         "title": "เผยแพร่รีวิวอาคารของฉัน",
+                     *         "version": 1
+                     *       },
+                     *       "eligibility": {
+                     *         "eligible": true,
+                     *         "eligibleFrom": null,
+                     *         "reason": null,
+                     *         "tenure": {
+                     *           "from": "2025-01",
+                     *           "to": "2026-03"
+                     *         }
+                     *       },
+                     *       "review": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ResidentReviewDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.reviews.submit": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                leaseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewSubmitDto"];
+            };
+        };
+        responses: {
+            /** @description Submitted */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "body": "ตึกสะอาด ลิฟต์เร็ว นิติฯ ตอบไว แต่ที่จอดรถน้อย",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "language": "th",
+                     *       "moderationReason": null,
+                     *       "ownerRepliedAt": null,
+                     *       "ownerReply": null,
+                     *       "publishedAt": null,
+                     *       "rating": 4,
+                     *       "state": "pending_moderation",
+                     *       "submittedAt": "2026-11-01T00:15:00+07:00",
+                     *       "tenure": {
+                     *         "from": "2025-01",
+                     *         "to": "2026-03"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["MyReviewDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `review.already_submitted`, `review.consent_required`, `review.not_eligible` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `review.personal_data`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.reviews.withdraw": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                leaseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Withdrawn */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "body": null,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "language": "th",
+                     *       "moderationReason": null,
+                     *       "ownerRepliedAt": null,
+                     *       "ownerReply": null,
+                     *       "publishedAt": null,
+                     *       "rating": 4,
+                     *       "state": "withdrawn",
+                     *       "submittedAt": "2026-11-01T00:15:00+07:00",
+                     *       "tenure": {
+                     *         "from": "2025-01",
+                     *         "to": "2026-03"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["MyReviewDto"];
                 };
             };
             /** @description Problem: `auth.unauthenticated` */

@@ -11,6 +11,8 @@ import { initialAgencyWorld, type MockAgencyWorld } from "./owner/agency";
 import { initialContractsWorld, type MockContractsWorld } from "./owner/contracts";
 import { initialGrowthWorld, type MockGrowthWorld } from "./owner/growth";
 import { initialBroadcastWorld, type MockBroadcastWorld } from "./owner/broadcast";
+import { initialInsightWorld, type MockInsightWorld } from "./owner/insight";
+import { initialNetworkWorld, type MockNetworkWorld } from "./owner/network";
 import {
   initialChannels,
   initialDevices,
@@ -181,6 +183,10 @@ export interface MockState {
   growth: MockGrowthWorld;
   /** Sponsored LINE broadcasts, their settings and consent text (G6): see owner/broadcast.ts. */
   broadcast: MockBroadcastWorld;
+  /** getbuild handoffs and employer agreements (G8): see owner/network.ts. */
+  network: MockNetworkWorld;
+  /** Verified reviews, energy insight opt-ins, the listing assistant's quota (G9): see owner/insight.ts. */
+  insight: MockInsightWorld;
   webVitals: unknown[];
   log: LoggedRequest[];
   /** Access token lifetime; the suite shortens it to exercise refresh. */
@@ -233,6 +239,8 @@ function initial(): MockState {
     contracts: initialContractsWorld(),
     growth: initialGrowthWorld(),
     broadcast: initialBroadcastWorld(),
+    network: initialNetworkWorld(),
+    insight: initialInsightWorld(),
     webVitals: [],
     log: [],
     // 15 minutes like the API; a long Lighthouse run sets MOCK_ACCESS_TTL_MS so its fixed session cookie lasts.

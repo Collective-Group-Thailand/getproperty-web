@@ -227,6 +227,12 @@ export const releaseHandlers: HttpHandler[] = [
         (row) =>
           (!params.get("building") || row.buildingId === params.get("building")) &&
           (!params.get("status") || row.status === params.get("status")) &&
+          // G8 (D-299): the foreign workers of one employer agreement (its attached leases).
+          (!params.get("employerAgreementId") ||
+            (state.network.agreements
+              .find((a) => a.tenantId === ok.tenantId && a.dto.id === params.get("employerAgreementId"))
+              ?.dto.leaseIds.includes(row.leaseId) ??
+              false)) &&
           (!params.get("q") || row.name.includes(params.get("q")!) || row.unitNo.includes(params.get("q")!)),
       )
       .sort((a, b) => b.dueAt.localeCompare(a.dueAt));

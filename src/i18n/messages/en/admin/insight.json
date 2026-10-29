@@ -1,0 +1,79 @@
+{
+  "reviews": {
+    "policyTitle": "Moderation policy (provisional)",
+    "policyBody": "Every review waits for a moderator while pre-moderation is on. Approve what is a fair account of living there; reject or hide insults, false claims of fact and anyone's personal data, and write the reason — the author and the owner read it. Owners can reply and report, never hide.",
+    "tabsLabel": "Review queues",
+    "tab": {
+      "pending": "Waiting",
+      "reported": "Reported by owners",
+      "hidden": "Hidden",
+      "all": "All"
+    },
+    "empty": {
+      "pending": "Nothing waiting for moderation",
+      "reported": "No open reports",
+      "hidden": "No hidden reviews",
+      "all": "No reviews yet"
+    },
+    "stars": "{rating} out of 5 stars",
+    "tenureFrom": "since {from}",
+    "tenureFromTo": "{from} – {to}",
+    "submitted": "sent {date}",
+    "noBody": "The author withdrew the text.",
+    "reportTitle": "Reported by the owner on {date}",
+    "moderationReason": "Moderation reason: {reason}",
+    "ownerReply": "Owner's public reply",
+    "actions": {
+      "approve": "Approve",
+      "approveTitle": "Publish this review of {building}?",
+      "approveBody": "It appears on the building's listings at once, with the label “verified tenant”.",
+      "approveDone": "Review published",
+      "reject": "Reject",
+      "rejectTitle": "Reject this review of {building}?",
+      "rejectBody": "It is never published. The author reads your reason.",
+      "rejectDone": "Review rejected",
+      "hide": "Hide",
+      "hideTitle": "Hide this review of {building}?",
+      "hideBody": "It disappears from the public pages. The owner and the author read your reason; it can be restored.",
+      "hideDone": "Review hidden",
+      "restore": "Restore",
+      "restoreTitle": "Make this review of {building} public again?",
+      "restoreBody": "It reappears on the building's listings.",
+      "restoreDone": "Review restored",
+      "dismiss": "Dismiss report",
+      "dismissTitle": "Dismiss the owner's report?",
+      "dismissBody": "The review stays as it is; the report is closed.",
+      "dismissDone": "Report dismissed",
+      "reason": "Reason",
+      "reasonHint": "Shown to the author and the owner. Up to 1,000 characters.",
+      "invalidState": "Someone already decided on this review. The list has been refreshed."
+    }
+  },
+  "handoffs": {
+    "intro": "Units getbuild transferred with the buyer's wish to rent out. getbuild shows the buyer the invitation; getproperty never contacts the buyer itself.",
+    "state": "State",
+    "allStates": "All states",
+    "empty": "No handoffs yet",
+    "emptyHint": "They appear when getbuild sends a transfer with rental intent.",
+    "col": {
+      "unit": "Unit",
+      "delivery": "Invitation to getbuild",
+      "state": "State",
+      "landlord": "Landlord account",
+      "actions": "Actions"
+    },
+    "developer": "developer {ref}",
+    "transfer": "transferred {date}",
+    "delivered": "Delivered {date}",
+    "notDelivered": "Not delivered yet",
+    "attempts": "{count, plural, =0 {no attempts} one {# attempt} other {# attempts}}",
+    "expires": "valid until {date}",
+    "unclaimed": "Not claimed",
+    "resend": "Resend",
+    "resendTitle": "Send a new invitation for {unit}?",
+    "resendBody": "getbuild receives a new single-use link now and the previous one stops working.",
+    "resent": "New invitation sent to getbuild",
+    "invalidState": "This invitation is no longer waiting (claimed, declined or expired).",
+    "lastError": "Last error: {error}"
+  }
+}

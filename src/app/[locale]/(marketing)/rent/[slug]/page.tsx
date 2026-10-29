@@ -7,7 +7,9 @@ import { ListingCard } from "@/features/owner/marketing/listings/ListingCard";
 import { ListingImage } from "@/features/owner/marketing/listings/ListingImage";
 import { ListingUtility } from "@/features/owner/marketing/listings/ListingUtility";
 import { VerifiedVacantBadge } from "@/features/owner/marketing/listings/VerifiedVacant";
-import { publicListing, publicListings } from "@/features/owner/marketing/publicApi";
+import { ListingReviews } from "@/features/owner/marketing/listings/ListingReviews";
+import { publicListing, publicListingReviews, publicListings } from "@/features/owner/marketing/publicApi";
+import { reviewsPage } from "@/features/shared/growth/reviews";
 import { liffRentHref, lineOaMessageHref, marketingOrigin, ownerHref } from "@/features/owner/marketing/seo";
 import { breadcrumbSchema } from "@/features/owner/marketing/structured-data";
 import { formatDate, formatDecimal, formatTHB } from "@/i18n/format";
@@ -25,6 +27,7 @@ import { IconExternal } from "@/ui/icons/glyphs/external";
 import { IconFlag } from "@/ui/icons/glyphs/flag";
 
 type Props = { params: Promise<{ locale: Locale; slug: string }> };
+type PageProps = Props & { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
 const url = (slug: string, locale: Locale) => `${marketingOrigin()}${getPathname({ href: `/rent/${slug}`, locale })}`;
 
@@ -53,10 +56,15 @@ export async function generateMetadata({ params }: Props) {
  * One listing (D-252): the photos first, the facts a renter checks in one glance, the full address (nothing hidden),
  * and a single way to reach the owner — a LINE chat opened with this home already named.
  */
-export default async function ListingPage({ params }: Props) {
+export default async function ListingPage({ params, searchParams }: PageProps) {
   const { locale, slug } = await params;
   setRequestLocale(locale);
-  const listing = await publicListing(slug, locale);
+  const reviewPage = reviewsPage((await searchParams).reviews);
+  const [listing, reviews] = await Promise.all([
+    publicListing(slug, locale),
+    // G9 (D-301): verified reviews of the building — left out when there are none or the API is down.
+    publicListingReviews(slug, reviewPage, locale),
+  ]);
   if (!listing) notFound();
   const t = await getTranslations("owner.marketing.listings");
   const nav = await getTranslations("owner.marketing.nav");
@@ -224,6 +232,14 @@ export default async function ListingPage({ params }: Props) {
               <Icon icon={IconExternal} />
             </a>
           </section>
+
+          {reviews ? (
+            <ListingReviews
+              reviews={reviews}
+              locale={locale}
+              pageHref={(page) => `${getPathname({ href: `/rent/${slug}`, locale })}?reviews=${page}#reviews`}
+            />
+          ) : null}
         </div>
 
         <aside className="lg:col-span-4">

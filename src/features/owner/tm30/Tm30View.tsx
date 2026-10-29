@@ -6,6 +6,7 @@ import { formatDate, formatDateTime, formatRelativeTime } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
+import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
@@ -21,7 +22,7 @@ import { currentTime } from "@/features/shared/console/time";
 import { linkRequestsPending, openTm30 } from "../parties/counts";
 import { PartiesNav } from "../parties/PartiesNav";
 import { ownerPath } from "../shared/links";
-import { focusedBuilding, ownerCan, pageParam, param, readOnly, type OwnerContext } from "../shared/server";
+import { focusedBuilding, ownerCan, pageParam, param, readOnly, section, type OwnerContext } from "../shared/server";
 import { missingFields, tm30Deadline } from "./deadline";
 import { GenerateTm30, Tm30RowActions } from "./Tm30Actions";
 
@@ -54,12 +55,16 @@ export async function Tm30View({ context, searchParams }: { context: OwnerContex
   const status = TM30_VALUES.includes(statusParam as Schemas["Tm30Status"])
     ? (statusParam as Schemas["Tm30Status"])
     : undefined;
-  const [list, open, pending] = await Promise.all([
+  // G8 (D-299): the foreign workers of one employer agreement (`?employer=`, from the employer housing page).
+  const employerParam = param(searchParams.employer);
+  const employerId = employerParam && /^[0-9a-f-]{36}$/i.test(employerParam) ? employerParam : undefined;
+  const [list, open, pending, employer] = await Promise.all([
     unwrap(
       api.GET("/v1/owner/tm30-exports", {
         params: {
           query: {
             building: building?.id,
+            employerAgreementId: employerId,
             status,
             q: param(searchParams.q),
             page: pageParam(searchParams.page),
@@ -70,6 +75,13 @@ export async function Tm30View({ context, searchParams }: { context: OwnerContex
     ),
     openTm30(api),
     linkRequestsPending(api),
+    employerId
+      ? section(
+          unwrap(
+            api.GET("/v1/owner/employer-agreements/{agreementId}", { params: { path: { agreementId: employerId } } }),
+          ),
+        )
+      : null,
   ]);
   const now = currentTime();
   const canAct = !readOnly(me);
@@ -94,6 +106,22 @@ export async function Tm30View({ context, searchParams }: { context: OwnerContex
           </p>
         ) : null}
       </Callout>
+
+      {employerId ? (
+        <div data-testid="tm30-employer-filter">
+          <Callout
+            tone="neutral"
+            title={t("employerFilter", { name: employer?.data?.employer.displayName ?? "—" })}
+            action={
+              <Button asChild size="sm" variant="secondary">
+                <a href={ownerPath(locale, "/tm30")}>{t("employerClear")}</a>
+              </Button>
+            }
+          >
+            {t("employerFilterBody")}
+          </Callout>
+        </div>
+      ) : null}
 
       {canAct && pendingByBuilding.size > 0 ? (
         <section aria-labelledby="tm30-files" className="flex flex-col gap-2" data-testid="tm30-files">

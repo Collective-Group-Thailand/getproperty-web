@@ -1,0 +1,96 @@
+{
+  "crumb": "Enquiries",
+  "mode": {
+    "self": "Self viewing",
+    "accompanied": "Shown by you"
+  },
+  "confirmSelf": "A self viewing: when you confirm, getproperty issues one door code for the unit and the building door. The visitor sees it only inside the time window; you never see it. You can end the access at any time.",
+  "availability": {
+    "mode": "How",
+    "accompanied": "Shown by someone",
+    "self": "Self viewing (door code)",
+    "selfUnavailable": "Self viewing — not available yet",
+    "offTitle": "Self viewing is not available yet",
+    "offBody": "Letting verified renters view alone with a time-limited door code opens once the insurance cover and the visitor terms are settled. Until then every viewing is shown by you or your staff.",
+    "onTitle": "Self viewing is on",
+    "onBody": "Renters who verified their identity and phone book a self window. You confirm each booking; the door code works from {early} minutes before the start to {minutes} minutes after, only on a vacant unit with a smart lock. You never see the code.",
+    "onBodyPlain": "Renters who verified their identity and phone book a self window. You confirm each booking; the door code works only around the start time, only on a vacant unit with a smart lock. You never see the code."
+  },
+  "access": {
+    "title": "Door access",
+    "window": "Code works",
+    "entered": "Entered",
+    "exited": "Left",
+    "closed": "Closed",
+    "source": {
+      "lock_log": "from the lock's log",
+      "prospect": "visitor tapped “I'm here”"
+    },
+    "incidentTitle": "The visitor reported a problem",
+    "incidentNoNote": "No details given.",
+    "workOrder": "Open the work order",
+    "overstayTitle": "Still inside after the window",
+    "overstayBody": "The code stopped working at {time} but the visitor has not left yet. Call them, or end the access.",
+    "insideTitle": "Visitor inside now",
+    "insideBody": "They let themselves in with their code. You will get a notice if they report a problem or stay too long.",
+    "noCode": "The door code is shown only to the visitor, inside the window. It never appears in this console.",
+    "end": "End access now",
+    "endTitle": "End this visitor's door access now?",
+    "endBody": "The code stops working on every lock at once. Use it if plans changed or something is wrong. The visitor is told the viewing ended.",
+    "endReason": "Reason (kept in the log)",
+    "ended": "Door access ended"
+  },
+  "log": {
+    "open": "Entry log",
+    "title": "Entry log",
+    "audited": "Every time you open this log it is recorded. Codes are never shown.",
+    "credentials": "Locks this visitor could open",
+    "noCredentials": "No codes were issued.",
+    "scope": {
+      "unit": "Unit door",
+      "building_door": "Building door",
+      "common_area": "Common area"
+    },
+    "events": "Door events",
+    "noEvents": "No door has been opened yet.",
+    "via": {
+      "app": "app",
+      "pin": "door code",
+      "card": "key card",
+      "remote": "remote",
+      "vendor_sync": "lock sync",
+      "face": "face",
+      "qr": "QR code",
+      "fingerprint": "fingerprint"
+    },
+    "retention": "Closed entry logs are deleted after the period the platform keeps them."
+  },
+  "calendar": {
+    "title": "Viewing calendar",
+    "description": "Every viewing this week, shown by you or self viewing with a door code.",
+    "urgentTitle": "{count, plural, one {# self viewing needs you now} other {# self viewings need you now}}",
+    "urgentBody": "A visitor reported a problem or is still inside after their time. Open the calendar to see who.",
+    "urgent": {
+      "incident": "{name} reported a problem at {listing} ({time})",
+      "overstay": "{name} is still inside {listing} after the window ({time})",
+      "inside": "{name} is inside {listing} now ({time})"
+    },
+    "open": "Open the calendar",
+    "weekNav": "Choose the week",
+    "previous": "Previous week",
+    "thisWeek": "This week",
+    "next": "Next week",
+    "counts": "{total, plural, =0 {no viewings} one {# viewing} other {# viewings}} · {self} self",
+    "today": "Today",
+    "none": "No viewings",
+    "empty": {
+      "title": "No viewings this week",
+      "description": "Bookings appear here as renters choose a time from your viewing windows.",
+      "action": "Set viewing times on a listing"
+    }
+  },
+  "attention": {
+    "incident": "Problem reported",
+    "overstay": "Still inside"
+  }
+}

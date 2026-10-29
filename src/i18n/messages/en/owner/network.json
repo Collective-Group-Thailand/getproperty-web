@@ -1,0 +1,207 @@
+{
+  "kind": {
+    "condo_unit": "Condo",
+    "house": "House",
+    "townhouse": "Townhouse",
+    "room": "Room"
+  },
+  "handoffs": {
+    "crumb": "Listings",
+    "title": "Units from getbuild",
+    "description": "New homes you bought through a getbuild developer and chose to rent out. Each one starts as a listing draft with the developer's facts.",
+    "empty": {
+      "title": "No units from getbuild yet",
+      "description": "When a developer that uses getbuild hands over your unit, its invitation link lands here once you claim it."
+    },
+    "transfer": "Transferred",
+    "claimed": "Claimed",
+    "listed": "Published",
+    "area": "Size",
+    "sqm": "{size} sq m",
+    "campaign": "Developer campaign",
+    "finish": "Finish the listing",
+    "open": "Open the listing"
+  },
+  "claim": {
+    "title": "Rent out your new unit",
+    "description": "getbuild told us about this unit. Add the rent and a headline — we make a listing draft you finish with photos.",
+    "formTitle": "Your listing draft",
+    "formHint": "Everything here can be changed later in the listing.",
+    "rent": "Monthly rent",
+    "rentHint": "What you ask per month. getbuild does not send a price.",
+    "rentUnit": "THB",
+    "rentInvalid": "Type the rent in baht, e.g. 15000",
+    "titleTh": "Headline (Thai)",
+    "titleHint": "Suggested from the unit's facts — edit it as you like.",
+    "titleEn": "Headline (English)",
+    "titleEnHint": "Optional — helps foreigners find it",
+    "address": {
+      "title": "Address of the unit",
+      "why": "getbuild did not tell us the full address. Renters see the building's address on the listing.",
+      "line1": "House number, building, street",
+      "subdistrict": "Subdistrict",
+      "district": "District",
+      "province": "Province",
+      "postcode": "Postcode"
+    },
+    "submit": "Create my listing draft",
+    "after": "Free for landlords. Nothing is published until you submit the listing.",
+    "landlordRequired": {
+      "title": "Claim it with a landlord account",
+      "body": "This account is an apartment business or an agency. A unit you bought yourself goes into a free landlord account — switch to it, or sign up one with your phone.",
+      "switch": "Switch account"
+    },
+    "invalidState": {
+      "title": "This invitation can no longer be used",
+      "body": "It was claimed, declined or has expired. If you still want to rent the unit out, add it in your portfolio."
+    },
+    "unknown": {
+      "title": "We could not find this invitation",
+      "body": "The link may be incomplete or out of date. Open it again from getbuild's buyer portal."
+    },
+    "closed": {
+      "invited": "Waiting",
+      "accepted": "Already claimed",
+      "listed": "Already listed",
+      "declined": "You declined this invitation",
+      "expired": "This invitation has expired"
+    },
+    "closedBody": "Nothing more to do here. Your listings show every unit you rent out.",
+    "unitTitle": "The unit",
+    "unitSource": "As getbuild described it at the transfer.",
+    "facts": {
+      "project": "Project",
+      "unit": "Unit",
+      "kind": "Type",
+      "floor": "Floor",
+      "area": "Size",
+      "rooms": "Rooms",
+      "roomsValue": "{bedrooms} bed · {bathrooms} bath",
+      "place": "Area",
+      "transfer": "Transferred",
+      "expires": "Invitation valid until"
+    },
+    "suggest": {
+      "bedrooms": "{count} bedroom",
+      "area": "{size} sq m"
+    }
+  },
+  "employers": {
+    "title": "Employer housing",
+    "description": "Companies that pay for their workers' rooms. Invoices of the leases you attach are addressed to the employer, with a statement and payroll file each month.",
+    "noCompanyTitle": "Add the employer first",
+    "noCompanyBody": "An employer is a company among your people. Add it with its tax ID, then come back to record the agreement.",
+    "addCompany": "Go to people",
+    "empty": {
+      "title": "No employer agreements",
+      "description": "Record one when a company pays for the rooms its workers stay in."
+    },
+    "anyBuilding": "Any building",
+    "deductBadge": "{percent} recovered via payroll",
+    "leases": "Leases",
+    "workers": {
+      "empty": "Nobody is staying under the attached leases yet.",
+      "unit": "Unit {unit}",
+      "notStaying": "No longer on an attached lease",
+      "number": "Payroll number of {name}",
+      "placeholder": "e.g. E-0042",
+      "save": "Save payroll numbers",
+      "saved": "Saved"
+    },
+    "since": "Since",
+    "lawNote": "Deducting rent from wages is the employer's decision and responsibility under labour law; getproperty only shares the figures.",
+    "terms": "Terms",
+    "open": "Open-ended",
+    "format": "Payroll file",
+    "genericCsv": "CSV (employee no., name, unit, invoice, share, deduction)",
+    "endedOn": "Ended",
+    "leasesTitle": "{count, plural, =0 {No leases attached} one {# lease attached} other {# leases attached}}",
+    "leasesHint": "Attach a lease from its page: “Who pays”.",
+    "noLeases": "Open a lease of a worker and attach it to this employer.",
+    "leaseLabel": "Unit {unit} · {name}",
+    "tm30": "TM30 of these workers",
+    "workersHint": "The employer's own payroll number for each person staying, as it appears in their HR system.",
+    "form": {
+      "new": "New agreement",
+      "newTitle": "Record an employer agreement",
+      "newHint": "The employer receives the invoices of the leases you attach to it.",
+      "create": "Record agreement",
+      "created": "Agreement recorded",
+      "employer": "Employer",
+      "employerHint": "A company among your people.",
+      "employerPick": "Choose the company",
+      "building": "Building",
+      "buildingHint": "Only leases in this building can be attached.",
+      "anyBuilding": "Any of my buildings",
+      "split": "How each invoice is shared",
+      "splitRule": {
+        "per_occupant": "Equally between the people staying",
+        "per_unit": "All on the lessee"
+      },
+      "splitHint": {
+        "per_occupant": "Each invoice is split equally between everyone staying under the lease (the first person takes the satang left over).",
+        "per_unit": "The whole invoice is the lessee's share."
+      },
+      "deduct": "Recovered through payroll",
+      "deductHint": "The share of each worker's portion the employer takes from wages (0–100).",
+      "deductInvalid": "Use a number from 0 to 100 with up to two decimals",
+      "validFrom": "Starts",
+      "validTo": "Ends",
+      "validToHint": "Empty = until you end it",
+      "reference": "Employer's reference",
+      "referenceHint": "e.g. their HR or purchase order number",
+      "deductDisclaimer": "Whether the employer may deduct from wages, and how much, is between the employer and its workers under labour law.",
+      "edit": "Edit",
+      "editTitle": "Edit the agreement with {name}",
+      "editHint": "Changes apply to invoices issued from now on.",
+      "save": "Save",
+      "saved": "Agreement saved",
+      "nextInvoices": "Issued invoices never change.",
+      "end": "End agreement",
+      "endTitle": "End the agreement with {name}?",
+      "endBody": "{count, plural, =0 {No lease is attached.} one {The attached lease goes back to its lessee for the next invoices.} other {The # attached leases go back to their lessees for the next invoices.}} Issued invoices stay as they are. Type the employer's name to confirm.",
+      "ended": "Agreement ended"
+    },
+    "statement": {
+      "title": "Statement · {month}",
+      "hint": "Invoices addressed to the employer that were issued this month, split per worker.",
+      "monthNav": "Choose the month",
+      "empty": "No invoices were issued to this employer in this month.",
+      "totals": {
+        "total": "Invoiced",
+        "paid": "Paid",
+        "balance": "Still due",
+        "deductions": "Payroll deductions",
+        "employerPays": "Employer carries"
+      },
+      "draftNumber": "Invoice",
+      "unit": "unit {unit}",
+      "due": "{amount} due",
+      "worker": "Worker",
+      "employeeNo": "Payroll no.",
+      "share": "Share",
+      "deduction": "Deduction",
+      "employerPays": "Employer carries",
+      "payroll": "Download payroll file (CSV)"
+    },
+    "lease": {
+      "title": "Who pays",
+      "hint": "Invoices of this lease go to the lessee, or to an employer paying for its worker.",
+      "current": "Paid by <link>{name}</link> — {percent} of each worker's share is recovered through payroll.",
+      "lessee": "Invoices go to {name}, the lessee.",
+      "attach": "Employer pays",
+      "change": "Change employer",
+      "attachTitle": "Who pays this lease?",
+      "attachHint": "Invoices issued from now on are addressed to the employer. Issued invoices never change.",
+      "agreement": "Employer agreement",
+      "pick": "Choose the agreement",
+      "attachSubmit": "Save",
+      "attached": "Lease attached to the employer",
+      "detach": "Lessee pays again",
+      "detachTitle": "Stop {name} paying this lease?",
+      "detachBody": "From the next invoice the lessee pays again. Issued invoices stay addressed as they are.",
+      "detached": "The lessee pays this lease again"
+    },
+    "workersLabel": "Workers"
+  }
+}

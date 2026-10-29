@@ -245,5 +245,7 @@
     "noPhotos": "ประกาศนี้ยังไม่มีรูป",
     "downloadOne": "ดาวน์โหลด"
   },
-  "promotion": "โปรโมตและบริการถ่ายภาพ"
+  "promotion": "โปรโมตและบริการถ่ายภาพ",
+  "reviews": "รีวิว",
+  "handoffs": "จาก getbuild ({count})"
 }

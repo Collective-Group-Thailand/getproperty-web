@@ -9,6 +9,9 @@ import { formatDateTime, formatRelativeTime } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
+import { Badge } from "@/ui/components/Badge";
+import { Button } from "@/ui/components/Button";
+import { Callout } from "@/ui/components/Callout";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { LinkTabs } from "@/ui/components/LinkTabs";
@@ -18,6 +21,9 @@ import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 import { IconInbox } from "@/ui/icons/glyphs/inbox";
 import { IconArchive } from "@/ui/icons/glyphs/archive";
 import { IconShield } from "@/ui/icons/glyphs/shield";
+import { IconKey } from "@/ui/icons/glyphs/key";
+
+import { attention } from "../viewings/selfViewing";
 
 import { ownerPath } from "../shared/links";
 import { section, type OwnerContext } from "../shared/server";
@@ -42,6 +48,8 @@ export function leadsTab(value: string | undefined, leads: Lead[] | null): Leads
  */
 export async function LeadsView({ context, view }: { context: OwnerContext; view?: string }) {
   const t = await getTranslations("owner.leads");
+  const v = await getTranslations("owner.viewings");
+  const mode = (value: "self" | "accompanied") => v(`mode.${value}`);
   const { api, locale } = context;
   const [leads, viewings] = await Promise.all([
     section(unwrap(api.GET("/v1/owner/leads"))),
@@ -58,10 +66,36 @@ export async function LeadsView({ context, view }: { context: OwnerContext; view
   const upcoming = (viewings.data ?? []).filter(
     (v) => (v.state === "requested" || v.state === "confirmed") && Date.parse(v.endsAt) > now,
   );
+  // G7 (D-295): self viewings that need the owner now — the API also sends them as urgent notifications.
+  const urgent = (viewings.data ?? []).filter((one) => attention(one.access, now) !== null);
 
   return (
     <OwnerPage testId="leads">
-      <PageHeader title={t("title")} description={t("description")} />
+      <PageHeader
+        title={t("title")}
+        description={t("description")}
+        actions={
+          <Button asChild variant="secondary" iconStart={IconCalendar}>
+            <a href={ownerPath(locale, "/leads/viewings")} data-testid="leads-calendar">
+              {v("calendar.title")}
+            </a>
+          </Button>
+        }
+      />
+
+      {urgent.length ? (
+        <Callout
+          tone="danger"
+          title={v("calendar.urgentTitle", { count: urgent.length })}
+          action={
+            <Button asChild size="sm" variant="secondary">
+              <a href={ownerPath(locale, "/leads/viewings")}>{v("calendar.open")}</a>
+            </Button>
+          }
+        >
+          <span data-testid="leads-urgent">{v("calendar.urgentBody")}</span>
+        </Callout>
+      ) : null}
 
       {upcoming.length ? (
         <Card
@@ -87,8 +121,13 @@ export async function LeadsView({ context, view }: { context: OwnerContext; view
                     <span className="text-muted truncate text-sm">
                       {t("upcoming.with", { name: v.prospectName })} · {v.listing.title}
                     </span>
-                    <span>
+                    <span className="flex flex-wrap gap-1">
                       <StatusBadgeOf map={VIEWING_STATUS} value={v.state} size="sm" />
+                      {v.mode === "self" ? (
+                        <Badge tone="primary" size="sm" icon={IconKey}>
+                          {mode("self")}
+                        </Badge>
+                      ) : null}
                     </span>
                   </span>
                 </a>

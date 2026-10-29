@@ -69,5 +69,8 @@
     "cancelReason": "Reason",
     "cancelReasonHint": "At least 3 characters",
     "cancelled": "Notification cancelled"
-  }
+  },
+  "employerFilter": "Workers of {name}",
+  "employerFilterBody": "Only the foreign workers staying under this employer's leases. The upload file is still made per building.",
+  "employerClear": "Show everyone"
 }

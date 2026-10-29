@@ -42,6 +42,11 @@
  *   POST /__mock/owner/broadcast/price[?price=0.5000|none][&minimum=]  price per recipient (G6, O-027)
  *   POST /__mock/owner/broadcast/send?campaign=<id>            the send job runs a scheduled campaign to the end
  *   GET  /__mock/owner/broadcast                               campaigns, settings, consent text (G6)
+ *   POST /__mock/owner/viewings/self-enabled[?on=0]             `viewing.self.enabled` (G7, O-024)
+ *   POST /__mock/owner/viewings/self?stage=requested|issued|entered|incident|overstay  a self-viewing enquiry (G7)
+ *   GET  /__mock/owner/network                                 getbuild handoffs, employer agreements (G8)
+ *   GET  /__mock/owner/insight                                 reviews, energy opt-ins, assistant quota (G9)
+ *   POST /__mock/owner/insight/assistant?fail=limit|unavailable|rejected[&enabled=0][&used=n]  the next AI draft call
  *   GET  /__mock/owner/state         leases, deposits, invoices, slips, cycles, units (A/B) as held
  *   POST /__mock/platform/reset      reset the platform admin's world (tenants, billing, tariffs, fleet…)
  *   POST /__mock/platform/ota/upload?key=releases/edge/<version>/<file>&size=<bytes>  a release engineer uploads an
@@ -66,6 +71,8 @@ import { getResponse } from "msw";
 import { OPERATORS, PLATFORM_USERS, TENANTS } from "./fixtures";
 import { handlers } from "./handlers";
 import {
+  addSelfViewingLead,
+  assistantControl,
   counterpartySignsContract,
   failPost,
   growthPaid,
@@ -80,6 +87,7 @@ import {
   residentAnswersOffer,
   residentAnswers,
   residentSigns,
+  setSelfViewingEnabled,
   storagePackagePaid,
   storagePricePublished,
 } from "./owner";
@@ -291,6 +299,24 @@ function ownerControl(url: URL, req: IncomingMessage): { status: number; body: u
         : { status: 409, body: { error: "no post" } };
   }
   if (req.method === "GET" && parts[0] === "growth") return { status: 200, body: state.growth };
+  // G7: `viewing.self.enabled` (O-024) and an enquiry with a self viewing in a given stage.
+  if (req.method === "POST" && parts[0] === "viewings") {
+    if (parts[1] === "self-enabled") {
+      setSelfViewingEnabled(url.searchParams.get("on") !== "0");
+      return { status: 200, body: { ok: true } };
+    }
+    if (parts[1] === "self") {
+      const leadId = addSelfViewingLead(url.searchParams.get("stage") ?? "requested");
+      return leadId ? { status: 200, body: { leadId } } : { status: 400, body: { error: "unknown stage" } };
+    }
+  }
+  // G8 / G9: handoffs and employer agreements; reviews, energy opt-ins and the listing assistant.
+  if (req.method === "GET" && parts[0] === "network") return { status: 200, body: state.network };
+  if (req.method === "GET" && parts[0] === "insight") return { status: 200, body: state.insight };
+  if (req.method === "POST" && parts[0] === "insight" && parts[1] === "assistant") {
+    assistantControl(url.searchParams);
+    return { status: 200, body: state.insight.assistant };
+  }
   // G6: the sponsored broadcast switch (O-023), the price per recipient (O-027), the send job.
   if (req.method === "POST" && parts[0] === "broadcast") {
     const p = url.searchParams;

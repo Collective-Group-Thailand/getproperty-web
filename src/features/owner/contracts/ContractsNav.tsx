@@ -10,13 +10,15 @@ const TABS = [
   { path: "/contracts", key: "library" },
   { path: "/contracts/documents", key: "documents" },
   { path: "/renewals", key: "renewals" },
+  { path: "/employers", key: "employers" },
 ] as const;
 
 export type ContractsSection = (typeof TABS)[number]["path"];
 
 /**
- * The lease section's pages as link tabs (G3): leases · contract library · signable contracts · renewal offers. The
- * API's owner menu has no contracts key yet (contract request), so the library is reached from the leases page.
+ * The lease section's pages as link tabs (G3): leases · contract library · signable contracts · renewal offers ·
+ * employer housing (G8). The API's owner menu has no contracts / employer key yet (contract requests), so these are
+ * reached from the leases page.
  */
 export async function ContractsNav({ current, locale }: { current: ContractsSection; locale: Locale }) {
   const t = await getTranslations("owner.contracts.nav");

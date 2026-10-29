@@ -7,7 +7,9 @@
     "reported": "มีรายงาน",
     "verifications": "ยืนยันเจ้าของ",
     "media": "บริการถ่ายภาพ",
-    "broadcasts": "โฆษณาทาง LINE"
+    "broadcasts": "โฆษณาทาง LINE",
+    "reviews": "รีวิว",
+    "handoffs": "ส่งต่อจาก getbuild"
   },
   "col": {
     "listing": "ประกาศ",

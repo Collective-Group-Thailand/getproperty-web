@@ -461,5 +461,31 @@
     "declined": "Declined",
     "expired": "Expired",
     "withdrawn": "Withdrawn"
+  },
+  "viewingAccess": {
+    "issued": "Code issued",
+    "entered": "Visitor inside",
+    "exited": "Left",
+    "expired": "Window ended",
+    "no_show": "Did not come",
+    "cancelled": "Closed"
+  },
+  "rentalHandoff": {
+    "invited": "Invitation sent",
+    "accepted": "Listing draft",
+    "listed": "Listed",
+    "declined": "Declined",
+    "expired": "Expired"
+  },
+  "employerAgreement": {
+    "active": "In force",
+    "ended": "Ended"
+  },
+  "buildingReview": {
+    "pending_moderation": "Waiting for moderation",
+    "published": "Public",
+    "rejected": "Rejected",
+    "hidden": "Hidden by getproperty",
+    "withdrawn": "Withdrawn by the author"
   }
 }

@@ -27,12 +27,18 @@ export function ExportButton({
   label,
   variant = "secondary",
   testId,
+  create,
 }: {
   kind: Schemas["ExportKind"];
   params: Schemas["ExportParamsDto"];
   label: string;
   variant?: ButtonProps["variant"];
   testId?: string;
+  /**
+   * Starts the job through an aggregate's own export endpoint instead of `POST /v1/owner/exports` (an employer's
+   * payroll file, G8) — same `ExportJobDto`, same polling and download.
+   */
+  create?: (idempotencyKey: string) => Promise<Schemas["ExportJobDto"]>;
 }) {
   const t = useTranslations("owner.common.export");
   const action = useApiAction<Schemas["ExportJobDto"]>({ refresh: false });
@@ -65,12 +71,14 @@ export function ExportButton({
             setJob(null);
             void action.run(
               () =>
-                unwrap(
-                  browserApi().POST("/v1/owner/exports", {
-                    params: { header: { "Idempotency-Key": idempotency.key } },
-                    body: { kind, params },
-                  }),
-                ),
+                create
+                  ? create(idempotency.key)
+                  : unwrap(
+                      browserApi().POST("/v1/owner/exports", {
+                        params: { header: { "Idempotency-Key": idempotency.key } },
+                        body: { kind, params },
+                      }),
+                    ),
               (created) => {
                 idempotency.renew();
                 setJob(created);

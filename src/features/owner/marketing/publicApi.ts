@@ -52,6 +52,22 @@ export async function publicListing(slug: string, language?: string): Promise<Pu
   return body && typeof body.slug === "string" ? body : null;
 }
 
+export type PublicReviews = Schemas["PublicReviewsDto"];
+
+/**
+ * Verified reviews of a listing's building (G9, D-301): summary + one page (newest first). Cached five minutes like
+ * the listing; null when the API is down (the block is then left out — never an error on the listing page).
+ */
+export async function publicListingReviews(
+  slug: string,
+  page: number,
+  language?: string,
+): Promise<PublicReviews | null> {
+  if (!/^[a-z0-9-]{1,120}$/.test(slug)) return null;
+  const body = await getJson<PublicReviews>(`/v1/public/listings/${slug}/reviews?page=${page}&perPage=5`, language);
+  return body && Array.isArray(body.data) && body.summary ? body : null;
+}
+
 export async function publicListingSlugs(): Promise<{ slug: string; updatedAt: string }[]> {
   const body = await getJson<{ data: { slug: string; updatedAt: string }[] }>("/v1/public/listings/sitemap");
   return Array.isArray(body?.data) ? body.data : [];

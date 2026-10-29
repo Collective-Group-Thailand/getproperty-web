@@ -245,5 +245,7 @@
     "noPhotos": "This listing has no photos yet",
     "downloadOne": "Download"
   },
-  "promotion": "Promotion & photo services"
+  "promotion": "Promotion & photo services",
+  "reviews": "Reviews",
+  "handoffs": "From getbuild ({count})"
 }

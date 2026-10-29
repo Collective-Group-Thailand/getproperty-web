@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { fieldErrors } from "@/features/shared/console/FormDialog";
 import { ProblemNotice, useApiAction } from "@/features/shared/console/useApiAction";
@@ -16,6 +16,8 @@ import { Switch } from "@/ui/components/Switch";
 import { IconButton } from "@/ui/components/IconButton";
 import { IconAdd } from "@/ui/icons/glyphs/add";
 import { IconClose } from "@/ui/icons/glyphs/close";
+
+import { ListingAssistant } from "./ListingAssistant";
 
 type Listing = Schemas["ListingDto"];
 type Furnishing = Schemas["Furnishing"];
@@ -50,8 +52,28 @@ const int = (value: FormDataEntryValue | null) => {
  * Texts, terms and facts of a listing (F6.2, D-252) — what a renter wants to know before a viewing. Saved in one
  * request; the API keeps the unit's size, rooms and address in step with the portfolio on every save.
  */
-export function ListingDetailsForm({ listing }: { listing: Listing }) {
+export function ListingDetailsForm({
+  listing,
+  assistant,
+}: {
+  listing: Listing;
+  /** G9 (D-301): the AI listing assistant's availability and quota; null when it could not be read. */
+  assistant?: Schemas["ListingAssistantQuotaDto"] | null;
+}) {
   const t = useTranslations("owner.listings.details");
+  const formRef = useRef<HTMLFormElement>(null);
+  /** A draft goes into the uncontrolled text fields; the owner still saves with the form's own button. */
+  const applyDraft = (language: "th" | "en", draft: Schemas["ListingDraftDto"]) => {
+    const form = formRef.current;
+    if (!form) return;
+    const set = (name: string, value: string) => {
+      const field = form.elements.namedItem(name);
+      if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) field.value = value;
+    };
+    set(language === "th" ? "titleTh" : "titleEn", draft.title.slice(0, 120));
+    set(language === "th" ? "descriptionTh" : "descriptionEn", draft.description.slice(0, 5000));
+    setSaved(false);
+  };
   const action = useApiAction<Listing>();
   const errors = fieldErrors(action.error);
   const [furnishing, setFurnishing] = useState<Furnishing | "">(listing.furnishing ?? "");
@@ -110,13 +132,27 @@ export function ListingDetailsForm({ listing }: { listing: Listing }) {
   };
 
   return (
-    <form className="flex flex-col gap-5" onSubmit={submit} noValidate data-testid="listing-details">
+    <form ref={formRef} className="flex flex-col gap-5" onSubmit={submit} noValidate data-testid="listing-details">
+      {assistant ? (
+        <ListingAssistant
+          listingId={listing.id}
+          quota={assistant}
+          hasPhotos={listing.photos.length > 0}
+          onUse={applyDraft}
+        />
+      ) : null}
       <div className="grid gap-4 md:grid-cols-2">
         <Field label={t("titleTh")} error={errors.titleTh} required>
-          <Input name="titleTh" defaultValue={listing.titleTh} maxLength={120} required />
+          <Input
+            name="titleTh"
+            defaultValue={listing.titleTh}
+            maxLength={120}
+            required
+            data-testid="listing-title-th"
+          />
         </Field>
         <Field label={t("titleEn")} hint={t("englishHint")} error={errors.titleEn}>
-          <Input name="titleEn" defaultValue={listing.titleEn ?? ""} maxLength={120} />
+          <Input name="titleEn" defaultValue={listing.titleEn ?? ""} maxLength={120} data-testid="listing-title-en" />
         </Field>
         <Field label={t("descriptionTh")} error={errors.descriptionTh}>
           <Textarea
