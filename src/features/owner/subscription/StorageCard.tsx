@@ -131,7 +131,7 @@ export async function StorageCard({
 
         <dl className="border-border grid gap-4 border-t pt-4 sm:grid-cols-2">
           <div className="flex flex-col gap-1">
-            <dt className="text-muted text-sm">{t("files")}</dt>
+            <dt className="text-muted text-sm">{t("filesLabel")}</dt>
             <dd className="font-semibold tabular-nums" data-testid="storage-files">
               {formatBytes(storage.fileBytes, locale)}
             </dd>

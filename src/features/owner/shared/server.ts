@@ -6,9 +6,11 @@ import { cache } from "react";
 
 import { BUILDING_COOKIE } from "@/features/shared/shell/building";
 import { getOperatorActor } from "@/lib/auth/actor";
+import { requireOperator } from "@/lib/auth/guards";
 import { unwrap, type ApiClient } from "@/lib/api/client";
 import { serverApi } from "@/lib/api/server";
 import type { OwnerMe, Schemas } from "@/lib/api/types";
+import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 
 export interface OwnerContext {
@@ -34,7 +36,16 @@ export const ownerContext = cache(async (): Promise<OwnerContext> => {
     cookies(),
     getLocale(),
   ]);
-  if (!actor) throw new Error("ownerContext outside the signed-in console");
+  // Signed out (or the session ended) while the page renders next to the layout's guard: redirect the same way
+  // rather than throw — a throw here logged a server error for every signed-out visit.
+  const me = actor
+    ? actor.me
+    : (
+        await requireOperator("owner", {
+          login: getPathname({ href: "/login", locale: locale as Locale }),
+          selectTenant: getPathname({ href: "/select-tenant", locale: locale as Locale }),
+        })
+      ).me;
   const [buildings, properties] = await Promise.all([
     unwrap(api.GET("/v1/owner/buildings")).catch(() => [] as Schemas["BuildingDto"][]),
     unwrap(api.GET("/v1/owner/properties")).catch(() => [] as Schemas["PropertyDto"][]),
@@ -42,7 +53,7 @@ export const ownerContext = cache(async (): Promise<OwnerContext> => {
   const focus = jar.get(BUILDING_COOKIE)?.value;
   return {
     api,
-    me: actor.me,
+    me,
     locale: locale as Locale,
     buildings,
     properties,

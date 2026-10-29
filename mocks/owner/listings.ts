@@ -429,6 +429,8 @@ export const listingHandlers: HttpHandler[] = [
       return problem(op, "validation.failed", {
         errors: [{ path: "weekly", code: "invalid", message: "from before to" }],
       });
+    // Recorded for the self-viewing e2e (each window's `mode`, G7).
+    state.owner.received.push({ op, idempotencyKey: null, body: input as unknown as Record<string, unknown> });
     update(l, {
       availability: { weekly: input.weekly, exceptions: input.exceptions ?? [], slotMinutes: input.slotMinutes ?? 30 },
     });

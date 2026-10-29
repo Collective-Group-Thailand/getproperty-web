@@ -92,4 +92,20 @@ describe("glossary", () => {
       expect(Object.keys(glossary[key] ?? {}).sort()).toEqual([...values].sort());
     }
   });
+
+  // A label map keyed by a contract enum must name every value, or a new value shows up as a MISSING_MESSAGE.
+  it.each([
+    ["common", "console", "platformInvoice.lineKind", "PlatformLineKind"],
+    ["common", "console", "platformInvoice.method", "PlatformPaymentMethod"],
+  ])("%s/%s %s labels every value of the contract enum %s in th and en", (area, file, path, component) => {
+    const values = contract.components.schemas[component]?.enum ?? [];
+    expect(values.length).toBeGreaterThan(0);
+    for (const locale of LOCALES) {
+      const labels = path
+        .split(".")
+        .reduce<unknown>((node, key) => (node as Record<string, unknown> | undefined)?.[key], read(locale, area, file));
+      const missing = values.filter((value) => typeof (labels as Record<string, unknown>)?.[value] !== "string");
+      expect(missing, `${locale}: ${path}`).toEqual([]);
+    }
+  });
 });

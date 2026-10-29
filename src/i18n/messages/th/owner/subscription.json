@@ -138,6 +138,7 @@
       "untitled": "ไฟล์ไม่มีชื่อ",
       "locked": "ล็อก: {reason}"
     },
+    "filesLabel": "ไฟล์",
     "filesHint": "รูปมิเตอร์ สลิป รูปงานซ่อม สัญญา และไฟล์ที่อัปโหลด",
     "recordsLabel": "ข้อมูลในระบบ",
     "recordCount": "{count} รายการ",

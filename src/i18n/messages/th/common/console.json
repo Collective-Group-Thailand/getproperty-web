@@ -73,7 +73,14 @@
       "ai_overage": "OCR เกินโควตา",
       "inspection": "รายงานตรวจอาคาร",
       "discount": "ส่วนลด",
-      "adjustment": "ปรับปรุง"
+      "adjustment": "ปรับปรุง",
+      "storage": "พื้นที่จัดเก็บเพิ่ม",
+      "boost": "โปรโมตประกาศ",
+      "success_fee": "ค่าธรรมเนียมความสำเร็จ",
+      "co_broke_fee": "ค่าธรรมเนียมโคโบรก",
+      "media_service": "บริการถ่ายภาพ",
+      "messaging_addon": "ค่าข้อความ LINE",
+      "sponsored_broadcast": "ข้อความแนะนำห้องทาง LINE"
     },
     "method": {
       "qr": "Thai QR",
