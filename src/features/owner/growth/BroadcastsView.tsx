@@ -44,13 +44,15 @@ export async function BroadcastsView({ context, searchParams }: { context: Owner
   ]);
   const canCreate = ownerCan(me, "tenant.subscription.manage") && !readOnly(me);
   const base = ownerPath(locale, "/promote/broadcasts");
-  const newCampaign = canCreate ? (
-    <Button asChild iconStart={IconAdd}>
-      <a href={ownerPath(locale, "/promote/broadcasts/new")} data-testid="broadcast-new">
-        {t("new")}
-      </a>
-    </Button>
-  ) : null;
+  // The header's action and the empty list's call to action are the same link; each keeps its own test id.
+  const newCampaign = (testId: string) =>
+    canCreate ? (
+      <Button asChild iconStart={IconAdd}>
+        <a href={ownerPath(locale, "/promote/broadcasts/new")} data-testid={testId}>
+          {t("new")}
+        </a>
+      </Button>
+    ) : null;
 
   return (
     <OwnerPage testId="broadcasts">
@@ -58,7 +60,7 @@ export async function BroadcastsView({ context, searchParams }: { context: Owner
         title={t("title")}
         description={t("description")}
         crumbs={[{ label: growth("page.title"), href: ownerPath(locale, "/promote") }, { label: t("tabs.broadcasts") }]}
-        actions={newCampaign}
+        actions={newCampaign("broadcast-new")}
       />
       <PromoteTabs locale={locale} current="broadcasts" />
 
@@ -85,7 +87,7 @@ export async function BroadcastsView({ context, searchParams }: { context: Owner
             icon={IconMegaphone}
             title={t(`list.empty.${tab}`)}
             description={t("list.emptyHint")}
-            action={tab === "all" ? newCampaign : null}
+            action={tab === "all" ? newCampaign("broadcast-new-empty") : null}
           />
         ) : (
           <ul className="divide-border m-0 list-none divide-y p-0" data-testid="campaigns">

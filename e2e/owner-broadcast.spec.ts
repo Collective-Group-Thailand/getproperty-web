@@ -12,8 +12,6 @@ import { expectAxeClean } from "./support/staff";
  * service is off (designed state), then scheduled once switched on and priced (price locked), sent by the job with a
  * report in totals only and an invoice per delivered recipient; a second draft is cancelled. The short link of a
  * campaign carries channel `line_sponsored` to the listing.
- *
- * Written for the suite; not run in the sandbox (founder change 2026-10-28: web e2e deferred).
  */
 
 test.describe.configure({ mode: "serial" });
@@ -57,6 +55,9 @@ test("not available yet: the product says why, drafting and the estimate still w
   await page.getByTestId("broadcast-new").click();
   await hydrated(page);
   const listing = page.locator(`[data-testid="campaign-listing"][data-id="${LISTING}"]`);
+  // From the list's "new" nothing is chosen yet (only `?listing=` preselects one); the owner picks the room.
+  await expect(listing.getByRole("checkbox")).not.toBeChecked();
+  await listing.getByRole("checkbox").click();
   await expect(listing.getByRole("checkbox")).toBeChecked();
   // Everyone who fits → a number; a narrow area → withheld below the minimum, never a small count.
   await expect(page.getByTestId("estimate-count")).toBeVisible();
