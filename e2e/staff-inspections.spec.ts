@@ -116,8 +116,10 @@ test("move-out beside the move-in, photos, offline checklist kept on the device 
             open.onsuccess = () => {
               const request = open.result.transaction("drafts").objectStore("drafts").get(id);
               request.onsuccess = () =>
-                resolve((request.result as { items?: Record<string, { meterRegister?: string | null }> } | undefined)
-                  ?.items?.["meter:electric"]?.meterRegister ?? null);
+                resolve(
+                  (request.result as { items?: Record<string, { meterRegister?: string | null }> } | undefined)
+                    ?.items?.["meter:electric"]?.meterRegister ?? null,
+                );
             };
           }),
         MOVE_OUT_A201,
