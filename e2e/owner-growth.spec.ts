@@ -11,8 +11,6 @@ import { expectAxeClean } from "./support/staff";
  * with a failed one retried, the share kit's photo bundle, boosts and photo services "not on sale yet" until a price is
  * published, then bought (Idempotency-Key) → awaiting payment → paid → running, a free building boost, and the
  * agency's LINE OA add-on terms accepted when connecting.
- *
- * Written for the suite; not run in the sandbox (founder change 2026-10-28: web e2e deferred).
  */
 
 test.describe.configure({ mode: "serial" });

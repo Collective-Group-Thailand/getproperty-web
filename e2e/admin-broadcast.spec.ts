@@ -10,8 +10,6 @@ import { expectAxeClean } from "./support/staff";
  * reason; switching on needs LINE Thailand's written confirmation and a reason, and only changed values are sent; a
  * new consent text (th + en, Idempotency-Key) asks everyone again; a scheduled campaign is stopped with a reason and
  * the owner sees it.
- *
- * Written for the suite; not run in the sandbox (founder change 2026-10-28: web e2e deferred).
  */
 
 test.describe.configure({ mode: "serial" });
@@ -67,7 +65,9 @@ test("campaigns: a scheduled campaign is stopped with a reason; the owner sees w
   await resetBroadcast();
   await control("enable");
   await control("price?price=0.5000");
-  const owner = await browser.newPage();
+  // A context of its own: axe needs one, and each user keeps their own session.
+  const ownerContext = await browser.newContext();
+  const owner = await ownerContext.newPage();
   await signInWithOtp(owner, HOSTS.owner, "0810000006");
   await owner.goto(`${HOSTS.owner}/promote/broadcasts/new?listing=8d4b2c1a-0000-4000-8000-00000000a001`);
   await owner.getByTestId("campaign-name").fill("แคมเปญที่ต้องระงับ");
@@ -78,7 +78,9 @@ test("campaigns: a scheduled campaign is stopped with a reason; the owner sees w
   await owner.getByRole("alertdialog").getByRole("button", { name: "ยืนยันและตั้งเวลา" }).click();
   await expect(owner.getByTestId("campaign-state")).toHaveAttribute("data-state", "scheduled");
 
-  const admin = await browser.newPage();
+  // A context of its own: axe needs one, and each user keeps their own session.
+  const adminContext = await browser.newContext();
+  const admin = await adminContext.newPage();
   await signInPlatform(admin, "ops");
   await gotoAdmin(admin, "/listings");
   await admin.getByTestId("listings-tab-broadcasts").click();
@@ -95,4 +97,6 @@ test("campaigns: a scheduled campaign is stopped with a reason; the owner sees w
   await owner.reload();
   await expect(owner.getByTestId("campaign-state")).toHaveAttribute("data-state", "rejected");
   await expect(owner.getByTestId("campaign-rejected")).toContainText("ข้อความประกาศไม่ตรงกับห้องจริง");
+  await adminContext.close();
+  await ownerContext.close();
 });
