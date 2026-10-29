@@ -10,6 +10,7 @@ import { inboundEdgeHeaders } from "@/lib/http/server";
 import type { Zone } from "@/lib/zones";
 
 import { createApiClient, type ApiClient } from "./client";
+import { IDEMPOTENT_OPERATIONS } from "./generated/idempotent";
 import { TENANT_HEADER } from "./headers";
 
 export interface ServerApiOptions {
@@ -37,5 +38,6 @@ export async function serverApi(zone: Zone, options: ServerApiOptions = {}): Pro
       "Accept-Language": locale,
     }),
     fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }),
+    idempotentOperations: IDEMPOTENT_OPERATIONS,
   });
 }

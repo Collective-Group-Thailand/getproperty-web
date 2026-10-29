@@ -3,6 +3,7 @@ import "server-only";
 import { cookies } from "next/headers";
 
 import { createApiClient, unwrap } from "@/lib/api/client";
+import { IDEMPOTENT_OPERATIONS } from "@/lib/api/generated/idempotent";
 import type { OperatorMe, TokenPair } from "@/lib/api/types";
 import { serverEnv } from "@/lib/env/server";
 import { inboundEdgeHeaders } from "@/lib/http/server";
@@ -25,6 +26,7 @@ export async function authApiClient(language?: string, extra: Record<string, str
     baseUrl: serverEnv().API_INTERNAL_URL,
     headers: () => ({ ...edge, "Accept-Language": language, ...extra }),
     fetch: (input, init) => fetch(input, { ...init, cache: "no-store" }),
+    idempotentOperations: IDEMPOTENT_OPERATIONS,
   });
 }
 

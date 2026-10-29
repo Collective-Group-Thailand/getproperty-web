@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { CSRF_HEADER, REQUEST_ID_HEADER, TENANT_HEADER } from "@/lib/api/headers";
+import { CSRF_HEADER, IDEMPOTENCY_HEADER, REQUEST_ID_HEADER, TENANT_HEADER } from "@/lib/api/headers";
+import { requiresIdempotencyKey } from "@/lib/api/idempotency";
 import { serverEnv } from "@/lib/env/server";
 import { clientIpFrom, FORWARDED_FOR_HEADER, requestIdFrom } from "@/lib/http/edge";
 import { timeBffCall } from "@/lib/observability/metrics";
@@ -41,7 +42,9 @@ import { isAllowedUpstream, zoneHasTenant } from "../auth/zones";
  *    a UUID (review H1, L1; api RUNBOOK §11, D-229);
  * 9. keeps the realtime stream token out of every browser-visible URL: `realtime/auth` answers it in the
  *    httpOnly `__Host-gp_sst` cookie (≤ 60 s) and a `streamUrl` without it; the stream request gets it back into
- *    the API's query string here, and the cookie is cleared as the stream opens (review L6).
+ *    the API's query string here, and the cookie is cleared as the stream opens (review L6);
+ * 10. adds an `Idempotency-Key` to the operations the contract flags when the browser sent none — one per browser
+ *    request, kept across the refresh retry — so the browser bundle does not carry the list (D-179).
  */
 
 export const BFF_MAX_BODY_BYTES = 1024 * 1024;
@@ -234,12 +237,17 @@ export function createBffHandler(zone: Zone, options: BffOptions = {}) {
       setCookies.push(streamTokenCookie("", 0));
     }
 
+    const idempotencyKey =
+      request.headers.get(IDEMPOTENCY_HEADER) ??
+      (requiresIdempotencyKey(request.method, path) ? crypto.randomUUID() : null);
+
     const send = () => {
       const headers = new Headers();
       for (const name of FORWARD_REQUEST_HEADERS) {
         const value = request.headers.get(name);
         if (value) headers.set(name, value);
       }
+      if (idempotencyKey) headers.set(IDEMPOTENCY_HEADER, idempotencyKey);
       headers.set(REQUEST_ID_HEADER, requestId);
       if (clientIp) headers.set(FORWARDED_FOR_HEADER, clientIp);
       if (accessToken) headers.set("authorization", `Bearer ${accessToken}`);

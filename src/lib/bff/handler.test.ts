@@ -231,6 +231,23 @@ describe("CSRF", () => {
     expect(api.calls[0]!.headers.get("idempotency-key")).toBe("k-1");
   });
 
+  it("adds an idempotency key to a flagged operation the browser sent without one, and only to those", async () => {
+    const flagged = await call("owner", "/v1/owner/bank-accounts", {
+      method: "POST",
+      cookies: signedIn,
+      headers: writeHeaders,
+      body: "{}",
+    });
+    expect(flagged.api.calls[0]!.headers.get("idempotency-key")).toMatch(/^[0-9a-f-]{36}$/);
+    const plain = await call("owner", "/v1/owner/settings/x", {
+      method: "POST",
+      cookies: signedIn,
+      headers: writeHeaders,
+      body: "{}",
+    });
+    expect(plain.api.calls[0]!.headers.has("idempotency-key")).toBe(false);
+  });
+
   it("does not need the header for reads", async () => {
     const { response } = await call("owner", "/v1/owner/me", { cookies: signedIn });
     expect(response.status).toBe(200);
