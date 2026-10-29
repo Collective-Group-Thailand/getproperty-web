@@ -38,7 +38,8 @@
     "leases": "สัญญาเช่า",
     "library": "คลังสัญญา",
     "documents": "สัญญาอื่น ๆ",
-    "renewals": "การต่อสัญญา"
+    "renewals": "การต่อสัญญา",
+    "employers": "ที่พักพนักงาน"
   },
   "library": {
     "title": "คลังสัญญา",

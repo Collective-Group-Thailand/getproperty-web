@@ -55,7 +55,13 @@
         "http://localhost:3200/promote",
         "http://localhost:3200/settings/facebook-page",
         "http://localhost:3200/promote/broadcasts",
-        "http://localhost:3200/promote/broadcasts/new"
+        "http://localhost:3200/promote/broadcasts/new",
+        "http://localhost:3200/leads/viewings",
+        "http://localhost:3200/reviews",
+        "http://localhost:3200/employers",
+        "http://localhost:3200/employers/3e6a0000-0000-4000-8000-0000000e0001",
+        "http://localhost:3200/buildings/5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+        "http://localhost:3200/listings/handoffs/claim?token=q3K8xF0bW2yR9mT4vN6pL1sA7dE5gH0j"
       ],
       "numberOfRuns": 1,
       "settings": {

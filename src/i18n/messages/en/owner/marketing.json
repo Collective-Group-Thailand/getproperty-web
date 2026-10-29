@@ -898,6 +898,24 @@
       "badge": "Verified vacant",
       "since": "Verified vacant since {date}",
       "explain": "Checked against the lease records on getproperty: nobody lives there and no lease is in force or awaiting signature — not the owner's own word."
+    },
+    "reviews": {
+      "title": "Reviews from verified tenants",
+      "intro": "Only people who lived here under a lease can review the building. getproperty checks each review before it is shown.",
+      "outOf": "out of 5",
+      "stars": "{rating} out of 5 stars",
+      "count": "{count, plural, one {# review} other {# reviews}}",
+      "distribution": "Reviews per star rating",
+      "starLabel": "{stars} ★",
+      "verified": "Verified tenant",
+      "livesFrom": "Lives here since {from}",
+      "livedFromTo": "Lived here {from} – {to}",
+      "ownerReply": "Owner's reply",
+      "pages": "More reviews",
+      "newer": "Newer",
+      "older": "Older reviews",
+      "page": "Page {page} of {pages}",
+      "policy": "Reviews cover the whole building. Names, unit numbers and dates are never shown."
     }
   },
   "guides": {
@@ -1281,5 +1299,86 @@
     },
     "browse": "Browse rentals",
     "guide": "Read the TM30 guide"
+  },
+  "handoff": {
+    "kicker": "From getbuild · your new home",
+    "title": "{name}, rent out your new home with getproperty",
+    "expires": "Invitation valid until {date}",
+    "facts": {
+      "project": "Project",
+      "unit": "Unit",
+      "kind": "Type",
+      "floor": "Floor",
+      "area": "Size",
+      "sqm": "{size} sq m",
+      "bedrooms": "Bedrooms",
+      "bathrooms": "Bathrooms",
+      "place": "Area",
+      "transfer": "Transferred"
+    },
+    "kind": {
+      "condo_unit": "Condo",
+      "house": "House",
+      "townhouse": "Townhouse",
+      "room": "Room"
+    },
+    "source": "These details come from the developer through getbuild. You can change everything in your listing.",
+    "steps": {
+      "title": "How it works",
+      "account": {
+        "title": "Free landlord account",
+        "body": "Sign in, or sign up with your phone. Landlords pay nothing to list."
+      },
+      "draft": {
+        "title": "Your listing is drafted",
+        "body": "We fill in the unit from getbuild. You add the rent and photos."
+      },
+      "publish": {
+        "title": "Publish and get enquiries",
+        "body": "Renters contact you through LINE; leases, bills and receipts follow in one place."
+      }
+    },
+    "claim": "List it for rent",
+    "signUp": "Sign up free first",
+    "free": "Free for landlords. getproperty only contacts you through this page and your own account.",
+    "decline": {
+      "button": "Not now",
+      "title": "Decline this invitation?",
+      "body": "The developer is told you will not rent the unit out through getproperty for now. You can still add it to a landlord account later yourself.",
+      "confirm": "Decline",
+      "keep": "Keep the invitation",
+      "failed": "That did not work. Please try again.",
+      "declinedTitle": "Invitation declined",
+      "declinedBody": "Thank you. Nothing more will happen with this link.",
+      "closedTitle": "This invitation is closed",
+      "closedBody": "It was already used, declined or has expired."
+    },
+    "closed": {
+      "accepted": {
+        "title": "Your listing draft is ready",
+        "body": "This invitation was claimed. Sign in to finish the listing."
+      },
+      "listed": {
+        "title": "Your unit is listed",
+        "body": "This invitation was claimed and the listing is public. Sign in to manage it."
+      },
+      "declined": {
+        "title": "You declined this invitation",
+        "body": "Nothing more will happen with this link."
+      },
+      "expired": {
+        "title": "This invitation has expired",
+        "body": "Ask the developer's team in getbuild for a new one, or add the unit to a landlord account yourself."
+      },
+      "invited": {
+        "title": "",
+        "body": ""
+      },
+      "signIn": "Sign in"
+    },
+    "notFound": {
+      "title": "Invitation not found",
+      "body": "The link may be incomplete or out of date. Open it again from getbuild's buyer portal."
+    }
   }
 }

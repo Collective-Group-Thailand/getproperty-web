@@ -22,6 +22,7 @@ import { ListingDetailsForm } from "./ListingDetailsForm";
 import { ListingInsights } from "./ListingInsights";
 import { ListingPhotos } from "./ListingPhotos";
 import { ListingSharePanel } from "./ListingSharePanel";
+import { selfViewingRules } from "../viewings/selfViewing";
 import { VerificationCard } from "./VerificationCard";
 
 /**
@@ -42,9 +43,13 @@ export async function ListingEditorView({ context, listingId }: { context: Owner
     );
   }
   const listing = result.data;
-  const verification = await section(
-    unwrap(api.GET("/v1/owner/units/{unitId}/verification", { params: { path: { unitId: listing.unitId } } })),
-  );
+  const [verification, settings, assistant] = await Promise.all([
+    section(unwrap(api.GET("/v1/owner/units/{unitId}/verification", { params: { path: { unitId: listing.unitId } } }))),
+    // G7 (D-295): whether self-viewing windows can be offered (`viewing.self.enabled`, off until O-024).
+    section(unwrap(api.GET("/v1/owner/settings"))),
+    // G9 (D-301): the AI listing assistant's availability and this month's quota.
+    section(unwrap(api.GET("/v1/owner/listing-assistant"))),
+  ]);
   const view =
     listing.state === "published" && !listing.hidden ? (
       <Button asChild variant="secondary" iconStart={IconExternal}>
@@ -109,7 +114,7 @@ export async function ListingEditorView({ context, listingId }: { context: Owner
           title={<span id="listing-details">{t("details.title")}</span>}
           description={t("details.description")}
         />
-        <ListingDetailsForm listing={listing} />
+        <ListingDetailsForm listing={listing} assistant={assistant.data} />
       </Card>
 
       <ListingInsights context={context} listing={listing} />
@@ -130,7 +135,11 @@ export async function ListingEditorView({ context, listingId }: { context: Owner
             title={<span id="listing-availability">{t("availability.title")}</span>}
             description={t("availability.description")}
           />
-          <ListingAvailabilityForm listingId={listing.id} availability={listing.availability} />
+          <ListingAvailabilityForm
+            listingId={listing.id}
+            availability={listing.availability}
+            selfViewing={selfViewingRules(settings.data)}
+          />
         </Card>
         <Card as="section" aria-labelledby="listing-verification" className="flex flex-col gap-4">
           <CardHeader

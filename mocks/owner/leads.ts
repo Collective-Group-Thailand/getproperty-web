@@ -3,7 +3,7 @@ import { http, type HttpHandler } from "msw";
 import type { components } from "../../src/lib/api/schema";
 import { TENANTS } from "../fixtures";
 import { state } from "../state";
-import { body, json, mutating, owner, problem } from "./support";
+import { body, idempotent, json, mutating, owner, problem } from "./support";
 
 type Schemas = components["schemas"];
 
@@ -37,8 +37,10 @@ function viewing(
   at: { startsAt: string; endsAt: string },
   state: Schemas["ListingViewingState"],
   note: string | null = null,
+  mode: Schemas["ViewingMode"] = "accompanied",
+  access: Schemas["ViewingAccessSummaryDto"] | null = null,
 ): Schemas["LeadViewingDto"] {
-  // G7 (D-295): self viewings are GW6; every sample is an accompanied viewing without door codes.
+  // G7 (D-295): the seeded enquiries are accompanied; self viewings come from `addSelfViewingLead` (mock control).
   return {
     id,
     ...at,
@@ -47,9 +49,117 @@ function viewing(
     reason: null,
     cancelledBy: null,
     rescheduledTo: null,
-    mode: "accompanied",
-    access: null,
+    mode,
+    access,
   };
+}
+
+const MINUTE = 60_000;
+/** The door-code window around a self viewing's start (`viewing.self.code_early_minutes` 5, `.code_minutes` 30). */
+function accessWindow(startsAt: string): Schemas["ViewingAccessSummaryDto"] {
+  const start = Date.parse(startsAt);
+  return {
+    state: "issued",
+    validFrom: new Date(start - 5 * MINUTE).toISOString(),
+    validTo: new Date(start + 30 * MINUTE).toISOString(),
+    enteredAt: null,
+    enteredSource: null,
+    exitedAt: null,
+    incidentAt: null,
+    incidentNote: null,
+    closedAt: null,
+    closeReason: null,
+    workOrderId: null,
+  };
+}
+
+/** The entry log of a self viewing as the mock derives it from the access (G7): never a code. */
+function logFor(viewingId: string, access: Schemas["ViewingAccessSummaryDto"]): Schemas["ViewingAccessLogDto"] {
+  const open = !access.closedAt && (access.state === "issued" || access.state === "entered");
+  const credentials: Schemas["ViewingAccessCredentialDto"][] = [
+    {
+      lockName: "ประตูห้อง A-1203",
+      lockScope: "unit",
+      status: open ? "active" : "revoked",
+      validFrom: access.validFrom,
+      validTo: access.validTo,
+    },
+    {
+      lockName: "ประตูหน้าอาคาร",
+      lockScope: "building_door",
+      status: open ? "active" : "revoked",
+      validFrom: access.validFrom,
+      validTo: access.validTo,
+    },
+  ];
+  const events: Schemas["ViewingAccessEventDto"][] = access.enteredAt
+    ? [
+        { time: access.enteredAt, lockName: "ประตูหน้าอาคาร", result: "success", source: "pin" },
+        {
+          time: new Date(Date.parse(access.enteredAt) + MINUTE).toISOString(),
+          lockName: "ประตูห้อง A-1203",
+          result: "success",
+          source: "pin",
+        },
+      ]
+    : [];
+  return { viewingId, access, credentials, events };
+}
+
+/**
+ * Mock control (G7): adds an enquiry with a self viewing in the given stage — `requested` (tomorrow), `issued`
+ * (confirmed, later today), `entered` (inside now), `incident` (problem reported, work order opened) or `overstay`
+ * (inside after the window). Returns the enquiry id.
+ */
+export function addSelfViewingLead(stage: string): string | null {
+  const now = Date.now();
+  const at = (startOffsetMin: number) => {
+    const start = new Date(now + startOffsetMin * MINUTE);
+    start.setUTCSeconds(0, 0);
+    return { startsAt: start.toISOString(), endsAt: new Date(start.getTime() + 30 * MINUTE).toISOString() };
+  };
+  const leadId = crypto.randomUUID();
+  const viewingId = crypto.randomUUID();
+  let v: Schemas["LeadViewingDto"];
+  if (stage === "requested") v = viewing(viewingId, slot(1, 11), "requested", null, "self");
+  else if (stage === "issued") {
+    const when = at(180);
+    v = viewing(viewingId, when, "confirmed", null, "self", accessWindow(when.startsAt));
+  } else if (stage === "entered" || stage === "incident") {
+    const when = at(-10);
+    v = viewing(viewingId, when, "confirmed", null, "self", {
+      ...accessWindow(when.startsAt),
+      state: "entered",
+      enteredAt: new Date(now - 8 * MINUTE).toISOString(),
+      enteredSource: "lock_log",
+      ...(stage === "incident"
+        ? {
+            incidentAt: new Date(now - 3 * MINUTE).toISOString(),
+            incidentNote: "ก๊อกน้ำในห้องน้ำรั่ว น้ำนองพื้น",
+            workOrderId: "9a1b2c3d-0000-4000-8000-00000000c901",
+          }
+        : {}),
+    });
+  } else if (stage === "overstay") {
+    const when = at(-90);
+    v = viewing(viewingId, when, "confirmed", null, "self", {
+      ...accessWindow(when.startsAt),
+      state: "entered",
+      enteredAt: new Date(now - 88 * MINUTE).toISOString(),
+      enteredSource: "prospect",
+    });
+  } else return null;
+  state.leads.push(
+    lead({
+      id: leadId,
+      name: "Kanokwan Visitor",
+      state: "viewing_booked",
+      messages: [["prospect", "ขอชมห้องด้วยตัวเองค่ะ ยืนยันตัวตนแล้ว", 5]],
+      viewings: [v],
+      verified: true,
+    }),
+  );
+  return leadId;
 }
 
 function lead(input: {
@@ -222,6 +332,17 @@ const unbooked = (l: MockLead, viewings: Schemas["LeadViewingDto"][]): Schemas["
       : "new"
     : l.dto.state;
 
+/** `viewing.self.enabled` as the owner settings hold it (G7, O-024: off by default). */
+function selfViewingEnabled(): boolean {
+  return state.owner.settings.find((setting) => setting.key === "viewing.self.enabled")?.value === true;
+}
+
+/** Mock control (G7): turns `viewing.self.enabled` on or off for the sample tenants. */
+export function setSelfViewingEnabled(on: boolean) {
+  const setting = state.owner.settings.find((one) => one.key === "viewing.self.enabled");
+  if (setting) setting.value = on;
+}
+
 /** `/v1/owner/leads*` and `/v1/owner/listing-viewings*` (B7.3, D-252). */
 export const leadHandlers: HttpHandler[] = [
   http.get("*/v1/owner/leads", ({ request }) => {
@@ -314,17 +435,28 @@ export const leadHandlers: HttpHandler[] = [
   http.get("*/v1/owner/listing-viewings", ({ request }) => {
     const ok = owner(request, "owner.listingViewings.list");
     if (ok instanceof Response) return ok;
-    const from = Date.now() - 12 * HOUR;
+    // B7.3 default: from 12 hours ago, open-ended; G7's calendar passes a week (`from` / `to`).
+    const params = new URL(request.url).searchParams;
+    const from = params.get("from") ? Date.parse(params.get("from")!) : Date.now() - 12 * HOUR;
+    const to = params.get("to") ? Date.parse(params.get("to")!) : Number.POSITIVE_INFINITY;
     return json(
       mine(ok.tenantId)
         .flatMap((l) =>
           l.dto.viewings
-            .filter((v) => v.state !== "declined" && v.state !== "cancelled" && Date.parse(v.startsAt) >= from)
-            .map((v) => ({
+            .filter(
+              (v) =>
+                v.state !== "declined" &&
+                v.state !== "cancelled" &&
+                Date.parse(v.startsAt) >= from &&
+                Date.parse(v.startsAt) < to,
+            )
+            .map((v): Schemas["OwnerViewingDto"] => ({
               id: v.id,
               startsAt: v.startsAt,
               endsAt: v.endsAt,
               state: v.state,
+              mode: v.mode,
+              access: v.access,
               leadId: l.dto.id,
               prospectName: l.dto.prospect.name,
               listing: { id: l.dto.listing.id, title: l.dto.listing.title, slug: l.dto.listing.slug },
@@ -332,6 +464,45 @@ export const leadHandlers: HttpHandler[] = [
         )
         .sort((a, b) => a.startsAt.localeCompare(b.startsAt)),
     );
+  }),
+  // G7 (D-295): the entry log (audited at the API; locks, credential windows, door events — never a code).
+  http.get("*/v1/owner/listing-viewings/:viewingId/access-log", ({ request, params }) => {
+    const op = "owner.listingViewings.accessLog";
+    const ok = owner(request, op);
+    if (ok instanceof Response) return ok;
+    const id = String(params.viewingId);
+    const v = byViewing(ok.tenantId, id)?.dto.viewings.find((x) => x.id === id);
+    if (!v?.access) return problem(op, "http.not_found");
+    return json(logFor(id, v.access));
+  }),
+  // G7: end a self viewing's door codes now (reason, Idempotency-Key).
+  http.post("*/v1/owner/listing-viewings/:viewingId/actions/end-access", ({ request, params }) => {
+    const op = "owner.listingViewings.endAccess";
+    const ok = mutating(request, op);
+    if (ok instanceof Response) return ok;
+    return idempotent(request, op, (input) => {
+      const id = String(params.viewingId);
+      const l = byViewing(ok.tenantId, id);
+      const v = l?.dto.viewings.find((x) => x.id === id);
+      if (!l || !v?.access) return problem(op, "http.not_found");
+      const reason = typeof input.reason === "string" ? input.reason.trim() : "";
+      if (!reason)
+        return problem(op, "validation.failed", {
+          errors: [{ path: "reason", code: "required", message: "required" }],
+        });
+      if (v.access.closedAt || !["issued", "entered"].includes(v.access.state))
+        return problem(op, "viewing.access_invalid_state");
+      const at = new Date().toISOString();
+      const access: Schemas["ViewingAccessSummaryDto"] = {
+        ...v.access,
+        state: v.access.state === "entered" ? "exited" : "cancelled",
+        exitedAt: v.access.state === "entered" ? at : v.access.exitedAt,
+        closedAt: at,
+        closeReason: reason,
+      };
+      save(l, { viewings: l.dto.viewings.map((x) => (x.id === id ? { ...x, access } : x)) });
+      return { status: 200, body: access };
+    });
   }),
   http.post("*/v1/owner/listing-viewings/:viewingId/actions/:action", async ({ request, params }) => {
     const action = String(params.action);
@@ -346,7 +517,13 @@ export const leadHandlers: HttpHandler[] = [
     const at = new Date().toISOString();
     if (action === "confirm") {
       if (v.state !== "requested" || started) return problem(op, "listing.viewing_invalid_state");
-      const viewings = l.dto.viewings.map((x) => (x.id === id ? { ...x, state: "confirmed" as const } : x));
+      // G7: confirming a self viewing re-checks the switch and issues the door codes (never shown to the owner).
+      if (v.mode === "self" && !selfViewingEnabled()) return problem(op, "viewing.self_unavailable");
+      const viewings = l.dto.viewings.map((x) =>
+        x.id === id
+          ? { ...x, state: "confirmed" as const, access: x.mode === "self" ? accessWindow(x.startsAt) : x.access }
+          : x,
+      );
       return save(l, { viewings, lastOwnerAt: at });
     }
     if (action === "decline") {

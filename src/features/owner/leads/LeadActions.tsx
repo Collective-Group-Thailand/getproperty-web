@@ -17,11 +17,15 @@ import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Field } from "@/ui/components/Field";
 import { Textarea } from "@/ui/components/Input";
+import { Badge } from "@/ui/components/Badge";
+import { IconKey } from "@/ui/icons/glyphs/key";
 import { NativeSelect } from "@/ui/components/NativeSelect";
 import { IconCalendarCheck } from "@/ui/icons/glyphs/calendar-check";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 import { IconLease } from "@/ui/icons/glyphs/lease";
 import { IconXCircle } from "@/ui/icons/glyphs/x-circle";
+
+import { SelfViewingAccess } from "../viewings/SelfViewingAccess";
 
 type Lead = Schemas["OwnerLeadDto"];
 type Viewing = Schemas["LeadViewingDto"];
@@ -45,6 +49,7 @@ const LIVE = new Set<Viewing["state"]>(["requested", "confirmed"]);
  */
 export function LeadViewings({ viewings, now }: { viewings: Viewing[]; now: number }) {
   const t = useTranslations("owner.leads.viewings");
+  const v = useTranslations("owner.viewings");
   const locale = useLocale() as Locale;
   if (viewings.length === 0) return <p className="text-muted text-sm">{t("empty")}</p>;
   return (
@@ -59,14 +64,25 @@ export function LeadViewings({ viewings, now }: { viewings: Viewing[]; now: numb
             className="flex flex-col gap-2 py-3 first:pt-0 last:pb-0"
             data-testid="lead-viewing"
             data-state={viewing.state}
+            data-mode={viewing.mode}
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <span className="font-medium">{date}</span>
+              <span className="flex flex-wrap items-center gap-2">
+                <span className="font-medium">{date}</span>
+                {viewing.mode === "self" ? (
+                  <Badge tone="primary" size="sm" icon={IconKey}>
+                    {v("mode.self")}
+                  </Badge>
+                ) : null}
+              </span>
               <StatusBadgeOf map={VIEWING_STATUS} value={viewing.state} size="sm" />
             </div>
             {viewing.note ? <p className="text-muted text-sm">{t("note", { note: viewing.note })}</p> : null}
             {viewing.reason ? <p className="text-muted text-sm">{t("reason", { reason: viewing.reason })}</p> : null}
             {viewing.rescheduledTo ? <p className="text-muted text-sm">{t("rescheduled")}</p> : null}
+            {viewing.mode === "self" && viewing.access ? (
+              <SelfViewingAccess viewingId={viewing.id} access={viewing.access} now={now} />
+            ) : null}
             {LIVE.has(viewing.state) && !started ? (
               <div className="flex flex-wrap gap-2">
                 {viewing.state === "requested" ? (
@@ -76,7 +92,7 @@ export function LeadViewings({ viewings, now }: { viewings: Viewing[]; now: numb
                     size="sm"
                     testId="viewing-confirm"
                     title={t("confirmTitle", { date })}
-                    description={t("confirmBody")}
+                    description={viewing.mode === "self" ? v("confirmSelf") : t("confirmBody")}
                     confirmLabel={t("confirm")}
                     successMessage={t("confirmed")}
                     onConfirm={() =>

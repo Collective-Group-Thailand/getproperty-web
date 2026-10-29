@@ -17,11 +17,13 @@ import { IconSettings } from "@/ui/icons/glyphs/settings";
 import { IconTag } from "@/ui/icons/glyphs/tag";
 import { IconMegaphone } from "@/ui/icons/glyphs/megaphone";
 import { IconUpload } from "@/ui/icons/glyphs/upload";
+import { IconStar } from "@/ui/icons/glyphs/star";
 
 import { ownerPath } from "../shared/links";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { section, type OwnerContext } from "../shared/server";
 import { SettingValue } from "../shared/SettingValue";
+import { EnergyInsightCard } from "./EnergyInsightCard";
 import { NewFloorButton, NewUtilityAccountButton, RemoveUtilityAccountButton } from "./forms";
 
 /** Billing-cycle and reading-policy settings shown on a building (their editor is F2 2.6). */
@@ -89,6 +91,12 @@ export async function BuildingDetail({ context, buildingId }: { context: OwnerCo
                 <Button asChild variant="secondary" iconStart={IconMegaphone}>
                   <a href={ownerPath(locale, "/promote#building-boost")} data-testid="open-promote">
                     {t("promote")}
+                  </a>
+                </Button>
+                {/* G9 (D-301): verified reviews of this building (reply / report). */}
+                <Button asChild variant="secondary" iconStart={IconStar}>
+                  <a href={ownerPath(locale, `/reviews?building=${building.id}`)} data-testid="open-reviews">
+                    {t("reviews")}
                   </a>
                 </Button>
                 <Button asChild variant="secondary" iconStart={IconUpload}>
@@ -266,6 +274,9 @@ export async function BuildingDetail({ context, buildingId }: { context: OwnerCo
           )}
         </Card>
       </div>
+
+      {/* G9 (D-301): the building's energy score and the owner's choice to share it with getenergy. */}
+      <EnergyInsightCard api={api} buildingId={building.id} locale={locale} />
     </OwnerPage>
   );
 }

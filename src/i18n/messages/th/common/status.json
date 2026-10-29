@@ -461,5 +461,31 @@
     "declined": "ผู้เช่าไม่ต่อ",
     "expired": "หมดเวลาตอบ",
     "withdrawn": "ถอนข้อเสนอ"
+  },
+  "viewingAccess": {
+    "issued": "ออกรหัสแล้ว",
+    "entered": "ผู้ชมอยู่ในห้อง",
+    "exited": "ออกแล้ว",
+    "expired": "หมดช่วงเวลา",
+    "no_show": "ไม่มาตามนัด",
+    "cancelled": "ปิดแล้ว"
+  },
+  "rentalHandoff": {
+    "invited": "ส่งคำเชิญแล้ว",
+    "accepted": "ร่างประกาศ",
+    "listed": "ลงประกาศแล้ว",
+    "declined": "ปฏิเสธ",
+    "expired": "หมดอายุ"
+  },
+  "employerAgreement": {
+    "active": "มีผลอยู่",
+    "ended": "สิ้นสุดแล้ว"
+  },
+  "buildingReview": {
+    "pending_moderation": "รอตรวจสอบ",
+    "published": "เผยแพร่แล้ว",
+    "rejected": "ไม่อนุมัติ",
+    "hidden": "getproperty ซ่อนไว้",
+    "withdrawn": "ผู้เขียนถอนแล้ว"
   }
 }

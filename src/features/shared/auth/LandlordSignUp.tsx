@@ -40,7 +40,10 @@ export function LandlordSignUp({
   oauthError,
   kind = "landlord",
   nameLabels,
+  nextHref,
 }: {
+  /** A same-origin page to open instead of the portfolio (a getbuild invitation's claim page, G8) — already checked. */
+  nextHref?: string;
   /** Where the new account starts: the portfolio (landlord) or the mandated units (agency). */
   portfolioHref: string;
   /** An estate agency signs up the same way (G2, D-293) and gets a tenant of type `agency`. */
@@ -98,7 +101,7 @@ export function LandlordSignUp({
         code.reset({ code: "" });
         return;
       }
-      window.location.assign(result.data.created ? `${portfolioHref}?welcome=1` : portfolioHref);
+      window.location.assign(nextHref ?? (result.data.created ? `${portfolioHref}?welcome=1` : portfolioHref));
     });
 
   return (
@@ -160,6 +163,7 @@ export function LandlordSignUp({
             providers={providers}
             intent="signup"
             locale={locale}
+            next={nextHref}
             signUpAs={kind === "agency" ? "agency" : undefined}
             beforeNavigate={() => {
               const name = details.getValues("displayName").trim();

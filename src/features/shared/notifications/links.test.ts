@@ -10,6 +10,12 @@ describe("notificationHref", () => {
     expect(notificationHref("owner", "etax.rejected", "en")).toBe("/en/reports/etax?status=rejected");
   });
 
+  it("opens the viewing calendar for urgent self-viewing alerts (G7)", () => {
+    expect(notificationHref("owner", "listing.self_viewing_entered", "th")).toBe("/leads/viewings");
+    expect(notificationHref("owner", "listing.self_viewing_incident", "en")).toBe("/en/leads/viewings");
+    expect(notificationHref("owner", "listing.self_viewing_overstayed", "th")).toBe("/leads/viewings");
+  });
+
   it("gives no link for unknown events, missing event types or other zones", () => {
     expect(notificationHref("owner", "lease.signed.unknown", "th")).toBeNull();
     expect(notificationHref("owner", null, "th")).toBeNull();

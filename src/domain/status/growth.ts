@@ -4,6 +4,10 @@ import { IconCalendarCheck } from "@/ui/icons/glyphs/calendar-check";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 import { IconClock } from "@/ui/icons/glyphs/clock";
 import { IconDelete } from "@/ui/icons/glyphs/delete";
+import { IconDoor } from "@/ui/icons/glyphs/door";
+import { IconHide } from "@/ui/icons/glyphs/hide";
+import { IconKey } from "@/ui/icons/glyphs/key";
+import { IconMegaphone } from "@/ui/icons/glyphs/megaphone";
 import { IconEdit } from "@/ui/icons/glyphs/edit";
 import { IconReceipt } from "@/ui/icons/glyphs/receipt";
 import { IconSyncPending } from "@/ui/icons/glyphs/sync-pending";
@@ -79,3 +83,58 @@ export const SPONSORED_CAMPAIGN_STATUS = defineStatuses<SponsoredCampaignState>(
 });
 
 export const SPONSORED_CAMPAIGN_VALUES = Object.keys(SPONSORED_CAMPAIGN_STATUS) as SponsoredCampaignState[];
+
+/**
+ * `ViewingAccessState` (G7, D-295) — the door-code window of a self viewing: codes issued (not used yet), the visitor
+ * is inside, they left, the window ended unused after an entry, nobody came, closed early (cancelled / ended by you).
+ */
+export type ViewingAccessState = Schemas["ViewingAccessState"];
+
+export const VIEWING_ACCESS_STATUS = defineStatuses<ViewingAccessState>("viewingAccess", {
+  issued: { tone: "info", icon: IconKey },
+  entered: { tone: "warning", icon: IconDoor },
+  exited: { tone: "success", icon: IconCheckCircle },
+  expired: { tone: "neutral", icon: IconClock },
+  no_show: { tone: "neutral", icon: IconXCircle },
+  cancelled: { tone: "neutral", icon: IconXCircle },
+});
+
+/**
+ * `RentalHandoffState` (G8, D-299) — a unit handed over from getbuild: invitation waiting, claimed (listing draft),
+ * listing published, declined by the buyer, invitation expired.
+ */
+export type RentalHandoffState = Schemas["RentalHandoffState"];
+
+export const RENTAL_HANDOFF_STATUS = defineStatuses<RentalHandoffState>("rentalHandoff", {
+  invited: { tone: "info", icon: IconSyncPending },
+  accepted: { tone: "primary", icon: IconEdit },
+  listed: { tone: "success", icon: IconMegaphone },
+  declined: { tone: "neutral", icon: IconXCircle },
+  expired: { tone: "neutral", icon: IconClock },
+});
+
+export const RENTAL_HANDOFF_VALUES = Object.keys(RENTAL_HANDOFF_STATUS) as RentalHandoffState[];
+
+/** `EmployerAgreementState` (G8, D-299) — an employer paying for its workers' rooms: in force or ended. */
+export type EmployerAgreementState = Schemas["EmployerAgreementState"];
+
+export const EMPLOYER_AGREEMENT_STATUS = defineStatuses<EmployerAgreementState>("employerAgreement", {
+  active: { tone: "success", icon: IconCheckCircle },
+  ended: { tone: "neutral", icon: IconXCircle },
+});
+
+/**
+ * `BuildingReviewState` (G9, D-301) — a verified tenant's review: waiting for the getproperty moderators, public,
+ * rejected by them, hidden by them for abuse, withdrawn by its author.
+ */
+export type BuildingReviewState = Schemas["BuildingReviewState"];
+
+export const BUILDING_REVIEW_STATUS = defineStatuses<BuildingReviewState>("buildingReview", {
+  pending_moderation: { tone: "info", icon: IconClock },
+  published: { tone: "success", icon: IconCheckCircle },
+  rejected: { tone: "danger", icon: IconXCircle },
+  hidden: { tone: "warning", icon: IconHide },
+  withdrawn: { tone: "neutral", icon: IconUndo },
+});
+
+export const BUILDING_REVIEW_VALUES = Object.keys(BUILDING_REVIEW_STATUS) as BuildingReviewState[];

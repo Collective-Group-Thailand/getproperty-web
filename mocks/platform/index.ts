@@ -10,6 +10,8 @@ import { guideHandlers } from "./guides";
 import { operationHandlers } from "./operations";
 import { storageAdminHandlers } from "./storage";
 import { initialPlatformWorld } from "./world";
+import { insightAdminHandlers } from "../owner/insight";
+import { networkAdminHandlers } from "../owner/network";
 
 /** The admin surface's stateful handlers (F5); the contract-generated handlers answer what is not here. */
 export const platformHandlers: HttpHandler[] = [
@@ -21,6 +23,8 @@ export const platformHandlers: HttpHandler[] = [
   ...storageAdminHandlers,
   ...growthAdminHandlers,
   ...broadcastAdminHandlers,
+  ...insightAdminHandlers,
+  ...networkAdminHandlers,
 ];
 
 export function resetPlatformWorld(): void {

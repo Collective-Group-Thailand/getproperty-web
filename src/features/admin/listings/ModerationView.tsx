@@ -41,7 +41,7 @@ const moderationHref = (next: ModerationTab) => (next === "queue" ? "/listings" 
 /**
  * The listings section's tabs: the moderation queues (`admin.listing.moderate`), owner verification and the photo
  * service orders of G5 (`admin.listing.verify` — the team that checks owners books the photographer, D-297) and the
- * sponsored LINE campaigns of G6 (D-300).
+ * sponsored LINE campaigns of G6 (D-300), verified reviews of G9 (D-301) and getbuild handoffs of G8 (D-299).
  */
 export async function ListingsTabs({ context, current }: { context: AdminContext; current: string }) {
   const t = await getTranslations("admin.listings");
@@ -54,10 +54,18 @@ export async function ListingsTabs({ context, current }: { context: AdminContext
         ...MODERATION_TABS.filter((one) =>
           one === "verifications" ? verify : can(context.me, "admin.listing.moderate"),
         ).map((one) => ({ href: moderationHref(one), label: t(`tab.${one}`), testId: `listings-tab-${one}` })),
+        // G9 (D-301): verified building reviews to moderate (the listing moderation team).
+        ...(can(context.me, "admin.listing.moderate")
+          ? [{ href: "/listings/reviews", label: t("tab.reviews"), testId: "listings-tab-reviews" }]
+          : []),
         ...(verify ? [{ href: "/listings/media", label: t("tab.media"), testId: "listings-tab-media" }] : []),
         // G6 (D-300): sponsored LINE campaigns (read with `admin.tenant.read`, stopped with `admin.listing.moderate`).
         ...(can(context.me, "admin.tenant.read")
           ? [{ href: "/listings/broadcasts", label: t("tab.broadcasts"), testId: "listings-tab-broadcasts" }]
+          : []),
+        // G8 (D-299): getbuild rental handoffs and their delivery (read `admin.tenant.read`, resend `.manage`).
+        ...(can(context.me, "admin.tenant.read")
+          ? [{ href: "/listings/handoffs", label: t("tab.handoffs"), testId: "listings-tab-handoffs" }]
           : []),
       ]}
     />

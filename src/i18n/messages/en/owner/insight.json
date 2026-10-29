@@ -1,0 +1,151 @@
+{
+  "reviews": {
+    "crumb": "Listings",
+    "title": "Reviews",
+    "description": "What people who lived in your buildings say. Only someone who stayed under one of your leases can write a review, and the getproperty team checks each one before it is public.",
+    "howTitle": "How reviews work",
+    "howBody": "You can reply publicly to each review and report one that breaks the rules. Hiding or removing a review is up to the getproperty moderators only — never the owner. Reviewers' names, units and exact dates are never shown.",
+    "filter": {
+      "building": "Building",
+      "allBuildings": "All buildings",
+      "state": "Shown",
+      "allStates": "Public and hidden",
+      "states": {
+        "published": "Public",
+        "hidden": "Hidden by getproperty"
+      }
+    },
+    "empty": {
+      "title": "No reviews yet",
+      "description": "Residents can review a building after they move out, or after a few months of living there."
+    },
+    "stars": "{rating} out of 5 stars",
+    "verified": "Verified tenant",
+    "tenureFrom": "Lives there since {from}",
+    "tenureFromTo": "Lived there {from} – {to}",
+    "hiddenTitle": "Hidden by the getproperty moderators",
+    "reportedOn": "You reported it on {date}",
+    "yourReply": "Your public reply",
+    "publishedOn": "Public since {date}",
+    "actions": {
+      "reply": "Reply",
+      "editReply": "Edit reply",
+      "replyTitle": "Reply publicly",
+      "editReplyTitle": "Edit your public reply",
+      "replyHint": "Everyone who reads the review sees your reply under it. Keep it factual and polite.",
+      "replyLabel": "Your reply",
+      "replyRules": "Up to 1,000 characters. No phone numbers, e-mail, LINE IDs, links or account numbers.",
+      "publishReply": "Publish reply",
+      "replied": "Reply published",
+      "report": "Report",
+      "reportTitle": "Report this review to the moderators",
+      "reportHint": "The review stays public while the getproperty team looks at it. Tell them what breaks the rules — e.g. false facts, insults or someone's personal data.",
+      "reportReason": "What is wrong",
+      "reportReasonHint": "Up to 1,000 characters.",
+      "sendReport": "Send report",
+      "reported": "Report sent to the moderators"
+    }
+  },
+  "energy": {
+    "title": "Energy insight",
+    "description": "How efficiently this building uses electricity, from its meters' hourly data.",
+    "window": "{from} – {to}",
+    "kwh": "{value} kWh",
+    "kwhShare": "{value} kWh ({share}%)",
+    "kw": "{value} kW",
+    "hours": "{value} h a day",
+    "scoreLabel": "Energy score {score} out of 100",
+    "model": "Score model {model}",
+    "metrics": {
+      "total": "Electricity used",
+      "common": "Common areas",
+      "peak": "Highest demand",
+      "average": "Average demand",
+      "load": "Load factor",
+      "pump": "Water pump",
+      "basis": "Measured from",
+      "days": "Days with data"
+    },
+    "basis": {
+      "main": "Main meters",
+      "sum": "Unit + common-area meters"
+    },
+    "penalties": {
+      "title": "What took points off",
+      "commonShare": "High common-area share",
+      "lowLoadFactor": "Peaky demand (low load factor)",
+      "pumpHours": "Long pump running hours",
+      "points": "−{points} pts",
+      "none": "No points off",
+      "note": "The score model is provisional and may change with getenergy."
+    },
+    "insufficient": {
+      "title": "Not enough data yet",
+      "body": "We have {days, plural, =0 {no days} one {# day} other {# days}} of hourly electricity data in this window. The score appears once the building's meters have reported for long enough."
+    },
+    "share": {
+      "title": "Share with getenergy",
+      "what": "getenergy, Collective's energy service, can suggest savings (solar, pumps, tariffs). Only totals are shared: the score, the figures above, the province and district, and the building's size band — never names, contacts, unit numbers or anyone's use.",
+      "ownerOnly": "Only the building's owner can choose to share its figures. You can read the score.",
+      "agree": "I have read the text above and agree to share this building's figures with getenergy",
+      "version": "Text version {version}",
+      "start": "Share with getenergy",
+      "noText": "The consent text is not available right now. Try again later.",
+      "onTitle": "Sharing with getenergy",
+      "onBody": "Shared since {date}.",
+      "lastShared": "Last sent {date} (score {score}).",
+      "notSentYet": "Nothing has been sent yet.",
+      "offSince": "You stopped sharing on {date}.",
+      "stop": "Stop sharing",
+      "stopTitle": "Stop sharing this building's figures?",
+      "stopBody": "Nothing more is sent, anything waiting is cancelled and getenergy is asked to delete what it received.",
+      "stopped": "Sharing stopped"
+    }
+  },
+  "assistant": {
+    "title": "Draft with AI",
+    "intro": "A title and description written from this listing's own facts. Check every detail before you save.",
+    "quota": "{used} of {limit} this month",
+    "languages": "Languages",
+    "language": {
+      "th": "Thai",
+      "en": "English",
+      "zh": "Chinese"
+    },
+    "photos": "Also look at the photos",
+    "photosHint": "The first photos are read to describe the room. They are never changed.",
+    "noPhotos": "Add photos first to use them.",
+    "generate": "Write drafts",
+    "again": "Write new drafts",
+    "nothingSaved": "Nothing is saved until you press Save.",
+    "exhausted": "This month's drafts are used up.",
+    "use": {
+      "th": "Use in the Thai fields",
+      "en": "Use in the English fields"
+    },
+    "used": "Draft copied into the form — check it, then save",
+    "copy": "Copy",
+    "copied": "Copied",
+    "zhNote": "The listing keeps Thai and English only; post the Chinese text yourself where you share the listing.",
+    "photosUsed": "{count, plural, one {# photo was read.} other {# photos were read.}}",
+    "off": "AI drafts are switched off for your account.",
+    "problem": {
+      "assistant.limit_reached": {
+        "title": "Monthly drafts used up",
+        "body": "Your account has used this month's AI drafts. You can still write the listing yourself; the count starts again next month."
+      },
+      "assistant.unavailable": {
+        "title": "The AI service is not available",
+        "body": "Nothing was counted. Try again in a few minutes, or write the text yourself."
+      },
+      "assistant.output_rejected": {
+        "title": "The draft was not usable",
+        "body": "It contained contact or account details, so we did not show it. Try again — it did not count towards your drafts."
+      },
+      "assistant.disabled": {
+        "title": "AI drafts are switched off",
+        "body": "The getproperty team has switched the assistant off for now."
+      }
+    }
+  }
+}

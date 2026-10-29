@@ -24,6 +24,8 @@ import { agencyHandlers, initialAgencyWorld } from "./agency";
 import { contractHandlers, counterpartySignsContract, initialContractsWorld, residentAnswersOffer } from "./contracts";
 import { growthHandlers, initialGrowthWorld } from "./growth";
 import { broadcastHandlers, initialBroadcastWorld } from "./broadcast";
+import { initialInsightWorld, insightHandlers } from "./insight";
+import { initialNetworkWorld, networkHandlers } from "./network";
 import { initialOwnerWorld, type OwnerWorld } from "./world";
 
 /** The owner surface's stateful handlers (F2); the contract-generated handlers answer what is not here. */
@@ -44,6 +46,8 @@ export const ownerHandlers: HttpHandler[] = [
   ...contractHandlers,
   ...growthHandlers,
   ...broadcastHandlers,
+  ...networkHandlers,
+  ...insightHandlers,
   ...portfolioHandlers,
   ...listingHandlers,
   ...leadHandlers,
@@ -150,6 +154,16 @@ export function resetOwnerWorld(part: string | null): boolean {
     state.broadcast = initialBroadcastWorld();
     if (part) return true;
   }
+  if (!part || part === "network") {
+    // getbuild handoffs and employer agreements (G8) live beside the owner world.
+    state.network = initialNetworkWorld();
+    if (part) return true;
+  }
+  if (!part || part === "insight") {
+    // Reviews, energy opt-ins and the listing assistant (G9) live beside the owner world.
+    state.insight = initialInsightWorld();
+    if (part) return true;
+  }
   if (!part || part === "contracts") {
     // The contract library, signable contracts and renewal offers (G3) live beside the owner world.
     state.contracts = initialContractsWorld();
@@ -177,3 +191,5 @@ export { counterpartySignsContract, providerPays, residentAnswers, residentAnswe
 export { storagePackagePaid, storagePricePublished } from "./storage";
 export { failPost, growthPaid, publishGrowthPrice, setFacebookMode, setFreeBuildingBoost } from "./growth";
 export { sendCampaign, setBroadcastEnabled, setBroadcastPrice } from "./broadcast";
+export { assistantControl } from "./insight";
+export { addSelfViewingLead, setSelfViewingEnabled } from "./leads";

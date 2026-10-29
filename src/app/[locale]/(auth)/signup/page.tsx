@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { redirect } from "next/navigation";
 
+import { safeNextPath } from "@/domain/forms/safe-next";
 import { AuthFrame } from "@/features/shared/auth/AuthFrame";
 import { LandlordSignUp } from "@/features/shared/auth/LandlordSignUp";
 import { getOperatorActor } from "@/lib/auth/actor";
@@ -23,14 +24,16 @@ export default async function LandlordSignUpPage({
   searchParams,
 }: {
   params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ oauthError?: string; as?: string }>;
+  searchParams: Promise<{ oauthError?: string; as?: string; next?: string }>;
 }) {
   const { locale } = await params;
-  const { oauthError, as } = await searchParams;
+  const { oauthError, as, next } = await searchParams;
   const agency = as === "agency";
+  // G8 (D-299): a buyer arriving from a getbuild invitation comes back to its claim page once signed up.
+  const nextHref = agency ? undefined : (safeNextPath(next) ?? undefined);
   setRequestLocale(locale);
   const actor = await getOperatorActor("owner");
-  if (actor?.me.currentTenant) redirect(getPathname({ href: "/dashboard", locale }));
+  if (actor?.me.currentTenant) redirect(nextHref ?? getPathname({ href: "/dashboard", locale }));
 
   const t = await getTranslations("auth.signUp");
   const a = await getTranslations("owner.agency.signUp");
@@ -67,7 +70,11 @@ export default async function LandlordSignUpPage({
           </p>
           <p>
             {t("haveAccount")}{" "}
-            <a className="text-primary font-semibold" href={href("/login")} data-testid="signup-to-login">
+            <a
+              className="text-primary font-semibold"
+              href={nextHref ? `${href("/login")}?next=${encodeURIComponent(nextHref)}` : href("/login")}
+              data-testid="signup-to-login"
+            >
               {t("signIn")}
             </a>
           </p>
@@ -81,6 +88,7 @@ export default async function LandlordSignUpPage({
         locale={locale}
         providers={oauthProviders()}
         oauthError={oauthError?.slice(0, 64)}
+        nextHref={nextHref}
       />
     </AuthFrame>
   );

@@ -7,7 +7,9 @@
     "reported": "Reported",
     "verifications": "Owner verification",
     "media": "Photo services",
-    "broadcasts": "LINE broadcasts"
+    "broadcasts": "LINE broadcasts",
+    "reviews": "Reviews",
+    "handoffs": "getbuild handoffs"
   },
   "col": {
     "listing": "Listing",

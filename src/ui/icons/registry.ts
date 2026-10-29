@@ -113,6 +113,8 @@ import { IconCalculator } from "./glyphs/calculator";
 import { IconBook } from "./glyphs/book";
 import { IconGlobe } from "./glyphs/globe";
 import { IconPercent } from "./glyphs/percent";
+import { IconStar } from "./glyphs/star";
+import { IconSparkles } from "./glyphs/sparkles";
 import { IconThemeSystem } from "./glyphs/theme-system";
 import { IconThemeLight } from "./glyphs/theme-light";
 import { IconThemeDark } from "./glyphs/theme-dark";
@@ -230,6 +232,8 @@ export const ICONS: { readonly [N in IconName]: IconGlyph<N> } = {
   book: IconBook,
   globe: IconGlobe,
   percent: IconPercent,
+  star: IconStar,
+  sparkles: IconSparkles,
   "theme-system": IconThemeSystem,
   "theme-light": IconThemeLight,
   "theme-dark": IconThemeDark,

@@ -13,6 +13,8 @@ import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Icon } from "@/ui/icons";
 import { IconAdd } from "@/ui/icons/glyphs/add";
+import { IconBuilding } from "@/ui/icons/glyphs/building";
+import { IconChat } from "@/ui/icons/glyphs/chat";
 import { IconHide } from "@/ui/icons/glyphs/hide";
 import { IconImage } from "@/ui/icons/glyphs/image";
 import { IconMegaphone } from "@/ui/icons/glyphs/megaphone";
@@ -28,9 +30,23 @@ import { section, type OwnerContext } from "../shared/server";
 export async function ListingsView({ context }: { context: OwnerContext }) {
   const t = await getTranslations("owner.listings");
   const { api, locale } = context;
-  const listings = await section(unwrap(api.GET("/v1/owner/listings")));
+  const [listings, handoffs] = await Promise.all([
+    section(unwrap(api.GET("/v1/owner/listings"))),
+    // G8 (D-299): units handed over from getbuild — shown only when this tenant claimed one.
+    section(unwrap(api.GET("/v1/owner/rental-handoffs"))),
+  ]);
+  const handoffCount = handoffs.data?.data.length ?? 0;
   const create = (
     <>
+      {/* G9 (D-301): verified reviews of my buildings (no owner menu key yet — contract request). */}
+      <Button asChild variant="secondary" iconStart={IconChat} data-testid="listing-reviews">
+        <a href={ownerPath(locale, "/reviews")}>{t("reviews")}</a>
+      </Button>
+      {handoffCount > 0 ? (
+        <Button asChild variant="secondary" iconStart={IconBuilding} data-testid="listing-handoffs">
+          <a href={ownerPath(locale, "/listings/handoffs")}>{t("handoffs", { count: handoffCount })}</a>
+        </Button>
+      ) : null}
       {/* G5: boosts, photo services and their invoices (no owner menu key yet — contract request). */}
       <Button asChild variant="secondary" iconStart={IconMegaphone} data-testid="listing-promotion">
         <a href={ownerPath(locale, "/promote")}>{t("promotion")}</a>

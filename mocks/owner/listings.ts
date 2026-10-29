@@ -665,3 +665,30 @@ export const listingHandlers: HttpHandler[] = [
     return json(v.dto);
   }),
 ];
+
+/**
+ * A listing draft made for a claimed getbuild handoff (G8, D-299): a new landlord unit (ownership from the transfer)
+ * and a draft prefilled from getbuild's facts with the developer's campaign tag. Returns the draft's ids.
+ */
+export function createListingDraft(
+  tenantId: string,
+  input: Partial<Schemas["ListingDto"]> & { titleTh: string; rent: string; campaignTag: string },
+): { id: string; unitId: string } {
+  const id = crypto.randomUUID();
+  const unitId = crypto.randomUUID();
+  const { campaignTag, ...fields } = input;
+  void campaignTag; // the API keeps it on the listing (`ops.listing.campaign_tag`); ListingDto does not show it
+  const listing: MockListing = {
+    tenantId,
+    reports: [],
+    dto: base({
+      ...fields,
+      id,
+      unitId,
+      slug: `${input.unitKind === "condo_unit" ? "condo" : (input.unitKind ?? "room")}-${input.bedrooms ?? 0}br-${id.replace(/-/g, "").slice(-10)}`,
+      address: [input.district, input.province].filter(Boolean).join(", ") || null,
+    }),
+  };
+  state.listingWorld.listings.push(listing);
+  return { id, unitId };
+}
