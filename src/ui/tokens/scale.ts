@@ -30,16 +30,16 @@ export const CONTAINER = {
 } as const;
 
 /**
- * Elevation 0–3, tinted with the warm ink rather than black so a shadow never muddies the paper.
+ * Elevation 0–3, tinted with the cool ink rather than black so a shadow stays clean on the neutral page.
  */
 export const SHADOW = {
   none: "none",
   /** 1 — a card resting on the page. */
-  card: "0 1px 2px rgb(40 35 28 / 0.06), 0 1px 1px rgb(40 35 28 / 0.04)",
+  card: "0 1px 2px rgb(16 24 40 / 0.06), 0 1px 1px rgb(16 24 40 / 0.04)",
   /** 2 — a card lifted on hover, a popover. */
-  raised: "0 4px 12px rgb(40 35 28 / 0.1)",
+  raised: "0 4px 12px rgb(16 24 40 / 0.1)",
   /** 3 — dialogs, sheets, menus. */
-  overlay: "0 12px 32px rgb(40 35 28 / 0.14)",
+  overlay: "0 12px 32px rgb(16 24 40 / 0.14)",
 } as const;
 
 /** 120 / 200 / 320 ms (design-system.md §2). */

@@ -79,8 +79,8 @@ export const BRAND = {
 } as const satisfies Record<string, Oklch>;
 
 export const PALETTES = {
-  /** Warm grey (a hint of the paper's hue) — the chrome of every zone. */
-  neutral: palette(75, 0.012),
+  /** Cool neutral grey (a hint of the brand blue) — the chrome of every zone (founder 2026-11-04: modern, no beige). */
+  neutral: palette(258, 0.014),
   /** The brand ramp, on the hue of the logo's house blue (261). Quiet fills and hover steps around `BRAND`. */
   brand: palette(261, 0.16),
   /** Success — paid, synced, healthy. Far from the brand blue on the wheel, so the two never merge. */
@@ -99,26 +99,26 @@ export const PALETTES = {
 export type PaletteName = keyof typeof PALETTES;
 
 /**
- * The warm paper the owner console sits on, and its dark counterpart. Hand-set rather than ramp
- * steps: a page background wants less chroma than a palette step and a touch more warmth.
+ * The cool neutral page every zone sits on, and its dark counterpart. Hand-set rather than ramp
+ * steps: a page background wants less chroma than a palette step.
  */
 export const PAPER = {
   light: {
-    page: { l: 0.978, c: 0.006, h: 80 },
-    band: { l: 0.955, c: 0.008, h: 80 },
+    page: { l: 0.982, c: 0.003, h: 260 },
+    band: { l: 0.962, c: 0.005, h: 260 },
     surface: WHITE,
-    border: { l: 0.9, c: 0.008, h: 80 },
-    ink: { l: 0.22, c: 0.012, h: 75 },
-    "ink-muted": { l: 0.44, c: 0.012, h: 75 },
-    "ink-subtle": { l: 0.58, c: 0.012, h: 75 },
+    border: { l: 0.918, c: 0.008, h: 262 },
+    ink: { l: 0.21, c: 0.022, h: 264 },
+    "ink-muted": { l: 0.45, c: 0.024, h: 262 },
+    "ink-subtle": { l: 0.585, c: 0.02, h: 262 },
   },
   dark: {
-    page: { l: 0.17, c: 0.008, h: 75 },
-    band: { l: 0.205, c: 0.009, h: 75 },
+    page: { l: 0.17, c: 0.012, h: 262 },
+    band: { l: 0.205, c: 0.014, h: 262 },
     surface: { l: 0.235, c: 0.01, h: 75 },
-    border: { l: 0.32, c: 0.01, h: 75 },
-    ink: { l: 0.95, c: 0.006, h: 80 },
-    "ink-muted": { l: 0.78, c: 0.01, h: 80 },
-    "ink-subtle": { l: 0.64, c: 0.01, h: 80 },
+    border: { l: 0.32, c: 0.016, h: 262 },
+    ink: { l: 0.95, c: 0.006, h: 262 },
+    "ink-muted": { l: 0.78, c: 0.012, h: 262 },
+    "ink-subtle": { l: 0.64, c: 0.014, h: 262 },
   },
 } as const satisfies Record<"light" | "dark", Record<string, Oklch>>;
