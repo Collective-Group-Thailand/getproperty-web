@@ -86,7 +86,7 @@ export function ListingUtility({ utility, locale }: { utility: Utility; locale: 
   return (
     <div className="flex flex-col gap-4" data-testid="listing-utility">
       {utility.averageBill3m ? (
-        <div className="border-fg flex flex-col gap-1 border-s-2 ps-4">
+        <div className="bg-surface border-border rounded-card flex flex-col gap-1 border p-4">
           <p className="text-muted m-0 text-sm">{t("average", { count: utility.basedOnBills })}</p>
           <p className="m-0 text-2xl font-semibold tabular-nums" data-testid="listing-utility-average">
             {formatTHB(utility.averageBill3m, locale)}

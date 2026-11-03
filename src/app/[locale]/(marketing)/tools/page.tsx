@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { JsonLdScript } from "@/features/owner/marketing/JsonLdScript";
+import { PageHead, WRAP } from "@/features/owner/marketing/Layout";
 import { marketingMetadata, marketingOrigin } from "@/features/owner/marketing/seo";
 import { breadcrumbSchema, itemListSchema, webPageSchema } from "@/features/owner/marketing/structured-data";
 import { TOOL_KEYS, TOOL_PATH } from "@/features/owner/marketing/tools/ToolFrame";
@@ -8,6 +9,7 @@ import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { Icon } from "@/ui/icons";
 import { IconCalculator } from "@/ui/icons/glyphs/calculator";
+import { IconChevronRight } from "@/ui/icons/glyphs/chevron-right";
 import { IconPercent } from "@/ui/icons/glyphs/percent";
 import { IconReceipt } from "@/ui/icons/glyphs/receipt";
 
@@ -44,29 +46,25 @@ export default async function Tools({ params }: Params) {
           itemListSchema(TOOL_KEYS.map((key) => `${origin}${href(TOOL_PATH[key])}`)),
         ]}
       />
-      <header className="mx-auto flex max-w-7xl flex-col gap-4 px-4 pt-14 pb-12 md:pt-20">
-        <p className="text-primary text-sm font-semibold">{t("eyebrow")}</p>
-        <h1 className="text-display max-w-3xl">{t("title")}</h1>
-        <p className="text-muted max-w-2xl text-lg">{t("intro")}</p>
-      </header>
-      <ul className="m-0 mx-auto grid max-w-7xl list-none gap-6 px-4 pb-24 md:grid-cols-3">
-        {TOOL_KEYS.map((key, index) => (
+      <PageHead eyebrow={t("eyebrow")} title={t("title")} lede={t("intro")} />
+      <ul className={`${WRAP} m-0 grid list-none gap-6 pb-16 md:grid-cols-3 md:pb-24`}>
+        {TOOL_KEYS.map((key) => (
           <li key={key}>
             <a
               href={href(TOOL_PATH[key])}
-              className="bg-surface border-border rounded-panel hover:border-fg group flex h-full flex-col gap-6 border p-7 transition-colors"
+              className="group bg-surface border-border rounded-card shadow-card hover:border-border-strong flex h-full flex-col gap-4 border p-6 transition-colors md:p-8"
             >
-              <span className="flex items-center justify-between">
-                <span className="bg-primary-subtle text-primary rounded-control inline-flex size-12 items-center justify-center">
-                  <Icon icon={ICONS[key]} className="text-2xl" />
-                </span>
-                <span className="text-muted font-mono text-sm">{String(index + 1).padStart(2, "0")}</span>
+              <Icon icon={ICONS[key]} className="text-primary text-2xl" />
+              <span className="flex flex-1 flex-col gap-2">
+                <span className="text-xl font-semibold">{t(`${key}.title`)}</span>
+                <span className="text-muted text-pretty">{t(`${key}.card`)}</span>
               </span>
-              <span className="flex flex-col gap-2">
-                <span className="text-2xl font-semibold group-hover:underline group-hover:underline-offset-4">
-                  {t(`${key}.title`)}
-                </span>
-                <span className="text-muted">{t(`${key}.card`)}</span>
+              <span className="text-primary inline-flex items-center gap-1 font-semibold">
+                {t("open")}
+                <Icon
+                  icon={IconChevronRight}
+                  className="transition-transform group-hover:translate-x-0.5 motion-reduce:transition-none"
+                />
               </span>
             </a>
           </li>

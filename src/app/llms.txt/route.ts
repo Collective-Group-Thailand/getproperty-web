@@ -17,7 +17,7 @@ export const dynamic = "force-dynamic";
 
 /** The FAQ entries each page shows (its `FAQ_KEYS`), in the same order. */
 const FAQ = {
-  "faq.items": ["what", "meters", "money", "residents", "import", "data"],
+  "faq.items": ["what", "meters", "residents", "import", "data"],
   "landlords.faq.items": ["person", "one", "tenant", "agent", "existing"],
   "pricing.faq.items": ["when", "who", "settle", "line", "meter", "invoice"],
 } as const;

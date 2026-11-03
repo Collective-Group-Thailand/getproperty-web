@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { redirect } from "next/navigation";
 
+import { TaskPage } from "@/features/owner/marketing/Layout";
 import { RentRecordCheck } from "@/features/owner/rentRecord/RentRecordCheck";
 import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
@@ -24,15 +25,8 @@ export default async function RentRecordCheckPage({ params, searchParams }: Prop
   if (/^[0-9A-Z]{10}$/.test(code)) redirect(getPathname({ href: `/rent-record/${code}`, locale }));
   const t = await getTranslations("owner.rentRecord.check");
   return (
-    <section className="bg-surface-subtle">
-      <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 pt-10 pb-16">
-        <div className="flex flex-col gap-2">
-          <p className="text-primary text-sm font-semibold">{t("kicker")}</p>
-          <h1 className="text-display">{t("title")}</h1>
-          <p className="text-muted">{t("lead")}</p>
-        </div>
-        <RentRecordCheck locale={locale} />
-      </div>
-    </section>
+    <TaskPage eyebrow={t("kicker")} title={t("title")} lede={t("lead")}>
+      <RentRecordCheck locale={locale} />
+    </TaskPage>
   );
 }

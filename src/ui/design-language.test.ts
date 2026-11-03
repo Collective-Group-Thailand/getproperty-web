@@ -80,16 +80,9 @@ describe("layout rules", () => {
  * still break a rule on 2026-11-03 — each work group takes its files out when it rebuilds them; nothing may be added.
  */
 const LEGACY: Record<string, string[]> = {
-  darkBlock: [
-    "src/app/[locale]/(marketing)/page.tsx",
-    "src/app/[locale]/(marketing)/landlords/page.tsx",
-    "src/app/[locale]/(marketing)/guides/[slug]/page.tsx",
-    "src/app/[locale]/(marketing)/help/page.tsx",
-    "src/app/[locale]/(marketing)/about/page.tsx",
-    "src/features/owner/marketing/tools/RentalYieldTool.tsx",
-  ],
-  stripe: ["src/features/owner/marketing/guides/GuideBlocks.tsx"],
-  unfinished: ["src/i18n/messages/th/owner/marketing.json", "src/i18n/messages/en/owner/marketing.json"],
+  darkBlock: [],
+  stripe: [],
+  unfinished: [],
 };
 
 const messages = files("src/i18n/messages", /\.json$/);

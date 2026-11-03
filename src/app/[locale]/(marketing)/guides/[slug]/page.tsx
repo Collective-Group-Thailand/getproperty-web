@@ -3,28 +3,26 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { GuideBlocks } from "@/features/owner/marketing/guides/GuideBlocks";
-import { guideBySlug, guideSlugs, guidesFor } from "@/features/owner/marketing/guides";
+import { guideBySlug, guidesFor } from "@/features/owner/marketing/guides";
 import { JsonLdScript } from "@/features/owner/marketing/JsonLdScript";
+import { BackLink, FaqList, WRAP } from "@/features/owner/marketing/Layout";
 import { marketingMetadata, marketingOrigin, ownerHref } from "@/features/owner/marketing/seo";
 import { formatDate } from "@/i18n/format";
 import { getPathname } from "@/i18n/navigation";
-import { routing, type Locale } from "@/i18n/routing";
+import type { Locale } from "@/i18n/routing";
 import { Button } from "@/ui/components/Button";
 import { Icon } from "@/ui/icons";
-import { IconChevronDown } from "@/ui/icons/glyphs/chevron-down";
-import { IconChevronLeft } from "@/ui/icons/glyphs/chevron-left";
 import { IconExternal } from "@/ui/icons/glyphs/external";
 
 type Params = { params: Promise<{ locale: Locale; slug: string }> };
 
-/** Published guides at build time (none when the API is not reachable then — pages render on first request). */
-export async function generateStaticParams() {
-  const slugs = await guideSlugs();
-  return routing.locales.flatMap((locale) => slugs.map((slug) => ({ locale, slug })));
-}
-
-/** A guide edited in admin shows within five minutes (the API read is cached that long). */
-export const revalidate = 300;
+/*
+ * Rendered on request, like every other public page. The page used to be statically generated (`generateStaticParams`
+ * with `revalidate = 300`), but the frame and the JSON-LD script read the request's CSP nonce (`headers()`), which a
+ * static or ISR render cannot do: whenever the API was reachable at build time the route became SSG and every guide
+ * answered 500. The API read itself stays cached for five minutes (`next: { revalidate: 300 }` in `guides/index.ts`),
+ * so a guide edited in admin still shows within five minutes.
+ */
 
 export async function generateMetadata({ params }: Params) {
   const { locale, slug } = await params;
@@ -78,38 +76,35 @@ export default async function GuidePage({ params }: Params) {
   return (
     <>
       <JsonLdScript graphs={[{ ...articleGraph, articleSection: t(`categories.${guide.category}`) }, ...otherGraphs]} />
-      <article className="mx-auto max-w-7xl px-4 pt-8 pb-20">
-        <a href={href("/guides")} className="text-muted hover:text-fg inline-flex items-center gap-1 text-sm">
-          <Icon icon={IconChevronLeft} />
-          {t("back")}
-        </a>
+      <article className={`${WRAP} pt-8 pb-16 md:pt-12 md:pb-24`}>
+        <BackLink href={href("/guides")} label={t("back")} />
 
-        <header className="mt-8 flex max-w-3xl flex-col gap-5">
-          <p className="text-muted flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+        <header className="mt-6 flex max-w-3xl flex-col gap-5 md:mt-8">
+          <p className="text-muted m-0 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
             <span className="text-primary font-semibold">{t(`categories.${guide.category}`)}</span>
             <span aria-hidden="true">·</span>
             <span>{t("readMinutes", { count: guide.readMinutes })}</span>
             <span aria-hidden="true">·</span>
             <span>{t("reviewed", { date: formatDate(guide.reviewed, locale, { style: "long" }) })}</span>
           </p>
-          <h1 className="text-display">{guide.title}</h1>
+          <h1 className="text-display m-0 text-balance">{guide.title}</h1>
         </header>
 
-        <div className="mt-10 grid gap-12 lg:grid-cols-12">
+        <div className="mt-10 grid gap-10 md:mt-14 lg:grid-cols-12 lg:gap-8">
           <nav aria-label={t("contents")} className="lg:col-span-3">
             <div className="lg:sticky lg:top-24">
-              <p className="text-muted mb-3 text-sm font-semibold">{t("contents")}</p>
-              <ol className="border-border m-0 flex list-none flex-col gap-2 border-s p-0 ps-4 text-sm">
+              <p className="text-muted m-0 mb-3 text-sm font-semibold">{t("contents")}</p>
+              <ol className="border-border m-0 flex list-none flex-col border-t p-0 text-sm">
                 {guide.sections.map((section) => (
-                  <li key={section.id}>
-                    <a href={`#${section.id}`} className="text-muted hover:text-fg">
+                  <li key={section.id} className="border-border border-b">
+                    <a href={`#${section.id}`} className="text-muted hover:text-fg flex min-h-11 items-center py-2">
                       {section.heading}
                     </a>
                   </li>
                 ))}
                 {guide.faq.length > 0 ? (
-                  <li>
-                    <a href="#faq" className="text-muted hover:text-fg">
+                  <li className="border-border border-b">
+                    <a href="#faq" className="text-muted hover:text-fg flex min-h-11 items-center py-2">
                       {t("faq")}
                     </a>
                   </li>
@@ -118,20 +113,23 @@ export default async function GuidePage({ params }: Params) {
             </div>
           </nav>
 
-          <div className="flex max-w-3xl flex-col gap-12 lg:col-span-8">
-            <section aria-labelledby="answer" className="border-fg border-y-2 py-6">
-              <h2 id="answer" className="text-muted mb-2 text-sm font-semibold">
+          <div className="flex min-w-0 flex-col gap-12 lg:col-span-8 lg:col-start-5">
+            <section
+              aria-labelledby="answer"
+              className="bg-surface border-border rounded-card shadow-card flex flex-col gap-2 border p-6 md:p-8"
+            >
+              <h2 id="answer" className="text-primary m-0 text-sm font-semibold">
                 {t("answer")}
               </h2>
-              <p className="text-xl leading-relaxed font-medium">{guide.answer}</p>
+              <p className="m-0 text-xl text-pretty">{guide.answer}</p>
             </section>
 
-            {guide.general ? <p className="text-muted text-sm">{t("general")}</p> : null}
-            {hasAffiliateLinks(article) ? <p className="text-muted text-sm">{t("affiliate.disclosure")}</p> : null}
+            {guide.general ? <p className="text-muted m-0 text-sm">{t("general")}</p> : null}
+            {hasAffiliateLinks(article) ? <p className="text-muted m-0 text-sm">{t("affiliate.disclosure")}</p> : null}
 
             {guide.sections.map((section) => (
               <section key={section.id} id={section.id} aria-labelledby={`${section.id}-h`} className="scroll-mt-24">
-                <h2 id={`${section.id}-h`} className="mb-5 text-3xl">
+                <h2 id={`${section.id}-h`} className="m-0 mb-5 text-3xl text-balance">
                   {section.heading}
                 </h2>
                 <GuideBlocks blocks={section.blocks} noteLabels={noteLabels} affiliateLabels={affiliateLabels} />
@@ -140,36 +138,26 @@ export default async function GuidePage({ params }: Params) {
 
             {guide.faq.length > 0 ? (
               <section id="faq" aria-labelledby="faq-h" className="scroll-mt-24">
-                <h2 id="faq-h" className="mb-4 text-3xl">
+                <h2 id="faq-h" className="m-0 mb-4 text-3xl">
                   {t("faq")}
                 </h2>
-                <div className="border-border border-t">
-                  {guide.faq.map((item) => (
-                    <details key={item.q} className="group border-border border-b">
-                      <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-4 text-lg font-semibold [&::-webkit-details-marker]:hidden">
-                        {item.q}
-                        <Icon icon={IconChevronDown} className="shrink-0 transition-transform group-open:rotate-180" />
-                      </summary>
-                      <p className="text-muted pb-5 leading-relaxed">{item.a}</p>
-                    </details>
-                  ))}
-                </div>
+                <FaqList items={guide.faq.map((item) => ({ q: item.q, a: item.a }))} />
               </section>
             ) : null}
 
             {guide.sources.length > 0 ? (
               <section aria-labelledby="sources-h">
-                <h2 id="sources-h" className="text-muted mb-3 text-sm font-semibold">
+                <h2 id="sources-h" className="text-muted m-0 mb-3 text-sm font-semibold">
                   {t("sources")}
                 </h2>
-                <ul className="m-0 flex list-none flex-col gap-2 p-0 text-sm">
+                <ul className="m-0 flex list-none flex-col gap-1 p-0 text-sm">
                   {guide.sources.map((source) => (
                     <li key={source.url + source.label}>
                       <a
                         href={source.url}
                         rel="noopener noreferrer"
                         target="_blank"
-                        className="hover:text-primary inline-flex items-center gap-1 underline underline-offset-4"
+                        className="hover:text-primary inline-flex min-h-8 items-center gap-1 underline underline-offset-4"
                       >
                         {source.label}
                         <Icon icon={IconExternal} />
@@ -180,32 +168,40 @@ export default async function GuidePage({ params }: Params) {
               </section>
             ) : null}
 
-            <section className="bg-fg text-fg-inverse rounded-panel flex flex-col gap-4 p-8 md:p-10">
-              <h2 className="text-3xl">{t(`cta.${cta}.title`)}</h2>
-              <p className="max-w-xl text-lg opacity-85">{t(`cta.${cta}.body`)}</p>
-              <div className="flex flex-wrap gap-3">
+            <section
+              aria-labelledby="cta-h"
+              className="bg-primary-subtle border-primary/20 rounded-panel flex flex-col gap-4 border p-6 md:p-8 print:hidden"
+            >
+              <h2 id="cta-h" className="m-0 text-2xl">
+                {t(`cta.${cta}.title`)}
+              </h2>
+              <p className="text-muted m-0 max-w-xl">{t(`cta.${cta}.body`)}</p>
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
                 <Button asChild size="lg">
-                  <a href={ownerHref("/login", locale)}>{t(`cta.${cta}.button`)}</a>
+                  <a href={ownerHref(cta === "landlord" ? "/signup" : "/login", locale)}>{t(`cta.${cta}.button`)}</a>
                 </Button>
-                <Button asChild size="lg" variant="secondary">
-                  <a href={href(cta === "landlord" ? "/landlords" : "/")}>{t("cta.more")}</a>
-                </Button>
+                <a
+                  href={href(cta === "landlord" ? "/landlords" : "/")}
+                  className="inline-flex min-h-11 items-center font-semibold underline decoration-1 underline-offset-[6px]"
+                >
+                  {t("cta.more")}
+                </a>
               </div>
             </section>
           </div>
         </div>
 
         {related.length > 0 ? (
-          <section aria-labelledby="related-h" className="mt-20">
-            <h2 id="related-h" className="border-fg border-t-2 pt-6 text-2xl">
+          <section aria-labelledby="related-h" className="border-border mt-16 border-t pt-10 md:mt-24">
+            <h2 id="related-h" className="m-0 text-2xl">
               {t("related")}
             </h2>
-            <ul className="m-0 mt-6 grid list-none gap-8 p-0 md:grid-cols-3">
+            <ul className="m-0 mt-8 grid list-none gap-8 p-0 md:grid-cols-3">
               {related.map((item) => (
                 <li key={item.slug}>
                   <a href={href(`/guides/${item.slug}`)} className="group flex flex-col gap-2">
                     <span className="text-primary text-sm font-semibold">{t(`categories.${item.category}`)}</span>
-                    <span className="group-hover:text-primary text-xl leading-snug font-semibold">{item.title}</span>
+                    <span className="group-hover:text-primary text-xl font-semibold text-balance">{item.title}</span>
                     <span className="text-muted text-sm">{item.summary}</span>
                   </a>
                 </li>

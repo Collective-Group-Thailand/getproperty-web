@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { JsonLdScript } from "@/features/owner/marketing/JsonLdScript";
+import { BackLink, PhoneActionBar, WRAP } from "@/features/owner/marketing/Layout";
 import { ChannelLink } from "@/features/owner/marketing/listings/ChannelLink";
 import { ListingCard } from "@/features/owner/marketing/listings/ListingCard";
 import { ListingImage } from "@/features/owner/marketing/listings/ListingImage";
@@ -16,11 +17,12 @@ import { formatDate, formatDecimal, formatTHB } from "@/i18n/format";
 import { getPathname } from "@/i18n/navigation";
 import { routing, type Locale } from "@/i18n/routing";
 import { Badge } from "@/ui/components/Badge";
+import { PhotoPlaceholder } from "@/ui/components/PhotoPlaceholder";
 import { cn } from "@/ui/lib/cn";
 import { Button } from "@/ui/components/Button";
 import { Icon } from "@/ui/icons";
 import { IconChat } from "@/ui/icons/glyphs/chat";
-import { IconChevronLeft } from "@/ui/icons/glyphs/chevron-left";
+import { IconCheck } from "@/ui/icons/glyphs/check";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 import { IconShield } from "@/ui/icons/glyphs/shield";
 import { IconExternal } from "@/ui/icons/glyphs/external";
@@ -110,43 +112,35 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
           ]),
         ]}
       />
-      <div className="mx-auto max-w-7xl px-4 pt-6">
-        <a
-          href={getPathname({ href: "/rent", locale })}
-          className="text-muted hover:text-fg inline-flex items-center gap-1 text-sm"
-        >
-          <Icon icon={IconChevronLeft} />
-          {t("detail.back")}
-        </a>
+      <div className={`${WRAP} pt-6 md:pt-8`}>
+        <BackLink href={getPathname({ href: "/rent", locale })} label={t("detail.back")} />
       </div>
 
-      <section aria-label={t("detail.photos")} className="mx-auto mt-4 max-w-7xl px-4">
-        <div className="grid gap-2 md:grid-cols-4 md:grid-rows-2" data-testid="listing-gallery">
-          {photos.slice(0, 5).map((photo, index) => (
-            <ListingImage
-              key={photo.url + index}
-              photo={photo}
-              alt={photo.caption ?? listing.title}
-              priority={index === 0}
-              sizes={index === 0 ? "(min-width: 768px) 50vw, 100vw" : "25vw"}
-              className={
-                index === 0
-                  ? "rounded-panel aspect-[4/3] md:col-span-2 md:row-span-2 md:aspect-auto md:h-full"
-                  : cn(
-                      "rounded-card aspect-[4/3] max-md:hidden",
-                      // Four photos: the last one takes the whole lower row so the mosaic has no hole.
-                      index === 3 && photos.length === 4 && "md:col-span-2 md:aspect-auto",
-                    )
-              }
-            />
-          ))}
-        </div>
+      <section aria-label={t("detail.photos")} className={`${WRAP} mt-4`}>
+        {photos.length > 0 ? (
+          <div className={galleryGrid(photos.length)} data-testid="listing-gallery">
+            {photos.slice(0, 5).map((photo, index) => (
+              <ListingImage
+                key={photo.url + index}
+                photo={photo}
+                alt={photo.caption ?? listing.title}
+                priority={index === 0}
+                sizes={index === 0 ? "(min-width: 768px) 60vw, 100vw" : "(min-width: 768px) 30vw, 50vw"}
+                className={galleryTile(photos.length, index)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div data-testid="listing-gallery">
+            <PhotoPlaceholder className="rounded-panel aspect-[16/9] md:aspect-[21/9]" label={t("detail.noPhotos")} />
+          </div>
+        )}
       </section>
 
-      <div className="mx-auto grid max-w-7xl gap-12 px-4 py-10 md:py-14 lg:grid-cols-12">
-        <div className="flex flex-col gap-10 lg:col-span-8">
+      <div className={`${WRAP} grid gap-12 py-10 md:py-14 lg:grid-cols-12 lg:gap-8`}>
+        <div className="flex min-w-0 flex-col gap-12 lg:col-span-7">
           <header className="flex flex-col gap-3">
-            <p className="text-muted text-sm">
+            <p className="text-muted m-0 text-sm">
               {[
                 listing.unitKind ? t(`search.kinds.${listing.unitKind}`) : null,
                 [listing.district, listing.province].filter(Boolean).join(", "),
@@ -154,12 +148,12 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
                 .filter(Boolean)
                 .join(" · ")}
             </p>
-            <h1 className="text-3xl">{listing.title}</h1>
+            <h1 className="m-0 text-4xl text-balance">{listing.title}</h1>
             {listing.verifiedVacant ? (
               <VerifiedVacantBadge since={listing.vacantSince} locale={locale} explain />
             ) : null}
             {listing.nearestTransit ? (
-              <p className="text-muted">
+              <p className="text-muted m-0">
                 {t("detail.transit", {
                   distance: formatDecimal(String(listing.nearestTransit.distanceM), locale, 0),
                   name: listing.nearestTransit.name,
@@ -170,10 +164,10 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
           </header>
 
           <section aria-labelledby="facts">
-            <h2 id="facts" className="text-xl">
+            <h2 id="facts" className="m-0 text-2xl">
               {t("detail.facts")}
             </h2>
-            <dl className="border-border m-0 mt-4 grid grid-cols-2 border-t sm:grid-cols-4">
+            <dl className="border-border m-0 mt-5 grid grid-cols-2 border-t sm:grid-cols-4">
               {facts.map(([term, value]) => (
                 <div key={term} className="border-border border-b py-4 pe-4">
                   <dt className="text-muted text-sm">{term}</dt>
@@ -185,7 +179,7 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
 
           {listing.utility ? (
             <section aria-labelledby="utility">
-              <h2 id="utility" className="text-xl">
+              <h2 id="utility" className="m-0 text-2xl">
                 {t("utility.title")}
               </h2>
               <p className="text-muted mt-1 text-sm">{t("utility.intro")}</p>
@@ -196,21 +190,25 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
           ) : null}
 
           <section aria-labelledby="about">
-            <h2 id="about" className="text-xl">
+            <h2 id="about" className="m-0 text-2xl">
               {t("detail.about")}
             </h2>
-            <p className="mt-3 max-w-2xl leading-relaxed whitespace-pre-line">{listing.description}</p>
+            <p className="m-0 mt-4 max-w-2xl whitespace-pre-line">{listing.description}</p>
           </section>
 
           {listing.facilities.length > 0 ? (
             <section aria-labelledby="facilities">
-              <h2 id="facilities" className="text-xl">
+              <h2 id="facilities" className="m-0 text-2xl">
                 {t("detail.facilities")}
               </h2>
-              <ul className="m-0 mt-4 flex list-none flex-wrap gap-2 p-0">
+              <ul className="m-0 mt-5 flex list-none flex-wrap gap-2 p-0" data-testid="listing-facilities">
                 {listing.facilities.map((facility) => (
-                  <li key={facility}>
-                    <Badge>{facility}</Badge>
+                  <li
+                    key={facility}
+                    className="bg-surface border-border rounded-thumb inline-flex min-h-8 items-center gap-1.5 border px-2.5 text-sm"
+                  >
+                    <Icon icon={IconCheck} className="text-primary shrink-0" />
+                    {facility}
                   </li>
                 ))}
               </ul>
@@ -218,15 +216,15 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
           ) : null}
 
           <section aria-labelledby="location">
-            <h2 id="location" className="text-xl">
+            <h2 id="location" className="m-0 text-2xl">
               {t("detail.location")}
             </h2>
-            <p className="mt-3">{listing.address}</p>
+            <p className="m-0 mt-4">{listing.address}</p>
             <a
               href={map}
               rel="noopener noreferrer"
               target="_blank"
-              className="text-primary mt-2 inline-flex items-center gap-1 font-semibold underline-offset-4 hover:underline"
+              className="text-primary mt-1 inline-flex min-h-11 items-center gap-1 font-semibold underline-offset-4 hover:underline"
             >
               {t("detail.openMap")}
               <Icon icon={IconExternal} />
@@ -242,8 +240,8 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
           ) : null}
         </div>
 
-        <aside className="lg:col-span-4">
-          <div className="bg-surface border-border rounded-panel shadow-raised sticky top-24 flex flex-col gap-5 border p-6">
+        <aside className="lg:col-span-4 lg:col-start-9">
+          <div className="bg-surface border-border rounded-panel shadow-card flex flex-col gap-5 border p-6 lg:sticky lg:top-24">
             <div>
               <p className="text-muted text-sm">{t("detail.rentLabel")}</p>
               <p className="flex items-baseline gap-1">
@@ -312,9 +310,11 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
       </div>
 
       {similar.length > 0 ? (
-        <section className="mx-auto max-w-7xl px-4 pb-20 md:pb-28">
-          <h2 className="border-fg border-t-2 pt-6 text-2xl">{t("detail.similar")}</h2>
-          <ul className="m-0 mt-8 grid list-none gap-x-6 gap-y-10 p-0 sm:grid-cols-2 lg:grid-cols-3">
+        <section aria-labelledby="similar-h" className={`${WRAP} pb-16 md:pb-24`}>
+          <h2 id="similar-h" className="border-border m-0 border-t pt-10 text-2xl">
+            {t("detail.similar")}
+          </h2>
+          <ul className="m-0 mt-8 grid list-none gap-x-6 gap-y-12 p-0 sm:grid-cols-2 lg:grid-cols-3">
             {similar.map((item) => (
               <li key={item.slug}>
                 <ListingCard listing={item} locale={locale} />
@@ -325,18 +325,41 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
       ) : null}
 
       {/* On a phone the price and the contact button stay at hand; the card above is far down the page. */}
-      <div className="bg-surface/95 border-border fixed inset-x-0 bottom-0 z-20 flex items-center gap-3 border-t px-4 py-3 backdrop-blur lg:hidden">
-        <p className="flex min-w-0 flex-1 items-baseline gap-1">
-          <span className="text-xl font-semibold tabular-nums">{formatTHB(listing.rent, locale, { decimals: 0 })}</span>
-          <span className="text-muted text-sm">{t("card.perMonth")}</span>
-        </p>
+      <PhoneActionBar
+        summary={
+          <p className="m-0 flex items-baseline gap-1">
+            <span className="text-xl font-semibold tabular-nums">
+              {formatTHB(listing.rent, locale, { decimals: 0 })}
+            </span>
+            <span className="text-muted text-sm">{t("card.perMonth")}</span>
+          </p>
+        }
+      >
         <Button asChild iconStart={contact ? IconChat : undefined}>
           <ChannelLink href={contactHref} {...(contact ? { rel: "noopener noreferrer", target: "_blank" } : {})}>
             {contact ? t("detail.contact") : t("detail.contactSignIn")}
           </ChannelLink>
         </Button>
-      </div>
-      <div className="h-20 lg:hidden" aria-hidden />
+      </PhoneActionBar>
     </>
   );
+}
+
+/** The photo mosaic, sized to the photos there are — never an empty cell (G1 redesign 2026-11-03). */
+function galleryGrid(count: number) {
+  if (count === 1) return "grid";
+  if (count === 2) return "grid gap-2 md:grid-cols-2";
+  return "grid gap-2 md:h-[30rem] md:grid-cols-4 md:grid-rows-2";
+}
+
+function galleryTile(count: number, index: number) {
+  const photo = "rounded-card md:rounded-panel";
+  if (count === 1) return cn(photo, "aspect-[4/3] md:aspect-[21/9]");
+  if (count === 2) return cn(photo, "aspect-[4/3]", index > 0 && "max-md:hidden");
+  if (index === 0) return cn(photo, "aspect-[4/3] md:col-span-2 md:row-span-2 md:aspect-auto md:h-full");
+  const small = cn(photo, "max-md:hidden md:h-full");
+  // three photos: two stacked on the right; four: two on top, one wide below; five: a 2 × 2 block
+  if (count === 3) return cn(small, "md:col-span-2");
+  if (count === 4 && index === 3) return cn(small, "md:col-span-2");
+  return small;
 }

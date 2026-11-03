@@ -23,6 +23,8 @@
     "confirmed": "Confirmed by getproperty",
     "validity": "Issued {issued} · can be checked until {expires}",
     "notFoundTitle": "Letter not found",
-    "notFound": "This code is wrong, has expired or was withdrawn by the renter. Check the code, or ask the renter for a new letter."
+    "notFound": "This code is wrong, has expired or was withdrawn by the renter. Check the code, or ask the renter for a new letter.",
+    "another": "Check another code",
+    "tryAgain": "Try the code again"
   }
 }

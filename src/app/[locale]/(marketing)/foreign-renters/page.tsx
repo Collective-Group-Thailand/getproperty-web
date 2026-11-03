@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { JsonLdScript } from "@/features/owner/marketing/JsonLdScript";
+import { PageHead, Section, SectionHead, Steps, TextLink } from "@/features/owner/marketing/Layout";
 import { Photo } from "@/features/owner/marketing/Photo";
 import { PHOTOS } from "@/features/owner/marketing/photos";
 import { marketingMetadata, marketingOrigin } from "@/features/owner/marketing/seo";
@@ -42,43 +43,49 @@ export default async function ForeignRenters({ params }: Params) {
           breadcrumbSchema([{ name: nav("home"), url: `${origin}${href("/")}` }, { name: t("eyebrow") }]),
         ]}
       />
-      <section className="mx-auto grid max-w-7xl gap-10 px-4 pt-14 pb-16 md:pt-20 lg:grid-cols-12 lg:items-end">
-        <div className="flex flex-col gap-5 lg:col-span-6">
-          <p className="text-primary text-sm font-semibold">{t("eyebrow")}</p>
-          <h1 className="text-display leading-tight">{t("title")}</h1>
-          <p className="text-muted text-xl leading-relaxed">{t("lead")}</p>
-          <div className="flex flex-wrap gap-3">
+      <PageHead
+        eyebrow={t("eyebrow")}
+        title={t("title")}
+        lede={t("lead")}
+        actions={
+          <>
             <Button asChild size="lg">
               <a href={href("/rent")}>{t("browse")}</a>
             </Button>
-            <Button asChild size="lg" variant="secondary">
-              <a href={href("/guides/tm30")}>{t("guide")}</a>
-            </Button>
-          </div>
-        </div>
-        <Photo photo={PHOTOS.skyline} priority className="rounded-panel aspect-[4/3] lg:col-span-6" />
-      </section>
-      <ol className="m-0 mx-auto grid max-w-7xl list-none gap-x-8 gap-y-10 px-4 pb-20 sm:grid-cols-2 lg:grid-cols-5">
-        {STEPS.map((key, index) => (
-          <li key={key} className="border-fg flex flex-col gap-3 border-t-2 pt-5">
-            <span className="text-muted font-mono text-sm">{String(index + 1).padStart(2, "0")}</span>
-            <h2 className="text-xl">{t(`steps.${key}.title`)}</h2>
-            <p className="text-muted text-sm leading-relaxed">{t(`steps.${key}.body`)}</p>
-          </li>
-        ))}
-      </ol>
-      <section className="bg-surface-subtle">
-        <div className="mx-auto grid max-w-7xl gap-8 px-4 py-16 md:grid-cols-12">
-          <h2 className="text-3xl md:col-span-4">{t("tipsTitle")}</h2>
-          <ul className="m-0 flex list-none flex-col p-0 md:col-span-8">
+            <TextLink href={href("/guides/tm30")}>{t("guide")}</TextLink>
+          </>
+        }
+        aside={
+          <Photo
+            photo={PHOTOS.skyline}
+            priority
+            className="rounded-panel aspect-[4/3]"
+            sizes="(min-width: 1024px) 45vw, 100vw"
+          />
+        }
+      />
+      <Section labelledBy="steps-h" innerClassName="pt-4 md:pt-8">
+        <SectionHead id="steps-h" title={t("stepsTitle")} />
+        <Steps
+          className="mt-10"
+          columns={5}
+          items={STEPS.map((key) => ({ key, title: t(`steps.${key}.title`), body: t(`steps.${key}.body`) }))}
+        />
+      </Section>
+      <Section tone="subtle" labelledBy="tips-h">
+        <div className="grid gap-8 lg:grid-cols-12 lg:gap-8">
+          <h2 id="tips-h" className="m-0 text-3xl lg:col-span-4">
+            {t("tipsTitle")}
+          </h2>
+          <ul className="border-border m-0 flex list-none flex-col border-t p-0 lg:col-span-8">
             {TIPS.map((key) => (
-              <li key={key} className="border-border border-b py-4 text-lg first:border-t">
+              <li key={key} className="border-border border-b py-4 text-lg">
                 {t(`tips.${key}`)}
               </li>
             ))}
           </ul>
         </div>
-      </section>
+      </Section>
     </>
   );
 }

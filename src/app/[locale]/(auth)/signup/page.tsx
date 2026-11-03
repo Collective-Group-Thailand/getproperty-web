@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { redirect } from "next/navigation";
 
 import { safeNextPath } from "@/domain/forms/safe-next";
+import { ownerAuthChrome } from "@/features/owner/marketing/authChrome";
 import { AuthFrame } from "@/features/shared/auth/AuthFrame";
 import { LandlordSignUp } from "@/features/shared/auth/LandlordSignUp";
 import { getOperatorActor } from "@/lib/auth/actor";
@@ -40,6 +41,7 @@ export default async function LandlordSignUpPage({
   const href = (path: string) => getPathname({ href: path, locale });
   return (
     <AuthFrame
+      {...await ownerAuthChrome(locale)}
       zone="owner"
       title={agency ? a("title") : t("title")}
       subtitle={agency ? a("subtitle") : t("subtitle")}

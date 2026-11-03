@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { JsonLdScript } from "@/features/owner/marketing/JsonLdScript";
+import { PageHead, Section, SectionHead, WRAP } from "@/features/owner/marketing/Layout";
 import { ListingCard } from "@/features/owner/marketing/listings/ListingCard";
 import { publicOwner } from "@/features/owner/marketing/publicApi";
 import { marketingMetadata, marketingOrigin } from "@/features/owner/marketing/seo";
@@ -10,10 +11,11 @@ import { formatDate, formatNumber } from "@/i18n/format";
 import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { Badge } from "@/ui/components/Badge";
-import { Icon } from "@/ui/icons";
+import { Button } from "@/ui/components/Button";
+import { EmptyState } from "@/ui/components/EmptyState";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 import { IconShield } from "@/ui/icons/glyphs/shield";
-import { IconChevronLeft } from "@/ui/icons/glyphs/chevron-left";
+import { IconHome } from "@/ui/icons/glyphs/home";
 
 type Params = { params: Promise<{ locale: Locale; slug: string }> };
 
@@ -62,58 +64,51 @@ export default async function OwnerPage({ params }: Params) {
           ]),
         ]}
       />
-      <section className="bg-surface-subtle">
-        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 pt-8 pb-12">
-          <a href={href("/rent")} className="text-muted hover:text-fg inline-flex items-center gap-1 text-sm">
-            <Icon icon={IconChevronLeft} />
-            {t("back")}
-          </a>
-          <div className="flex flex-col gap-4">
-            <p className="text-primary text-sm font-semibold">{t("kicker")}</p>
-            <h1 className="text-display" data-testid="owner-name">
-              {owner.displayName}
-            </h1>
-            <div className="flex flex-wrap gap-2">
-              <Badge tone="success" icon={IconCheckCircle}>
-                {t("verified", { count: owner.verification.verifiedUnits })}
+      <PageHead
+        back={{ href: href("/rent"), label: t("back") }}
+        eyebrow={t("kicker")}
+        title={owner.displayName}
+        titleTestId="owner-name"
+        className="pb-8 md:pb-10"
+      >
+        <div className="flex flex-wrap gap-2">
+          <Badge tone="success" icon={IconCheckCircle}>
+            {t("verified", { count: owner.verification.verifiedUnits })}
+          </Badge>
+          {owner.verification.identityVerified ? (
+            <span data-testid="owner-identity-verified">
+              <Badge tone="success" icon={IconShield}>
+                {t("identityVerified")}
               </Badge>
-              {owner.verification.identityVerified ? (
-                <span data-testid="owner-identity-verified">
-                  <Badge tone="success" icon={IconShield}>
-                    {t("identityVerified")}
-                  </Badge>
-                </span>
-              ) : null}
-            </div>
-          </div>
-          <dl className="m-0 grid gap-6 sm:grid-cols-3">
-            <div className="border-fg flex flex-col gap-1 border-s-2 ps-4">
-              <dt className="text-muted text-sm">{t("listingsLabel")}</dt>
-              <dd className="m-0 text-2xl font-semibold tabular-nums">{formatNumber(owner.listingCount, locale)}</dd>
-            </div>
-            <div className="border-border flex flex-col gap-1 border-s-2 ps-4">
-              <dt className="text-muted text-sm">{t("memberSinceLabel")}</dt>
-              <dd className="m-0 text-2xl font-semibold">
-                {formatDate(owner.memberSince, locale, { style: "month" })}
-              </dd>
-            </div>
-            <div className="border-border flex flex-col gap-1 border-s-2 ps-4">
-              <dt className="text-muted text-sm">{t("replyLabel")}</dt>
-              <dd className="m-0 text-2xl font-semibold" data-testid="owner-reply">
-                {replyText ?? <span className="text-muted text-base font-normal">{t("replyUnknown")}</span>}
-              </dd>
-            </div>
-          </dl>
+            </span>
+          ) : null}
         </div>
-      </section>
+      </PageHead>
 
-      <section aria-labelledby="owner-listings" className="mx-auto max-w-7xl px-4 py-12">
-        <h2 id="owner-listings" className="text-2xl">
-          {t("listings", { name: owner.displayName })}
-        </h2>
+      <div className={WRAP}>
+        <dl className="bg-surface border-border rounded-card shadow-card divide-border m-0 grid border max-sm:divide-y sm:grid-cols-3 sm:divide-x">
+          <div className="flex flex-col gap-1 p-5 md:p-6">
+            <dt className="text-muted text-sm">{t("listingsLabel")}</dt>
+            <dd className="m-0 text-2xl font-semibold tabular-nums">{formatNumber(owner.listingCount, locale)}</dd>
+          </div>
+          <div className="flex flex-col gap-1 p-5 md:p-6">
+            <dt className="text-muted text-sm">{t("memberSinceLabel")}</dt>
+            <dd className="m-0 text-2xl font-semibold">{formatDate(owner.memberSince, locale, { style: "month" })}</dd>
+          </div>
+          <div className="flex flex-col gap-1 p-5 md:p-6">
+            <dt className="text-muted text-sm">{t("replyLabel")}</dt>
+            <dd className="m-0 text-2xl font-semibold" data-testid="owner-reply">
+              {replyText ?? <span className="text-muted text-base font-normal">{t("replyUnknown")}</span>}
+            </dd>
+          </div>
+        </dl>
+      </div>
+
+      <Section labelledBy="owner-listings">
+        <SectionHead id="owner-listings" title={t("listings", { name: owner.displayName })} lede={t("note")} />
         {owner.listings.length > 0 ? (
           <ul
-            className="m-0 mt-8 grid list-none gap-x-6 gap-y-10 p-0 sm:grid-cols-2 lg:grid-cols-3"
+            className="m-0 mt-10 grid list-none gap-x-6 gap-y-12 p-0 sm:grid-cols-2 lg:grid-cols-3"
             data-testid="listings"
           >
             {owner.listings.map((listing) => (
@@ -123,10 +118,20 @@ export default async function OwnerPage({ params }: Params) {
             ))}
           </ul>
         ) : (
-          <p className="text-muted py-10 text-center">{t("empty")}</p>
+          <EmptyState
+            variant="card"
+            className="mt-10"
+            icon={IconHome}
+            title={t("empty")}
+            description={t("emptyBody")}
+            action={
+              <Button asChild variant="secondary">
+                <a href={href("/rent")}>{t("back")}</a>
+              </Button>
+            }
+          />
         )}
-        <p className="text-muted mt-10 max-w-2xl text-sm">{t("note")}</p>
-      </section>
+      </Section>
     </>
   );
 }

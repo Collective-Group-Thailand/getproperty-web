@@ -4,6 +4,7 @@ import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { Wordmark } from "@/ui/brand";
 
+import { WRAP } from "./Layout";
 import { MarketingNav } from "./MarketingNav";
 import { lineOaHref } from "./seo";
 
@@ -41,21 +42,21 @@ export async function MarketingFrame({ locale, children }: { locale: Locale; chi
       <main id="main" tabIndex={-1} className="flex-1">
         {children}
       </main>
-      <footer className="border-fg mt-10 border-t-2 print:hidden">
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 md:grid-cols-12">
-          <div className="flex flex-col gap-4 md:col-span-4">
+      <footer className="bg-surface border-border border-t print:hidden">
+        <div className={`${WRAP} grid grid-cols-2 gap-x-8 gap-y-10 py-14 md:grid-cols-12 md:py-16`}>
+          <div className="col-span-2 flex flex-col gap-4 md:col-span-4">
             <Wordmark size="md" decorative />
-            <p className="font-display max-w-sm text-lg font-medium">{t("footer.tagline")}</p>
+            <p className="max-w-xs text-pretty">{t("footer.tagline")}</p>
             <p className="text-muted text-sm">{t("footer.company")}</p>
           </div>
           {columns.map((column) => (
             <nav key={column.key} aria-label={t(`footer.columns.${column.key}`)} className="text-sm md:col-span-2">
-              <p className="text-muted mb-3 font-semibold">{t(`footer.columns.${column.key}`)}</p>
-              <ul className="flex flex-col gap-2">
+              <p className="text-muted mb-3 font-medium">{t(`footer.columns.${column.key}`)}</p>
+              <ul className="m-0 flex list-none flex-col gap-1 p-0">
                 {column.links.map((link) => (
                   <li key={link.href}>
                     <a
-                      className="hover:text-primary"
+                      className="hover:text-primary inline-flex min-h-8 items-center"
                       href={link.href}
                       {...(link.external ? { rel: "noopener noreferrer", target: "_blank" } : {})}
                     >
@@ -67,12 +68,14 @@ export async function MarketingFrame({ locale, children }: { locale: Locale; chi
             </nav>
           ))}
         </div>
-        <div className="border-border text-muted mx-auto flex max-w-7xl flex-wrap justify-between gap-x-6 gap-y-2 border-t px-4 py-5 text-xs">
+        <div
+          className={`${WRAP} border-border text-muted flex flex-wrap items-center justify-between gap-x-6 gap-y-2 border-t py-5 text-xs`}
+        >
           <p>{t("footer.rights", { year: new Date().getFullYear() })}</p>
-          <ul className="flex flex-wrap gap-x-4 gap-y-1">
+          <ul className="m-0 flex list-none flex-wrap gap-x-4 gap-y-1 p-0">
             {legal.map((doc) => (
               <li key={doc}>
-                <a className="hover:text-fg" href={href(`/legal/${doc}`)}>
+                <a className="hover:text-fg inline-flex min-h-8 items-center" href={href(`/legal/${doc}`)}>
                   {t(`legal.docs.${doc}.title`)}
                 </a>
               </li>
