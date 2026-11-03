@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { redirect } from "next/navigation";
 
 import { safeNextPath } from "@/domain/forms/safe-next";
+import { ownerAuthChrome } from "@/features/owner/marketing/authChrome";
 import { AuthFrame } from "@/features/shared/auth/AuthFrame";
 import { OAuthButtons } from "@/features/shared/auth/OAuthButtons";
 import { OAuthError } from "@/features/shared/auth/OAuthError";
@@ -38,6 +39,7 @@ export default async function OwnerLogin({ params, searchParams }: Props) {
   const t = await getTranslations("auth.signIn");
   return (
     <AuthFrame
+      {...await ownerAuthChrome(locale)}
       zone="owner"
       title={t("title")}
       footer={

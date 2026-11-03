@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { formatDate, formatDecimal, formatTHB } from "@/i18n/format";
 import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
+import { PhotoPlaceholder } from "@/ui/components/PhotoPlaceholder";
 import { Icon } from "@/ui/icons";
 import { IconCalendarCheck } from "@/ui/icons/glyphs/calendar-check";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
@@ -36,7 +37,7 @@ export async function ListingCard({ listing, locale }: { listing: PublicListingS
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           />
         ) : (
-          <div className="rounded-panel bg-bg-subtle aspect-[4/3]" aria-hidden="true" />
+          <PhotoPlaceholder className="rounded-panel aspect-[4/3]" />
         )}
         {ad || listing.verifiedVacant ? (
           <div className="pointer-events-none absolute inset-x-3 top-3 flex flex-wrap items-start justify-between gap-2">

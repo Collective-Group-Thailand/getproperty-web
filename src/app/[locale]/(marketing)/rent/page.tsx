@@ -5,11 +5,15 @@ import { ListingCard } from "@/features/owner/marketing/listings/ListingCard";
 import { ListingSearch } from "@/features/owner/marketing/listings/ListingSearch";
 import { publicListingAreas, publicListings } from "@/features/owner/marketing/publicApi";
 import { JsonLdScript } from "@/features/owner/marketing/JsonLdScript";
+import { CtaPanel, PageHead, WRAP } from "@/features/owner/marketing/Layout";
 import { lineOaHref, marketingMetadata, marketingOrigin, ownerHref } from "@/features/owner/marketing/seo";
 import { breadcrumbSchema, itemListSchema } from "@/features/owner/marketing/structured-data";
 import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { Button } from "@/ui/components/Button";
+import { EmptyState } from "@/ui/components/EmptyState";
+import { IconHome } from "@/ui/icons/glyphs/home";
+import { IconSearch } from "@/ui/icons/glyphs/search";
 
 type Props = {
   params: Promise<{ locale: Locale }>;
@@ -55,40 +59,38 @@ export default async function Rent({ params, searchParams }: Props) {
             : []),
         ]}
       />
-      <section className="bg-surface-subtle">
-        <div className="mx-auto flex max-w-7xl flex-col gap-8 px-4 pt-12 pb-10 md:pt-16">
-          <div className="flex max-w-3xl flex-col gap-3">
-            <h1 className="text-4xl">{t("search.title")}</h1>
-            <p className="text-muted text-lg">{t("search.body")}</p>
-          </div>
-          <ListingSearch query={query} action={action} />
-          {popular.length > 0 ? (
-            <nav aria-labelledby="popular-areas" className="flex flex-wrap items-center gap-2">
-              <h2 id="popular-areas" className="text-muted me-2 text-sm font-semibold">
-                {t("area.popular")}
-              </h2>
-              {popular.map((area) => (
-                <a
-                  key={area.slug}
-                  href={getPathname({ href: `/rent/area/${area.slug}`, locale })}
-                  className="bg-surface border-border hover:border-fg rounded-control inline-flex min-h-9 items-center border px-3 text-sm"
-                >
-                  {locale === "en" ? area.nameEn : area.name}
-                </a>
-              ))}
-            </nav>
-          ) : null}
-        </div>
-      </section>
+      <PageHead title={t("search.title")} lede={t("search.body")} className="pb-6 md:pb-8" />
+      <div className={`${WRAP} flex flex-col gap-4 pb-10 md:pb-12`}>
+        <ListingSearch query={query} action={action} />
+        {popular.length > 0 ? (
+          <nav aria-labelledby="popular-areas" className="flex flex-wrap items-center gap-x-1 gap-y-1">
+            <h2 id="popular-areas" className="text-muted m-0 me-3 text-sm font-medium">
+              {t("area.popular")}
+            </h2>
+            {popular.map((area) => (
+              <a
+                key={area.slug}
+                href={getPathname({ href: `/rent/area/${area.slug}`, locale })}
+                className="text-fg hover:text-primary rounded-control decoration-border-strong inline-flex min-h-11 items-center px-2 text-sm underline underline-offset-4"
+              >
+                {locale === "en" ? area.nameEn : area.name}
+              </a>
+            ))}
+          </nav>
+        ) : null}
+      </div>
 
-      <section className="mx-auto max-w-7xl px-4 pt-8 pb-12 md:pb-16" aria-live="polite">
+      <section className={`${WRAP} pb-16 md:pb-24`} aria-labelledby="results-h" aria-live="polite">
+        <h2 id="results-h" className="sr-only">
+          {t("search.results")}
+        </h2>
         {page && page.data.length > 0 ? (
           <>
-            <p className="text-muted mb-6 text-sm" data-testid="listings-count">
+            <p className="text-muted border-border m-0 mb-8 border-t pt-5 text-sm" data-testid="listings-count">
               {t("search.count", { count: page.total })}
             </p>
             <ul
-              className="m-0 grid list-none gap-x-6 gap-y-10 p-0 sm:grid-cols-2 lg:grid-cols-3"
+              className="m-0 grid list-none gap-x-6 gap-y-12 p-0 sm:grid-cols-2 lg:grid-cols-3"
               data-testid="listings"
             >
               {page.data.map((listing) => (
@@ -98,27 +100,54 @@ export default async function Rent({ params, searchParams }: Props) {
               ))}
             </ul>
           </>
+        ) : page && filtered ? (
+          <EmptyState
+            variant="card"
+            icon={IconSearch}
+            title={t("empty.title")}
+            description={t("empty.body")}
+            action={
+              <Button asChild variant="secondary">
+                <a href={action}>{t("search.reset")}</a>
+              </Button>
+            }
+          />
+        ) : page ? (
+          <EmptyState
+            variant="card"
+            icon={IconHome}
+            title={t("noListings.title")}
+            description={t("noListings.body")}
+            action={
+              <Button asChild>
+                <a href={list} {...(line ? { rel: "noopener noreferrer", target: "_blank" } : {})}>
+                  {t("ownerCta.cta")}
+                </a>
+              </Button>
+            }
+          />
         ) : (
-          <div className="border-border mx-auto flex max-w-xl flex-col items-center gap-3 border-y py-14 text-center">
-            <h2 className="text-2xl">{page && filtered ? t("empty.title") : t("unavailable.title")}</h2>
-            <p className="text-muted">{page && filtered ? t("empty.body") : t("unavailable.body")}</p>
-          </div>
+          <EmptyState
+            variant="card"
+            icon={IconHome}
+            title={t("unavailable.title")}
+            description={t("unavailable.body")}
+            action={
+              <Button asChild variant="secondary">
+                <a href={action}>{t("unavailable.retry")}</a>
+              </Button>
+            }
+          />
         )}
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 pb-20 md:pb-28">
-        <div className="border-fg flex flex-col gap-6 border-y-2 py-10 md:flex-row md:items-center md:justify-between">
-          <div className="flex max-w-2xl flex-col gap-2">
-            <h2 className="text-3xl">{t("ownerCta.title")}</h2>
-            <p className="text-muted text-lg">{t("ownerCta.body")}</p>
-          </div>
-          <Button asChild size="lg">
-            <a href={list} {...(line ? { rel: "noopener noreferrer", target: "_blank" } : {})}>
-              {t("ownerCta.cta")}
-            </a>
-          </Button>
-        </div>
-      </section>
+      <CtaPanel
+        id="owner-cta"
+        className="pt-0 md:pt-0"
+        title={t("ownerCta.title")}
+        body={t("ownerCta.body")}
+        primary={{ href: list, label: t("ownerCta.cta"), external: Boolean(line) }}
+      />
     </>
   );
 }

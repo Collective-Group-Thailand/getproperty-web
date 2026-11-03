@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
+import { ownerAuthChrome } from "@/features/owner/marketing/authChrome";
 import { AuthFrame } from "@/features/shared/auth/AuthFrame";
 import type { Locale } from "@/i18n/routing";
 import { isOAuthProvider } from "@/lib/auth/oauth/providers";
@@ -34,7 +35,12 @@ export default async function FakeProviderPage({ params, searchParams }: Props) 
   const t = await getTranslations("auth.oauth");
   const action = `/bff/oauth/${provider}/callback`;
   return (
-    <AuthFrame zone="owner" title={t("fake.title", { provider: t(`providers.${provider}`) })} subtitle={t("fake.lead")}>
+    <AuthFrame
+      {...await ownerAuthChrome(locale)}
+      zone="owner"
+      title={t("fake.title", { provider: t(`providers.${provider}`) })}
+      subtitle={t("fake.lead")}
+    >
       <div className="flex flex-col gap-5" data-testid="oauth-fake">
         <Callout tone="warning">{t("fake.notice")}</Callout>
         <form method="post" action={action} className="flex flex-col gap-4">

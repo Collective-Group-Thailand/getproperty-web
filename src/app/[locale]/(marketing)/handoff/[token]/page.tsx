@@ -2,16 +2,19 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { DeclineHandoff } from "@/features/owner/marketing/handoff/DeclineHandoff";
 import { publicHandoff } from "@/features/owner/marketing/handoff/publicHandoff";
+import { StatusPanel } from "@/features/owner/marketing/Layout";
 import { ownerHref } from "@/features/owner/marketing/seo";
 import { handoffPlace } from "@/features/shared/growth/handoff";
 import { formatDate, formatDecimal } from "@/i18n/format";
+import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
-import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
-import { Callout } from "@/ui/components/Callout";
 import { Icon } from "@/ui/icons";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
+import { IconClock } from "@/ui/icons/glyphs/clock";
 import { IconHome } from "@/ui/icons/glyphs/home";
+import { IconInfo } from "@/ui/icons/glyphs/info";
+import { IconLink } from "@/ui/icons/glyphs/link";
 
 type Params = { params: Promise<{ locale: Locale; token: string }> };
 
@@ -37,9 +40,16 @@ export default async function HandoffInvitationPage({ params }: Params) {
   if (!handoff) {
     return (
       <Frame kicker={t("kicker")} title={t("notFound.title")}>
-        <div data-testid="handoff-not-found">
-          <Callout tone="warning">{t("notFound.body")}</Callout>
-        </div>
+        <StatusPanel
+          testId="handoff-not-found"
+          icon={IconLink}
+          body={t("notFound.body")}
+          action={
+            <Button asChild variant="secondary">
+              <a href={getPathname({ href: "/landlords", locale })}>{t("notFound.action")}</a>
+            </Button>
+          }
+        />
       </Frame>
     );
   }
@@ -66,22 +76,23 @@ export default async function HandoffInvitationPage({ params }: Params) {
       title={open ? t("title", { name: handoff.buyerFirstName }) : t(`closed.${handoff.state}.title`)}
     >
       <div
-        className="border-border bg-surface rounded-card flex flex-col gap-5 border p-5 md:p-6"
+        className="border-border bg-surface rounded-card shadow-card flex flex-col gap-5 border p-5 md:p-6"
         data-testid="handoff-invitation"
         data-state={handoff.state}
       >
         <div className="flex flex-wrap items-center gap-3">
-          <span className="bg-primary-subtle text-primary-subtle-fg grid size-11 place-items-center rounded-full">
+          <span className="bg-primary-subtle text-primary grid size-11 shrink-0 place-items-center rounded-full">
             <Icon icon={IconHome} />
           </span>
-          <div className="flex min-w-0 flex-col">
+          <div className="flex min-w-0 flex-1 flex-col">
             <span className="font-semibold">{facts.projectName ?? t(`kind.${facts.kind}`)}</span>
             <span className="text-muted text-sm">{handoffPlace(facts)}</span>
           </div>
           {open ? (
-            <Badge tone="info" size="sm" className="ms-auto">
+            <span className="text-muted inline-flex items-center gap-1 text-sm">
+              <Icon icon={IconClock} />
               {t("expires", { date: formatDate(handoff.expiresAt, locale) })}
-            </Badge>
+            </span>
           ) : null}
         </div>
         <dl className="border-border m-0 grid grid-cols-2 border-t sm:grid-cols-3" data-testid="handoff-facts">
@@ -97,14 +108,14 @@ export default async function HandoffInvitationPage({ params }: Params) {
 
       {open ? (
         <>
-          <section aria-labelledby="handoff-steps" className="flex flex-col gap-3">
-            <h2 id="handoff-steps" className="text-xl">
+          <section aria-labelledby="handoff-steps" className="flex flex-col gap-4">
+            <h2 id="handoff-steps" className="m-0 text-xl">
               {t("steps.title")}
             </h2>
-            <ol className="m-0 grid list-none gap-3 p-0 md:grid-cols-3">
+            <ol className="m-0 grid list-none gap-x-6 gap-y-5 p-0 md:grid-cols-3">
               {(["account", "draft", "publish"] as const).map((step, i) => (
-                <li key={step} className="border-border bg-surface rounded-card flex flex-col gap-1 border p-4">
-                  <span className="text-primary text-sm font-semibold tabular-nums">{i + 1}</span>
+                <li key={step} className="border-border flex flex-col gap-1 border-t pt-4">
+                  <span className="text-primary font-mono text-sm tabular-nums">{String(i + 1).padStart(2, "0")}</span>
                   <span className="font-semibold">{t(`steps.${step}.title`)}</span>
                   <span className="text-muted text-sm">{t(`steps.${step}.body`)}</span>
                 </li>
@@ -130,37 +141,39 @@ export default async function HandoffInvitationPage({ params }: Params) {
           </p>
         </>
       ) : (
-        <div data-testid="handoff-closed">
-          <Callout
-            tone={handoff.state === "expired" ? "warning" : "neutral"}
-            action={
-              handoff.state === "accepted" || handoff.state === "listed" ? (
-                <Button asChild size="sm" variant="secondary">
-                  <a href={ownerHref("/listings/handoffs", locale)}>{t("closed.signIn")}</a>
-                </Button>
-              ) : undefined
-            }
-          >
-            {t(`closed.${handoff.state}.body`)}
-          </Callout>
-        </div>
+        <StatusPanel
+          testId="handoff-closed"
+          icon={handoff.state === "expired" ? IconClock : handoff.state === "declined" ? IconInfo : IconCheckCircle}
+          tone={handoff.state === "accepted" || handoff.state === "listed" ? "success" : "neutral"}
+          body={t(`closed.${handoff.state}.body`)}
+          action={
+            handoff.state === "accepted" || handoff.state === "listed" ? (
+              <Button asChild>
+                <a href={ownerHref("/listings/handoffs", locale)}>{t("closed.signIn")}</a>
+              </Button>
+            ) : (
+              <Button asChild variant="secondary">
+                <a href={getPathname({ href: "/landlords", locale })}>{t("notFound.action")}</a>
+              </Button>
+            )
+          }
+        />
       )}
     </Frame>
   );
 }
 
+/** The invitation's page: one reading column — label, the h1, then the invitation itself. */
 function Frame({ kicker, title, children }: { kicker: string; title: string; children: React.ReactNode }) {
   return (
-    <section className="bg-surface-subtle">
-      <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 pt-10 pb-16">
-        <div className="flex flex-col gap-2">
-          <p className="text-primary text-sm font-semibold">{kicker}</p>
-          <h1 className="text-display" data-testid="handoff-title">
-            {title}
-          </h1>
-        </div>
-        {children}
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-4 pt-10 pb-16 sm:px-6 md:pt-14 md:pb-24">
+      <div className="flex flex-col gap-3">
+        <p className="text-muted m-0 text-sm font-medium">{kicker}</p>
+        <h1 className="m-0 text-4xl text-balance" data-testid="handoff-title">
+          {title}
+        </h1>
       </div>
-    </section>
+      {children}
+    </div>
   );
 }

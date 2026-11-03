@@ -1,19 +1,18 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { JsonLdScript } from "@/features/owner/marketing/JsonLdScript";
-import { PageIntro } from "@/features/owner/marketing/PageIntro";
+import { CtaPanel, FaqList, PageHead, WRAP } from "@/features/owner/marketing/Layout";
 import { lineOaHref, marketingMetadata, marketingOrigin } from "@/features/owner/marketing/seo";
 import { breadcrumbSchema, faqSchema, webPageSchema } from "@/features/owner/marketing/structured-data";
 import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
-import { Button } from "@/ui/components/Button";
 import { Icon, type IconGlyph } from "@/ui/icons";
 import { IconBill } from "@/ui/icons/glyphs/bill";
 import { IconBook } from "@/ui/icons/glyphs/book";
 import { IconBuilding } from "@/ui/icons/glyphs/building";
 import { IconCalculator } from "@/ui/icons/glyphs/calculator";
 import { IconChat } from "@/ui/icons/glyphs/chat";
-import { IconChevronDown } from "@/ui/icons/glyphs/chevron-down";
+import { IconChevronRight } from "@/ui/icons/glyphs/chevron-right";
 import { IconHome } from "@/ui/icons/glyphs/home";
 import { IconMeter } from "@/ui/icons/glyphs/meter";
 import { IconResidents } from "@/ui/icons/glyphs/residents";
@@ -41,7 +40,6 @@ const TOPICS: [key: string, glyph: IconGlyph, path: string][] = [
 /** The questions people ask most, drawn from the FAQs the public pages already answer (one source of copy). */
 const TOP_FAQ = [
   ["faq.items", "what"],
-  ["faq.items", "money"],
   ["faq.items", "meters"],
   ["faq.items", "import"],
   ["pricing.faq.items", "who"],
@@ -50,7 +48,10 @@ const TOP_FAQ = [
   ["faq.items", "data"],
 ] as const;
 
-/** Help centre (trust pages, D-271; getpack's help centre pattern): topics, top questions, resources, a person. */
+/**
+ * Help centre (trust pages, D-271; G1 redesign 2026-11-03): the task first — pick a topic — then the top questions with
+ * the resources beside them, and a person to talk to on a light panel.
+ */
 export default async function Help({ params }: Params) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -76,82 +77,71 @@ export default async function Help({ params }: Params) {
           faqSchema(faq),
         ]}
       />
-      <PageIntro eyebrow={t("eyebrow")} title={t("title")} lead={t("lead")} />
-      <ul className="m-0 mx-auto grid max-w-7xl list-none gap-4 px-4 sm:grid-cols-2 lg:grid-cols-3">
-        {TOPICS.map(([key, glyph, path]) => (
-          <li key={key}>
-            <a
-              href={href(path)}
-              className="bg-surface border-border rounded-card hover:border-fg flex h-full items-start gap-4 border p-5 transition-colors"
-            >
-              <Icon icon={glyph} className="text-primary mt-0.5 shrink-0 text-2xl" />
-              <span className="flex flex-col gap-1">
-                <span className="font-semibold">{t(`topics.${key}.title`)}</span>
-                <span className="text-muted text-sm">{t(`topics.${key}.body`)}</span>
-              </span>
-            </a>
-          </li>
-        ))}
-      </ul>
+      <PageHead eyebrow={t("eyebrow")} title={t("title")} lede={t("lead")} />
+      <nav aria-label={t("topicsLabel")} className={WRAP}>
+        <ul className="m-0 grid list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-3">
+          {TOPICS.map(([key, glyph, path]) => (
+            <li key={key}>
+              <a
+                href={href(path)}
+                className="group bg-surface border-border rounded-card shadow-card hover:border-border-strong flex h-full items-start gap-4 border p-5 transition-colors"
+              >
+                <Icon icon={glyph} className="text-primary mt-0.5 shrink-0 text-xl" />
+                <span className="flex min-w-0 flex-1 flex-col gap-1">
+                  <span className="font-semibold">{t(`topics.${key}.title`)}</span>
+                  <span className="text-muted text-sm">{t(`topics.${key}.body`)}</span>
+                </span>
+                <Icon icon={IconChevronRight} className="text-muted group-hover:text-primary mt-0.5 shrink-0" />
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
 
-      <div className="mx-auto grid max-w-7xl gap-12 px-4 py-20 lg:grid-cols-12">
+      <div className={`${WRAP} grid gap-12 py-16 md:py-24 lg:grid-cols-12 lg:gap-8`}>
         <section aria-labelledby="top-faq" className="lg:col-span-8">
-          <h2 id="top-faq" className="mb-4 text-3xl">
+          <h2 id="top-faq" className="m-0 mb-6 text-3xl">
             {t("faqTitle")}
           </h2>
-          <div className="border-border border-t">
-            {faq.map((item) => (
-              <details key={item.question} className="group border-border border-b">
-                <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-4 text-lg font-semibold [&::-webkit-details-marker]:hidden">
-                  {item.question}
-                  <Icon icon={IconChevronDown} className="shrink-0 transition-transform group-open:rotate-180" />
-                </summary>
-                <p className="text-muted pb-5 leading-relaxed">{item.answer}</p>
-              </details>
-            ))}
-          </div>
+          <FaqList items={faq.map((item) => ({ q: item.question, a: item.answer }))} />
         </section>
-        <aside aria-labelledby="resources" className="flex flex-col gap-4 lg:col-span-4">
-          <h2 id="resources" className="text-muted text-sm font-semibold">
+        <aside aria-labelledby="resources" className="flex flex-col gap-4 lg:col-span-4 lg:ps-8">
+          <h2 id="resources" className="text-muted m-0 text-sm font-semibold">
             {t("resources")}
           </h2>
-          {(
-            [
-              ["/guides", IconBook, "guides"],
-              ["/tools", IconCalculator, "tools"],
-            ] as const
-          ).map(([path, glyph, key]) => (
-            <a key={path} href={href(path)} className="border-fg group flex items-start gap-4 border-t-2 pt-4">
-              <Icon icon={glyph} className="text-primary mt-1 text-2xl" />
-              <span className="flex flex-col">
-                <span className="text-xl font-semibold group-hover:underline">{t(key)}</span>
-                <span className="text-muted text-sm">{t(`${key}Body`)}</span>
-              </span>
-            </a>
-          ))}
+          <ul className="border-border m-0 list-none border-t p-0">
+            {(
+              [
+                ["/guides", IconBook, "guides"],
+                ["/tools", IconCalculator, "tools"],
+              ] as const
+            ).map(([path, glyph, key]) => (
+              <li key={path} className="border-border border-b">
+                <a href={href(path)} className="group flex items-start gap-4 py-5">
+                  <Icon icon={glyph} className="text-primary mt-1 shrink-0 text-xl" />
+                  <span className="flex flex-col gap-1">
+                    <span className="group-hover:text-primary text-lg font-semibold">{t(key)}</span>
+                    <span className="text-muted text-sm">{t(`${key}Body`)}</span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
         </aside>
       </div>
 
-      <section className="mx-auto max-w-7xl px-4 pb-24">
-        <div className="bg-fg text-fg-inverse rounded-panel flex flex-col gap-6 p-8 md:flex-row md:items-center md:justify-between md:p-10">
-          <div className="flex max-w-xl flex-col gap-2">
-            <h2 className="text-3xl">{t("person")}</h2>
-            <p className="text-lg opacity-85">{t("personBody")}</p>
-          </div>
-          <div className="flex flex-wrap gap-3">
-            {line ? (
-              <Button asChild size="lg" iconStart={IconChat}>
-                <a href={line} target="_blank" rel="noopener noreferrer">
-                  {m("contact.line")}
-                </a>
-              </Button>
-            ) : null}
-            <Button asChild size="lg" variant="secondary">
-              <a href={href("/contact")}>{t("contact")}</a>
-            </Button>
-          </div>
-        </div>
-      </section>
+      <CtaPanel
+        id="person-h"
+        className="pt-0 md:pt-0"
+        title={t("person")}
+        body={t("personBody")}
+        primary={
+          line
+            ? { href: line, label: m("contact.line"), external: true, icon: IconChat }
+            : { href: href("/contact"), label: t("contact") }
+        }
+        secondary={line ? { href: href("/contact"), label: t("contact") } : undefined}
+      />
     </>
   );
 }

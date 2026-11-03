@@ -16,7 +16,7 @@ export async function RentRecordCheck({ locale }: { locale: Locale }) {
     <form
       method="get"
       action={getPathname({ href: "/rent-record", locale })}
-      className="border-border bg-surface rounded-card flex flex-col gap-3 border p-5 sm:flex-row sm:items-end"
+      className="border-border bg-surface rounded-card shadow-card flex flex-col gap-3 border p-5 sm:flex-row sm:items-end md:p-6"
       data-testid="rent-record-check"
     >
       <div className="flex-1">

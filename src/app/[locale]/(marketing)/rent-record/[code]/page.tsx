@@ -1,12 +1,13 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { publicRentRecord } from "@/features/owner/marketing/publicApi";
+import { StatusPanel, TaskPage } from "@/features/owner/marketing/Layout";
 import { RentRecordCheck } from "@/features/owner/rentRecord/RentRecordCheck";
 import { RentRecordSummary } from "@/features/owner/rentRecord/RentRecordSummary";
 import { formatDate } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
 import { Badge } from "@/ui/components/Badge";
-import { Callout } from "@/ui/components/Callout";
+import { IconSearch } from "@/ui/icons/glyphs/search";
 import { IconShield } from "@/ui/icons/glyphs/shield";
 
 type Params = { params: Promise<{ locale: Locale; code: string }> };
@@ -24,37 +25,34 @@ export default async function RentRecordLetterPage({ params }: Params) {
   const t = await getTranslations("owner.rentRecord.check");
   const letter = await publicRentRecord(code);
   return (
-    <section className="bg-surface-subtle">
-      <div className="mx-auto flex max-w-3xl flex-col gap-6 px-4 pt-10 pb-16">
-        <div className="flex flex-col gap-2">
-          <p className="text-primary text-sm font-semibold">{t("kicker")}</p>
-          <h1 className="text-display">{letter ? letter.holderName : t("notFoundTitle")}</h1>
+    <TaskPage eyebrow={t("kicker")} title={letter ? letter.holderName : t("notFoundTitle")}>
+      {letter ? (
+        <div
+          className="border-border bg-surface rounded-card shadow-card flex flex-col gap-5 border p-5 md:p-6"
+          data-testid="rent-record-letter"
+        >
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <Badge tone="success" icon={IconShield}>
+              {t("confirmed")}
+            </Badge>
+            <span className="text-muted text-sm">
+              {t("validity", {
+                issued: formatDate(letter.issuedAt, locale),
+                expires: formatDate(letter.expiresAt, locale),
+              })}
+            </span>
+          </div>
+          <RentRecordSummary record={letter.record} locale={locale} />
         </div>
-        {letter ? (
-          <div
-            className="border-border bg-surface rounded-card flex flex-col gap-5 border p-5"
-            data-testid="rent-record-letter"
-          >
-            <div className="flex flex-wrap items-center gap-3">
-              <Badge tone="success" icon={IconShield}>
-                {t("confirmed")}
-              </Badge>
-              <span className="text-muted text-sm">
-                {t("validity", {
-                  issued: formatDate(letter.issuedAt, locale),
-                  expires: formatDate(letter.expiresAt, locale),
-                })}
-              </span>
-            </div>
-            <RentRecordSummary record={letter.record} locale={locale} />
-          </div>
-        ) : (
-          <div data-testid="rent-record-not-found">
-            <Callout tone="warning">{t("notFound")}</Callout>
-          </div>
-        )}
+      ) : (
+        <StatusPanel testId="rent-record-not-found" icon={IconSearch} body={t("notFound")} />
+      )}
+      <section aria-labelledby="check-another" className="flex flex-col gap-3">
+        <h2 id="check-another" className="m-0 text-xl">
+          {letter ? t("another") : t("tryAgain")}
+        </h2>
         <RentRecordCheck locale={locale} />
-      </div>
-    </section>
+      </section>
+    </TaskPage>
   );
 }

@@ -5,11 +5,13 @@ import { useId, useState } from "react";
 
 import { formatTHB } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
+import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 
 import { meterCharge, sum, type MeterInput } from "./estimate";
+import { PhoneResultBar } from "./PhoneResultBar";
 
 const EMPTY_METER: MeterInput = { previous: "", current: "", rate: "", minimum: "" };
 
@@ -19,6 +21,7 @@ const EMPTY_METER: MeterInput = { previous: "", current: "", rate: "", minimum: 
  */
 export function UtilityBillTool() {
   const t = useTranslations("owner.marketing.tools.utility");
+  const shared = useTranslations("owner.marketing.tools");
   const locale = useLocale() as Locale;
   const [rent, setRent] = useState("");
   const [electric, setElectric] = useState<MeterInput>(EMPTY_METER);
@@ -52,9 +55,9 @@ export function UtilityBillTool() {
         </fieldset>
       </form>
 
-      <aside aria-live="polite" className="lg:col-span-5">
-        <div className="bg-surface border-border rounded-panel shadow-raised sticky top-24 flex flex-col gap-4 border p-6">
-          <p className="text-muted text-sm font-semibold">{t("preview")}</p>
+      <aside aria-live="polite" className="scroll-mt-24 lg:col-span-5" id="bill-preview">
+        <div className="bg-surface border-border rounded-panel shadow-card flex flex-col gap-4 border p-6 md:p-8 lg:sticky lg:top-24">
+          <p className="text-muted m-0 text-sm font-semibold">{t("preview")}</p>
           <dl className="m-0 flex flex-col gap-3">
             <Row label={t("rent")} value={rent && sum([rent]) ? money(sum([rent])!) : "—"} />
             <Row
@@ -69,13 +72,25 @@ export function UtilityBillTool() {
             />
             <Row label={t("otherTitle")} value={other && sum([other]) ? money(sum([other])!) : "—"} />
           </dl>
-          <div className="border-fg flex items-baseline justify-between border-t-2 pt-4">
+          <div className="border-border-strong flex items-baseline justify-between border-t pt-4">
             <span className="font-semibold">{t("total")}</span>
-            <span className="text-3xl font-semibold tabular-nums">{total ? money(total) : "—"}</span>
+            <span className="text-primary text-3xl font-semibold tabular-nums">{total ? money(total) : "—"}</span>
           </div>
-          <p className="text-muted text-xs">{t("estimate")}</p>
+          <p className="text-muted m-0 text-xs">{t("estimate")}</p>
         </div>
       </aside>
+      <PhoneResultBar
+        summary={
+          <span className="flex flex-col">
+            <span className="text-muted text-xs">{t("total")}</span>
+            <span className="text-lg font-semibold tabular-nums">{total ? money(total) : "—"}</span>
+          </span>
+        }
+      >
+        <Button asChild variant="secondary">
+          <a href="#bill-preview">{shared("viewResult")}</a>
+        </Button>
+      </PhoneResultBar>
     </div>
   );
 }

@@ -6,13 +6,16 @@ import { useState } from "react";
 import { formatDate, formatTHB } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
 import { Button } from "@/ui/components/Button";
+import { useDateLabels } from "@/features/shared/console/labels";
 import { Callout } from "@/ui/components/Callout";
+import { DatePicker } from "@/ui/components/DatePicker";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { NativeSelect } from "@/ui/components/NativeSelect";
 import { IconPrinter } from "@/ui/icons/glyphs/printer";
 
 import { sum, toHundredths } from "./estimate";
+import { PhoneResultBar } from "./PhoneResultBar";
 import { bahtTextEn, bahtTextTh } from "./words";
 
 const LINE_KEYS = ["rent", "electric", "water", "other"] as const;
@@ -26,6 +29,7 @@ const METHODS = ["transfer", "promptpay", "cash", "cheque"] as const;
 export function RentReceiptTool() {
   const t = useTranslations("owner.marketing.tools.receipt");
   const locale = useLocale() as Locale;
+  const dateLabels = useDateLabels();
   const [form, setForm] = useState(() => ({
     number: "",
     // Today in Bangkok, as the date input expects.
@@ -54,7 +58,12 @@ export function RentReceiptTool() {
             <Input value={form.number} onChange={set("number")} />
           </Field>
           <Field label={t("date")}>
-            <Input type="date" value={form.date} onChange={set("date")} />
+            <DatePicker
+              value={form.date || null}
+              onChange={(value) => setForm({ ...form, date: value ?? "" })}
+              locale={locale}
+              labels={dateLabels}
+            />
           </Field>
         </div>
         <Field label={t("landlord")} hint={t("landlordHint")}>
@@ -95,13 +104,13 @@ export function RentReceiptTool() {
         <Button type="button" size="lg" iconStart={IconPrinter} onClick={() => window.print()}>
           {t("print")}
         </Button>
-        <p className="text-muted text-xs">{t("privacy")}</p>
+        <p className="text-muted m-0 text-xs">{t("privacy")}</p>
       </form>
 
       <section aria-label={t("preview")} className="lg:col-span-7 print:col-span-12">
         <div
           id="receipt"
-          className="bg-surface border-border rounded-card shadow-raised flex flex-col gap-6 border p-8 print:rounded-none print:border-0 print:shadow-none"
+          className="bg-surface border-border rounded-card shadow-card flex flex-col gap-6 border p-6 md:p-8 lg:sticky lg:top-24 print:rounded-none print:border-0 print:p-0 print:shadow-none"
         >
           <header className="border-fg flex items-start justify-between gap-6 border-b-2 pb-4">
             <div>
@@ -194,6 +203,18 @@ export function RentReceiptTool() {
           </div>
         </div>
       </section>
+      <PhoneResultBar
+        summary={
+          <span className="flex flex-col">
+            <span className="text-muted text-xs">{t("total")}</span>
+            <span className="text-lg font-semibold tabular-nums">{total ? formatTHB(total, locale) : "—"}</span>
+          </span>
+        }
+      >
+        <Button type="button" iconStart={IconPrinter} onClick={() => window.print()}>
+          {t("print")}
+        </Button>
+      </PhoneResultBar>
     </div>
   );
 }

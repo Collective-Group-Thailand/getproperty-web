@@ -1,16 +1,13 @@
 import { affiliateLinkProps } from "@collective/content";
 
+import { Callout } from "@/ui/components/Callout";
 import { Icon } from "@/ui/icons";
 import { IconExternal } from "@/ui/icons/glyphs/external";
-import { cn } from "@/ui/lib/cn";
 
 import type { GuideBlock } from "./types";
 
-const NOTE_TONE = {
-  info: "border-border-strong bg-bg-subtle",
-  warning: "border-fg bg-bg-subtle",
-  product: "border-primary bg-primary-subtle",
-} as const;
+/** A note is a callout with its icon and word — never a coloured side stripe (G1 redesign 2026-11-03). */
+const NOTE_TONE = { info: "neutral", warning: "warning", product: "info" } as const;
 
 export interface AffiliateLabels {
   /** Small heading of the product box. */
@@ -30,7 +27,7 @@ export function GuideBlocks({
   affiliateLabels: AffiliateLabels;
 }) {
   return (
-    <div className="flex flex-col gap-5 text-lg leading-relaxed">
+    <div className="flex flex-col gap-5 text-lg">
       {blocks.map((block, index) => {
         if ("p" in block) return <p key={index}>{block.p}</p>;
         if ("ul" in block)
@@ -56,7 +53,10 @@ export function GuideBlocks({
           // rel="sponsored nofollow", new tab, https only (affiliateLinkProps throws otherwise); the page shows the
           // disclosure once above the sources.
           return (
-            <aside key={index} className="border-border rounded-control flex flex-col gap-1 border px-5 py-4 text-base">
+            <aside
+              key={index}
+              className="border-border bg-surface rounded-card flex flex-col gap-1 border px-5 py-4 text-base"
+            >
               <p className="text-muted text-sm font-semibold">{affiliateLabels.label}</p>
               <p className="font-semibold">{item.name}</p>
               <p className="text-muted">{item.why}</p>
@@ -72,9 +72,10 @@ export function GuideBlocks({
         }
         const tone = block.tone ?? "info";
         return (
-          <aside key={index} className={cn("rounded-control border-s-4 px-5 py-4 text-base", NOTE_TONE[tone])}>
-            <p className="mb-1 text-sm font-semibold">{noteLabels[tone]}</p>
-            <p>{block.note}</p>
+          <aside key={index}>
+            <Callout tone={NOTE_TONE[tone]} title={noteLabels[tone]} className="text-base">
+              {block.note}
+            </Callout>
           </aside>
         );
       })}

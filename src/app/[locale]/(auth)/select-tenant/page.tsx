@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { redirect } from "next/navigation";
 
+import { ownerAuthChrome } from "@/features/owner/marketing/authChrome";
 import { AuthFrame } from "@/features/shared/auth/AuthFrame";
 import { TenantPicker } from "@/features/shared/auth/TenantPicker";
 import { getOperatorActor } from "@/lib/auth/actor";
@@ -20,8 +21,7 @@ export default async function OwnerSelectTenant({ params }: { params: Promise<{ 
   if (!actor) redirect(getPathname({ href: "/login", locale }));
   const t = await getTranslations("auth.tenantPicker");
   return (
-    <AuthFrame zone="owner" title={t("title")}>
-      <p className="text-muted mb-4 text-sm">{t("body")}</p>
+    <AuthFrame {...await ownerAuthChrome(locale)} zone="owner" title={t("title")} subtitle={t("body")}>
       <TenantPicker
         zone="owner"
         tenants={actor.me.tenants}

@@ -1,12 +1,13 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { JsonLdScript } from "@/features/owner/marketing/JsonLdScript";
-import { PageIntro } from "@/features/owner/marketing/PageIntro";
+import { PageHead, Section, SectionHead, WRAP } from "@/features/owner/marketing/Layout";
 import { marketingMetadata, marketingOrigin } from "@/features/owner/marketing/seo";
 import { breadcrumbSchema, webPageSchema } from "@/features/owner/marketing/structured-data";
 import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { Icon } from "@/ui/icons";
+import { IconChevronRight } from "@/ui/icons/glyphs/chevron-right";
 import { IconHistory } from "@/ui/icons/glyphs/history";
 import { IconKey } from "@/ui/icons/glyphs/key";
 import { IconLock } from "@/ui/icons/glyphs/lock";
@@ -55,29 +56,32 @@ export default async function Security({ params }: Params) {
           breadcrumbSchema([{ name: nav("home"), url: `${origin}${href("/")}` }, { name: t("eyebrow") }]),
         ]}
       />
-      <PageIntro eyebrow={t("eyebrow")} title={t("title")} lead={t("lead")} />
-      <ul className="m-0 mx-auto grid max-w-7xl list-none gap-x-10 gap-y-12 px-4 pb-20 sm:grid-cols-2 lg:grid-cols-3">
+      <PageHead eyebrow={t("eyebrow")} title={t("title")} lede={t("lead")} />
+      <ul className={`${WRAP} m-0 grid list-none gap-x-8 gap-y-10 pb-16 sm:grid-cols-2 md:pb-24 lg:grid-cols-3`}>
         {ITEMS.map(([key, glyph]) => (
-          <li key={key} className="border-fg flex flex-col gap-3 border-t-2 pt-5">
-            <Icon icon={glyph} className="text-primary text-2xl" />
-            <h2 className="text-2xl">{t(`items.${key}.title`)}</h2>
-            <p className="text-muted leading-relaxed">{t(`items.${key}.body`)}</p>
+          <li key={key} className="border-border flex flex-col gap-2 border-t pt-5">
+            <Icon icon={glyph} className="text-primary text-xl" />
+            <h2 className="m-0 mt-1 text-xl">{t(`items.${key}.title`)}</h2>
+            <p className="text-muted m-0 text-pretty">{t(`items.${key}.body`)}</p>
           </li>
         ))}
       </ul>
-      <section className="border-border mx-auto grid max-w-7xl gap-6 border-t px-4 py-12 md:grid-cols-12">
-        <h2 className="text-muted text-sm font-semibold md:col-span-3">{t("docs")}</h2>
-        <ul className="m-0 flex list-none flex-wrap gap-x-8 gap-y-3 p-0 md:col-span-9">
+      <Section tone="subtle" labelledBy="docs-h">
+        <SectionHead id="docs-h" title={t("docs")} lede={t("report")} />
+        <ul className="m-0 mt-10 grid list-none gap-4 p-0 sm:grid-cols-2 lg:grid-cols-4">
           {DOCS.map((doc) => (
             <li key={doc}>
-              <a href={href(`/legal/${doc}`)} className="hover:text-primary underline underline-offset-4">
+              <a
+                href={href(`/legal/${doc}`)}
+                className="group bg-surface border-border rounded-card hover:border-border-strong flex h-full items-center justify-between gap-3 border p-5 font-semibold transition-colors"
+              >
                 {legal(`docs.${doc}.title`)}
+                <Icon icon={IconChevronRight} className="text-muted group-hover:text-primary shrink-0" />
               </a>
             </li>
           ))}
         </ul>
-        <p className="text-muted md:col-span-9 md:col-start-4">{t("report")}</p>
-      </section>
+      </Section>
     </>
   );
 }

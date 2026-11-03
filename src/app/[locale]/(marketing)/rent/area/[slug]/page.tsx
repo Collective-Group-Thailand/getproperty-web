@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { JsonLdScript } from "@/features/owner/marketing/JsonLdScript";
+import { CtaPanel, PageHead, Section, SectionHead, WRAP } from "@/features/owner/marketing/Layout";
 import { ListingCard } from "@/features/owner/marketing/listings/ListingCard";
 import type { PublicListingArea } from "@/features/owner/marketing/listings/contract";
 import { publicListingAreas, publicListings } from "@/features/owner/marketing/publicApi";
@@ -11,8 +12,8 @@ import { formatTHB } from "@/i18n/format";
 import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 import { Button } from "@/ui/components/Button";
-import { Icon } from "@/ui/icons";
-import { IconChevronLeft } from "@/ui/icons/glyphs/chevron-left";
+import { EmptyState } from "@/ui/components/EmptyState";
+import { IconHome } from "@/ui/icons/glyphs/home";
 
 type Params = { params: Promise<{ locale: Locale; slug: string }> };
 
@@ -69,43 +70,41 @@ export default async function AreaPage({ params }: Params) {
             : []),
         ]}
       />
-      <section className="bg-surface-subtle">
-        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 pt-8 pb-12">
-          <a href={href("/rent")} className="text-muted hover:text-fg inline-flex items-center gap-1 text-sm">
-            <Icon icon={IconChevronLeft} />
-            {t("area.back")}
-          </a>
-          <div className="grid gap-8 md:grid-cols-12 md:items-end">
-            <div className="flex flex-col gap-3 md:col-span-8">
-              <p className="text-primary text-sm font-semibold">
-                {area.kind === "station" && area.line
-                  ? area.line
-                  : locale === "en"
-                    ? (area.provinceEn ?? area.province)
-                    : area.province}
-              </p>
-              <h1 className="text-display">{t(`area.title.${area.kind}`, { name })}</h1>
-              <p className="text-muted text-lg">{t("area.count", { count: area.count })}</p>
-            </div>
-            {area.band ? (
-              <dl className="border-fg m-0 flex flex-col gap-1 border-s-2 ps-5 md:col-span-4">
-                <dt className="text-muted text-sm">{t("area.band")}</dt>
-                <dd className="m-0 text-3xl font-semibold tabular-nums">
-                  {formatTHB(area.band.p25, locale, { decimals: 0 })}–
-                  {formatTHB(area.band.p75, locale, { decimals: 0 })}
-                </dd>
-                <dd className="text-muted m-0 text-sm">
-                  {t("area.median", { amount: formatTHB(area.band.p50, locale, { decimals: 0 }) })}
-                </dd>
-              </dl>
-            ) : null}
-          </div>
-        </div>
-      </section>
+      <PageHead
+        back={{ href: href("/rent"), label: t("area.back") }}
+        eyebrow={
+          area.kind === "station" && area.line
+            ? area.line
+            : locale === "en"
+              ? (area.provinceEn ?? area.province)
+              : area.province
+        }
+        title={t(`area.title.${area.kind}`, { name })}
+        lede={t("area.count", { count: area.count })}
+        aside={
+          area.band ? (
+            <dl className="bg-surface border-border rounded-card shadow-card m-0 flex flex-col gap-1 border p-6 lg:ms-auto lg:max-w-sm">
+              <dt className="text-muted text-sm">{t("area.band")}</dt>
+              <dd className="m-0 text-3xl font-semibold tabular-nums">
+                {formatTHB(area.band.p25, locale, { decimals: 0 })}–{formatTHB(area.band.p75, locale, { decimals: 0 })}
+              </dd>
+              <dd className="text-muted m-0 text-sm">
+                {t("area.median", { amount: formatTHB(area.band.p50, locale, { decimals: 0 }) })}
+              </dd>
+            </dl>
+          ) : undefined
+        }
+      />
 
-      <section className="mx-auto max-w-7xl px-4 py-12">
+      <section aria-labelledby="area-listings" className={`${WRAP} pb-16 md:pb-24`}>
+        <h2 id="area-listings" className="sr-only">
+          {t("search.results")}
+        </h2>
         {page && page.data.length > 0 ? (
-          <ul className="m-0 grid list-none gap-x-6 gap-y-10 p-0 sm:grid-cols-2 lg:grid-cols-3" data-testid="listings">
+          <ul
+            className="border-border m-0 grid list-none gap-x-6 gap-y-12 border-t p-0 pt-8 sm:grid-cols-2 lg:grid-cols-3"
+            data-testid="listings"
+          >
             {page.data.map((listing) => (
               <li key={listing.slug}>
                 <ListingCard listing={listing} locale={locale} />
@@ -113,39 +112,44 @@ export default async function AreaPage({ params }: Params) {
             ))}
           </ul>
         ) : (
-          <p className="text-muted py-10 text-center">{t("unavailable.body")}</p>
+          <EmptyState
+            variant="card"
+            icon={IconHome}
+            title={page ? t("noListings.title") : t("unavailable.title")}
+            description={page ? t("area.empty", { name }) : t("unavailable.body")}
+            action={
+              <Button asChild variant="secondary">
+                <a href={href("/rent")}>{t("area.back")}</a>
+              </Button>
+            }
+          />
         )}
       </section>
 
       {others.length > 0 ? (
-        <section aria-labelledby="nearby" className="mx-auto max-w-7xl px-4 pb-12">
-          <h2 id="nearby" className="border-fg border-t-2 pt-6 text-2xl">
-            {t("area.nearby")}
-          </h2>
-          <ul className="m-0 mt-5 flex list-none flex-wrap gap-2 p-0">
+        <Section tone="subtle" labelledBy="nearby">
+          <SectionHead id="nearby" title={t("area.nearby")} />
+          <ul className="m-0 mt-8 grid list-none gap-3 p-0 sm:grid-cols-2 lg:grid-cols-4">
             {others.map((other) => (
               <li key={other.slug}>
                 <a
                   href={href(`/rent/area/${other.slug}`)}
-                  className="border-border hover:border-fg rounded-control inline-flex min-h-10 items-center gap-2 border px-4"
+                  className="bg-surface border-border rounded-card hover:border-border-strong group flex min-h-14 items-center justify-between gap-3 border px-4 py-3 transition-colors"
                 >
-                  {areaName(other, locale)}
-                  <span className="text-muted text-sm tabular-nums">{other.count}</span>
+                  <span className="font-semibold">{areaName(other, locale)}</span>
+                  <span className="text-muted text-sm tabular-nums">{t("area.listings", { count: other.count })}</span>
                 </a>
               </li>
             ))}
           </ul>
-        </section>
+        </Section>
       ) : null}
 
-      <section className="mx-auto max-w-7xl px-4 pb-20">
-        <div className="border-border flex flex-col gap-4 border-t pt-8 md:flex-row md:items-center md:justify-between">
-          <p className="text-lg">{t("area.ownerCta", { name })}</p>
-          <Button asChild>
-            <a href={ownerHref("/login", locale)}>{t("ownerCta.cta")}</a>
-          </Button>
-        </div>
-      </section>
+      <CtaPanel
+        id="area-owner-cta"
+        title={t("area.ownerCta", { name })}
+        primary={{ href: ownerHref("/signup", locale), label: t("ownerCta.cta") }}
+      />
     </>
   );
 }
