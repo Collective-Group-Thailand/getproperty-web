@@ -54,7 +54,7 @@ export default async function Tools({ params }: Params) {
           <li key={key}>
             <a
               href={href(TOOL_PATH[key])}
-              className="bg-surface border-border rounded-photo hover:border-fg group flex h-full flex-col gap-6 border p-7 transition-colors"
+              className="bg-surface border-border rounded-panel hover:border-fg group flex h-full flex-col gap-6 border p-7 transition-colors"
             >
               <span className="flex items-center justify-between">
                 <span className="bg-primary-subtle text-primary rounded-control inline-flex size-12 items-center justify-center">

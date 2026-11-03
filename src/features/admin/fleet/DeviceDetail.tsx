@@ -58,7 +58,7 @@ function CommandResult({ command, label }: { command: Schemas["DeviceCommandDto"
       </a>
     );
   }
-  return <code className="bg-bg-subtle rounded px-1 text-xs break-all">{JSON.stringify(result)}</code>;
+  return <code className="bg-bg-subtle rounded-thumb px-1 text-xs break-all">{JSON.stringify(result)}</code>;
 }
 
 /**

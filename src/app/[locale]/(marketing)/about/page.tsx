@@ -45,7 +45,7 @@ export default async function About({ params }: Params) {
       />
       <PageIntro eyebrow={t("eyebrow")} title={t("title")} lead={t("lead")} />
       <div className="mx-auto max-w-7xl px-4">
-        <Photo photo={PHOTOS.livingGreen} decorative sizes="100vw" className="rounded-photo aspect-[21/9]" />
+        <Photo photo={PHOTOS.livingGreen} decorative sizes="100vw" className="rounded-panel aspect-[21/9]" />
       </div>
       <section aria-labelledby="principles" className="mx-auto grid max-w-7xl gap-10 px-4 py-20 md:grid-cols-12">
         <h2 id="principles" className="text-3xl md:col-span-4">

@@ -27,7 +27,7 @@ export function Swatches() {
               return (
                 <td key={theme}>
                   <span className="inline-flex items-center gap-2">
-                    <span aria-hidden="true" className="border-border inline-block size-5 rounded-sm border" style={{ background: hex }} />
+                    <span aria-hidden="true" className="border-border inline-block size-5 rounded-thumb border" style={{ background: hex }} />
                     <code>{hex}</code>
                   </span>
                 </td>

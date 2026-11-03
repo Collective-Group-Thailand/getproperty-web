@@ -47,8 +47,7 @@
   "commandPalette": {
     "open": "เปิดคำสั่ง",
     "title": "ไปที่…",
-    "placeholder": "พิมพ์ชื่อเมนู",
-    "hint": "Ctrl K"
+    "placeholder": "พิมพ์ชื่อเมนู"
   },
   "languageSwitch": {
     "label": "ภาษา",

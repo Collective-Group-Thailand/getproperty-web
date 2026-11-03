@@ -2,6 +2,6 @@
   "fakes": "API on fakes",
   "home": {
     "title": "Platform overview",
-    "body": "Pick a menu on the left, or press Ctrl K to jump to a page"
+    "body": "Pick a page from the menu on the left"
   }
 }

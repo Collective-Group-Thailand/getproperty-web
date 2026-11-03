@@ -32,17 +32,17 @@ export async function ListingCard({ listing, locale }: { listing: PublicListingS
           <ListingImage
             photo={listing.cover}
             alt={listing.cover.caption ?? listing.title}
-            className="rounded-photo aspect-[4/3]"
+            className="rounded-panel aspect-[4/3]"
             sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           />
         ) : (
-          <div className="rounded-photo bg-bg-subtle aspect-[4/3]" aria-hidden="true" />
+          <div className="rounded-panel bg-bg-subtle aspect-[4/3]" aria-hidden="true" />
         )}
         {ad || listing.verifiedVacant ? (
           <div className="pointer-events-none absolute inset-x-3 top-3 flex flex-wrap items-start justify-between gap-2">
             {ad ? (
               <span
-                className="bg-surface/95 text-fg rounded-sm px-2 py-0.5 text-xs font-semibold shadow-sm"
+                className="bg-surface/95 text-fg rounded-thumb px-2 py-0.5 text-xs font-semibold shadow-sm"
                 data-testid="listing-sponsored"
               >
                 {ad}
@@ -52,7 +52,7 @@ export async function ListingCard({ listing, locale }: { listing: PublicListingS
             )}
             {listing.verifiedVacant ? (
               <span
-                className="bg-success-subtle text-success-subtle-fg inline-flex items-center gap-1 rounded-sm px-2 py-0.5 text-xs font-semibold shadow-sm"
+                className="bg-success-subtle text-success-subtle-fg rounded-thumb inline-flex items-center gap-1 px-2 py-0.5 text-xs font-semibold shadow-sm"
                 data-testid="listing-card-vacant"
               >
                 <Icon icon={IconCalendarCheck} />

@@ -33,7 +33,7 @@ export function Checkbox({ label, description, className, disabled, ...props }: 
         id={id}
         disabled={disabled}
         aria-describedby={descriptionId}
-        className="border-border-strong bg-surface data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=indeterminate]:bg-primary data-[state=indeterminate]:border-primary mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-sm border"
+        className="border-border-strong bg-surface data-[state=checked]:border-primary data-[state=checked]:bg-primary data-[state=indeterminate]:bg-primary data-[state=indeterminate]:border-primary rounded-thumb mt-0.5 flex size-5 shrink-0 items-center justify-center border"
         {...props}
       >
         <CheckboxPrimitive.Indicator className="text-primary-fg">

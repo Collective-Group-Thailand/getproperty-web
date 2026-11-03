@@ -4,18 +4,17 @@ import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 
 import type { ShellNavItem } from "@/features/shared/shell/types";
-import { IconButton } from "@/ui/components/IconButton";
+import { RailSearchButton } from "@/features/shared/shell/RailSearchButton";
 import { Input } from "@/ui/components/Input";
 import { Icon } from "@/ui/icons";
-import { IconCommand } from "@/ui/icons/glyphs/command";
 import { cn } from "@/ui/lib/cn";
 import { LazyDialog } from "@/ui/components/overlays";
 
 /**
- * The admin command palette (Ctrl/⌘ K): jump to any entitled back-office page by name. Arrow keys
+ * The admin command palette (also on Ctrl/⌘ K for keyboard users; not advertised in the UI): jump to any entitled back-office page by name. Arrow keys
  * move, Enter opens. Entries are the admin menu entitlements only — what the user may open.
  */
-export function CommandPalette({ items }: { items: ShellNavItem[] }) {
+export function CommandPalette({ items, collapsed = false }: { items: ShellNavItem[]; collapsed?: boolean }) {
   const t = useTranslations("shell.commandPalette");
   const common = useTranslations("common");
   const [open, setOpen] = useState(false);
@@ -46,11 +45,12 @@ export function CommandPalette({ items }: { items: ShellNavItem[] }) {
 
   return (
     <>
-      <IconButton
-        icon={IconCommand}
-        label={`${t("open")} (${t("hint")})`}
+      <RailSearchButton
+        label={t("open")}
+        placeholder={t("title")}
+        collapsed={collapsed}
         onClick={() => setOpen(true)}
-        data-testid="command-palette"
+        testId="command-palette"
       />
       <LazyDialog
         open={open}

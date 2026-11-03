@@ -77,7 +77,7 @@ export async function ListingReviews({
                     {review.body}
                   </p>
                   {review.ownerReply ? (
-                    <div className="bg-surface-subtle border-border ms-4 flex flex-col gap-1 rounded-md border-s-2 p-3">
+                    <div className="bg-surface-subtle border-border rounded-control ms-4 flex flex-col gap-1 border-s-2 p-3">
                       <span className="text-sm font-semibold">
                         {t("ownerReply")}
                         {review.ownerRepliedAt ? (

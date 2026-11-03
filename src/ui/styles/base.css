@@ -45,6 +45,27 @@
     font-weight: var(--font-weight-semibold);
   }
 
+  /*
+   * Placeholder text (REDESIGN-PROMPT §3): the field's own size, muted, regular weight — a hint, never a label.
+   */
+  ::placeholder {
+    color: var(--color-muted);
+    font-weight: 400;
+    opacity: 1;
+  }
+
+  /*
+   * Every text field and select is at least 16 px on phones (no zoom on focus in iOS); from md the console scale's
+   * 15 px applies.
+   */
+  @media (width < 48rem) {
+    input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"]),
+    select,
+    textarea {
+      font-size: max(1rem, var(--text-base));
+    }
+  }
+
   :where(.grid) > * {
     min-width: 0;
   }
@@ -86,7 +107,7 @@
 
   /* Placeholders are decorative text: the token is gated at 3:1, not 4.5:1. */
   ::placeholder {
-    color: var(--color-subtle);
+    color: var(--color-muted);
     opacity: 1;
   }
 

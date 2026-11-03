@@ -15,6 +15,8 @@ export interface SimpleRow {
   /** `data-*` attributes of the row (status, id) for the e2e suite. */
   data?: Record<string, string | number | boolean | null | undefined>;
   tone?: "default" | "warning" | "danger";
+  /** The record this row opens: the first cell becomes its link and the whole row is the click target. */
+  href?: string;
 }
 
 const ALIGN = { start: "text-start", end: "text-end tabular-nums", center: "text-center" } as const;
@@ -30,6 +32,7 @@ export function SimpleTable({
   rows,
   testId,
   minWidth = "40rem",
+  pinFirstColumn,
   className,
 }: {
   caption: string;
@@ -37,19 +40,32 @@ export function SimpleTable({
   rows: SimpleRow[];
   testId?: string;
   minWidth?: string;
+  /**
+   * Keep the first column in view while the table scrolls sideways inside its box. Default: on, unless rows open a
+   * record (`href`) — the whole row is then the link, and a sticky cell would hold the row's click target to itself.
+   */
+  pinFirstColumn?: boolean;
   className?: string;
 }) {
+  const pinned = pinFirstColumn ?? !rows.some((row) => row.href);
+  const pin = (index: number) =>
+    pinned && index === 0 ? "sticky start-0 z-1 bg-surface group-hover:bg-bg-subtle" : undefined;
   return (
-    <div className={cn("border-border bg-surface rounded-card relative overflow-x-auto border", className)}>
-      <table className="w-full text-sm" style={{ minWidth }} data-testid={testId}>
+    <div className={cn("border-border bg-surface rounded-card shadow-card relative overflow-x-auto border", className)}>
+      <table className="w-full text-base" style={{ minWidth }} data-testid={testId}>
         <caption className="sr-only">{caption}</caption>
         <thead>
           <tr className="border-border text-muted border-b">
-            {columns.map((column) => (
+            {columns.map((column, index) => (
               <th
                 key={column.key}
                 scope="col"
-                className={cn("px-3 py-2 font-medium", ALIGN[column.align ?? "start"], column.className)}
+                className={cn(
+                  "px-4 py-2.5 text-sm font-medium whitespace-nowrap",
+                  ALIGN[column.align ?? "start"],
+                  index === 0 && pinned && "bg-surface sticky start-0 z-1",
+                  column.className,
+                )}
               >
                 {column.header}
               </th>
@@ -61,7 +77,8 @@ export function SimpleTable({
             <tr
               key={row.key}
               className={cn(
-                "border-border border-b last:border-b-0",
+                "border-border group border-b last:border-b-0",
+                row.href && "hover:bg-bg-subtle relative cursor-pointer",
                 row.tone === "danger" && "bg-danger-subtle/40",
                 row.tone === "warning" && "bg-warning-subtle/40",
               )}
@@ -77,14 +94,28 @@ export function SimpleTable({
                   <th
                     key={column.key}
                     scope="row"
-                    className={cn("px-3 py-2 align-top font-normal", ALIGN[column.align ?? "start"], column.className)}
+                    className={cn(
+                      "px-4 py-3 align-top font-normal",
+                      ALIGN[column.align ?? "start"],
+                      pin(index),
+                      column.className,
+                    )}
                   >
-                    {row.cells[column.key] ?? "—"}
+                    {row.href ? (
+                      <a
+                        href={row.href}
+                        className="text-fg font-medium after:absolute after:inset-0 after:content-[''] hover:underline"
+                      >
+                        {row.cells[column.key] ?? "—"}
+                      </a>
+                    ) : (
+                      (row.cells[column.key] ?? "—")
+                    )}
                   </th>
                 ) : (
                   <td
                     key={column.key}
-                    className={cn("px-3 py-2 align-top", ALIGN[column.align ?? "start"], column.className)}
+                    className={cn("px-4 py-3 align-top", ALIGN[column.align ?? "start"], pin(index), column.className)}
                   >
                     {row.cells[column.key] ?? "—"}
                   </td>

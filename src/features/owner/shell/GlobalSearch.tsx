@@ -4,9 +4,8 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 import type { ShellNavItem } from "@/features/shared/shell/types";
-import { IconButton } from "@/ui/components/IconButton";
+import { RailSearchButton } from "@/features/shared/shell/RailSearchButton";
 import { lazyOverlay } from "@/ui/lib/lazy";
-import { IconSearch } from "@/ui/icons/glyphs/search";
 
 import type { GlobalSearchDialogProps } from "./GlobalSearchDialog";
 
@@ -23,10 +22,13 @@ export function GlobalSearch({
   items,
   tenantId,
   localePrefix,
+  collapsed = false,
 }: {
   items: ShellNavItem[];
   tenantId: string;
   localePrefix: string;
+  /** In the console column: field-like from `md` (see RailSearchButton). */
+  collapsed?: boolean;
 }) {
   const t = useTranslations("shell.search");
   const [open, setOpen] = useState(false);
@@ -46,11 +48,12 @@ export function GlobalSearch({
 
   return (
     <>
-      <IconButton
-        icon={IconSearch}
-        label={`${t("open")} (${t("hint")})`}
+      <RailSearchButton
+        label={t("open")}
+        placeholder={t("placeholder")}
+        collapsed={collapsed}
         onClick={() => setOpen(true)}
-        data-testid="global-search"
+        testId="global-search"
       />
       <GlobalSearchDialog
         open={open}

@@ -260,7 +260,7 @@ async function UnitCard({ unit, locale, canInvite }: { unit: Unit; locale: Local
     <Card as="li" className="flex flex-col gap-4" data-testid="portfolio-unit" data-unit-no={unit.unitNo}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
-          <span className="bg-primary-subtle text-primary-subtle-fg flex size-10 shrink-0 items-center justify-center rounded-lg">
+          <span className="bg-primary-subtle text-primary-subtle-fg rounded-control flex size-10 shrink-0 items-center justify-center">
             <Icon icon={KIND_ICON[kind]} />
           </span>
           <div className="min-w-0">

@@ -87,11 +87,11 @@ export function PlatformSignIn({ consoleHref }: { consoleHref: string }) {
           alt={t("enrol.qr")}
           width={192}
           height={192}
-          className="bg-surface mx-auto rounded-md border p-2"
+          className="bg-surface rounded-control mx-auto border p-2"
         />
         <div>
           <p className="text-sm font-medium">{t("enrol.secret")}</p>
-          <p className="bg-bg-subtle mt-1 rounded-md p-2 font-mono text-sm break-all" data-testid="totp-secret">
+          <p className="bg-bg-subtle rounded-control mt-1 p-2 font-mono text-sm break-all" data-testid="totp-secret">
             {enrolment.secret}
           </p>
           <p className="text-muted mt-1 text-xs">{t("enrol.secretWarning")}</p>

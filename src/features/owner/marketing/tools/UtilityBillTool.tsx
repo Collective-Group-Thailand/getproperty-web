@@ -53,7 +53,7 @@ export function UtilityBillTool() {
       </form>
 
       <aside aria-live="polite" className="lg:col-span-5">
-        <div className="bg-surface border-border rounded-photo shadow-raised sticky top-24 flex flex-col gap-4 border p-6">
+        <div className="bg-surface border-border rounded-panel shadow-raised sticky top-24 flex flex-col gap-4 border p-6">
           <p className="text-muted text-sm font-semibold">{t("preview")}</p>
           <dl className="m-0 flex flex-col gap-3">
             <Row label={t("rent")} value={rent && sum([rent]) ? money(sum([rent])!) : "—"} />

@@ -308,8 +308,8 @@ export function CampaignBuilder({
                         onClick={() => update({ areas: toggle(segment.areas, area.slug) })}
                         className={
                           on
-                            ? "border-primary bg-primary text-primary-fg focus-visible:ring-focus-ring inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
-                            : "border-border bg-surface hover:border-primary focus-visible:ring-focus-ring inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-sm focus-visible:ring-2 focus-visible:outline-none"
+                            ? "border-primary bg-primary text-primary-fg focus-visible:ring-focus-ring rounded-control inline-flex h-9 items-center gap-1.5 border px-3 text-sm font-medium focus-visible:ring-2 focus-visible:outline-none"
+                            : "border-border bg-surface hover:border-primary focus-visible:ring-focus-ring rounded-control inline-flex h-9 items-center gap-1.5 border px-3 text-sm focus-visible:ring-2 focus-visible:outline-none"
                         }
                         data-testid="campaign-area"
                         data-slug={area.slug}

@@ -131,7 +131,7 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
               sizes={index === 0 ? "(min-width: 768px) 50vw, 100vw" : "25vw"}
               className={
                 index === 0
-                  ? "rounded-photo aspect-[4/3] md:col-span-2 md:row-span-2 md:aspect-auto md:h-full"
+                  ? "rounded-panel aspect-[4/3] md:col-span-2 md:row-span-2 md:aspect-auto md:h-full"
                   : cn(
                       "rounded-card aspect-[4/3] max-md:hidden",
                       // Four photos: the last one takes the whole lower row so the mosaic has no hole.
@@ -243,7 +243,7 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
         </div>
 
         <aside className="lg:col-span-4">
-          <div className="bg-surface border-border rounded-photo shadow-raised sticky top-24 flex flex-col gap-5 border p-6">
+          <div className="bg-surface border-border rounded-panel shadow-raised sticky top-24 flex flex-col gap-5 border p-6">
             <div>
               <p className="text-muted text-sm">{t("detail.rentLabel")}</p>
               <p className="flex items-baseline gap-1">

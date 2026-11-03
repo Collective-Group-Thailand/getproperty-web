@@ -180,7 +180,7 @@ export default async function GuidePage({ params }: Params) {
               </section>
             ) : null}
 
-            <section className="bg-fg text-fg-inverse rounded-photo flex flex-col gap-4 p-8 md:p-10">
+            <section className="bg-fg text-fg-inverse rounded-panel flex flex-col gap-4 p-8 md:p-10">
               <h2 className="text-3xl">{t(`cta.${cta}.title`)}</h2>
               <p className="max-w-xl text-lg opacity-85">{t(`cta.${cta}.body`)}</p>
               <div className="flex flex-wrap gap-3">

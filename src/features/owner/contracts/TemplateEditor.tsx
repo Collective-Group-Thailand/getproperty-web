@@ -284,7 +284,7 @@ export function TemplateEditor({
                       part.kind === "variable" ? (
                         <code
                           key={n}
-                          className="bg-primary-subtle text-primary-subtle-fg rounded px-1 font-mono text-xs"
+                          className="bg-primary-subtle text-primary-subtle-fg rounded-thumb px-1 font-mono text-xs"
                           data-testid="preview-variable"
                         >
                           {part.value}
@@ -334,7 +334,9 @@ export function TemplateEditor({
                         </Badge>
                       </span>
                       <div className="grid gap-2 text-sm md:grid-cols-2">
-                        <p className={clause.status === "added" ? "text-muted italic" : "bg-bg-subtle rounded p-2"}>
+                        <p
+                          className={clause.status === "added" ? "text-muted italic" : "bg-bg-subtle rounded-thumb p-2"}
+                        >
                           <span className="sr-only">{t("diffBase")}: </span>
                           {clause.baseText ?? t("diffNone")}
                         </p>
@@ -343,8 +345,8 @@ export function TemplateEditor({
                             clause.status === "removed"
                               ? "text-muted italic"
                               : clause.status === "unchanged"
-                                ? "bg-bg-subtle rounded p-2"
-                                : "bg-primary-subtle rounded p-2"
+                                ? "bg-bg-subtle rounded-thumb p-2"
+                                : "bg-primary-subtle rounded-thumb p-2"
                           }
                         >
                           <span className="sr-only">{t("diffMine")}: </span>

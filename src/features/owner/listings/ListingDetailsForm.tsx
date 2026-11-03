@@ -214,7 +214,7 @@ export function ListingDetailsForm({
             {facilities.map((facility) => (
               <li
                 key={facility}
-                className="bg-primary-subtle text-primary-subtle-fg flex items-center gap-1 rounded-full ps-3 text-sm"
+                className="bg-primary-subtle text-primary-subtle-fg rounded-control flex items-center gap-1 ps-3 text-sm"
               >
                 {facility}
                 <IconButton

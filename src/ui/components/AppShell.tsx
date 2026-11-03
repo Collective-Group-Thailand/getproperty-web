@@ -2,9 +2,15 @@ import { cn } from "../lib/cn";
 
 export interface AppShellProps {
   /** Sticky top bar: wordmark, property switcher, account. */
-  header: React.ReactNode;
-  /** Collapsible side navigation — owner and admin consoles. */
+  header?: React.ReactNode;
+  /** Collapsible side navigation inside the classic header + sidebar frame (unused by the consoles since the redesign). */
   sidebar?: React.ReactNode;
+  /**
+   * The consoles' one navigation column (redesign G0): a single element that is the top bar on phones and the full-height
+   * sidebar from `md` — brand, workspace, search, the menu (scrolling) and the account pinned at the bottom. Rendered
+   * once, so every control exists once in the page. When set, `header` and `sidebar` are ignored.
+   */
+  rail?: React.ReactNode;
   /** Bottom nav on phones (staff, the resident app; the owner's phone layout). */
   bottomNav?: React.ReactNode;
   footer?: React.ReactNode;
@@ -27,6 +33,7 @@ export interface AppShellProps {
 export function AppShell({
   header,
   sidebar,
+  rail,
   bottomNav,
   footer,
   children,
@@ -36,6 +43,33 @@ export function AppShell({
   variant = "console",
   className,
 }: AppShellProps) {
+  if (rail) {
+    return (
+      <div className={cn("bg-bg min-h-dvh md:flex", className)}>
+        <a href="#main" className="skip-link">
+          {skipLabel}
+        </a>
+        <div className="contents print:hidden">{rail}</div>
+        <div className="flex min-w-0 flex-1 flex-col">
+          {/* tabIndex={-1} so the skip link can move focus here. */}
+          <main
+            id="main"
+            tabIndex={-1}
+            className={cn("min-w-0 flex-1", bottomNav && "pb-(--bottom-nav-h) md:pb-0 print:pb-0")}
+          >
+            {children}
+          </main>
+          {footer}
+        </div>
+        {bottomNav ? (
+          <div className="border-border bg-surface z-sticky fixed inset-x-0 bottom-0 border-t pb-[env(safe-area-inset-bottom)] md:hidden print:hidden">
+            {bottomNav}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <div className={cn("bg-bg flex min-h-dvh flex-col", className)}>
       <a href="#main" className="skip-link">
@@ -108,10 +142,22 @@ export interface NavItem {
   badge?: React.ReactNode;
 }
 
-/** Sidebar entries: 44-px rows, the active one marked for assistive tech with `aria-current`. */
-export function SidebarNav({ items, collapsed = false }: { items: NavItem[]; collapsed?: boolean }) {
+/**
+ * Sidebar entries: 40-px rows (44 px in the phone sheet, `size="touch"`), the active one marked for assistive tech with
+ * `aria-current` and for the eye with the pale brand tint — no bar, no stripe. A count (`badge`) sits at the row's end and
+ * must equal the rows the page shows (REDESIGN-PROMPT §4.4).
+ */
+export function SidebarNav({
+  items,
+  collapsed = false,
+  size = "md",
+}: {
+  items: NavItem[];
+  collapsed?: boolean;
+  size?: "md" | "touch";
+}) {
   return (
-    <ul className="space-y-1 px-2">
+    <ul className="flex flex-col gap-0.5 px-3">
       {items.map((item) => (
         <li key={item.href}>
           <a
@@ -119,13 +165,17 @@ export function SidebarNav({ items, collapsed = false }: { items: NavItem[]; col
             aria-current={item.active ? "page" : undefined}
             title={collapsed ? item.label : undefined}
             className={cn(
-              "rounded-control flex h-11 items-center gap-3 px-3 text-base font-medium",
-              item.active ? "bg-primary-subtle text-primary-subtle-fg" : "text-muted hover:bg-bg-subtle hover:text-fg",
+              "rounded-control duration-fast flex items-center gap-3 px-2.5 text-sm transition-colors",
+              size === "touch" ? "h-11 text-base" : "h-10",
+              item.active
+                ? "bg-primary-subtle text-primary-subtle-fg font-semibold"
+                : "text-muted hover:bg-bg-subtle hover:text-fg font-medium",
               collapsed && "justify-center px-0",
             )}
           >
-            <span className="text-xl">{item.icon}</span>
-            <span className={cn(collapsed && "sr-only")}>{item.label}</span>
+            <span className={cn("shrink-0 text-lg", item.active ? "text-primary" : "text-subtle")}>{item.icon}</span>
+            <span className={cn("min-w-0 flex-1 truncate", collapsed && "sr-only")}>{item.label}</span>
+            {item.badge && !collapsed ? <span className="shrink-0">{item.badge}</span> : null}
           </a>
         </li>
       ))}

@@ -42,7 +42,7 @@ export function Tabs({ tabs, label, children, className, ...props }: TabsProps) 
           >
             {tab.label}
             {tab.count !== undefined ? (
-              <span className="bg-neutral-subtle text-neutral-subtle-fg rounded-full px-1.5 text-xs tabular-nums">
+              <span className="bg-neutral-subtle text-neutral-subtle-fg rounded-thumb px-1.5 text-xs tabular-nums">
                 {tab.count}
               </span>
             ) : null}

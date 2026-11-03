@@ -80,7 +80,7 @@ export function LeaseInviteButton({
                 alt={t("qrAlt")}
                 width={240}
                 height={240}
-                className="rounded-md border"
+                className="rounded-control border"
                 data-testid="invitation-qr"
               />
             )}

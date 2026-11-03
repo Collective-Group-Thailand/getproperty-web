@@ -100,7 +100,7 @@ export async function LineOaView({ context }: { context: OwnerContext }) {
                   <span className="text-sm font-medium">{t("webhook")}</span>
                   <div className="flex flex-wrap items-center gap-2">
                     <code
-                      className="bg-surface-subtle min-w-0 flex-1 rounded-md px-3 py-2 font-mono text-sm break-all"
+                      className="bg-surface-subtle rounded-control min-w-0 flex-1 px-3 py-2 font-mono text-sm break-all"
                       data-testid="line-oa-webhook"
                     >
                       {channel.webhookUrl}

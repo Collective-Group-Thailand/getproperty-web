@@ -10,20 +10,16 @@
 export const SPACING_BASE = "0.25rem";
 
 export const RADIUS = {
-  sm: "0.25rem",
-  md: "0.5rem",
-  lg: "0.75rem",
-  xl: "1rem",
-  /** Circles and pills — an avatar, a status dot, a resident's pay button. */
+  /** Circles only: an avatar, a status dot, a square icon button (never a pill — src/ui/design-language.test.ts). */
   full: "9999px",
-  /** Buttons, inputs, selects, chips, segmented controls: 8 px. */
-  control: "0.5rem",
-  /** Cards, panels, list rows, dialogs: 12 px. */
-  card: "0.75rem",
-  /** A resident's full-bleed hero card and the bottom sheet: 16 px. */
+  /** Thumbnails, small swatches, the inner corners of a segmented control: 6 px. */
+  thumb: "0.375rem",
+  /** Buttons, inputs, selects, chips, badges, segmented controls: 10 px. */
+  control: "0.625rem",
+  /** Cards, list boxes, tables, dialogs: 14 px. */
+  card: "0.875rem",
+  /** Panels, sheets, photographs and the resident hero card: 16 px. */
   panel: "1rem",
-  /** Photographs and photo bands on the public marketing pages: 20 px. */
-  photo: "1.25rem",
 } as const;
 
 /** Content widths: the owner console at 1280, a resident page at a phone's 480, a reading form at 640. */

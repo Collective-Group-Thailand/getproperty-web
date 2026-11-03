@@ -10,7 +10,7 @@ export function EnvBadge({ label, className }: { label?: string; className?: str
     <span
       data-testid="env-badge"
       className={cn(
-        "bg-info-subtle text-info-subtle-fg border-info/30 rounded-full border px-2 py-0.5 font-mono text-xs font-semibold uppercase",
+        "bg-info-subtle text-info-subtle-fg border-info/30 rounded-thumb border px-2 py-0.5 font-mono text-xs font-semibold uppercase",
         className,
       )}
     >
