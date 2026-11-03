@@ -47,8 +47,7 @@
   "commandPalette": {
     "open": "Open command palette",
     "title": "Go to…",
-    "placeholder": "Type a menu name",
-    "hint": "Ctrl K"
+    "placeholder": "Type a menu name"
   },
   "languageSwitch": {
     "label": "Language",

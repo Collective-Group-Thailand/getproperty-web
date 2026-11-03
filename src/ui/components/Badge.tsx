@@ -5,7 +5,7 @@ import type { StatusMeta } from "@/domain/status";
 import { Icon, type IconGlyph } from "../icons";
 import { cn } from "../lib/cn";
 
-export const badgeVariants = cva("inline-flex items-center gap-1 rounded-full font-medium whitespace-nowrap", {
+export const badgeVariants = cva("inline-flex items-center gap-1 rounded-thumb font-medium whitespace-nowrap", {
   variants: {
     tone: {
       neutral: "bg-neutral-subtle text-neutral-subtle-fg",

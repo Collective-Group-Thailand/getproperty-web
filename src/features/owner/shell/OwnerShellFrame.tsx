@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -8,7 +7,7 @@ import { useEffect, useState } from "react";
 import { NotificationCentre } from "@/features/shared/notifications/NotificationCentre";
 import { LanguageSwitch } from "@/features/shared/shell/LanguageSwitch";
 import type { ShellBrand } from "@/features/shared/shell/brand";
-import { BrandSlot } from "@/features/shared/shell/BrandSlot";
+import { ConsoleRail, RailWorkspace } from "@/features/shared/shell/ConsoleRail";
 import { isActive } from "@/features/shared/shell/menu";
 import { ShellBreadcrumbs } from "@/features/shared/shell/ShellBreadcrumbs";
 import { TenantSwitcher } from "@/features/shared/shell/TenantSwitcher";
@@ -17,13 +16,10 @@ import { UserMenu } from "@/features/shared/shell/UserMenu";
 import { useSidebarCollapsed } from "@/features/shared/shell/useSidebarCollapsed";
 import { ZoneSidebar } from "@/features/shared/shell/ZoneSidebar";
 import type { Schemas } from "@/lib/api/types";
-import { AppShell, BottomNav, TopBar, type NavItem } from "@/ui/components/AppShell";
+import { AppShell, BottomNav, type NavItem } from "@/ui/components/AppShell";
 import { EnvBadge } from "@/ui/components/EnvBadge";
-import { IconButton } from "@/ui/components/IconButton";
 import { Icon } from "@/ui/icons";
 import { IconMore } from "@/ui/icons/glyphs/more";
-import { IconSidebarCollapse } from "@/ui/icons/glyphs/sidebar-collapse";
-import { IconSidebarExpand } from "@/ui/icons/glyphs/sidebar-expand";
 import { LazySheet } from "@/ui/components/overlays";
 
 import { BuildingSwitcher } from "./BuildingSwitcher";
@@ -48,10 +44,10 @@ export interface OwnerShellFrameProps {
 }
 
 /**
- * The owner console frame (F1 1.3 §1): collapsible sidebar from the menu entitlements, top bar
- * (tenant switcher when several, building switcher, global search, notification centre, language,
- * environment badge, user menu), breadcrumbs; on phones a bottom nav — Today, Units, Invoices, Money,
- * More (the whole menu in a sheet).
+ * The owner console frame (redesign G0): one navigation column (ConsoleRail) — logo, organisation and role, building
+ * switcher, search, the menu from the entitlements, and notifications, language and the account pinned at the bottom;
+ * a back link on record pages instead of breadcrumbs. On phones the column is the top bar and a bottom nav — Today,
+ * Units, Invoices, Money, More (the whole menu in a sheet).
  */
 export function OwnerShellFrame(props: OwnerShellFrameProps) {
   // Marks the document interactive (hydrated): the e2e suite waits for it instead of clicking
@@ -84,50 +80,62 @@ export function OwnerShellFrame(props: OwnerShellFrameProps) {
   return (
     <AppShell
       skipLabel={t("shell.skipToContent")}
-      sidebarLabel={t("shell.mainNav")}
-      sidebarCollapsed={collapsed}
-      header={
-        <TopBar>
-          <IconButton
-            icon={collapsed ? IconSidebarExpand : IconSidebarCollapse}
-            label={collapsed ? t("shell.expandSidebar") : t("shell.collapseSidebar")}
-            onClick={toggleCollapsed}
-            className="hidden md:inline-flex"
-          />
-          <Link
-            href={home?.href ?? `${props.localePrefix}/dashboard`}
-            aria-label={t("shell.home")}
-            className="rounded-control inline-flex shrink-0 items-center"
-          >
-            <BrandSlot brand={props.brand} collapsed={collapsed} />
-          </Link>
-          <div className="flex min-w-0 flex-1 items-center gap-2 md:flex-none" data-testid="session-summary">
-            {props.tenants.length > 1 ? (
-              <TenantSwitcher zone="owner" tenants={props.tenants} currentTenantId={props.currentTenant.id} />
-            ) : (
-              <span className="truncate text-sm font-semibold" data-testid="tenant-name">
-                {props.currentTenant.displayName}
+      rail={
+        <ConsoleRail
+          brand={props.brand}
+          homeHref={home?.href ?? `${props.localePrefix}/dashboard`}
+          collapsed={collapsed}
+          onToggleCollapsed={toggleCollapsed}
+          navLabel={t("shell.mainNav")}
+          workspace={
+            <RailWorkspace
+              name={props.currentTenant.displayName}
+              nameTestId="tenant-name"
+              role={props.roleLabel}
+              roleTestId="tenant-role"
+              switcher={
+                props.tenants.length > 1 ? (
+                  <TenantSwitcher
+                    zone="owner"
+                    variant="rail"
+                    roleLabel={props.roleLabel}
+                    tenants={props.tenants}
+                    currentTenantId={props.currentTenant.id}
+                  />
+                ) : undefined
+              }
+              extra={<BuildingSwitcher buildings={props.buildings} currentBuildingId={props.currentBuildingId} />}
+            />
+          }
+          search={
+            <GlobalSearch
+              items={items}
+              tenantId={props.currentTenant.id}
+              localePrefix={props.localePrefix}
+              collapsed={collapsed}
+            />
+          }
+          nav={<ZoneSidebar groups={props.groups} collapsed={collapsed} />}
+          tools={
+            <>
+              <EnvBadge label={props.envBadge} className="hidden md:inline" />
+              <NotificationCentre zone="owner" />
+              <span className="hidden md:inline-flex">
+                <LanguageSwitch zone="owner" />
               </span>
-            )}
-            <span className="text-muted hidden truncate text-xs lg:inline" data-testid="tenant-role">
-              {props.roleLabel}
-            </span>
-          </div>
-          <span className="hidden md:inline-flex">
-            <BuildingSwitcher buildings={props.buildings} currentBuildingId={props.currentBuildingId} />
-          </span>
-          <span className="flex shrink-0 items-center gap-1 md:ms-auto">
-            <EnvBadge label={props.envBadge} className="hidden sm:inline" />
-            <GlobalSearch items={items} tenantId={props.currentTenant.id} localePrefix={props.localePrefix} />
-            <NotificationCentre zone="owner" />
-            <span className="hidden md:inline-flex">
-              <LanguageSwitch zone="owner" />
-            </span>
-            <UserMenu displayName={props.userName} roleLabel={props.roleLabel} loginHref={props.loginHref} />
-          </span>
-        </TopBar>
+            </>
+          }
+          account={
+            <UserMenu
+              variant="rail"
+              collapsed={collapsed}
+              displayName={props.userName}
+              roleLabel={props.roleLabel}
+              loginHref={props.loginHref}
+            />
+          }
+        />
       }
-      sidebar={<ZoneSidebar groups={props.groups} collapsed={collapsed} />}
       bottomNav={<BottomNav items={bottom} label={t("shell.bottomNav")} />}
     >
       {props.banner}
@@ -145,7 +153,7 @@ export function OwnerShellFrame(props: OwnerShellFrameProps) {
           <BuildingSwitcher buildings={props.buildings} currentBuildingId={props.currentBuildingId} />
           <LanguageSwitch zone="owner" />
         </div>
-        <ZoneSidebar groups={props.groups} collapsed={false} />
+        <ZoneSidebar groups={props.groups} collapsed={false} size="touch" />
       </LazySheet>
     </AppShell>
   );

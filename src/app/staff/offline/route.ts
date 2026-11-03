@@ -42,7 +42,7 @@ const STYLE = `
   .logo .i { fill: var(--logo-ink); } .logo .h { fill: var(--logo-house); }
   .logo .t { stop-color: var(--logo-chimney-top); } .logo .b { stop-color: var(--logo-chimney-bottom); }
   a { align-self: flex-start; min-height: 48px; display: inline-flex; align-items: center; padding: 0 1.25rem;
-      border-radius: 0.75rem; background: var(--primary); color: var(--primary-fg); font-weight: 600;
+      border-radius: 0.625rem; background: var(--primary); color: var(--primary-fg); font-weight: 600;
       text-decoration: none; }
 `;
 

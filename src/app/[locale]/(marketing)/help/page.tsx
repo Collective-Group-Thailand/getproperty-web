@@ -133,7 +133,7 @@ export default async function Help({ params }: Params) {
       </div>
 
       <section className="mx-auto max-w-7xl px-4 pb-24">
-        <div className="bg-fg text-fg-inverse rounded-photo flex flex-col gap-6 p-8 md:flex-row md:items-center md:justify-between md:p-10">
+        <div className="bg-fg text-fg-inverse rounded-panel flex flex-col gap-6 p-8 md:flex-row md:items-center md:justify-between md:p-10">
           <div className="flex max-w-xl flex-col gap-2">
             <h2 className="text-3xl">{t("person")}</h2>
             <p className="text-lg opacity-85">{t("personBody")}</p>

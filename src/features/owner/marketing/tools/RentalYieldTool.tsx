@@ -45,7 +45,7 @@ export function RentalYieldTool() {
       </form>
 
       <aside aria-live="polite" className="lg:col-span-5">
-        <div className="bg-fg text-fg-inverse rounded-photo flex flex-col gap-6 p-7">
+        <div className="bg-fg text-fg-inverse rounded-panel flex flex-col gap-6 p-7">
           <div>
             <p className="text-sm opacity-80">{t("net")}</p>
             <p className="text-display font-semibold tabular-nums">

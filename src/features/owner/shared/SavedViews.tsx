@@ -90,7 +90,7 @@ export function SavedViews({ storageKey }: { storageKey: string }) {
       <span className="text-muted text-sm">{t("label")}</span>
       {views.length === 0 ? <span className="text-subtle text-sm">{t("none")}</span> : null}
       {views.map((view) => (
-        <span key={view.name} className="bg-bg-subtle inline-flex items-center rounded-full ps-3">
+        <span key={view.name} className="bg-bg-subtle rounded-control inline-flex items-center ps-3">
           <a
             href={view.query ? `${pathname}?${view.query}` : pathname}
             aria-current={view.query === current ? "true" : undefined}

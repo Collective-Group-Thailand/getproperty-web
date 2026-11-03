@@ -31,6 +31,8 @@ export interface DataTableProps<Row> {
   onRowClick?: (row: Row) => void;
   getRowId?: (row: Row) => string;
   density?: "compact" | "normal";
+  /** Keeps the first column (the record's name or number) in view while the table scrolls sideways inside its box. */
+  pinFirstColumn?: boolean;
   className?: string;
 }
 
@@ -51,6 +53,7 @@ export function DataTable<Row>({
   onRowClick,
   getRowId,
   density = "normal",
+  pinFirstColumn = false,
   className,
 }: DataTableProps<Row>) {
   const [localSorting, setLocalSorting] = useState<SortingState>([]);
@@ -73,16 +76,19 @@ export function DataTable<Row>({
     getRowId,
   });
 
-  const cell = density === "compact" ? "px-3 py-1.5" : "px-4 py-3";
+  const cell = density === "compact" ? "px-3 py-2" : "px-4 py-3";
+  /** The pinned first column: sticky at the start edge, painted so rows slide under it, a hairline on its edge. */
+  const pin = (index: number, background: string) =>
+    pinFirstColumn && index === 0 ? cn("sticky start-0 z-1 border-border border-e", background) : undefined;
 
   return (
-    <div className={cn("border-border bg-surface rounded-card relative overflow-x-auto border", className)}>
-      <table className="w-full text-sm">
+    <div className={cn("border-border bg-surface rounded-card shadow-card relative overflow-x-auto border", className)}>
+      <table className="w-full text-base">
         <caption className="sr-only">{caption}</caption>
-        <thead className="bg-bg-subtle text-muted">
+        <thead className="text-muted border-border border-b text-sm">
           {table.getHeaderGroups().map((group) => (
             <tr key={group.id}>
-              {group.headers.map((header) => {
+              {group.headers.map((header, headerIndex) => {
                 const numeric = (header.column.columnDef.meta as { numeric?: boolean } | undefined)?.numeric;
                 const sorted = header.column.getIsSorted();
                 const canSort = header.column.getCanSort();
@@ -93,7 +99,12 @@ export function DataTable<Row>({
                     aria-sort={
                       sorted === "asc" ? "ascending" : sorted === "desc" ? "descending" : canSort ? "none" : undefined
                     }
-                    className={cn("text-start font-medium whitespace-nowrap", cell, numeric && "text-end")}
+                    className={cn(
+                      "text-start font-medium whitespace-nowrap",
+                      cell,
+                      numeric && "text-end",
+                      pin(headerIndex, "bg-surface"),
+                    )}
                   >
                     {canSort ? (
                       <button
@@ -142,12 +153,22 @@ export function DataTable<Row>({
               <tr
                 key={row.id}
                 onClick={onRowClick ? () => onRowClick(row.original) : undefined}
-                className={cn("border-border border-t", onRowClick && "hover:bg-bg-subtle cursor-pointer")}
+                className={cn(
+                  "border-border group border-t first:border-t-0",
+                  onRowClick && "hover:bg-bg-subtle cursor-pointer",
+                )}
               >
-                {row.getVisibleCells().map((c) => {
+                {row.getVisibleCells().map((c, cellIndex) => {
                   const numeric = (c.column.columnDef.meta as { numeric?: boolean } | undefined)?.numeric;
                   return (
-                    <td key={c.id} className={cn(cell, numeric && "text-end tabular-nums")}>
+                    <td
+                      key={c.id}
+                      className={cn(
+                        cell,
+                        numeric && "text-end tabular-nums",
+                        pin(cellIndex, cn("bg-surface", onRowClick && "group-hover:bg-bg-subtle")),
+                      )}
+                    >
                       {flexRender(c.column.columnDef.cell, c.getContext())}
                     </td>
                   );

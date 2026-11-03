@@ -121,7 +121,7 @@ export default async function Landing({ params }: Params) {
           <Photo
             photo={PHOTOS.living}
             priority
-            className="rounded-photo aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5]"
+            className="rounded-panel aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5]"
             sizes="(min-width: 1024px) 45vw, 100vw"
           />
           <div className="relative -mt-40 px-3 sm:absolute sm:start-6 sm:bottom-6 sm:mt-0 sm:w-[24rem] sm:px-0 xl:-start-20">
@@ -222,7 +222,7 @@ export default async function Landing({ params }: Params) {
             <article key={key} className="grid items-center gap-8 md:grid-cols-12 md:gap-12">
               <Photo
                 photo={photo}
-                className={`rounded-photo aspect-[3/2] md:col-span-7 ${index % 2 ? "md:order-2" : ""}`}
+                className={`rounded-panel aspect-[3/2] md:col-span-7 ${index % 2 ? "md:order-2" : ""}`}
                 sizes="(min-width: 768px) 55vw, 100vw"
               />
               <div className={`flex flex-col gap-4 md:col-span-5 ${index % 2 ? "md:order-1" : ""}`}>
@@ -288,7 +288,7 @@ export default async function Landing({ params }: Params) {
                 <Photo
                   photo={photo}
                   decorative
-                  className="rounded-photo aspect-[4/3]"
+                  className="rounded-panel aspect-[4/3]"
                   sizes="(min-width: 768px) 33vw, 100vw"
                 />
                 <span className="flex flex-wrap items-center gap-2">
@@ -349,11 +349,11 @@ export default async function Landing({ params }: Params) {
             <Photo
               photo={PHOTOS.bedroomWarm}
               decorative
-              className="rounded-photo col-span-2 row-span-2 aspect-square"
+              className="rounded-panel col-span-2 row-span-2 aspect-square"
               sizes="40vw"
             />
-            <Photo photo={PHOTOS.kitchen} decorative className="rounded-photo aspect-square" sizes="20vw" />
-            <Photo photo={PHOTOS.livingGreen} decorative className="rounded-photo aspect-square" sizes="20vw" />
+            <Photo photo={PHOTOS.kitchen} decorative className="rounded-panel aspect-square" sizes="20vw" />
+            <Photo photo={PHOTOS.livingGreen} decorative className="rounded-panel aspect-square" sizes="20vw" />
           </div>
           <div className="flex flex-col gap-5 lg:col-span-5">
             <Badge tone="primary" className="self-start">
@@ -397,7 +397,7 @@ export default async function Landing({ params }: Params) {
 
       {/* Closing: the handover */}
       <section className="mx-auto max-w-7xl px-4 pb-20 md:pb-28">
-        <div className="rounded-photo relative isolate overflow-hidden">
+        <div className="rounded-panel relative isolate overflow-hidden">
           <Photo photo={PHOTOS.keys} decorative className="absolute inset-0 -z-10" sizes="100vw" />
           <div className="bg-fg/70 absolute inset-0 -z-10" aria-hidden="true" />
           <div className="text-fg-inverse flex min-h-[26rem] flex-col justify-end gap-6 p-8 md:p-14">

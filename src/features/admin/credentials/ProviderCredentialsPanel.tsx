@@ -165,7 +165,7 @@ export async function ProviderCredentialsPanel({
                 keys: (
                   <span className="flex flex-wrap gap-1">
                     {row.keyNames.map((name) => (
-                      <code key={name} className="bg-bg-subtle rounded px-1 text-xs">
+                      <code key={name} className="bg-bg-subtle rounded-thumb px-1 text-xs">
                         {name}
                       </code>
                     ))}

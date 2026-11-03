@@ -56,7 +56,7 @@ export default async function ForeignRenters({ params }: Params) {
             </Button>
           </div>
         </div>
-        <Photo photo={PHOTOS.skyline} priority className="rounded-photo aspect-[4/3] lg:col-span-6" />
+        <Photo photo={PHOTOS.skyline} priority className="rounded-panel aspect-[4/3] lg:col-span-6" />
       </section>
       <ol className="m-0 mx-auto grid max-w-7xl list-none gap-x-8 gap-y-10 px-4 pb-20 sm:grid-cols-2 lg:grid-cols-5">
         {STEPS.map((key, index) => (

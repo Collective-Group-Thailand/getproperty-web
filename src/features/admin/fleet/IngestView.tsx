@@ -128,7 +128,7 @@ export async function IngestView({
               ),
               payload: (
                 <span className="flex max-w-sm flex-col">
-                  <code className="bg-bg-subtle rounded px-1 text-xs break-all">{row.payloadPreview ?? "—"}</code>
+                  <code className="bg-bg-subtle rounded-thumb px-1 text-xs break-all">{row.payloadPreview ?? "—"}</code>
                   <span className="text-muted text-xs">
                     {t("bytes", { count: formatNumber(row.payloadBytes, locale) })}
                   </span>

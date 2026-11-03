@@ -14,20 +14,30 @@ import type { ShellNavGroup } from "./types";
  * marked with `aria-current`. Collapsing keeps icons with their labels as tooltips; the choice is
  * remembered per zone in the browser (a convenience, not state).
  */
-export function ZoneSidebar({ groups, collapsed }: { groups: ShellNavGroup[]; collapsed: boolean }) {
+export function ZoneSidebar({
+  groups,
+  collapsed,
+  size = "md",
+}: {
+  groups: ShellNavGroup[];
+  collapsed: boolean;
+  /** `touch` (44-px rows) in the phone menu sheet. */
+  size?: "md" | "touch";
+}) {
   const pathname = usePathname();
   return (
-    <div className="flex flex-col gap-4" data-testid="zone-sidebar">
+    <div className="flex flex-col gap-5" data-testid="zone-sidebar">
       {groups.map((group) => (
         <section key={group.key} aria-labelledby={`nav-group-${group.key}`}>
           <h2
             id={`nav-group-${group.key}`}
-            className={cn("text-muted px-5 pb-1 text-xs font-semibold tracking-wide uppercase", collapsed && "sr-only")}
+            className={cn("text-muted px-5 pb-1.5 text-xs font-medium", collapsed && "sr-only")}
           >
             {group.label}
           </h2>
           <SidebarNav
             collapsed={collapsed}
+            size={size}
             items={group.items.map((item) => ({
               href: item.href,
               label: item.label,

@@ -62,7 +62,7 @@ export function PdfFrame({
     <iframe
       src={state.src}
       title={title}
-      className="border-border h-[70vh] w-full rounded-md border"
+      className="border-border rounded-control h-[70vh] w-full border"
       data-testid="pdf-frame"
     />
   );

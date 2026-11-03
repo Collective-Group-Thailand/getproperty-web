@@ -21,7 +21,7 @@ export async function ListingSearch({ query, action }: { query: ListingQuery; ac
       action={action}
       method="get"
       role="search"
-      className="bg-surface border-border rounded-photo shadow-raised flex flex-col border"
+      className="bg-surface border-border rounded-panel shadow-raised flex flex-col border"
     >
       <div className="grid gap-3 p-4 md:grid-cols-[1.6fr_1fr_auto] md:items-end">
         <Field label={t("q")}>

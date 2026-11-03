@@ -106,7 +106,7 @@ export default async function Landlords({ params }: Params) {
           <Photo
             photo={PHOTOS.bedroom}
             priority
-            className="rounded-photo aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5]"
+            className="rounded-panel aspect-[4/5] sm:aspect-[5/4] lg:aspect-[4/5]"
             sizes="(min-width: 1024px) 45vw, 100vw"
           />
           <div className="relative -mt-40 px-3 sm:absolute sm:start-6 sm:bottom-6 sm:mt-0 sm:w-[22rem] sm:px-0 xl:-start-20">
@@ -139,7 +139,7 @@ export default async function Landlords({ params }: Params) {
                 <span className="flex items-center gap-3">
                   <span className="font-display text-4xl leading-none opacity-40">{index + 1}</span>
                   {step.soon ? (
-                    <span className="rounded-full border border-current px-2 py-0.5 text-xs opacity-80">
+                    <span className="rounded-thumb border border-current px-2 py-0.5 text-xs opacity-80">
                       {t("journey.soon")}
                     </span>
                   ) : null}
@@ -192,7 +192,7 @@ export default async function Landlords({ params }: Params) {
           <figure className="m-0 lg:col-span-6">
             <Photo
               photo={PHOTOS.skyline}
-              className="rounded-photo aspect-[4/3]"
+              className="rounded-panel aspect-[4/3]"
               sizes="(min-width: 1024px) 50vw, 100vw"
             />
             <figcaption className="text-muted mt-3 text-xs">{t("foreign.photoCaption")}</figcaption>
@@ -249,7 +249,7 @@ export default async function Landlords({ params }: Params) {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 pb-20 md:pb-28">
-        <div className="rounded-photo relative isolate overflow-hidden">
+        <div className="rounded-panel relative isolate overflow-hidden">
           <Photo photo={PHOTOS.keys} decorative className="absolute inset-0 -z-10" sizes="100vw" />
           <div className="bg-fg/70 absolute inset-0 -z-10" aria-hidden="true" />
           <div className="text-fg-inverse flex min-h-[24rem] flex-col justify-end gap-6 p-8 md:p-14">

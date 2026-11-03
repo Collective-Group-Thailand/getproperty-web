@@ -112,7 +112,7 @@ export async function SettingsView({
                   ),
                   value: (
                     <code
-                      className="bg-bg-subtle rounded px-1 text-xs break-all"
+                      className="bg-bg-subtle rounded-thumb px-1 text-xs break-all"
                       data-testid={`setting-value-${setting.key}`}
                     >
                       {shown(setting.value)}
