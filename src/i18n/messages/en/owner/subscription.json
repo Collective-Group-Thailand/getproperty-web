@@ -1,6 +1,6 @@
 {
   "title": "getproperty billing",
-  "description": "getproperty is free with no monthly fee. Here are the fees on payments the platform confirms, invoices from getproperty and the hardware at your buildings.",
+  "description": "Your plan, what is counted this month, invoices from getproperty and the hardware at your buildings.",
   "readOnly": {
     "title": "Your account is read-only",
     "body": "The subscription is suspended for an unpaid invoice ({count, plural, one {# open} other {# open}}). Pay it with the Thai QR below; the account reopens once getproperty confirms the payment."
@@ -38,7 +38,6 @@
   "ocrImages": "Meter photos read",
   "estimate": "This month's estimate",
   "estimateHint": "From what is counted so far; the invoice follows at the end of the month.",
-  "estimateTotal": "Subtotal {subtotal} · VAT {vat} · total {total}",
   "invoices": "Invoices from getproperty",
   "invoicesHint": "Pay each one with its Thai QR; the PDF is the tax invoice.",
   "noInvoices": "No invoice yet",
@@ -224,5 +223,14 @@
       "waiting": "Starts when the invoice is paid",
       "ownedPending": "Awaiting payment"
     }
-  }
+  },
+  "beforeVat": "Before VAT",
+  "vat": "VAT",
+  "estimateTotalLabel": "Estimated total",
+  "invoicePanel": {
+    "due": "Due {date}",
+    "paidOn": "Paid on {date}"
+  },
+  "invoicePaper": "Invoice {number}",
+  "billedTo": "Billed to"
 }

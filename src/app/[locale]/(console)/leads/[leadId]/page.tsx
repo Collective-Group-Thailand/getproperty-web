@@ -10,8 +10,15 @@ export async function generateMetadata() {
 }
 
 /** One enquiry: the conversation, what the prospect asked, viewings, notes, outcome (F6.2 part 2, D-252). */
-export default async function Lead({ params }: { params: Promise<{ locale: Locale; leadId: string }> }) {
+export default async function Lead({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: Locale; leadId: string }>;
+  searchParams: Promise<{ view?: string }>;
+}) {
   const { locale, leadId } = await params;
+  const { view } = await searchParams;
   setRequestLocale(locale);
-  return <LeadDetailView context={await ownerContext()} leadId={leadId} />;
+  return <LeadDetailView context={await ownerContext()} leadId={leadId} view={view} />;
 }

@@ -1,29 +1,29 @@
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
+import { CREDIT_NOTE_STATUS } from "@/domain/status/creditNote";
 import { HAAS_STATUS } from "@/domain/status/haas";
 import { PLATFORM_INVOICE_STATUS } from "@/domain/status/platformInvoice";
 import { SITE_SURVEY_STATUS } from "@/domain/status/siteSurvey";
 import { SUBSCRIPTION_STATUS } from "@/domain/status/subscription";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
-import { PlatformInvoiceBody } from "@/features/shared/console/PlatformInvoiceBody";
+import { QrImage } from "@/features/shared/console/QrImage";
 import { PlatformInvoicePdfButton } from "@/features/shared/console/PlatformInvoicePdfButton";
 import { SectionError } from "@/features/shared/console/SectionError";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
-import { formatDate, formatDateTime, formatNumber, formatPeriodKey, formatTHB } from "@/i18n/format";
+import { formatDate, formatDateTime, formatDecimal, formatNumber, formatPeriodKey, formatTHB } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/errors";
 import type { Schemas } from "@/lib/api/types";
+import { Wordmark } from "@/ui/brand/Wordmark";
 import { Callout } from "@/ui/components/Callout";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
+import { Paper, PaperFoot, PaperParties, PaperSection } from "@/ui/components/Paper";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { DescriptionList } from "@/ui/components/DescriptionList";
-import { EmptyState } from "@/ui/components/EmptyState";
 import { SimpleTable } from "@/ui/components/SimpleTable";
-import { Stat } from "@/ui/components/Stat";
-import { IconBuilding } from "@/ui/icons/glyphs/building";
-import { IconCpu } from "@/ui/icons/glyphs/cpu";
-import { IconMeter } from "@/ui/icons/glyphs/meter";
-import { IconRoom } from "@/ui/icons/glyphs/room";
+import { Statement } from "@/ui/components/Statement";
+import { StatsRow } from "@/ui/components/StatsRow";
 
 import { ownerPath } from "../shared/links";
 import { ownerCan, readOnly, section, type OwnerContext } from "../shared/server";
@@ -56,7 +56,7 @@ export async function SubscriptionView({
   ]);
   const sub = overview.data?.subscription ?? null;
   const buildingName = (id: string | null) =>
-    id ? (buildings.find((building) => building.id === id)?.name ?? id.slice(0, 8)) : "—";
+    (id ? buildings.find((building) => building.id === id)?.name : undefined) ?? "—";
   const canUpgrade =
     (overview.data?.nextActions.includes("upgrade") ?? false) &&
     ownerCan(me, "tenant.subscription.manage") &&
@@ -97,7 +97,7 @@ export async function SubscriptionView({
         <SectionError error={overview.error} />
       ) : !sub ? (
         <Card>
-          <EmptyState title={t("none")} description={t("noneHint")} />
+          <CardHeader title={t("none")} description={t("noneHint")} />
         </Card>
       ) : (
         <>
@@ -145,60 +145,81 @@ export async function SubscriptionView({
               <h2 id="sub-today" className="text-lg font-semibold">
                 {t("today")}
               </h2>
-              <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
-                <Stat
-                  icon={IconRoom}
-                  label={t("units")}
-                  value={<span data-testid="usage-units">{formatNumber(overview.data.usageToday.units, locale)}</span>}
-                  hint={t("unitsHint")}
-                />
-                <Stat
-                  icon={IconMeter}
-                  label={t("meterPoints")}
-                  value={formatNumber(overview.data.usageToday.meterPoints, locale)}
-                />
-                <Stat
-                  icon={IconBuilding}
-                  label={t("buildings")}
-                  value={formatNumber(overview.data.usageToday.buildings, locale)}
-                />
-                <Stat
-                  icon={IconCpu}
-                  label={t("ocrImages")}
-                  value={formatNumber(overview.data.usageToday.ocrImages, locale)}
-                />
-              </div>
+              <StatsRow
+                label={t("today")}
+                figures={[
+                  {
+                    key: "units",
+                    label: t("units"),
+                    value: (
+                      <span data-testid="usage-units">{formatNumber(overview.data.usageToday.units, locale)}</span>
+                    ),
+                    hint: t("unitsHint"),
+                  },
+                  {
+                    key: "meters",
+                    label: t("meterPoints"),
+                    value: formatNumber(overview.data.usageToday.meterPoints, locale),
+                  },
+                  {
+                    key: "buildings",
+                    label: t("buildings"),
+                    value: formatNumber(overview.data.usageToday.buildings, locale),
+                  },
+                  {
+                    key: "ocr",
+                    label: t("ocrImages"),
+                    value: formatNumber(overview.data.usageToday.ocrImages, locale),
+                  },
+                ]}
+              />
             </section>
           ) : null}
           {overview.data.estimate ? (
             <Card as="section" aria-labelledby="sub-estimate" data-testid="estimate">
               <CardHeader title={<span id="sub-estimate">{t("estimate")}</span>} description={t("estimateHint")} />
-              <SimpleTable
+              <Statement
                 caption={t("estimate")}
-                minWidth="36rem"
-                columns={[
-                  { key: "description", header: t("col.description") },
-                  { key: "quantity", header: t("col.quantity"), align: "end" },
-                  { key: "price", header: t("col.unitPrice"), align: "end" },
-                  { key: "amount", header: t("col.amount"), align: "end" },
-                ]}
-                rows={overview.data.estimate.lines.map((line, index) => ({
-                  key: `${line.kind}-${index}`,
-                  cells: {
-                    description: line.description,
-                    quantity: line.quantity,
-                    price: formatTHB(line.unitPrice, locale),
-                    amount: formatTHB(line.amount, locale),
+                columns={[t("col.quantity"), t("col.unitPrice"), t("col.amount")]}
+                lines={[
+                  ...overview.data.estimate.lines.map((line, index) => ({
+                    key: `${line.kind}-${index}`,
+                    label: line.description,
+                    values: [
+                      formatDecimal(line.quantity, locale, 3),
+                      formatTHB(line.unitPrice, locale),
+                      formatTHB(line.amount, locale),
+                    ],
+                  })),
+                  ...(overview.data.estimate.discount !== "0.00"
+                    ? [
+                        {
+                          key: "discount",
+                          label: t("discount"),
+                          values: ["", "", formatTHB(`-${overview.data.estimate.discount}`, locale)],
+                        },
+                      ]
+                    : []),
+                  {
+                    key: "subtotal",
+                    label: t("beforeVat"),
+                    kind: "subtotal" as const,
+                    values: ["", "", formatTHB(overview.data.estimate.subtotal, locale)],
                   },
-                }))}
+                  {
+                    key: "vat",
+                    label: t("vat"),
+                    values: ["", "", formatTHB(overview.data.estimate.vatAmount, locale)],
+                  },
+                  {
+                    key: "total",
+                    label: t("estimateTotalLabel"),
+                    kind: "result" as const,
+                    values: ["", "", formatTHB(overview.data.estimate.total, locale)],
+                    testId: "subscription-estimate-total",
+                  },
+                ]}
               />
-              <p className="mt-3 text-sm">
-                {t("estimateTotal", {
-                  subtotal: formatTHB(overview.data.estimate.subtotal, locale),
-                  vat: formatTHB(overview.data.estimate.vatAmount, locale),
-                  total: formatTHB(overview.data.estimate.total, locale),
-                })}
-              </p>
             </Card>
           ) : null}
         </>
@@ -216,7 +237,7 @@ export async function SubscriptionView({
         {!invoices.data ? (
           <SectionError error={invoices.error} />
         ) : invoices.data.length === 0 ? (
-          <EmptyState title={t("noInvoices")} />
+          <p className="text-muted m-0 text-sm">{t("noInvoices")}</p>
         ) : (
           <SimpleTable
             caption={t("invoices")}
@@ -234,16 +255,9 @@ export async function SubscriptionView({
               key: invoice.id,
               testId: "platform-invoice-row",
               data: { number: invoice.number, state: invoice.state },
-              tone: invoice.state === "overdue" ? "danger" : "default",
+              href: ownerPath(locale, `/subscription/invoices/${invoice.id}`),
               cells: {
-                number: (
-                  <a
-                    href={ownerPath(locale, `/subscription/invoices/${invoice.id}`)}
-                    className="font-mono font-semibold hover:underline"
-                  >
-                    {invoice.number}
-                  </a>
-                ),
+                number: <span className="font-mono">{invoice.number}</span>,
                 period: `${formatDate(invoice.periodStart, locale)} – ${formatDate(invoice.periodEnd, locale)}`,
                 due: formatDate(invoice.dueAt, locale),
                 total: formatTHB(invoice.total, locale),
@@ -260,7 +274,7 @@ export async function SubscriptionView({
         {!usage.data ? (
           <SectionError error={usage.error} />
         ) : usage.data.length === 0 ? (
-          <EmptyState title={t("noUsage")} />
+          <p className="text-muted m-0 text-sm">{t("noUsage")}</p>
         ) : (
           <SimpleTable
             caption={t("usage")}
@@ -294,7 +308,7 @@ export async function SubscriptionView({
         {!hardware.data ? (
           <SectionError error={hardware.error} />
         ) : hardware.data.length === 0 ? (
-          <EmptyState title={t("noHardware")} />
+          <p className="text-muted m-0 text-sm">{t("noHardware")}</p>
         ) : (
           <SimpleTable
             caption={t("hardware")}
@@ -364,9 +378,15 @@ export async function SubscriptionView({
   );
 }
 
-/** One invoice from getproperty (F2 2.6, D-146): lines, totals, the Thai QR while open, payments, PDF. */
+/**
+ * One invoice from getproperty (F2 2.6, D-146; G5) as paper: the wordmark, the number and dates, who it is billed to,
+ * the lines as the API issued them and the totals as a statement (paid, credited and outstanding under the rule).
+ * Beside it the outstanding amount with its due date, the Thai QR while it is open, and the PDF (the tax invoice).
+ * The operator pays getproperty by QR: there is nothing to record here, so no filled button.
+ */
 export async function SubscriptionInvoice({ context, invoiceId }: { context: OwnerContext; invoiceId: string }) {
   const t = await getTranslations("owner.subscription");
+  const p = await getTranslations("console.platformInvoice");
   const { api, locale } = context;
   let invoice: Schemas["PlatformInvoiceDto"];
   try {
@@ -375,6 +395,8 @@ export async function SubscriptionInvoice({ context, invoiceId }: { context: Own
     if (isApiError(error) && (error.status === 404 || error.status === 422)) notFound();
     throw error;
   }
+  const money = (value: string) => formatTHB(value, locale);
+  const open = invoice.openAmount !== "0.00";
   return (
     <OwnerPage testId="subscription-invoice">
       <PageHeader
@@ -382,9 +404,176 @@ export async function SubscriptionInvoice({ context, invoiceId }: { context: Own
         crumbs={[{ label: t("title"), href: ownerPath(locale, "/subscription") }, { label: invoice.number }]}
         description={t("invoiceFrom")}
         status={<StatusBadgeOf map={PLATFORM_INVOICE_STATUS} value={invoice.state} />}
-        actions={invoice.documentId ? <PlatformInvoicePdfButton invoiceId={invoice.id} surface="owner" /> : null}
       />
-      <PlatformInvoiceBody invoice={invoice} locale={locale} />
+      <DetailLayout
+        panel={
+          <ActionPanel
+            title={open ? p("open") : p("paid")}
+            description={
+              open
+                ? t("invoicePanel.due", { date: formatDate(invoice.dueAt, locale) })
+                : invoice.payments[0]
+                  ? t("invoicePanel.paidOn", { date: formatDate(invoice.payments[0].paidAt, locale) })
+                  : undefined
+            }
+            facts={[
+              {
+                key: "amount",
+                label: open ? p("open") : p("total"),
+                value: (
+                  <span className="text-2xl font-semibold" data-testid="pinv-open">
+                    {money(open ? invoice.openAmount : invoice.total)}
+                  </span>
+                ),
+              },
+            ]}
+            primary={
+              invoice.qr ? (
+                <div className="flex flex-col items-center gap-2 text-center">
+                  <span className="text-sm font-medium">{p("qrTitle")}</span>
+                  <QrImage payload={invoice.qr.payload} label={p("qrAlt", { number: invoice.number })} />
+                  <span className="text-muted text-sm">
+                    {p("reference")}{" "}
+                    <span className="text-fg font-mono" data-testid="pinv-reference">
+                      {invoice.qr.reference}
+                    </span>
+                  </span>
+                  {invoice.qr.expiresAt ? (
+                    <span className="text-muted text-xs">
+                      {p("qrExpires", { date: formatDateTime(invoice.qr.expiresAt, locale) })}
+                    </span>
+                  ) : null}
+                </div>
+              ) : undefined
+            }
+            secondary={
+              invoice.documentId ? <PlatformInvoicePdfButton invoiceId={invoice.id} surface="owner" /> : undefined
+            }
+          />
+        }
+      >
+        <Paper label={t("invoicePaper", { number: invoice.number })}>
+          <header className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+            <Wordmark size="sm" />
+            <dl className="grid grid-cols-[auto_auto] gap-x-6 gap-y-1.5 text-sm md:text-end">
+              <dt className="text-muted">{t("col.number")}</dt>
+              <dd className="m-0 font-mono font-medium">{invoice.number}</dd>
+              <dt className="text-muted">{p("issued")}</dt>
+              <dd className="m-0 font-medium tabular-nums">{formatDate(invoice.issuedAt, locale)}</dd>
+              <dt className="text-muted">{p("due")}</dt>
+              <dd className="m-0 font-medium tabular-nums">{formatDate(invoice.dueAt, locale)}</dd>
+              <dt className="text-muted">{p("period")}</dt>
+              <dd className="m-0 font-medium tabular-nums">
+                {invoice.periodStart === invoice.periodEnd
+                  ? formatDate(invoice.periodStart, locale)
+                  : `${formatDate(invoice.periodStart, locale)} – ${formatDate(invoice.periodEnd, locale)}`}
+              </dd>
+            </dl>
+          </header>
+          <PaperParties items={[{ key: "to", label: t("billedTo"), value: invoice.tenantName }]} />
+          <PaperSection title={p("lines")}>
+            <Statement
+              caption={p("lines")}
+              columns={[p("col.quantity"), p("col.unitPrice"), p("col.amount")]}
+              lines={[
+                ...invoice.lines.map((line) => ({
+                  key: String(line.lineNo),
+                  label: line.description,
+                  values: [formatDecimal(line.quantity, locale, 3), money(line.unitPrice), money(line.amount)],
+                  testId: "pinv-line",
+                })),
+                {
+                  key: "subtotal",
+                  label: invoice.discount !== "0.00" ? p("subtotal") : t("beforeVat"),
+                  kind: "subtotal" as const,
+                  values: ["", "", money(invoice.subtotal)],
+                },
+                ...(invoice.discount !== "0.00"
+                  ? [{ key: "discount", label: p("discount"), values: ["", "", money(`-${invoice.discount}`)] }]
+                  : []),
+                { key: "vat", label: p("vat"), values: ["", "", money(invoice.vatAmount)] },
+                {
+                  key: "total",
+                  label: p("total"),
+                  kind: "result" as const,
+                  values: [
+                    "",
+                    "",
+                    <span key="total" data-testid="pinv-total">
+                      {money(invoice.total)}
+                    </span>,
+                  ],
+                },
+                ...(invoice.paidTotal !== "0.00"
+                  ? [
+                      {
+                        key: "paid",
+                        label: p("paid"),
+                        level: 1 as const,
+                        values: ["", "", money(`-${invoice.paidTotal}`)],
+                      },
+                    ]
+                  : []),
+                ...(invoice.creditedTotal !== "0.00"
+                  ? [
+                      {
+                        key: "credited",
+                        label: p("credited"),
+                        level: 1 as const,
+                        values: ["", "", money(`-${invoice.creditedTotal}`)],
+                      },
+                    ]
+                  : []),
+                {
+                  key: "open",
+                  label: p("open"),
+                  kind: "subtotal" as const,
+                  values: ["", "", money(invoice.openAmount)],
+                },
+              ]}
+            />
+          </PaperSection>
+          {invoice.payments.length ? (
+            <PaperSection title={p("payments")}>
+              <ul className="m-0 flex list-none flex-col gap-2 p-0 text-sm" data-testid="pinv-payments">
+                {invoice.payments.map((payment) => (
+                  <li
+                    key={payment.id}
+                    className="flex flex-wrap items-baseline justify-between gap-3"
+                    data-testid="pinv-payment"
+                  >
+                    <span>
+                      {formatDateTime(payment.paidAt, locale)} · {p(`method.${payment.method}`)}
+                      {payment.receiptNumber ? (
+                        <span className="text-muted font-mono"> · {payment.receiptNumber}</span>
+                      ) : null}
+                    </span>
+                    <span className="tabular-nums">{money(payment.amount)}</span>
+                  </li>
+                ))}
+              </ul>
+            </PaperSection>
+          ) : null}
+          {invoice.creditNotes.length ? (
+            <PaperSection title={p("creditNotes")}>
+              <ul className="m-0 flex list-none flex-col gap-2 p-0 text-sm">
+                {invoice.creditNotes.map((note) => (
+                  <li key={note.id} className="flex flex-wrap items-baseline justify-between gap-3">
+                    <span className="flex items-center gap-2">
+                      {note.number ? <span className="font-mono">{note.number}</span> : p("notIssued")} · {note.reason}
+                      <StatusBadgeOf map={CREDIT_NOTE_STATUS} value={note.state} size="sm" />
+                    </span>
+                    <span className="tabular-nums">{money(note.amount)}</span>
+                  </li>
+                ))}
+              </ul>
+            </PaperSection>
+          ) : null}
+          <PaperFoot>
+            <span>{t("invoicesHint")}</span>
+          </PaperFoot>
+        </Paper>
+      </DetailLayout>
     </OwnerPage>
   );
 }

@@ -48,20 +48,6 @@ export default async function LandlordSignUpPage({
       footer={
         <div className="flex flex-col gap-3">
           <p>
-            {t.rich("terms", {
-              terms: (chunks) => (
-                <a className="text-fg underline underline-offset-4" href={href("/legal/terms")}>
-                  {chunks}
-                </a>
-              ),
-              privacy: (chunks) => (
-                <a className="text-fg underline underline-offset-4" href={href("/legal/privacy")}>
-                  {chunks}
-                </a>
-              ),
-            })}
-          </p>
-          <p>
             <a
               className="text-primary font-semibold"
               href={agency ? href("/signup") : `${href("/signup")}?as=agency`}

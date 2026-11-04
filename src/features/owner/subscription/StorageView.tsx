@@ -9,11 +9,11 @@ import { formatBytes, formatDate, formatTHB } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
+import { Button } from "@/ui/components/Button";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
-import { LinkTabs } from "@/ui/components/LinkTabs";
+import { ViewTabs } from "@/ui/components/ListToolbar";
 import { IconArchive } from "@/ui/icons/glyphs/archive";
-import { IconPackageCheck } from "@/ui/icons/glyphs/package-check";
 
 import { ownerPath } from "../shared/links";
 import { ownerCan, pageParam, param, readOnly, section, type OwnerContext } from "../shared/server";
@@ -89,11 +89,9 @@ export async function StorageView({ context, searchParams }: { context: OwnerCon
                 {t("packages.offers")}
               </h3>
               {packages.data.offers.length === 0 ? (
-                <EmptyState
-                  icon={IconPackageCheck}
-                  title={t("packages.noOffers")}
-                  description={t("packages.noOffersHint")}
-                />
+                <p className="text-muted m-0 text-sm">
+                  {t("packages.noOffers")} {t("packages.noOffersHint")}
+                </p>
               ) : (
                 <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2 xl:grid-cols-3">
                   {packages.data.offers.map((offer) => {
@@ -169,18 +167,37 @@ export async function StorageView({ context, searchParams }: { context: OwnerCon
           title={<span id="storage-files-title">{t("files.title")}</span>}
           description={t("files.description")}
         />
-        <LinkTabs
+        <ViewTabs
           label={t("files.title")}
-          current={mode === "deleted" ? `${base}?files=deleted` : base}
+          current={mode === "deleted" ? "deleted" : "active"}
           tabs={[
-            { href: base, label: t("files.tabs.active"), testId: "storage-tab-active" },
-            { href: `${base}?files=deleted`, label: t("files.tabs.deleted"), testId: "storage-tab-deleted" },
+            { key: "active", href: base, label: t("files.tabs.active"), testId: "storage-tab-active" },
+            {
+              key: "deleted",
+              href: `${base}?files=deleted`,
+              label: t("files.tabs.deleted"),
+              testId: "storage-tab-deleted",
+            },
           ]}
         />
         {!files.data ? (
           <SectionError error={files.error} />
         ) : files.data.data.length === 0 ? (
-          <EmptyState icon={IconArchive} title={t(`files.empty.${mode}`)} />
+          <EmptyState
+            icon={IconArchive}
+            title={t(`files.empty.${mode}`)}
+            action={
+              mode === "deleted" ? (
+                <Button asChild variant="secondary">
+                  <a href={base}>{t("files.tabs.active")}</a>
+                </Button>
+              ) : (
+                <Button asChild variant="secondary">
+                  <a href={ownerPath(locale, "/subscription")}>{sub("title")}</a>
+                </Button>
+              )
+            }
+          />
         ) : (
           <>
             <StorageFilesTable

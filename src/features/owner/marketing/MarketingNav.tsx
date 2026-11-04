@@ -35,7 +35,7 @@ export async function MarketingNav({ locale }: { locale: Locale }) {
   const path = ((await headers()).get(PATH_HEADER) ?? "/").split("?")[0]!.replace(/^\/(th|en)(?=\/|$)/, "") || "/";
   const href = (p: string) => getPathname({ href: p, locale });
   const signIn = ownerHref("/login", locale);
-  // Sign-up is the sign-in (phone, Google, Apple or LINE, D-255): the call to action starts an owner account,
+  // The call to action opens the owner sign-up (phone, Google, Apple or LINE, D-255) — it starts an owner account,
   // worded for the page — "list for free" where the visitor is a renter or a house/condo owner, else "start free".
   const listing = path === "/landlords" || path === "/rent" || path.startsWith("/rent/");
 
@@ -74,7 +74,7 @@ export async function MarketingNav({ locale }: { locale: Locale }) {
             {t("nav.signIn")}
           </a>
           <Button asChild size="sm">
-            <a href={signIn}>{listing ? t("nav.list") : t("nav.start")}</a>
+            <a href={ownerHref("/signup", locale)}>{listing ? t("nav.list") : t("nav.start")}</a>
           </Button>
 
           <details className="group relative lg:hidden">

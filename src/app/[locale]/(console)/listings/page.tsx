@@ -10,8 +10,14 @@ export async function generateMetadata() {
 }
 
 /** The owner's rental listings (F6.2, D-252). */
-export default async function Listings({ params }: { params: Promise<{ locale: Locale }> }) {
+export default async function Listings({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: Locale }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const { locale } = await params;
   setRequestLocale(locale);
-  return <ListingsView context={await ownerContext()} />;
+  return <ListingsView context={await ownerContext()} searchParams={await searchParams} />;
 }

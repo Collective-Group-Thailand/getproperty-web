@@ -12,6 +12,10 @@ import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Field } from "@/ui/components/Field";
 import { Textarea } from "@/ui/components/Input";
+import { Icon } from "@/ui/icons";
+import { IconForward as IconSend } from "@/ui/icons/glyphs/forward";
+import { IconLock } from "@/ui/icons/glyphs/lock";
+import { IconShield } from "@/ui/icons/glyphs/shield";
 import { cn } from "@/ui/lib/cn";
 
 /** The API's limit on one reply (`LeadMessageCreateDto.body`). */
@@ -58,12 +62,18 @@ export function LeadThread({
   };
 
   return (
-    <div className="flex flex-col gap-4" data-testid="lead-thread">
-      <p className="text-muted text-sm">{t("hint")}</p>
+    <div className="-mx-5 -my-4 flex flex-col" data-testid="lead-thread">
+      <p className="bg-bg-subtle text-muted border-border m-0 flex items-start gap-2 border-b px-5 py-2.5 text-sm">
+        <Icon icon={IconShield} className="mt-0.5 shrink-0" />
+        {t("hint")}
+      </p>
       {messages.length === 0 ? (
-        <p className="text-muted text-sm">{t("empty")}</p>
+        <p className="text-muted m-0 px-5 py-8 text-center text-sm">{t("empty")}</p>
       ) : (
-        <ol className="m-0 flex max-h-[32rem] list-none flex-col gap-3 overflow-y-auto p-0" aria-label={t("title")}>
+        <ol
+          className="m-0 flex max-h-[34rem] min-h-48 list-none flex-col gap-3 overflow-y-auto px-5 py-5"
+          aria-label={t("title")}
+        >
           {messages.map((message, index) => {
             const mine = message.author === "owner";
             return (
@@ -77,31 +87,36 @@ export function LeadThread({
                 data-testid="lead-message"
                 data-author={message.author}
               >
-                <span className="text-muted text-xs">
-                  {mine ? t("you") : prospectName} ·{" "}
-                  <time dateTime={message.createdAt}>{formatDateTime(message.createdAt, locale)}</time>
-                </span>
                 <p
                   className={cn(
-                    "rounded-card px-3 py-2 text-sm break-words whitespace-pre-line",
-                    mine ? "bg-primary text-primary-fg" : "bg-bg-subtle text-fg",
+                    "rounded-card m-0 px-3.5 py-2.5 text-sm break-words whitespace-pre-line",
+                    mine ? "bg-primary text-primary-fg rounded-ee-thumb" : "bg-bg-subtle text-fg rounded-es-thumb",
                   )}
                 >
                   {message.body}
                 </p>
+                <span className="text-muted text-xs">
+                  {mine ? t("you") : prospectName} ·{" "}
+                  <time dateTime={message.createdAt}>{formatDateTime(message.createdAt, locale)}</time>
+                </span>
               </li>
             );
           })}
         </ol>
       )}
       {closed ? (
-        <p className="text-muted border-border rounded-card border border-dashed p-3 text-sm" data-testid="lead-closed">
+        <p
+          className="border-border text-muted m-0 flex items-center gap-2 border-t px-5 py-4 text-sm"
+          data-testid="lead-closed"
+        >
+          <Icon icon={IconLock} className="shrink-0" />
           {t("closed")}
         </p>
       ) : (
-        <form className="flex flex-col gap-2" onSubmit={send} data-testid="lead-reply">
+        <form className="border-border flex flex-col gap-2 border-t px-5 py-4" onSubmit={send} data-testid="lead-reply">
           <Field
             label={t("write")}
+            labelHidden
             hint={t("writeHint", { count: draft.length, max: REPLY_MAX })}
             error={tooLong ? t("tooLong", { max: REPLY_MAX }) : undefined}
           >
@@ -109,6 +124,7 @@ export function LeadThread({
               name="body"
               rows={3}
               value={draft}
+              placeholder={t("placeholder")}
               onChange={(event) => setDraft(event.target.value)}
               data-testid="lead-reply-input"
             />
@@ -117,6 +133,7 @@ export function LeadThread({
           <div className="flex justify-end">
             <Button
               type="submit"
+              iconStart={IconSend}
               loading={action.busy}
               disabled={!draft.trim() || tooLong}
               data-testid="lead-reply-send"

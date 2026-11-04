@@ -197,7 +197,7 @@ export function EndAgreementButton({ agreement, etag }: { agreement: Agreement; 
     <ConfirmAction
       label={t("end")}
       icon={IconXCircle}
-      variant="ghost"
+      variant="destructive"
       tone="destructive"
       testId="employer-end"
       title={t("endTitle", { name: agreement.employer.displayName })}

@@ -64,11 +64,11 @@ export default async function Landing({ params }: Params) {
   setRequestLocale(locale);
   const t = await getTranslations("owner.marketing");
   const origin = marketingOrigin();
-  const signIn = ownerHref("/login", locale);
+  const signUp = ownerHref("/signup", locale);
   const line = lineOaHref();
   const pricing = getPathname({ href: "/pricing", locale });
   const landlords = getPathname({ href: "/landlords", locale });
-  const start = line ?? signIn;
+  const start = line ?? signUp;
   const external = Boolean(line);
   const faq = FAQ_KEYS.map((key) => ({ q: t(`faq.items.${key}.q`), a: t(`faq.items.${key}.a`) }));
 
@@ -94,7 +94,7 @@ export default async function Landing({ params }: Params) {
           <div className="mt-2 flex flex-wrap items-center gap-x-6 gap-y-3">
             <Button asChild size="lg" iconStart={line ? IconChat : undefined}>
               <a href={start} {...(external ? { rel: "noopener noreferrer", target: "_blank" } : {})}>
-                {line ? t("hero.primary") : t("hero.signIn")}
+                {line ? t("hero.primary") : t("nav.start")}
               </a>
             </Button>
             <TextLink href={pricing}>{t("hero.secondary")}</TextLink>
@@ -345,7 +345,7 @@ export default async function Landing({ params }: Params) {
         body={t("cta.body")}
         primary={{
           href: start,
-          label: line ? t("cta.primary") : t("hero.signIn"),
+          label: line ? t("cta.primary") : t("nav.start"),
           external,
           icon: line ? IconChat : undefined,
         }}
