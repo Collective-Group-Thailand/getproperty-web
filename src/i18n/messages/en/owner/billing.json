@@ -108,5 +108,11 @@
   },
   "requested": "requested",
   "requestedAnyone": "Requested from staff",
-  "noPropertyAction": "View buildings"
+  "noPropertyAction": "View buildings",
+  "rail": {
+    "label": "Cycle settings and timeline",
+    "settings": "This cycle's settings",
+    "change": "Change in settings",
+    "timeline": "Cycle timeline"
+  }
 }

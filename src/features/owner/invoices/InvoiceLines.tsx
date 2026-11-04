@@ -6,6 +6,7 @@ import { formatDate, formatDecimal, formatTHB, formatUnits } from "@/i18n/format
 import type { Locale } from "@/i18n/routing";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
+import { DisclosureSheet } from "@/ui/components/DisclosureSheet";
 
 import { PhotoThumb } from "../shared/PhotoThumb";
 import { segmentKey } from "./photos";
@@ -50,6 +51,7 @@ export function InvoiceLines({
   testId?: string;
 }) {
   const t = useTranslations("owner.invoices.lines");
+  const common = useTranslations("common");
   const groups = SOURCE_ORDER.map((source) => ({
     source,
     lines: lines.filter((line) => line.sourceType === source),
@@ -113,40 +115,79 @@ export function InvoiceLines({
                   ) : null}
                   {line.vatApplicable ? <span>{t("vat")}</span> : null}
                 </div>
-                {line.meterSegments.map((segment) => (
-                  <div
-                    key={`${segment.meterAssignmentId}-${segment.from?.register ?? ""}`}
-                    className="flex flex-wrap items-center gap-2 text-sm"
-                    data-testid="meter-segment"
-                  >
-                    <span className="font-mono">{segment.code}</span>
-                    {[segment.from, segment.to].map((end, index) =>
-                      end ? (
-                        <span key={index} className="flex items-center gap-1">
-                          {index === 1 ? <span aria-hidden="true">{t("arrow")}</span> : null}
-                          <span className="font-mono tabular-nums">{end.register}</span>
-                          {isSource(end.source) ? <ReadingSourceBadge source={end.source} /> : null}
-                          {photos[segmentKey(segment.meterAssignmentId, end.register)] ? (
-                            <PhotoThumb
-                              fileId={photos[segmentKey(segment.meterAssignmentId, end.register)]!}
-                              alt={t("photoAlt", {
-                                meter: segment.code,
-                                register: end.register,
-                                date: formatDate(end.readAt, locale),
-                              })}
-                              size="sm"
-                            />
+                {line.meterSegments.map((segment) => {
+                  const ends = [segment.from, segment.to];
+                  const photoOf = (end: (typeof ends)[number]) =>
+                    end ? photos[segmentKey(segment.meterAssignmentId, end.register)] : undefined;
+                  const latest = [...ends].reverse().find((end) => end && photoOf(end));
+                  return (
+                    // One muted line per meter (Stitch G2/G3 revision): code and units used with the latest
+                    // photo; the registers, their sources and both photos open in a sheet.
+                    <div
+                      key={`${segment.meterAssignmentId}-${segment.from?.register ?? ""}`}
+                      className="text-muted flex flex-wrap items-center gap-x-2 gap-y-1 text-sm"
+                      data-testid="meter-segment"
+                    >
+                      <span className="font-mono">{segment.code}</span>
+                      {segment.units ? (
+                        <span>· {t("used", { units: quantity(segment.units, line.unit, locale) })}</span>
+                      ) : null}
+                      <DisclosureSheet
+                        label={t("readings")}
+                        title={t("readingsTitle", { meter: segment.code })}
+                        closeLabel={common("close")}
+                        testId="meter-readings"
+                      >
+                        <dl className="divide-border flex flex-col divide-y">
+                          {ends.map((end, index) =>
+                            end ? (
+                              <div key={index} className="flex items-center justify-between gap-4 py-3">
+                                <div className="flex min-w-0 flex-col gap-1">
+                                  <dt className="text-muted text-sm">{index === 0 ? t("from") : t("to")}</dt>
+                                  <dd className="flex flex-wrap items-center gap-2">
+                                    <span className="font-mono text-lg tabular-nums">{end.register}</span>
+                                    {isSource(end.source) ? <ReadingSourceBadge source={end.source} /> : null}
+                                  </dd>
+                                  <dd className="text-muted text-sm">{formatDate(end.readAt, locale)}</dd>
+                                </div>
+                                {photoOf(end) ? (
+                                  <PhotoThumb
+                                    fileId={photoOf(end)!}
+                                    alt={t("photoAlt", {
+                                      meter: segment.code,
+                                      register: end.register,
+                                      date: formatDate(end.readAt, locale),
+                                    })}
+                                    size="lg"
+                                  />
+                                ) : null}
+                              </div>
+                            ) : null,
+                          )}
+                          {segment.units ? (
+                            <div className="flex justify-between gap-4 py-3 font-medium">
+                              <dt>{t("usedLabel")}</dt>
+                              <dd className="tabular-nums">{quantity(segment.units, line.unit, locale)}</dd>
+                            </div>
                           ) : null}
+                        </dl>
+                      </DisclosureSheet>
+                      {latest && photoOf(latest) ? (
+                        <span className="ms-auto">
+                          <PhotoThumb
+                            fileId={photoOf(latest)!}
+                            alt={t("photoAlt", {
+                              meter: segment.code,
+                              register: latest.register,
+                              date: formatDate(latest.readAt, locale),
+                            })}
+                            size="sm"
+                          />
                         </span>
-                      ) : null,
-                    )}
-                    {segment.units ? (
-                      <span className="text-muted">
-                        {t("used", { units: quantity(segment.units, line.unit, locale) })}
-                      </span>
-                    ) : null}
-                  </div>
-                ))}
+                      ) : null}
+                    </div>
+                  );
+                })}
               </li>
             ))}
           </ul>

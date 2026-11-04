@@ -12,8 +12,14 @@ export async function generateMetadata() {
 }
 
 /** The morning dashboard (F2 2.1): the Today queue, the month's figures, the cycle and the compliance score. */
-export default async function Dashboard({ params }: { params: Promise<{ locale: Locale }> }) {
-  const { locale } = await params;
+export default async function Dashboard({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: Locale }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const [{ locale }, query] = await Promise.all([params, searchParams]);
   setRequestLocale(locale);
   const context = await ownerContext();
   // Sign-in lands here; a landlord has no building dashboard — its home is the portfolio (B7.1, D-251).
@@ -22,5 +28,5 @@ export default async function Dashboard({ params }: { params: Promise<{ locale: 
   // An estate agency's home is the units owners mandated to it (G2, D-293).
   if (!context.me.menu.includes("dashboard") && context.me.menu.includes("mandated_units"))
     redirect(getPathname({ href: "/mandated-units", locale }));
-  return <DashboardView context={context} />;
+  return <DashboardView context={context} allTasks={query.tasks === "all"} />;
 }

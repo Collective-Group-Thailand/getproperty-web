@@ -87,7 +87,7 @@ export function DraftReview({ drafts }: { drafts: Draft[] }) {
             return (
               <Fragment key={draft.id}>
                 <tr className="border-border border-b align-top" data-testid="draft-row" data-unit={draft.unitNo ?? ""}>
-                  <th scope="row" className="py-2 text-start font-mono font-semibold">
+                  <th scope="row" className="py-2 pe-3 text-start font-mono font-semibold whitespace-nowrap">
                     <a className="underline-offset-4 hover:underline" href={ownerPath(locale, `/invoices/${draft.id}`)}>
                       {draft.unitNo ?? "—"}
                     </a>

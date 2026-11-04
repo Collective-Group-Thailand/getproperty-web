@@ -124,10 +124,11 @@ export async function InvoiceDetail({ context, invoiceId }: { context: AdminCont
           />
           <PaperParties items={[{ key: "to", label: t("billedTo"), value: invoice.tenantName }]} />
           <PaperSection title={doc("lines")}>
-            <div className="relative -mx-1 overflow-x-auto px-1">
-              <table className="w-full min-w-[34rem] text-base" data-testid="pinv-lines">
+            {/* Phones: each line as a block — description and amount, then its kind and "qty × price" (no sideways scroll). */}
+            <div className="relative -mx-1 px-1 md:overflow-x-auto">
+              <table className="w-full text-base max-md:block md:min-w-[34rem]" data-testid="pinv-lines">
                 <caption className="sr-only">{doc("lines")}</caption>
-                <thead>
+                <thead className="max-md:sr-only">
                   <tr className="border-border text-muted border-b text-sm">
                     <th scope="col" className="py-2 pe-4 text-start font-medium">
                       {doc("col.description")}
@@ -143,25 +144,33 @@ export async function InvoiceDetail({ context, invoiceId }: { context: AdminCont
                     </th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="max-md:block">
                   {invoice.lines.map((line) => (
                     <tr
                       key={line.lineNo}
-                      className="border-border border-b last:border-b-0"
+                      className="border-border border-b last:border-b-0 max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto] max-md:gap-x-4 max-md:py-3"
                       data-testid="pinv-line"
                       data-kind={line.kind}
                     >
-                      <th scope="row" className="py-3 pe-4 text-start align-top font-normal">
+                      <th
+                        scope="row"
+                        className="py-3 pe-4 text-start align-top font-normal max-md:col-start-1 max-md:row-start-1 max-md:p-0"
+                      >
                         <span className="block">{line.description}</span>
                         <span className="text-muted text-sm">{doc(`lineKind.${line.kind}`)}</span>
                       </th>
-                      <td className="py-3 pe-4 text-end align-top tabular-nums">
+                      <td className="text-muted md:text-fg py-3 pe-4 text-end align-top text-sm tabular-nums max-md:col-start-1 max-md:row-start-2 max-md:inline max-md:p-0 max-md:text-start md:text-base">
+                        <span className="md:hidden">{doc("col.quantity")} </span>
                         {formatDecimal(line.quantity, locale, 3)}
+                        <span className="md:hidden">
+                          {" × "}
+                          {formatTHB(line.unitPrice, locale)}
+                        </span>
                       </td>
-                      <td className="py-3 pe-4 text-end align-top whitespace-nowrap tabular-nums">
+                      <td className="py-3 pe-4 text-end align-top whitespace-nowrap tabular-nums max-md:hidden">
                         {formatTHB(line.unitPrice, locale)}
                       </td>
-                      <td className="py-3 text-end align-top whitespace-nowrap tabular-nums">
+                      <td className="py-3 text-end align-top font-medium whitespace-nowrap tabular-nums max-md:col-start-2 max-md:row-start-1 max-md:p-0 md:font-normal">
                         {formatTHB(line.amount, locale)}
                       </td>
                     </tr>

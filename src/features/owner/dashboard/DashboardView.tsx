@@ -20,6 +20,7 @@ import { SimpleTable } from "@/ui/components/SimpleTable";
 import { StageRail } from "@/ui/components/StageRail";
 import { StatsRow } from "@/ui/components/StatsRow";
 import { Icon, type IconGlyph } from "@/ui/icons";
+import { cn } from "@/ui/lib/cn";
 import { IconBill } from "@/ui/icons/glyphs/bill";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 import { IconChevronRight } from "@/ui/icons/glyphs/chevron-right";
@@ -59,7 +60,14 @@ interface QueueItem {
  * one click from its action — then the month's figures, the billing cycle and the compliance score.
  * Every number is the API's: counts and amounts are shown as returned, never added up here.
  */
-export async function DashboardView({ context }: { context: OwnerContext }) {
+export async function DashboardView({
+  context,
+  allTasks = false,
+}: {
+  context: OwnerContext;
+  /** Phones show the first few tasks and "ดูทั้งหมด"; `?tasks=all` opens the whole list. */
+  allTasks?: boolean;
+}) {
   const t = await getTranslations("owner.dashboard");
   const { api, locale } = context;
   const building = focusedBuilding(context);
@@ -242,6 +250,8 @@ export async function DashboardView({ context }: { context: OwnerContext }) {
       : (context.buildings[0]?.name ?? "");
   const cycle = d?.cycles[0];
   const cycleStatus = cycle && isCycleStatus(cycle.status) ? cycle.status : null;
+  // The tasks in the order the page shows them (today first): a phone shows the first `PHONE_TASKS`.
+  const ordered = [...queue.filter((entry) => entry.urgent), ...queue.filter((entry) => !entry.urgent)];
   const stageIndex = cycleStatus ? CYCLE_STAGES.indexOf(cycleStatus as (typeof CYCLE_STAGES)[number]) : -1;
   const occupancy = board.data
     ? {
@@ -358,6 +368,56 @@ export async function DashboardView({ context }: { context: OwnerContext }) {
       />
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_22rem] lg:gap-8">
+        {/* Phones (Stitch G3 dashboard-mobile): the billing cycle in one tappable line above the tasks, not a full
+            stepper under them; the rail card below is the desktop's. */}
+        <a
+          href={href("/billing")}
+          className="rounded-card border-border bg-surface shadow-card hover:bg-bg-subtle flex flex-col gap-3 border p-4 lg:hidden"
+          data-testid="cycle-compact"
+        >
+          <span className="flex items-center justify-between gap-3">
+            <span className="font-semibold">{t("cycle.title")}</span>
+            <span className="flex items-center gap-2">
+              {cycleStatus ? <StatusBadgeOf map={BILLING_CYCLE_STATUS} value={cycleStatus} size="sm" /> : null}
+              <Icon icon={IconChevronRight} className="text-subtle shrink-0 rtl:rotate-180" />
+            </span>
+          </span>
+          {cycle && stageIndex >= 0 ? (
+            <span className="grid grid-cols-5 gap-1" aria-hidden="true">
+              {CYCLE_STAGES.map((stage, index) => (
+                <span
+                  key={stage}
+                  className={cn(
+                    "rounded-thumb h-1.5",
+                    index < stageIndex || cycleStatus === "closed"
+                      ? "bg-primary"
+                      : index === stageIndex
+                        ? "bg-primary/45"
+                        : "bg-bg-subtle",
+                  )}
+                />
+              ))}
+            </span>
+          ) : null}
+          <span className="text-muted text-sm">
+            {cycle
+              ? [
+                  `${cycle.propertyName} · ${formatPeriodKey(cycle.periodKey, locale)}`,
+                  stageIndex >= 0 && cycleStatus !== "closed"
+                    ? t("cycle.stepOf", {
+                        step: stageIndex + 1,
+                        total: CYCLE_STAGES.length,
+                        stage: t(`cycle.stage.${CYCLE_STAGES[stageIndex]!}`),
+                      })
+                    : null,
+                  nextCutoff ? t("cycle.cutoffShort", { date: formatDate(nextCutoff, locale) }) : null,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")
+              : t("cycle.none")}
+          </span>
+        </a>
+
         <section aria-labelledby="today-queue" className="flex min-w-0 flex-col gap-3" data-testid="today-queue">
           <div className="flex items-baseline justify-between gap-3">
             <h2 id="today-queue" className="text-lg font-semibold">
@@ -388,13 +448,23 @@ export async function DashboardView({ context }: { context: OwnerContext }) {
                 ] as const
               ).map(([group, items]) =>
                 items.length ? (
-                  <div key={group} className="flex flex-col gap-2" data-group={group}>
+                  <div
+                    key={group}
+                    className={cn(
+                      "flex flex-col gap-2",
+                      !allTasks && ordered.indexOf(items[0]!) >= PHONE_TASKS && "max-lg:hidden",
+                    )}
+                    data-group={group}
+                  >
                     <h3 className="text-muted text-sm font-medium">
                       {t(`queue.group.${group}`, { count: items.length })}
                     </h3>
                     <ul className="rounded-card border-border bg-surface shadow-card divide-border divide-y overflow-hidden border">
                       {items.map((item) => (
-                        <li key={item.kind}>
+                        <li
+                          key={item.kind}
+                          className={cn(!allTasks && ordered.indexOf(item) >= PHONE_TASKS && "max-lg:hidden")}
+                        >
                           <a
                             href={item.href}
                             className="hover:bg-bg-subtle duration-fast flex items-center gap-4 px-4 py-3.5 transition-colors md:px-5"
@@ -415,6 +485,13 @@ export async function DashboardView({ context }: { context: OwnerContext }) {
                   </div>
                 ) : null,
               )}
+              {!allTasks && queue.length > PHONE_TASKS ? (
+                <Button asChild variant="secondary" block className="lg:hidden">
+                  <a href={`${href("/dashboard")}?tasks=all#today-queue`} data-testid="queue-all">
+                    {t("queue.showAll", { count: queue.length })}
+                  </a>
+                </Button>
+              ) : null}
             </div>
           )}
         </section>
@@ -422,7 +499,7 @@ export async function DashboardView({ context }: { context: OwnerContext }) {
         <div className="flex flex-col gap-6">
           <section
             aria-labelledby="cycle-card-title"
-            className="rounded-card border-border bg-surface shadow-card flex flex-col gap-4 border p-5"
+            className="rounded-card border-border bg-surface shadow-card flex flex-col gap-4 border p-5 max-lg:hidden"
             data-testid="cycle-card"
           >
             <div className="flex flex-col gap-1">
@@ -586,6 +663,8 @@ export async function DashboardView({ context }: { context: OwnerContext }) {
   );
 }
 
+/** Tasks a phone shows before "ดูทั้งหมด" (Stitch G3 dashboard-mobile). */
+const PHONE_TASKS = 4;
 const CYCLE_STAGES = ["open", "readings_pending", "computed", "issued", "closed"] as const;
 const CYCLE_VALUES = new Set(Object.keys(BILLING_CYCLE_STATUS));
 function isCycleStatus(value: string): value is Schemas["BillingCycleStatus"] {

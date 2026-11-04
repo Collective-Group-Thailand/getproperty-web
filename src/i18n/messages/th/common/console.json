@@ -123,11 +123,20 @@
     "notMet": "ยังไม่ผ่าน",
     "unknown": "ยังไม่มีข้อมูล",
     "acceptance": "เกณฑ์รับมอบเฟส 1",
-    "acceptanceHint": "เกณฑ์เริ่มใช้งานจริงตาม blueprint จากข้อมูลชุดเดียวกัน",
+    "acceptanceHint": "เกณฑ์เริ่มใช้งานจริงของเฟส 1 จากข้อมูลชุดเดียวกัน",
     "buildingsAuto": "อาคารที่ออกบิลอัตโนมัติ",
     "firstCycle": "รอบบิลเต็มรอบแรกภายในหนึ่งชั่วโมง",
     "paidByQr": "ชำระด้วย Thai QR",
-    "viaLine": "แจ้งซ่อมผ่าน LINE"
+    "viaLine": "แจ้งซ่อมผ่าน LINE",
+    "points": "{value} จุด",
+    "target": {
+      "atLeast": "อย่างน้อย {value}",
+      "atMost": "ไม่เกิน {value}",
+      "above": "มากกว่า {value}",
+      "below": "น้อยกว่า {value}",
+      "up": "เพิ่มขึ้น {value}",
+      "down": "ลดลง {value}"
+    }
   },
   "setting": {
     "edit": "เปลี่ยน",

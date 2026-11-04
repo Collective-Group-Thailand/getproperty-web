@@ -70,7 +70,12 @@
     "vat": "มี VAT",
     "arrow": "→",
     "used": "ใช้ไป {units}",
-    "photoAlt": "มิเตอร์ {meter} เลข {register} วันที่ {date}"
+    "photoAlt": "มิเตอร์ {meter} เลข {register} วันที่ {date}",
+    "readings": "ดูเลขมิเตอร์",
+    "readingsTitle": "เลขมิเตอร์ {meter}",
+    "from": "เลขก่อนหน้า",
+    "to": "เลขล่าสุด",
+    "usedLabel": "หน่วยที่ใช้"
   },
   "actions": {
     "issue": "ออกบิล",

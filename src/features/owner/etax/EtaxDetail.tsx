@@ -27,6 +27,7 @@ import { EtaxRetry } from "./EtaxRetry";
  */
 export async function EtaxDetail({ context, submissionId }: { context: OwnerContext; submissionId: string }) {
   const t = await getTranslations("owner.etax");
+  const providers = await getTranslations("glossary.etaxProvider");
   const { api, locale, me } = context;
   let row: Schemas["EtaxSubmissionDto"];
   try {
@@ -135,7 +136,11 @@ export async function EtaxDetail({ context, submissionId }: { context: OwnerCont
             items={[
               { id: "type", term: t("col.type"), description: t(`subject.${row.subjectType}`) },
               { id: "issued", term: t("col.issued"), description: formatDateTime(row.issuedAt, locale) },
-              { id: "provider", term: t("detail.provider"), description: row.provider },
+              {
+                id: "provider",
+                term: t("detail.provider"),
+                description: providers.has(row.provider) ? providers(row.provider) : providers("other"),
+              },
               {
                 id: "providerDoc",
                 term: t("detail.providerDocId"),

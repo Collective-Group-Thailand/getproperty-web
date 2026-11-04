@@ -1,4 +1,4 @@
-import { PageCrumbs, ShellBackLink } from "@/features/shared/shell/ShellBreadcrumbs";
+import { PageCrumbs, ShellBackLink, ShellRecordTopBar } from "@/features/shared/shell/ShellBreadcrumbs";
 import type { Crumb } from "@/ui/components/Breadcrumbs";
 import { cn } from "@/ui/lib/cn";
 
@@ -33,12 +33,12 @@ export function PageHeader({
   return (
     <header className={cn("flex flex-col gap-3", className)}>
       {crumbs ? <PageCrumbs items={crumbs} /> : null}
-      {backOnPhonesOnly ? (
-        <div className="md:hidden">
+      {/* Phones: the way back is the record's top bar; from md it is the link above the title. */}
+      <ShellRecordTopBar back={back} />
+      {backOnPhonesOnly ? null : (
+        <div className="max-md:hidden">
           <ShellBackLink back={back} />
         </div>
-      ) : (
-        <ShellBackLink back={back} />
       )}
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-8">
         <div className="flex min-w-0 flex-col gap-1.5">

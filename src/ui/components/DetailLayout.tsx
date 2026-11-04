@@ -72,7 +72,12 @@ export function ActionPanel({
       <div className="flex flex-col gap-2 p-5">
         <div className="flex items-start justify-between gap-3">
           <h2 className="text-base font-semibold">{title}</h2>
-          {more}
+          {more ? (
+            // Phones, under a record top bar (`data-record-top`, console shell): the "⋯" sits at the bar's end.
+            <div className="max-md:group-has-[[data-record-top]]/shell:fixed max-md:group-has-[[data-record-top]]/shell:end-2 max-md:group-has-[[data-record-top]]/shell:top-1.5 max-md:group-has-[[data-record-top]]/shell:z-[calc(var(--z-sticky)+2)]">
+              {more}
+            </div>
+          ) : null}
         </div>
         {status ? <div className="flex flex-wrap gap-1.5">{status}</div> : null}
         {description ? <p className="text-muted text-sm">{description}</p> : null}

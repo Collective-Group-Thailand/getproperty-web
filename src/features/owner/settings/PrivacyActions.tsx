@@ -114,7 +114,7 @@ export function DsrActions({ dsr }: { dsr: Schemas["DsrDto"] }) {
       title={t(`confirm.${action}.title`)}
       description={t(`confirm.${action}.body`, { kind: t(`kind.${dsr.kind}`) })}
       confirmLabel={t(`action.${action}`)}
-      phrase={action === "fulfil" || action === "reject" ? dsr.id.slice(0, 8) : undefined}
+      phrase={action === "fulfil" || action === "reject" ? t(`phrase.${action}`) : undefined}
       ready={action !== "reject" || notes.trim().length > 0}
       successMessage={t("done")}
       onConfirm={() => run(action)}

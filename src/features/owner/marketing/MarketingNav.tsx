@@ -43,8 +43,8 @@ export async function MarketingNav({ locale }: { locale: Locale }) {
     <header className="bg-bg/95 border-border sticky top-0 z-30 border-b backdrop-blur print:hidden">
       <div className={`${WRAP} flex h-16 items-center gap-6 md:h-18`}>
         <a href={href("/")} aria-label={t("nav.home")} className="rounded-control inline-flex shrink-0 items-center">
-          <Wordmark size="sm" decorative className="max-[419px]:hidden" />
-          <Wordmark compact size="sm" decorative className="min-[420px]:hidden" />
+          {/* The full wordmark on every width (Stitch G1 phone): the bare house mark does not say whose site this is. */}
+          <Wordmark size="sm" decorative />
         </a>
 
         <nav aria-label={t("nav.label")} className="hidden h-full flex-1 justify-center lg:flex">

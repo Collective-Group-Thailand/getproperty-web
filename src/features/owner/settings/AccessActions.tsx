@@ -9,6 +9,9 @@ import { FormDialog, integer, text } from "@/features/shared/console/FormDialog"
 import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
+import { DateField } from "@/features/shared/console/DateField";
+import { Callout } from "@/ui/components/Callout";
+import { Checkbox } from "@/ui/components/Checkbox";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { NativeSelect } from "@/ui/components/NativeSelect";
@@ -84,6 +87,20 @@ export function SupportGrantActions({ grant }: { grant: Schemas["SupportGrantDto
   );
 }
 
+/** The asset-core grant modules the console names (`owner.settings.grants.module.*`); none chosen = every module. */
+const GRANT_MODULES = [
+  "readings",
+  "invoices",
+  "payments",
+  "leases",
+  "units",
+  "service_requests",
+  "parcels",
+  "announcements",
+  "deposits",
+  "access",
+] as const;
+
 const REASONS: Schemas["GrantReason"][] = [
   "pm_contract",
   "landlord_unit",
@@ -128,10 +145,7 @@ export function CreateAssetGrant({
               unitId: text(data, "unitId") ?? null,
               access: (text(data, "access") ?? "read") as Schemas["GrantAccess"],
               reason: (text(data, "reason") ?? "support_other") as Schemas["GrantReason"],
-              modules: (text(data, "modules") ?? "")
-                .split(",")
-                .map((module) => module.trim())
-                .filter(Boolean),
+              modules: data.getAll("modules").map(String).filter(Boolean),
               validTo: until ? new Date(`${until}T23:59:59+07:00`).toISOString() : null,
             },
           }),
@@ -163,11 +177,18 @@ export function CreateAssetGrant({
               />
             </Field>
           </div>
-          <Field label={t("modules")} hint={t("modulesHint")} error={errors.modules}>
-            <Input name="modules" />
-          </Field>
+          <fieldset className="flex flex-col gap-2" data-testid="grant-modules">
+            <legend className="mb-1 text-sm font-medium">{t("modules")}</legend>
+            <p className="text-muted -mt-1 text-sm">{t("modulesHint")}</p>
+            <div className="grid gap-x-4 sm:grid-cols-2">
+              {GRANT_MODULES.map((module) => (
+                <Checkbox key={module} name="modules" value={module} label={t(`module.${module}`)} />
+              ))}
+            </div>
+            {errors.modules ? <Callout tone="danger">{errors.modules}</Callout> : null}
+          </fieldset>
           <Field label={t("validTo")} hint={t("validToHint")} error={errors.validTo}>
-            <Input name="validTo" type="date" />
+            <DateField name="validTo" />
           </Field>
         </>
       )}

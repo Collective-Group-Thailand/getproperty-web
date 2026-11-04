@@ -32,7 +32,7 @@
     "status": "สถานะ",
     "actions": "การทำงาน"
   },
-  "nationality": "สัญชาติ {code}",
+  "nationality": "สัญชาติ{country}",
   "noNationality": "ยังไม่ระบุสัญชาติ",
   "arrived": "เข้าประเทศ {date}",
   "missing": "ยังขาด: {fields}",

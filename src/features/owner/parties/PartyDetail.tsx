@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { LEASE_STATUS } from "@/domain/status/lease";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
-import { formatDate, formatPhone } from "@/i18n/format";
+import { formatCountry, formatDate, formatPhone } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/errors";
 import type { Schemas } from "@/lib/api/types";
@@ -159,7 +159,7 @@ export async function PartyDetail({ context, partyId }: { context: OwnerContext;
                 id: "nationality",
                 term: t("nationality"),
                 // The API's ISO country code as a country name, never the raw code ("TH" → ไทย).
-                description: party.nationality ? countryName(party.nationality, locale) : null,
+                description: party.nationality ? formatCountry(party.nationality, locale) : null,
               },
               ...(party.type === "company" ? [{ id: "tax", term: t("taxId"), description: party.taxId }] : []),
               {
@@ -215,12 +215,4 @@ export async function PartyDetail({ context, partyId }: { context: OwnerContext;
       </DetailLayout>
     </OwnerPage>
   );
-}
-
-function countryName(code: string, locale: string): string {
-  try {
-    return new Intl.DisplayNames([locale], { type: "region" }).of(code.toUpperCase()) ?? code;
-  } catch {
-    return code;
-  }
 }

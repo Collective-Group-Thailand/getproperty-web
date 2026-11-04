@@ -123,11 +123,20 @@
     "notMet": "Not met",
     "unknown": "No data yet",
     "acceptance": "Phase 1 acceptance",
-    "acceptanceHint": "The blueprint's go-live criteria, from the same data.",
+    "acceptanceHint": "Phase 1 go-live criteria, from the same data.",
     "buildingsAuto": "Buildings billing automatically",
     "firstCycle": "First full cycle within an hour",
     "paidByQr": "Paid by Thai QR",
-    "viaLine": "Service requests via LINE"
+    "viaLine": "Service requests via LINE",
+    "points": "{value} pts",
+    "target": {
+      "atLeast": "At least {value}",
+      "atMost": "At most {value}",
+      "above": "Above {value}",
+      "below": "Below {value}",
+      "up": "Up {value}",
+      "down": "Down {value}"
+    }
   },
   "setting": {
     "edit": "Change",

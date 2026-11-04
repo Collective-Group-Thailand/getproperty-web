@@ -17,7 +17,7 @@ const DSR_ACTIONS = ["verify", "start", "fulfil", "reject"] as const satisfies r
  * `POST /v1/admin/data-subject-requests/{id}/actions/{action}` — verify the person → start → fulfil (access /
  * portability: a JSON export of the login; erasure: contact data anonymised and the login disabled, refused
  * while the login still works for a tenant) or reject with the reason. Only what the API offers in
- * `nextActions` is shown; fulfil and reject are typed with the request's short id.
+ * `nextActions` is shown; fulfil and reject ask for a typed phrase in words.
  */
 export function PlatformDsrActions({ dsr }: { dsr: Schemas["DsrDto"] }) {
   const t = useTranslations("admin.operations.privacy");
@@ -38,7 +38,7 @@ export function PlatformDsrActions({ dsr }: { dsr: Schemas["DsrDto"] }) {
           title={t(`confirm.${action}.title`)}
           description={t(`confirm.${action}.body`, { kind })}
           confirmLabel={t(`action.${action}`)}
-          phrase={action === "fulfil" || action === "reject" ? dsr.id.slice(0, 8) : undefined}
+          phrase={action === "fulfil" || action === "reject" ? t(`phrase.${action}`) : undefined}
           ready={action !== "reject" || notes.trim().length > 0}
           successMessage={t("done")}
           onConfirm={() =>

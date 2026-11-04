@@ -259,3 +259,15 @@ export function formatPhone(value: string): string {
   if (national.length === 9) return `${national.slice(0, 2)}-${national.slice(2, 5)}-${national.slice(5)}`;
   return value;
 }
+
+/**
+ * A country (ISO 3166 alpha-2 from the API, e.g. a party's nationality) as its name in the reader's language:
+ * "เมียนมา", "Myanmar". An unknown code stays as sent rather than disappearing.
+ */
+export function formatCountry(code: string, locale: Locale = "th"): string {
+  try {
+    return new Intl.DisplayNames([localeTag(locale)], { type: "region" }).of(code.trim().toUpperCase()) ?? code;
+  } catch {
+    return code;
+  }
+}

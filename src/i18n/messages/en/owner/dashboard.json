@@ -68,7 +68,8 @@
     "group": {
       "today": "Today ({count})",
       "later": "Next ({count})"
-    }
+    },
+    "showAll": "See all {count} tasks"
   },
   "kpi": {
     "title": "This month",
@@ -97,7 +98,9 @@
       "computed": "Review drafts",
       "issued": "Issued",
       "closed": "Closed"
-    }
+    },
+    "stepOf": "Step {step}/{total} {stage}",
+    "cutoffShort": "Cut-off {date}"
   },
   "compliance": {
     "title": "Compliance score",

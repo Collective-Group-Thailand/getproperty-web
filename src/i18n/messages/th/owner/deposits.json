@@ -125,7 +125,7 @@
     "statementTitle": "ใบแจ้งยอดคืนเงินประกัน {number}",
     "openLease": "เปิดสัญญาเช่า",
     "deductions": "รายการหัก",
-    "deductionsHint": "ทุกรายการหักต้องมีบันทึกการตรวจห้องและหลักฐาน (D-023)",
+    "deductionsHint": "ทุกรายการหักต้องมีบันทึกการตรวจห้องและหลักฐาน",
     "noDeductions": "ไม่มีรายการหัก",
     "residentAccepted": "ผู้เช่ายอมรับ",
     "residentDisputed": "ผู้เช่าโต้แย้ง",

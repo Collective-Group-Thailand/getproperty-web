@@ -260,7 +260,11 @@
       }
     },
     "clear": "Clear filter",
-    "openAudit": "Open the audit log"
+    "openAudit": "Open the audit log",
+    "phrase": {
+      "fulfil": "fulfil request",
+      "reject": "reject request"
+    }
   },
   "outbox": {
     "title": "Event queue",
