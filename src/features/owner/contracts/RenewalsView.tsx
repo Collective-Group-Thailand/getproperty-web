@@ -3,15 +3,15 @@ import { getTranslations } from "next-intl/server";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { SectionError } from "@/features/shared/console/SectionError";
 import { unwrap } from "@/lib/api/client";
+import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
-import { LinkTabs } from "@/ui/components/LinkTabs";
+import { ListToolbar, ViewTabs } from "@/ui/components/ListToolbar";
 import { IconCalendar } from "@/ui/icons/glyphs/calendar";
 
 import { ownerPath } from "../shared/links";
 import { ownerCan, param, readOnly, section, type OwnerContext } from "../shared/server";
-import { ContractsNav } from "./ContractsNav";
 import { RenewalOfferRow } from "./RenewalOfferRow";
 import { renewalReminder } from "./reminders";
 
@@ -56,24 +56,36 @@ export async function RenewalsView({
   return (
     <OwnerPage testId="renewals">
       <PageHeader title={t("renewals.title")} description={t("renewals.description")} />
-      <ContractsNav current="/renewals" locale={locale} />
       <Callout tone="info">{t("renewals.howTo")}</Callout>
-      <LinkTabs
-        label={t("renewals.title")}
-        current={`${base}?view=${tab}`}
-        tabs={(["open", "decided"] as const).map((key) => ({
-          href: `${base}?view=${key}`,
-          label: t(`renewals.tabs.${key}`),
-          count: key === "open" ? all.filter((offer) => offer.state === "offered").length : undefined,
-          testId: `renewals-tab-${key}`,
-        }))}
+      <ListToolbar
+        tabs={
+          <ViewTabs
+            label={t("renewals.title")}
+            current={tab}
+            // Needs API: offer counts per state (`meta.total`) — the page does not count its own rows.
+            tabs={(["open", "decided"] as const).map((key) => ({
+              key,
+              href: `${base}?view=${key}`,
+              label: t(`renewals.tabs.${key}`),
+              testId: `renewals-tab-${key}`,
+            }))}
+          />
+        }
       />
       {!offers.data ? (
         <SectionError error={offers.error} />
       ) : shown.length === 0 ? (
-        <Card padding="lg">
-          <EmptyState icon={IconCalendar} title={t(`renewals.empty.${tab}`)} description={reminderHint} />
-        </Card>
+        <EmptyState
+          variant="card"
+          icon={IconCalendar}
+          title={t(`renewals.empty.${tab}`)}
+          description={reminderHint}
+          action={
+            <Button asChild variant="secondary">
+              <a href={ownerPath(locale, "/leases?status=ending")}>{t("renewals.emptyAction")}</a>
+            </Button>
+          }
+        />
       ) : (
         <Card padding="none">
           <ul className="divide-border m-0 list-none divide-y p-0" data-testid="renewal-rows">

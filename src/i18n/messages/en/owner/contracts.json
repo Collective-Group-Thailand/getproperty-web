@@ -58,7 +58,9 @@
     "platformHint": "Drafts prepared by getproperty. They cannot be edited here — copy one to your templates first.",
     "empty": "No drafts match the filters",
     "view": "View draft",
-    "edit": "Edit"
+    "edit": "Edit",
+    "mineEmptyAction": "Browse the platform templates",
+    "emptyAction": "View leases"
   },
   "copy": {
     "label": "Copy to edit",
@@ -166,7 +168,15 @@
     "empty": "No contracts yet",
     "emptyHint": "Create a reservation or an addendum with \"New contract\".",
     "signedCount": "Signed {signed}/{total}",
-    "createdOn": "Created {date}"
+    "createdOn": "Created {date}",
+    "emptyAction": "Open the contract library",
+    "column": {
+      "title": "Contract",
+      "kind": "Kind",
+      "signed": "Signatures",
+      "created": "Created",
+      "state": "Status"
+    }
   },
   "create": {
     "label": "New contract",
@@ -221,7 +231,12 @@
     "notSent": "Not sent yet",
     "evidence": "Every signature is recorded with its time, channel and the file checksum; the signed file is kept as evidence that cannot be deleted.",
     "values": "Values entered",
-    "valuesHint": "Everything else in the contract comes from the unit, the lease and the parties."
+    "valuesHint": "Everything else in the contract comes from the unit, the lease and the parties.",
+    "panelTitle": "This contract",
+    "signedCount": "{signed} of {total} signed",
+    "noNumber": "Not yet numbered",
+    "templateLine": "Library template, version {version}",
+    "shaLine": "Document fingerprint {sha}"
   },
   "actions": {
     "preview": "Preview",
@@ -298,6 +313,7 @@
     "addendum": "Write an addendum",
     "none": "No renewal offered yet",
     "rentInvalid": "Enter the monthly rent to offer, for example 12000 or 12000.50.",
-    "monthsInvalid": "Enter a whole number of months from 1 to 36."
+    "monthsInvalid": "Enter a whole number of months from 1 to 36.",
+    "emptyAction": "View leases ending soon"
   }
 }

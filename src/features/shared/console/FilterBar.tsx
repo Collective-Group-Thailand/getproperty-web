@@ -3,15 +3,38 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 
+import { useLocale, useTranslations } from "next-intl";
+
+import type { Locale } from "@/i18n/routing";
 import { Field } from "@/ui/components/Field";
+import { PeriodPicker } from "@/ui/components/PeriodPicker";
 import { Input } from "@/ui/components/Input";
 import { NativeSelect, type NativeSelectOption } from "@/ui/components/NativeSelect";
 import { cn } from "@/ui/lib/cn";
 
 export type FilterField =
-  | { name: string; label: string; type: "select"; options: NativeSelectOption[]; placeholder?: string }
+  | {
+      name: string;
+      label: string;
+      type: "select";
+      options: NativeSelectOption[];
+      placeholder?: string;
+      /** The value the page uses when the URL names none. */
+      fallback?: string;
+    }
   | { name: string; label: string; type: "search"; placeholder?: string }
   | { name: string; label: string; type: "month" }
+  /** A month filter in the toolbar (G3): the API's `YYYY-MM` keys newest first, "every month" as the empty value. */
+  | {
+      name: string;
+      label: string;
+      type: "period";
+      periods: string[];
+      /** "Every month" as the empty value; leave out where the API always needs a month. */
+      allLabel?: string;
+      /** The month the page shows when the URL names none (the page's own default). */
+      fallback?: string;
+    }
   | { name: string; label: string; type: "number"; min?: number; placeholder?: string };
 
 /**
@@ -19,7 +42,21 @@ export type FilterField =
  * server renders the filtered page, the address can be bookmarked or shared, and the page number
  * starts again at 1. Text search waits until typing pauses.
  */
-export function FilterBar({ fields, className }: { fields: FilterField[]; className?: string }) {
+export function FilterBar({
+  fields,
+  className,
+  variant = "form",
+}: {
+  fields: FilterField[];
+  className?: string;
+  /**
+   * `form`: labelled fields above a list (legacy); `toolbar`: the controls of a `ListToolbar` — one row, 36-px
+   * controls, the label as the control's accessible name (REDESIGN-PROMPT §4.4).
+   */
+  variant?: "form" | "toolbar";
+}) {
+  const t = useTranslations("console.period");
+  const locale = useLocale() as Locale;
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -33,6 +70,70 @@ export function FilterBar({ fields, className }: { fields: FilterField[]; classN
     const query = next.toString();
     startTransition(() => router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false }));
   };
+
+  if (variant === "toolbar")
+    return (
+      <div
+        className={cn("flex w-full min-w-0 flex-wrap items-center gap-2 xl:w-auto xl:flex-nowrap", className)}
+        role="search"
+        aria-busy={pending}
+        data-testid="filter-bar"
+      >
+        {fields.map((field) =>
+          field.type === "search" ? (
+            <div key={field.name} className="w-full min-w-0 sm:w-64">
+              <SearchInput
+                name={field.name}
+                label={field.label}
+                placeholder={field.placeholder}
+                initial={params.get(field.name) ?? ""}
+                onCommit={(value) => apply(field.name, value)}
+              />
+            </div>
+          ) : field.type === "select" ? (
+            <div key={field.name} className="min-w-36 flex-1 sm:flex-none">
+              <NativeSelect
+                name={field.name}
+                aria-label={field.label}
+                inputSize="sm"
+                options={field.options}
+                placeholder={field.placeholder ?? (field.fallback ? undefined : "")}
+                value={params.get(field.name) ?? field.fallback ?? ""}
+                onChange={(event) => apply(field.name, event.target.value)}
+                data-testid={`filter-${field.name}`}
+              />
+            </div>
+          ) : field.type === "period" ? (
+            <PeriodPicker
+              key={field.name}
+              periods={field.periods}
+              value={params.get(field.name) ?? field.fallback ?? ""}
+              onChange={(value) => apply(field.name, value)}
+              locale={locale}
+              label={field.label}
+              previousLabel={t("previous")}
+              nextLabel={t("next")}
+              allLabel={field.allLabel}
+              testId={`filter-${field.name}`}
+            />
+          ) : (
+            <div key={field.name} className="w-44">
+              <Input
+                name={field.name}
+                aria-label={field.label}
+                inputSize="sm"
+                type={field.type}
+                min={field.type === "number" ? field.min : undefined}
+                placeholder={field.type === "number" ? field.placeholder : undefined}
+                defaultValue={params.get(field.name) ?? ""}
+                onChange={(event) => apply(field.name, event.target.value)}
+                data-testid={`filter-${field.name}`}
+              />
+            </div>
+          ),
+        )}
+      </div>
+    );
 
   return (
     <div
@@ -60,6 +161,18 @@ export function FilterBar({ fields, className }: { fields: FilterField[]; classN
               initial={params.get(field.name) ?? ""}
               onCommit={(value) => apply(field.name, value)}
             />
+          ) : field.type === "period" ? (
+            <PeriodPicker
+              periods={field.periods}
+              value={params.get(field.name) ?? field.fallback ?? ""}
+              onChange={(value) => apply(field.name, value)}
+              locale={locale}
+              label={field.label}
+              previousLabel={t("previous")}
+              nextLabel={t("next")}
+              allLabel={field.allLabel}
+              testId={`filter-${field.name}`}
+            />
           ) : (
             <Input
               name={field.name}
@@ -80,11 +193,14 @@ export function FilterBar({ fields, className }: { fields: FilterField[]; classN
 
 function SearchInput({
   name,
+  label,
   placeholder,
   initial,
   onCommit,
 }: {
   name: string;
+  /** The accessible name when no visible label sits above the field (toolbar). */
+  label?: string;
   placeholder?: string;
   initial: string;
   onCommit: (value: string) => void;
@@ -99,6 +215,7 @@ function SearchInput({
   return (
     <Input
       name={name}
+      aria-label={label}
       type="search"
       inputSize="sm"
       placeholder={placeholder}

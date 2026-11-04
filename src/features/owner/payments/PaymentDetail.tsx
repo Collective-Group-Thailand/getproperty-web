@@ -7,8 +7,9 @@ import { formatDateTime, formatTHB } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/errors";
 import type { Schemas } from "@/lib/api/types";
-import { Card, CardHeader } from "@/ui/components/Card";
-import { DescriptionList } from "@/ui/components/DescriptionList";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
+import { Paper, PaperFoot, PaperHead, PaperParties, PaperSection, PaperTotals } from "@/ui/components/Paper";
+import { Statement } from "@/ui/components/Statement";
 
 import { DocumentButton } from "../shared/DocumentButton";
 import { ownerPath } from "../shared/links";
@@ -34,6 +35,7 @@ export async function PaymentDetail({ context, paymentId }: { context: OwnerCont
   }
   const amount = formatTHB(payment.amount, locale);
   const title = t("title", { amount, method: methods(payment.method) });
+  const canDecide = ownerCan(context.me, "payment.record") && !readOnly(context.me);
   return (
     <OwnerPage testId="payment-detail">
       <PageHeader
@@ -42,122 +44,155 @@ export async function PaymentDetail({ context, paymentId }: { context: OwnerCont
         description={[payment.payerName, payment.unitNo].filter(Boolean).join(" · ") || undefined}
         crumbs={[{ label: methods(payment.method) }]}
         status={<StatusBadgeOf map={PAYMENT_STATUS} value={payment.status} />}
-        actions={
-          <>
-            {ownerCan(context.me, "payment.record") && !readOnly(context.me) ? (
-              <HeldPaymentActions payment={payment} amountLabel={amount} />
-            ) : null}
-            <ReversePayment payment={payment} amountLabel={amount} />
-          </>
-        }
       />
       {payment.status === "pending" && payment.heldReason ? <HeldNotice payment={payment} locale={locale} /> : null}
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card as="section" aria-labelledby="payment-facts">
-          <CardHeader title={<span id="payment-facts">{t("facts")}</span>} />
-          <DescriptionList
-            items={[
-              { id: "amount", term: t("amount"), description: amount },
-              { id: "method", term: t("method"), description: methods(payment.method) },
-              { id: "paidAt", term: t("paidAt"), description: formatDateTime(payment.paidAt, locale) },
-              {
-                id: "confirmed",
-                term: t("confirmedAt"),
-                description: payment.confirmedAt ? formatDateTime(payment.confirmedAt, locale) : null,
-              },
-              {
-                id: "via",
-                term: t("confirmedVia"),
-                description: payment.confirmedVia ? via(payment.confirmedVia) : null,
-              },
-              { id: "provider", term: t("provider"), description: payment.provider },
-              {
-                id: "ref",
-                term: t("providerRef"),
-                description: payment.providerRef ? <span className="font-mono">{payment.providerRef}</span> : null,
-              },
-              { id: "wht", term: t("wht"), description: formatTHB(payment.whtAmount, locale) },
-              { id: "credited", term: t("credited"), description: formatTHB(payment.creditedAmount, locale) },
-              { id: "notes", term: t("notes"), description: payment.notes },
-              ...(payment.dismissedAt
-                ? [
-                    {
-                      id: "dismissed",
-                      term: t("dismissed"),
-                      description: (
-                        <span data-testid="payment-dismissed">
-                          {t("dismissedOn", {
-                            date: formatDateTime(payment.dismissedAt, locale),
-                            reason: payment.dismissReason ?? "",
-                          })}
-                        </span>
-                      ),
-                    },
-                  ]
-                : []),
-              ...(payment.reversedAt
-                ? [
-                    {
-                      id: "reversed",
-                      term: t("reversed"),
-                      description: t("reversedOn", {
-                        date: formatDateTime(payment.reversedAt, locale),
-                        reason: payment.reverseReason ?? "",
-                      }),
-                    },
-                  ]
+      <DetailLayout
+        panel={
+          <ActionPanel
+            title={t("panelTitle")}
+            testId="payment-panel"
+            facts={[
+              { key: "amount", label: t("amount"), value: amount },
+              { key: "paidAt", label: t("paidAt"), value: formatDateTime(payment.paidAt, locale) },
+            ]}
+            primary={canDecide ? <HeldPaymentActions payment={payment} amountLabel={amount} /> : undefined}
+            secondary={
+              payment.receipts.length ? (
+                <div className="flex flex-col gap-2 [&>*]:w-full">
+                  {payment.receipts.map((receipt) => (
+                    <DocumentButton
+                      key={receipt.id}
+                      document={{ kind: "receipt", id: receipt.id }}
+                      label={
+                        receipt.voided
+                          ? `${t("receiptTitle", { number: receipt.number })} · ${t("receiptVoided")}`
+                          : t("receiptTitle", { number: receipt.number })
+                      }
+                      title={t("receiptTitle", { number: receipt.number })}
+                      testId="receipt-pdf"
+                    />
+                  ))}
+                </div>
+              ) : undefined
+            }
+            destructive={
+              payment.nextActions.includes("reverse") ? (
+                <ReversePayment payment={payment} amountLabel={amount} />
+              ) : undefined
+            }
+            footer={
+              payment.confirmedAt
+                ? t("confirmedLine", {
+                    date: formatDateTime(payment.confirmedAt, locale),
+                    via: payment.confirmedVia ? via(payment.confirmedVia) : "—",
+                  })
+                : undefined
+            }
+          />
+        }
+      >
+        <Paper label={title} testId="payment-paper">
+          <PaperHead
+            kind={t("paperKind")}
+            number={payment.providerRef ?? undefined}
+            facts={[
+              { key: "paidAt", label: t("paidAt"), value: formatDateTime(payment.paidAt, locale) },
+              ...(payment.confirmedAt
+                ? [{ key: "confirmed", label: t("confirmedAt"), value: formatDateTime(payment.confirmedAt, locale) }]
                 : []),
             ]}
           />
-          {payment.evidenceDocumentId ? (
-            <div className="mt-3 flex items-center gap-2">
-              <span className="text-muted text-sm">{t("evidence")}</span>
-              <PhotoThumb fileId={payment.evidenceDocumentId} alt={t("evidenceAlt", { amount })} />
+          <PaperParties
+            items={[
+              { key: "payer", label: t("payer"), value: payment.payerName ?? "—" },
+              { key: "unit", label: t("unit"), value: <span className="font-mono">{payment.unitNo ?? "—"}</span> },
+              {
+                key: "method",
+                label: t("method"),
+                value: methods(payment.method),
+                detail: [payment.confirmedVia ? via(payment.confirmedVia) : null, payment.provider]
+                  .filter(Boolean)
+                  .join(" · "),
+              },
+            ]}
+          />
+          <PaperSection title={t("allocations")}>
+            <div data-testid="payment-allocations">
+              {payment.allocations.length ? (
+                <ul className="divide-border border-border flex flex-col divide-y border-y">
+                  {payment.allocations.map((allocation) => (
+                    <li
+                      key={allocation.invoiceId}
+                      className="flex items-baseline justify-between gap-4 py-2.5"
+                      data-testid="allocation"
+                    >
+                      <a
+                        className="font-mono underline-offset-4 hover:underline"
+                        href={ownerPath(locale, `/invoices/${allocation.invoiceId}`)}
+                      >
+                        {allocation.invoiceNumber ?? "—"}
+                      </a>
+                      <span className="flex items-baseline gap-2 font-medium tabular-nums">
+                        {allocation.reversedAt ? (
+                          <span className="text-muted text-sm font-normal">{t("allocationReversed")}</span>
+                        ) : null}
+                        {formatTHB(allocation.amount, locale)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-muted">{t("noAllocations")}</p>
+              )}
             </div>
+          </PaperSection>
+          <PaperTotals>
+            <Statement
+              caption={t("facts")}
+              lines={[
+                { key: "wht", label: t("wht"), value: formatTHB(payment.whtAmount, locale) },
+                { key: "credited", label: t("credited"), value: formatTHB(payment.creditedAmount, locale) },
+                { key: "amount", label: t("amount"), kind: "result", value: amount },
+              ]}
+            />
+          </PaperTotals>
+          {payment.notes || payment.evidenceDocumentId || payment.dismissedAt || payment.reversedAt ? (
+            <PaperFoot>
+              <div className="flex flex-col gap-1">
+                {payment.notes ? (
+                  <p>
+                    {t("notes")}: <span className="text-fg">{payment.notes}</span>
+                  </p>
+                ) : null}
+                {payment.dismissedAt ? (
+                  <p data-testid="payment-dismissed">
+                    {t("dismissed")}{" "}
+                    {t("dismissedOn", {
+                      date: formatDateTime(payment.dismissedAt, locale),
+                      reason: payment.dismissReason ?? "",
+                    })}
+                  </p>
+                ) : null}
+                {payment.reversedAt ? (
+                  <p>
+                    {t("reversed")}{" "}
+                    {t("reversedOn", {
+                      date: formatDateTime(payment.reversedAt, locale),
+                      reason: payment.reverseReason ?? "",
+                    })}
+                  </p>
+                ) : null}
+              </div>
+              {payment.evidenceDocumentId ? (
+                <div className="flex shrink-0 items-center gap-2">
+                  <span>{t("evidence")}</span>
+                  <PhotoThumb fileId={payment.evidenceDocumentId} alt={t("evidenceAlt", { amount })} />
+                </div>
+              ) : null}
+            </PaperFoot>
           ) : null}
-        </Card>
-        <Card as="section" aria-labelledby="payment-allocations" data-testid="payment-allocations">
-          <CardHeader title={<span id="payment-allocations">{t("allocations")}</span>} />
-          {payment.allocations.length ? (
-            <ul className="flex flex-col gap-2 text-sm">
-              {payment.allocations.map((allocation) => (
-                <li key={allocation.invoiceId} className="flex justify-between gap-2" data-testid="allocation">
-                  <a
-                    className="font-mono underline-offset-4 hover:underline"
-                    href={ownerPath(locale, `/invoices/${allocation.invoiceId}`)}
-                  >
-                    {allocation.invoiceNumber ?? "—"}
-                  </a>
-                  <span className="tabular-nums">
-                    {formatTHB(allocation.amount, locale)}
-                    {allocation.reversedAt ? ` · ${t("allocationReversed")}` : ""}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-muted text-sm">{t("noAllocations")}</p>
-          )}
-          <h3 className="mt-4 font-semibold">{t("receipts")}</h3>
-          {payment.receipts.length ? (
-            <ul className="flex flex-col gap-1">
-              {payment.receipts.map((receipt) => (
-                <li key={receipt.id} className="flex items-center gap-2">
-                  <DocumentButton
-                    document={{ kind: "receipt", id: receipt.id }}
-                    label={receipt.number}
-                    title={t("receiptTitle", { number: receipt.number })}
-                    testId="receipt-pdf"
-                  />
-                  {receipt.voided ? <span className="text-muted text-sm">{t("receiptVoided")}</span> : null}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-muted text-sm">{t("noReceipts")}</p>
-          )}
-        </Card>
-      </div>
+        </Paper>
+      </DetailLayout>
     </OwnerPage>
   );
 }

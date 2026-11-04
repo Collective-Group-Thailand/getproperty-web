@@ -4,7 +4,8 @@
   "chooseBuilding": "เลือกอาคารเพื่อดูห้อง",
   "noBuildings": {
     "title": "ยังไม่มีอาคาร",
-    "body": "เพิ่มอาคารก่อน"
+    "body": "เพิ่มอาคารก่อน",
+    "action": "ดูอาคาร"
   },
   "unitCount": "{count} ห้อง",
   "views": "มุมมอง",
@@ -64,7 +65,8 @@
     "baseRent": "ค่าเช่าพื้นฐาน",
     "since": "สถานะตั้งแต่",
     "caption": "ห้อง",
-    "empty": "ไม่มีห้องตรงกับตัวกรอง"
+    "empty": "ไม่มีห้องตรงกับตัวกรอง",
+    "emptyAction": "ล้างตัวกรอง"
   },
   "panel": {
     "profile": "ประเภทห้อง",
@@ -76,7 +78,7 @@
     "hiddenParty": "ผู้เช่าขององค์กรอื่น",
     "leaseTerm": "{start} – {end} · ค่าเช่า {rent}",
     "coResidents": "ผู้อยู่ร่วม: {names}",
-    "openLease": "เปิดสัญญา",
+    "openLease": "เปิดสัญญาเช่า",
     "noLease": "ยังไม่มีสัญญา",
     "newLease": "ทำสัญญาใหม่",
     "readings": "เลขมิเตอร์ล่าสุด",
@@ -89,7 +91,9 @@
     "serviceRequests": "แจ้งซ่อม",
     "openPage": "เปิดหน้าห้อง",
     "serviceRequestsOff": "ไม่ได้เปิดใช้งานระบบแจ้งซ่อม",
-    "noServiceRequests": "ไม่มีแจ้งซ่อมค้าง"
+    "noServiceRequests": "ไม่มีแจ้งซ่อมค้าง",
+    "next": "ห้องนี้",
+    "board": "ดูผังห้องของอาคาร"
   },
   "status": {
     "change": "เปลี่ยนสถานะ",

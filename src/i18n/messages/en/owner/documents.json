@@ -27,7 +27,9 @@
   },
   "empty": {
     "title": "No documents this month",
-    "body": "Choose another month or kind."
+    "body": "Choose another month or kind.",
+    "previous": "View the previous month",
+    "invoices": "View invoices"
   },
   "contractRestricted": "Owner / Manager only (carries the lessee's ID number)",
   "unit": {
@@ -35,10 +37,12 @@
     "description": "Leases, receipts, invoices and other documents issued for this unit, newest first",
     "empty": "No documents for this unit yet",
     "emptyBody": "Documents appear here once a lease, invoice or receipt is issued",
-    "more": "{count} more documents"
+    "more": "{count} more documents",
+    "emptyAction": "Back to the portfolio"
   },
   "links": {
     "certificates": "Rent certificates",
-    "income": "Annual income"
+    "income": "Annual income",
+    "more": "More documents"
   }
 }

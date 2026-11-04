@@ -4,21 +4,22 @@ import { messageKey } from "@/i18n/keys";
 import { formatDate, formatNumber, formatTHB } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
+import { Button } from "@/ui/components/Button";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { EmptyState } from "@/ui/components/EmptyState";
-import { Stat } from "@/ui/components/Stat";
+import { ListToolbar } from "@/ui/components/ListToolbar";
+import { SimpleTable } from "@/ui/components/SimpleTable";
+import { StatsRow } from "@/ui/components/StatsRow";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 
 import { ExportButton } from "../shared/ExportButton";
 import { FilterBar } from "@/features/shared/console/FilterBar";
 import { ownerPath, withQuery } from "../shared/links";
 import { ListPagination } from "@/features/shared/console/ListPagination";
-import { MoneyNav } from "../shared/MoneyNav";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { focusedBuilding, pageParam, param, section, type OwnerContext } from "../shared/server";
 import { SettingValue } from "../shared/SettingValue";
-import { heldCount, slipsToReview } from "./counts";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 const BUCKETS: Schemas["AgingBucket"][] = ["current", "d1_30", "d31_60", "d61_90", "d90p"];
@@ -37,7 +38,7 @@ export async function ArrearsView({ context, searchParams }: { context: OwnerCon
   const bucket = param(searchParams.bucket);
   const sortBy = param(searchParams.sort);
   const minDays = Number(param(searchParams.minDays));
-  const [list, settings, slips, held] = await Promise.all([
+  const [list, settings] = await Promise.all([
     unwrap(
       api.GET("/v1/owner/receivables", {
         params: {
@@ -56,9 +57,8 @@ export async function ArrearsView({ context, searchParams }: { context: OwnerCon
       }),
     ),
     section(unwrap(api.GET("/v1/owner/settings", { params: { query: { propertyId: building?.propertyId } } }))),
-    slipsToReview(api),
-    heldCount(api, building?.id),
   ]);
+  const filtered = Boolean(param(searchParams.q) || bucket || (Number.isInteger(minDays) && minDays > 0));
   const policy = (settings.data ?? []).filter((setting) => POLICY_KEYS.includes(setting.key));
 
   return (
@@ -75,117 +75,122 @@ export async function ArrearsView({ context, searchParams }: { context: OwnerCon
           />
         }
       />
-      <MoneyNav
-        section="payments"
-        current="/arrears"
-        locale={locale}
-        counts={{ "/payments/slips": slips, "/payments/held": held }}
-      />
-      <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6" data-testid="aging-totals">
-        <Stat
-          label={t("totalBalance")}
-          value={<span data-testid="arrears-total">{formatTHB(list.totals.balance, locale)}</span>}
-          hint={t("parties", { count: list.totals.count })}
-        />
-        {BUCKETS.map((key) => (
-          <Stat
-            key={key}
-            label={t(`bucket.${key}`)}
-            value={<span data-testid={`aging-${key}`}>{formatTHB(list.totals.aging[key], locale)}</span>}
-          />
-        ))}
-      </div>
-      <FilterBar
-        fields={[
-          { name: "q", label: t("filter.search"), type: "search", placeholder: t("filter.searchPlaceholder") },
+      <StatsRow
+        label={t("figuresLabel")}
+        highlight={Number(list.totals.aging.d90p) > 0 ? "d90p" : undefined}
+        figures={[
           {
-            name: "bucket",
-            label: t("filter.bucket"),
-            type: "select",
-            placeholder: t("filter.allBuckets"),
-            options: BUCKETS.map((value) => ({ value, label: t(`bucket.${value}`) })),
+            key: "total",
+            label: t("totalBalance"),
+            value: <span data-testid="arrears-total">{formatTHB(list.totals.balance, locale)}</span>,
+            hint: t("parties", { count: list.totals.count }),
           },
-          { name: "minDays", label: t("filter.minDays"), type: "number", min: 0 },
-          {
-            name: "sort",
-            label: t("filter.sort"),
-            type: "select",
-            placeholder: t("sort.balance"),
-            options: SORTS.filter((value) => value !== "balance").map((value) => ({
-              value,
-              label: t(`sort.${value}`),
-            })),
-          },
+          ...BUCKETS.map((key) => ({
+            key,
+            label: t(`bucket.${key}`),
+            value: <span data-testid={`aging-${key}`}>{formatTHB(list.totals.aging[key], locale)}</span>,
+            href: ownerPath(locale, withQuery("/arrears", { bucket: key })),
+          })),
         ]}
       />
+      <ListToolbar
+        filters={
+          <FilterBar
+            variant="toolbar"
+            fields={[
+              { name: "q", label: t("filter.search"), type: "search", placeholder: t("filter.searchPlaceholder") },
+              {
+                name: "bucket",
+                label: t("filter.bucket"),
+                type: "select",
+                placeholder: t("filter.allBuckets"),
+                options: BUCKETS.map((value) => ({ value, label: t(`bucket.${value}`) })),
+              },
+              { name: "minDays", label: t("filter.minDays"), type: "number", min: 0, placeholder: t("filter.minDays") },
+              {
+                name: "sort",
+                label: t("filter.sort"),
+                type: "select",
+                placeholder: t("sort.balance"),
+                options: SORTS.filter((value) => value !== "balance").map((value) => ({
+                  value,
+                  label: t(`sort.${value}`),
+                })),
+              },
+            ]}
+          />
+        }
+      />
       {list.data.length === 0 ? (
-        <Card>
-          <EmptyState icon={IconCheckCircle} title={t("empty.title")} description={t("empty.body")} />
-        </Card>
+        <EmptyState
+          variant="card"
+          icon={IconCheckCircle}
+          title={t("empty.title")}
+          description={t("empty.body")}
+          action={
+            filtered ? (
+              <Button asChild variant="secondary">
+                <a href={ownerPath(locale, "/arrears")}>{t("empty.clear")}</a>
+              </Button>
+            ) : (
+              <Button asChild variant="secondary">
+                <a href={ownerPath(locale, "/payments")}>{t("empty.payments")}</a>
+              </Button>
+            )
+          }
+        />
       ) : (
-        <div className="border-border bg-surface rounded-card relative overflow-x-auto border">
-          <table className="w-full min-w-[56rem] text-sm" data-testid="arrears-table">
-            <caption className="sr-only">{t("title")}</caption>
-            <thead>
-              <tr className="border-border text-muted border-b">
-                <th scope="col" className="px-3 py-2 text-start font-medium">
-                  {t("col.party")}
-                </th>
-                <th scope="col" className="px-3 py-2 text-start font-medium">
-                  {t("col.unit")}
-                </th>
-                <th scope="col" className="px-3 py-2 text-end font-medium">
-                  {t("col.balance")}
-                </th>
-                <th scope="col" className="px-3 py-2 text-end font-medium">
-                  {t("col.days")}
-                </th>
-                {BUCKETS.map((key) => (
-                  <th key={key} scope="col" className="px-3 py-2 text-end font-medium">
-                    {t(`bucket.${key}`)}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {list.data.map((row) => (
-                <tr
-                  key={`${row.partyId}-${row.unitId ?? ""}`}
-                  className="border-border border-b"
-                  data-testid="arrears-row"
-                  data-days={row.daysOverdue}
-                >
-                  <th scope="row" className="px-3 py-2 text-start font-normal">
-                    <a
-                      className="font-medium underline-offset-4 hover:underline"
-                      href={ownerPath(locale, withQuery(`/arrears/${row.partyId}`, { unit: row.unitId }))}
-                      data-testid="arrears-party"
-                    >
-                      {row.partyName}
-                    </a>
-                    <span className="text-muted block text-xs">{t("invoices", { count: row.openInvoicesCount })}</span>
-                  </th>
-                  <td className="px-3 py-2">
-                    <span className="font-mono">{row.unitNo ?? "—"}</span>
-                    <span className="text-muted block text-xs">{row.buildingName}</span>
-                  </td>
-                  <td className="px-3 py-2 text-end tabular-nums">{formatTHB(row.balance, locale)}</td>
-                  <td className="px-3 py-2 text-end tabular-nums">
-                    {formatNumber(row.daysOverdue, locale)}
-                    {row.oldestDueDate ? (
-                      <span className="text-muted block text-xs">{formatDate(row.oldestDueDate, locale)}</span>
-                    ) : null}
-                  </td>
-                  {BUCKETS.map((key) => (
-                    <td key={key} className="px-3 py-2 text-end tabular-nums">
-                      {formatTHB(row.aging[key], locale)}
-                    </td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <SimpleTable
+          caption={t("title")}
+          testId="arrears-table"
+          stackOnPhones
+          minWidth="60rem"
+          columns={[
+            { key: "party", header: t("col.party"), phone: "title" },
+            { key: "unit", header: t("col.unit"), phone: "meta" },
+            { key: "days", header: t("col.days"), align: "end", phone: "status" },
+            ...BUCKETS.map((key) => ({
+              key,
+              header: t(`bucket.${key}`),
+              align: "end" as const,
+              phone: "hidden" as const,
+              className: "text-muted",
+            })),
+            { key: "balance", header: t("col.balance"), align: "end", phone: "figure" },
+          ]}
+          rows={list.data.map((row) => ({
+            key: `${row.partyId}-${row.unitId ?? ""}`,
+            href: ownerPath(locale, withQuery(`/arrears/${row.partyId}`, { unit: row.unitId })),
+            testId: "arrears-row",
+            data: { days: row.daysOverdue },
+            cells: {
+              party: (
+                <span className="flex flex-col" data-testid="arrears-party">
+                  <span>{row.partyName}</span>
+                  <span className="text-muted text-sm font-normal">
+                    {t("invoices", { count: row.openInvoicesCount })}
+                  </span>
+                </span>
+              ),
+              unit: (
+                <span className="flex flex-col max-md:flex-row max-md:gap-1">
+                  <span className="font-mono">{row.unitNo ?? "—"}</span>
+                  <span className="text-muted text-sm">{row.buildingName}</span>
+                </span>
+              ),
+              days: (
+                <span className="flex flex-col whitespace-nowrap">
+                  <span>{t("daysValue", { count: formatNumber(row.daysOverdue, locale) })}</span>
+                  {row.oldestDueDate ? (
+                    <span className="text-muted text-sm max-md:hidden">{formatDate(row.oldestDueDate, locale)}</span>
+                  ) : null}
+                </span>
+              ),
+              ...Object.fromEntries(BUCKETS.map((key) => [key, formatTHB(row.aging[key], locale)])),
+              balance: <span className="font-semibold whitespace-nowrap">{formatTHB(row.balance, locale)}</span>,
+            },
+          }))}
+        />
       )}
       <ListPagination
         meta={list.meta}

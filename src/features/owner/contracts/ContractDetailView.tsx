@@ -9,7 +9,9 @@ import { unwrap } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/errors";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
-import { Card, CardHeader } from "@/ui/components/Card";
+import { Button } from "@/ui/components/Button";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
+import { Paper, PaperFoot, PaperHead, PaperSection } from "@/ui/components/Paper";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 
 import { ownerPath } from "../shared/links";
@@ -52,6 +54,7 @@ export async function ContractDetailView({ context, contractId }: { context: Own
     values.note ? { id: "note", term: t("create.note"), description: values.note, wide: true } : null,
   ].filter((item) => item !== null);
 
+  const signed = contract.signers.filter((signer) => signer.signedAt).length;
   return (
     <OwnerPage testId="contract-detail">
       <PageHeader
@@ -68,125 +71,103 @@ export async function ContractDetailView({ context, contractId }: { context: Own
             <StatusBadgeOf map={LEGAL_REVIEW_STATUS} value={contract.legalReviewState} />
           </span>
         }
-        actions={canAct ? <ContractActions contract={contract} /> : null}
       />
       <ContractDisclaimer disclaimer={contract.disclaimer} locale={locale} />
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card as="section" aria-labelledby="contract-facts" data-testid="contract-facts">
-          <CardHeader title={<span id="contract-facts">{t("detail.facts")}</span>} />
-          <DescriptionList
-            items={[
-              { id: "kind", term: t("create.kind"), description: t(`kind.${contract.kind}`) },
-              { id: "language", term: t("create.language"), description: t(`language.${contract.language}`) },
+      <DetailLayout
+        panel={
+          <ActionPanel
+            title={t("detail.panelTitle")}
+            testId="contract-panel"
+            facts={[
               {
-                id: "template",
-                term: t("detail.template"),
-                description: `${contract.templateKey} · v${contract.templateVersion}`,
+                key: "signed",
+                label: t("detail.signers"),
+                value: t("detail.signedCount", { signed, total: contract.signers.length }),
               },
-              { id: "created", term: t("detail.created"), description: formatDateTime(contract.createdAt, locale) },
-              {
-                id: "sent",
-                term: t("detail.sent"),
-                description: contract.sentAt ? formatDateTime(contract.sentAt, locale) : null,
-              },
-              {
-                id: "signed",
-                term: t("detail.signedAt"),
-                description: contract.signedAt ? formatDateTime(contract.signedAt, locale) : null,
-              },
-              ...(contract.cancelledAt
-                ? [
-                    {
-                      id: "cancelled",
-                      term: t("detail.cancelled"),
-                      description: formatDateTime(contract.cancelledAt, locale),
-                    },
-                  ]
-                : []),
-              ...(contract.leaseId
-                ? [
-                    {
-                      id: "lease",
-                      term: t("create.lease"),
-                      description: (
-                        <a
-                          className="underline-offset-4 hover:underline"
-                          href={ownerPath(locale, `/leases/${contract.leaseId}`)}
-                        >
-                          {t("detail.openLease")}
-                        </a>
-                      ),
-                    },
-                  ]
-                : []),
-              ...(contract.sha256
-                ? [
-                    {
-                      id: "sha",
-                      term: t("detail.sha"),
-                      description: <span className="font-mono text-xs break-all">{contract.sha256}</span>,
-                      wide: true,
-                    },
-                  ]
+              ...(contract.sentAt
+                ? [{ key: "sent", label: t("detail.sent"), value: formatDate(contract.sentAt, locale) }]
                 : []),
             ]}
+            primary={canAct ? <ContractActions contract={contract} layout="panel" /> : undefined}
+            secondary={
+              contract.leaseId ? (
+                <Button asChild variant="ghost">
+                  <a href={ownerPath(locale, `/leases/${contract.leaseId}`)}>{t("detail.openLease")}</a>
+                </Button>
+              ) : undefined
+            }
+            footer={t("detail.evidence")}
           />
-        </Card>
-
-        <Card as="section" aria-labelledby="contract-signers" data-testid="contract-signers">
-          <CardHeader
-            title={<span id="contract-signers">{t("detail.signers")}</span>}
-            description={t("detail.signersHint")}
+        }
+      >
+        <Paper label={contract.title} testId="contract-facts">
+          <PaperHead
+            kind={t(`kind.${contract.kind}`)}
+            number={contract.number ?? t("detail.noNumber")}
+            facts={[
+              { key: "created", label: t("detail.created"), value: formatDate(contract.createdAt, locale) },
+              ...(contract.signedAt
+                ? [{ key: "signed", label: t("detail.signedAt"), value: formatDate(contract.signedAt, locale) }]
+                : []),
+              ...(contract.cancelledAt
+                ? [{ key: "cancelled", label: t("detail.cancelled"), value: formatDate(contract.cancelledAt, locale) }]
+                : []),
+              { key: "language", label: t("create.language"), value: t(`language.${contract.language}`) },
+            ]}
           />
-          <ul className="m-0 flex list-none flex-col gap-3 p-0">
-            {contract.signers.map((signer) => (
-              <li
-                key={signer.index}
-                className="flex flex-wrap items-center justify-between gap-2"
-                data-testid="contract-signer"
-                data-role={signer.role}
-                data-signed={signer.signedAt ? "true" : "false"}
-              >
-                <span className="flex flex-col">
-                  <span className="font-medium">{signer.name}</span>
-                  <span className="text-muted text-sm">{t(`signerRole.${signer.role}`)}</span>
-                </span>
-                {signer.signedAt ? (
-                  <Badge tone="success" size="sm">
-                    {t("detail.signedOn", { date: formatDateTime(signer.signedAt, locale) })}
-                  </Badge>
-                ) : (
-                  <Badge size="sm">
-                    {contract.state === "pending_signature" ? t("detail.waiting") : t("detail.notSent")}
-                  </Badge>
-                )}
-              </li>
-            ))}
-          </ul>
-          <p className="text-muted mt-4 text-sm">{t("detail.evidence")}</p>
-        </Card>
-      </div>
-
-      {typed.length || values.clauses?.length ? (
-        <Card as="section" aria-labelledby="contract-values" data-testid="contract-values">
-          <CardHeader
-            title={<span id="contract-values">{t("detail.values")}</span>}
-            description={t("detail.valuesHint")}
-          />
-          {typed.length ? <DescriptionList items={typed} /> : null}
-          {values.clauses?.length ? (
-            <ol className="mt-4 flex list-decimal flex-col gap-2 ps-5 text-sm">
-              {values.clauses.map((clause, index) => (
-                <li key={index}>
-                  <span className="font-medium">{clause.title}</span>
-                  <p>{clause.text}</p>
+          <PaperSection title={<span id="contract-signers">{t("detail.signers")}</span>}>
+            <ul
+              className="divide-border border-border m-0 flex list-none flex-col divide-y border-y p-0"
+              data-testid="contract-signers"
+            >
+              {contract.signers.map((signer) => (
+                <li
+                  key={signer.index}
+                  className="flex flex-wrap items-center justify-between gap-2 py-2.5"
+                  data-testid="contract-signer"
+                  data-role={signer.role}
+                  data-signed={signer.signedAt ? "true" : "false"}
+                >
+                  <span className="flex flex-col">
+                    <span className="font-medium">{signer.name}</span>
+                    <span className="text-muted text-sm">{t(`signerRole.${signer.role}`)}</span>
+                  </span>
+                  {signer.signedAt ? (
+                    <Badge tone="success" size="sm">
+                      {t("detail.signedOn", { date: formatDateTime(signer.signedAt, locale) })}
+                    </Badge>
+                  ) : (
+                    <Badge size="sm">
+                      {contract.state === "pending_signature" ? t("detail.waiting") : t("detail.notSent")}
+                    </Badge>
+                  )}
                 </li>
               ))}
-            </ol>
+            </ul>
+          </PaperSection>
+          {typed.length || values.clauses?.length ? (
+            <PaperSection title={<span id="contract-values">{t("detail.values")}</span>}>
+              <div data-testid="contract-values" className="flex flex-col gap-4">
+                {typed.length ? <DescriptionList items={typed} /> : null}
+                {values.clauses?.length ? (
+                  <ol className="flex list-decimal flex-col gap-3 ps-5">
+                    {values.clauses.map((clause, index) => (
+                      <li key={index}>
+                        <span className="font-medium">{clause.title}</span>
+                        <p className="text-muted">{clause.text}</p>
+                      </li>
+                    ))}
+                  </ol>
+                ) : null}
+              </div>
+            </PaperSection>
           ) : null}
-        </Card>
-      ) : null}
+          <PaperFoot>
+            <p>{t("detail.templateLine", { version: contract.templateVersion })}</p>
+          </PaperFoot>
+        </Paper>
+      </DetailLayout>
     </OwnerPage>
   );
 }

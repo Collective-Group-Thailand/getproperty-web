@@ -7,6 +7,16 @@ export interface ShellNavItem {
   icon: IconGlyph;
   label: string;
   group: string;
+  /** The section's own pages, shown under the entry while the section is open (redesign G3: no sub-tabs). */
+  children?: readonly ShellNavChild[];
+}
+
+/** A page of a menu section (billing cycle, invoices; leases, contract library…), resolved for rendering. */
+export interface ShellNavChild {
+  key: string;
+  href: string;
+  label: string;
+  testId?: string;
 }
 
 export interface ShellNavGroup {

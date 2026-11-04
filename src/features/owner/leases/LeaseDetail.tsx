@@ -14,6 +14,8 @@ import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Card, CardHeader } from "@/ui/components/Card";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
+import { Paper, PaperHead, PaperSection } from "@/ui/components/Paper";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { Timeline, type TimelineEvent } from "@/ui/components/Timeline";
 import { IconBill } from "@/ui/icons/glyphs/bill";
@@ -114,7 +116,6 @@ export async function LeaseDetail({ context, leaseId }: { context: OwnerContext;
         description={[lease.number, lease.buildingName].filter(Boolean).join(" · ") || undefined}
         crumbs={[{ label: lease.number ?? lease.unitNo }]}
         status={<StatusBadgeOf map={LEASE_STATUS} value={lease.status} />}
-        actions={<LeaseActions lease={lease} />}
       />
 
       {lease.notice ? (
@@ -155,71 +156,36 @@ export async function LeaseDetail({ context, leaseId }: { context: OwnerContext;
         </Card>
       ) : null}
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card as="section" aria-labelledby="lease-terms" data-testid="lease-terms">
-          <CardHeader title={<span id="lease-terms">{t("terms")}</span>} />
-          <DescriptionList
-            items={[
+      <DetailLayout
+        panel={
+          <ActionPanel
+            title={t("panelTitle")}
+            testId="lease-panel"
+            facts={[
+              { key: "rent", label: wizard("rent"), value: formatTHB(lease.rent, locale) },
+              { key: "deposit", label: wizard("deposit"), value: formatTHB(lease.depositAmount, locale) },
+              { key: "end", label: t("ends"), value: formatDate(lease.endDate, locale) },
+            ]}
+            primary={<LeaseActions lease={lease} layout="panel" />}
+          />
+        }
+      >
+        <Paper label={t("title", { unit: lease.unitNo })} testId="lease-paper">
+          <PaperHead
+            kind={t("paperKind")}
+            number={lease.number ?? t("paperDraft")}
+            facts={[
               {
-                id: "unit",
-                term: t("unit"),
-                description: (
-                  <a className="underline-offset-4 hover:underline" href={ownerPath(locale, `/units/${lease.unitId}`)}>
-                    {lease.unitNo}
-                  </a>
-                ),
+                key: "period",
+                label: t("period"),
+                value: `${formatDate(lease.startDate, locale)} – ${formatDate(lease.endDate, locale)}`,
               },
-              {
-                id: "period",
-                term: t("period"),
-                description: `${formatDate(lease.startDate, locale)} – ${formatDate(lease.endDate, locale)}`,
-              },
-              { id: "months", term: wizard("months"), description: String(lease.months) },
-              { id: "rent", term: wizard("rent"), description: formatTHB(lease.rent, locale) },
-              { id: "deposit", term: wizard("deposit"), description: formatTHB(lease.depositAmount, locale) },
-              { id: "advance", term: wizard("advance"), description: formatTHB(lease.advanceRentAmount, locale) },
-              {
-                id: "billingDay",
-                term: wizard("billingDay"),
-                description: lease.billingDay ? String(lease.billingDay) : t("billingDayDefault"),
-              },
-              { id: "utilities", term: wizard("utilities"), description: wizard(lease.utilityBillingMode) },
-              { id: "keys", term: wizard("keys"), description: String(lease.keysCount) },
-              { id: "parking", term: wizard("parking"), description: String(lease.parkingSlots) },
-              {
-                id: "moveIn",
-                term: t("moveIn"),
-                description: lease.moveInAt ? formatDateTime(lease.moveInAt, locale) : null,
-              },
-              {
-                id: "moveOut",
-                term: t("moveOut"),
-                description: lease.moveOutAt ? formatDateTime(lease.moveOutAt, locale) : null,
-              },
-              ...(lease.renewedFromLeaseId
-                ? [
-                    {
-                      id: "renewed",
-                      term: t("renewedFrom"),
-                      description: (
-                        <a
-                          className="underline-offset-4 hover:underline"
-                          href={ownerPath(locale, `/leases/${lease.renewedFromLeaseId}`)}
-                        >
-                          {t("previousLease")}
-                        </a>
-                      ),
-                    },
-                  ]
-                : []),
+              { key: "rent", label: wizard("rent"), value: formatTHB(lease.rent, locale) },
             ]}
           />
-        </Card>
-
-        <Card as="section" aria-labelledby="lease-parties" data-testid="lease-parties">
-          <CardHeader
+          <PaperSection
             title={<span id="lease-parties">{t("parties")}</span>}
-            action={
+            aside={
               LIVE.has(lease.status) ? (
                 <LeaseInviteButton
                   leaseId={lease.id}
@@ -227,252 +193,323 @@ export async function LeaseDetail({ context, leaseId }: { context: OwnerContext;
                 />
               ) : null
             }
-          />
-          <ul className="flex flex-col gap-2">
-            {lease.parties.map((party) => {
-              const signature = signedBy.get(party.partyId);
-              return (
-                <li
-                  key={party.partyId}
-                  className="flex flex-wrap items-center justify-between gap-2"
-                  data-testid="lease-party"
-                >
-                  <span className="flex flex-col">
-                    <a
-                      className="font-medium underline-offset-4 hover:underline"
-                      href={ownerPath(locale, `/parties/${party.partyId}`)}
+          >
+            <div data-testid="lease-parties">
+              <ul className="divide-border border-border flex flex-col divide-y border-y">
+                {lease.parties.map((party) => {
+                  const signature = signedBy.get(party.partyId);
+                  return (
+                    <li
+                      key={party.partyId}
+                      className="flex flex-wrap items-center justify-between gap-2 py-2.5"
+                      data-testid="lease-party"
                     >
-                      {party.displayName ?? "—"}
-                    </a>
-                    <span className="text-muted text-sm">{roles(party.role)}</span>
-                  </span>
-                  {party.isSigner ? (
-                    party.signedAt || signature ? (
-                      <span data-testid="party-signed">
-                        <Badge tone="success" size="sm" icon={IconSign}>
-                          {t("signedAt", { date: formatDateTime(party.signedAt ?? signature!.signedAt, locale) })}
-                        </Badge>
+                      <span className="flex flex-col">
+                        <a
+                          className="font-medium underline-offset-4 hover:underline"
+                          href={ownerPath(locale, `/parties/${party.partyId}`)}
+                        >
+                          {party.displayName ?? "—"}
+                        </a>
+                        <span className="text-muted text-sm">{roles(party.role)}</span>
                       </span>
-                    ) : (
-                      <Badge tone="neutral" size="sm">
-                        {t("notSigned")}
+                      {party.isSigner ? (
+                        party.signedAt || signature ? (
+                          <span data-testid="party-signed">
+                            <Badge tone="success" size="sm" icon={IconSign}>
+                              {t("signedAt", { date: formatDateTime(party.signedAt ?? signature!.signedAt, locale) })}
+                            </Badge>
+                          </span>
+                        ) : (
+                          <Badge tone="neutral" size="sm">
+                            {t("notSigned")}
+                          </Badge>
+                        )
+                      ) : null}
+                    </li>
+                  );
+                })}
+                <li className="flex flex-wrap items-center justify-between gap-2 py-2.5">
+                  <span className="flex flex-col">
+                    <span className="font-medium">{t("lessor")}</span>
+                    <span className="text-muted text-sm">{roles("lessor")}</span>
+                  </span>
+                  {lessorSigned ? (
+                    <span data-testid="lessor-signed">
+                      <Badge tone="success" size="sm" icon={IconSign}>
+                        {t("signedAt", { date: formatDateTime(lessorSigned.signedAt, locale) })}
                       </Badge>
-                    )
-                  ) : null}
+                    </span>
+                  ) : (
+                    <Badge tone="neutral" size="sm">
+                      {t("notSigned")}
+                    </Badge>
+                  )}
                 </li>
-              );
-            })}
-            <li className="flex flex-wrap items-center justify-between gap-2">
-              <span className="flex flex-col">
-                <span className="font-medium">{t("lessor")}</span>
-                <span className="text-muted text-sm">{roles("lessor")}</span>
-              </span>
-              {lessorSigned ? (
-                <span data-testid="lessor-signed">
-                  <Badge tone="success" size="sm" icon={IconSign}>
-                    {t("signedAt", { date: formatDateTime(lessorSigned.signedAt, locale) })}
-                  </Badge>
-                </span>
+              </ul>
+            </div>
+          </PaperSection>
+          <PaperSection title={<span id="lease-terms">{t("terms")}</span>}>
+            <div data-testid="lease-terms">
+              <DescriptionList
+                columns={3}
+                items={[
+                  {
+                    id: "unit",
+                    term: t("unit"),
+                    description: (
+                      <a
+                        className="underline-offset-4 hover:underline"
+                        href={ownerPath(locale, `/units/${lease.unitId}`)}
+                      >
+                        {lease.unitNo}
+                      </a>
+                    ),
+                  },
+                  {
+                    id: "period",
+                    term: t("period"),
+                    description: `${formatDate(lease.startDate, locale)} – ${formatDate(lease.endDate, locale)}`,
+                  },
+                  { id: "months", term: wizard("months"), description: String(lease.months) },
+                  { id: "rent", term: wizard("rent"), description: formatTHB(lease.rent, locale) },
+                  { id: "deposit", term: wizard("deposit"), description: formatTHB(lease.depositAmount, locale) },
+                  { id: "advance", term: wizard("advance"), description: formatTHB(lease.advanceRentAmount, locale) },
+                  {
+                    id: "billingDay",
+                    term: wizard("billingDay"),
+                    description: lease.billingDay ? String(lease.billingDay) : t("billingDayDefault"),
+                  },
+                  { id: "utilities", term: wizard("utilities"), description: wizard(lease.utilityBillingMode) },
+                  { id: "keys", term: wizard("keys"), description: String(lease.keysCount) },
+                  { id: "parking", term: wizard("parking"), description: String(lease.parkingSlots) },
+                  {
+                    id: "moveIn",
+                    term: t("moveIn"),
+                    description: lease.moveInAt ? formatDateTime(lease.moveInAt, locale) : null,
+                  },
+                  {
+                    id: "moveOut",
+                    term: t("moveOut"),
+                    description: lease.moveOutAt ? formatDateTime(lease.moveOutAt, locale) : null,
+                  },
+                  ...(lease.renewedFromLeaseId
+                    ? [
+                        {
+                          id: "renewed",
+                          term: t("renewedFrom"),
+                          description: (
+                            <a
+                              className="underline-offset-4 hover:underline"
+                              href={ownerPath(locale, `/leases/${lease.renewedFromLeaseId}`)}
+                            >
+                              {t("previousLease")}
+                            </a>
+                          ),
+                        },
+                      ]
+                    : []),
+                ]}
+              />
+            </div>
+          </PaperSection>
+          <PaperSection title={<span id="lease-lines">{wizard("linesTitle")}</span>}>
+            <div data-testid="lease-lines">
+              {lease.lines.length ? (
+                <ul className="divide-border border-border flex flex-col divide-y border-y">
+                  {lease.lines.map((line) => (
+                    <li key={line.id} className="flex items-baseline justify-between gap-4 py-2.5">
+                      <span>
+                        {line.description}{" "}
+                        <span className="text-muted">{t("inParens", { value: kinds(line.kind) })}</span>
+                      </span>
+                      <span className="font-medium whitespace-nowrap tabular-nums">
+                        {formatTHB(line.amount, locale)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
               ) : (
-                <Badge tone="neutral" size="sm">
-                  {t("notSigned")}
-                </Badge>
+                <p className="text-muted text-sm">{t("noLines")}</p>
               )}
-            </li>
-          </ul>
-        </Card>
-
-        <Card as="section" aria-labelledby="lease-contract" data-testid="lease-contract">
-          <CardHeader
-            title={<span id="lease-contract">{t("contract")}</span>}
-            description={lease.compliance.inScope ? t("inScope") : t("outOfScope")}
-          />
-          <p className="text-muted mb-2 text-sm" data-testid="lease-language">
-            {t("language")}: {lease.bilingual ? t("languageBilingual") : t(`languageValue.${lease.template.language}`)}
-          </p>
-          <ComplianceChecks lease={lease} />
-          <div className="mt-3 flex flex-wrap gap-2">
-            {lease.contract && !canOpenContract ? (
-              <div className="flex flex-col gap-1" data-testid="lease-contract-restricted">
-                <Button variant="secondary" size="sm" iconStart={IconBill} disabled aria-describedby="contract-pii">
-                  {lease.contract.signed ? t("signedContract") : t("contractPdf")}
-                </Button>
-                <p id="contract-pii" className="text-muted text-sm">
-                  {t("contractPiiOnly")}
-                </p>
-              </div>
-            ) : lease.contract ? (
-              <DocumentButton
-                document={{ kind: "leaseContract", id: lease.id }}
-                label={lease.contract.signed ? t("signedContract") : t("contractPdf")}
-                title={t("contractTitle", { unit: lease.unitNo })}
-                testId="lease-contract-pdf"
-              />
-            ) : (
-              <DocumentButton
-                document={{ kind: "leasePreview", id: lease.id }}
-                label={wizard("preview")}
-                title={wizard("previewTitle", { unit: lease.unitNo })}
-                testId="contract-preview"
-              />
-            )}
-          </div>
-          {!lease.contract && !canOpenContract ? (
-            <p className="text-muted mt-2 text-sm" data-testid="contract-preview-masked">
-              {t("previewMasked")}
+              {lease.addendum.length ? (
+                <>
+                  <h3 className="mt-6 text-base font-semibold">{wizard("addendumTitle")}</h3>
+                  <ul className="flex flex-col gap-2 text-sm">
+                    {lease.addendum.map((clause, index) => (
+                      <li key={index}>
+                        <span className="font-medium">{clause.title}</span>{" "}
+                        <span className="text-muted">{t("inParens", { value: clauses(clause.type) })}</span>
+                        <p>{clause.text}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              ) : null}
+            </div>
+          </PaperSection>
+        </Paper>
+        <div className="grid gap-4 xl:grid-cols-2">
+          <Card as="section" aria-labelledby="lease-contract" data-testid="lease-contract">
+            <CardHeader
+              title={<span id="lease-contract">{t("contract")}</span>}
+              description={lease.compliance.inScope ? t("inScope") : t("outOfScope")}
+            />
+            <p className="text-muted mb-2 text-sm" data-testid="lease-language">
+              {t("language")}:{" "}
+              {lease.bilingual ? t("languageBilingual") : t(`languageValue.${lease.template.language}`)}
             </p>
+            <ComplianceChecks lease={lease} />
+            <div className="mt-3 flex flex-wrap gap-2">
+              {lease.contract && !canOpenContract ? (
+                <div className="flex flex-col gap-1" data-testid="lease-contract-restricted">
+                  <Button variant="secondary" size="sm" iconStart={IconBill} disabled aria-describedby="contract-pii">
+                    {lease.contract.signed ? t("signedContract") : t("contractPdf")}
+                  </Button>
+                  <p id="contract-pii" className="text-muted text-sm">
+                    {t("contractPiiOnly")}
+                  </p>
+                </div>
+              ) : lease.contract ? (
+                <DocumentButton
+                  document={{ kind: "leaseContract", id: lease.id }}
+                  label={lease.contract.signed ? t("signedContract") : t("contractPdf")}
+                  title={t("contractTitle", { unit: lease.unitNo })}
+                  testId="lease-contract-pdf"
+                />
+              ) : (
+                <DocumentButton
+                  document={{ kind: "leasePreview", id: lease.id }}
+                  label={wizard("preview")}
+                  title={wizard("previewTitle", { unit: lease.unitNo })}
+                  testId="contract-preview"
+                />
+              )}
+            </div>
+            {!lease.contract && !canOpenContract ? (
+              <p className="text-muted mt-2 text-sm" data-testid="contract-preview-masked">
+                {t("previewMasked")}
+              </p>
+            ) : null}
+          </Card>
+
+          {stampDuty.data && lease.status !== "cancelled" ? (
+            <LeaseStampDuty
+              stampDuty={stampDuty.data}
+              unitId={lease.unitId}
+              unitNo={lease.unitNo}
+              today={bangkokToday()}
+              canManage={ownerCan(context.me, "lease.manage")}
+            />
           ) : null}
-          {lease.contract ? (
-            <p className="text-muted mt-2 font-mono text-xs break-all">{t("sha", { sha: lease.contract.sha256 })}</p>
+
+          {notices.data && lease.status !== "draft" && lease.status !== "cancelled" ? (
+            <LeaseNotices lease={lease} notices={notices.data} canManage={ownerCan(context.me, "lease.manage")} />
           ) : null}
-        </Card>
 
-        {stampDuty.data && lease.status !== "cancelled" ? (
-          <LeaseStampDuty
-            stampDuty={stampDuty.data}
-            unitId={lease.unitId}
-            unitNo={lease.unitNo}
-            today={bangkokToday()}
-            canManage={ownerCan(context.me, "lease.manage")}
-          />
-        ) : null}
+          {lease.status !== "draft" && lease.status !== "cancelled" ? (
+            <LeaseRenewals
+              api={context.api}
+              lease={lease}
+              locale={locale}
+              canManage={!readOnly(context.me) && ownerCan(context.me, "lease.manage")}
+            />
+          ) : null}
 
-        {notices.data && lease.status !== "draft" && lease.status !== "cancelled" ? (
-          <LeaseNotices lease={lease} notices={notices.data} canManage={ownerCan(context.me, "lease.manage")} />
-        ) : null}
-
-        {lease.status !== "draft" && lease.status !== "cancelled" ? (
-          <LeaseRenewals
+          {/* G8 (D-299): an employer may pay this lease's invoices (worker housing). */}
+          <LeaseEmployerCard
             api={context.api}
             lease={lease}
             locale={locale}
             canManage={!readOnly(context.me) && ownerCan(context.me, "lease.manage")}
           />
-        ) : null}
 
-        {/* G8 (D-299): an employer may pay this lease's invoices (worker housing). */}
-        <LeaseEmployerCard
-          api={context.api}
-          lease={lease}
-          locale={locale}
-          canManage={!readOnly(context.me) && ownerCan(context.me, "lease.manage")}
-        />
+          <Card as="section" aria-labelledby="lease-timeline" data-testid="lease-timeline">
+            <CardHeader title={<span id="lease-timeline">{t("timeline")}</span>} />
+            {eventList.length ? (
+              <Timeline
+                events={[...eventList]
+                  .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))
+                  .map((event) => ({
+                    id: event.id,
+                    title: EVENT_TYPES.has(event.type) ? events(event.type) : event.type,
+                    time: formatDateTime(event.occurredAt, locale),
+                    timeTitle: event.occurredAt,
+                    actor: t(
+                      `actor.${event.actorType === "resident" || event.actorType === "system" ? event.actorType : "user"}`,
+                    ),
+                    tone: EVENT_TONE[event.type] ?? "neutral",
+                    icon: EVENT_ICON[event.type] ?? IconLease,
+                  }))}
+              />
+            ) : (
+              <p className="text-muted text-sm">{t("noEvents")}</p>
+            )}
+          </Card>
 
-        <Card as="section" aria-labelledby="lease-lines" data-testid="lease-lines">
-          <CardHeader title={<span id="lease-lines">{wizard("linesTitle")}</span>} />
-          {lease.lines.length ? (
-            <ul className="flex flex-col gap-1 text-sm">
-              {lease.lines.map((line) => (
-                <li key={line.id} className="flex justify-between gap-2">
-                  <span>
-                    {line.description} <span className="text-muted">{t("inParens", { value: kinds(line.kind) })}</span>
-                  </span>
-                  <span className="tabular-nums">{formatTHB(line.amount, locale)}</span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-muted text-sm">{t("noLines")}</p>
-          )}
-          {lease.addendum.length ? (
-            <>
-              <h3 className="mt-4 font-semibold">{wizard("addendumTitle")}</h3>
-              <ul className="flex flex-col gap-2 text-sm">
-                {lease.addendum.map((clause, index) => (
-                  <li key={index}>
-                    <span className="font-medium">{clause.title}</span>{" "}
-                    <span className="text-muted">{t("inParens", { value: clauses(clause.type) })}</span>
-                    <p>{clause.text}</p>
+          <Card as="section" aria-labelledby="lease-related" data-testid="lease-related">
+            <CardHeader title={<span id="lease-related">{t("related")}</span>} />
+            <h3 className="font-semibold">{t("invitations")}</h3>
+            {invitations.data && invitations.data.length ? (
+              <ul className="mb-4 flex flex-col gap-1 text-sm" data-testid="lease-invitations">
+                {invitations.data.map((invitation) => (
+                  <li key={invitation.id} className="flex flex-wrap items-center gap-2">
+                    <StatusBadgeOf map={INVITATION_STATUS} value={invitation.state} size="sm" />
+                    <span>
+                      {lease.parties.find((party) => party.partyId === invitation.partyId)?.displayName ?? "—"}
+                    </span>
+                    <span className="text-muted">
+                      {t("invitationAt", { date: formatDateTime(invitation.createdAt, locale) })}
+                    </span>
                   </li>
                 ))}
               </ul>
-            </>
-          ) : null}
-        </Card>
-
-        <Card as="section" aria-labelledby="lease-timeline" data-testid="lease-timeline">
-          <CardHeader title={<span id="lease-timeline">{t("timeline")}</span>} />
-          {eventList.length ? (
-            <Timeline
-              events={[...eventList]
-                .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))
-                .map((event) => ({
-                  id: event.id,
-                  title: EVENT_TYPES.has(event.type) ? events(event.type) : event.type,
-                  time: formatDateTime(event.occurredAt, locale),
-                  timeTitle: event.occurredAt,
-                  actor: t(
-                    `actor.${event.actorType === "resident" || event.actorType === "system" ? event.actorType : "user"}`,
-                  ),
-                  tone: EVENT_TONE[event.type] ?? "neutral",
-                  icon: EVENT_ICON[event.type] ?? IconLease,
-                }))}
-            />
-          ) : (
-            <p className="text-muted text-sm">{t("noEvents")}</p>
-          )}
-        </Card>
-
-        <Card as="section" aria-labelledby="lease-related" data-testid="lease-related">
-          <CardHeader title={<span id="lease-related">{t("related")}</span>} />
-          <h3 className="font-semibold">{t("invitations")}</h3>
-          {invitations.data && invitations.data.length ? (
-            <ul className="mb-4 flex flex-col gap-1 text-sm" data-testid="lease-invitations">
-              {invitations.data.map((invitation) => (
-                <li key={invitation.id} className="flex flex-wrap items-center gap-2">
-                  <StatusBadgeOf map={INVITATION_STATUS} value={invitation.state} size="sm" />
-                  <span>{lease.parties.find((party) => party.partyId === invitation.partyId)?.displayName ?? "—"}</span>
-                  <span className="text-muted">
-                    {t("invitationAt", { date: formatDateTime(invitation.createdAt, locale) })}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-muted mb-4 text-sm">{t("noInvitations")}</p>
-          )}
-          <h3 className="font-semibold">{t("inspections")}</h3>
-          {inspections.data && inspections.data.data.length ? (
-            <ul className="mb-4 flex flex-col gap-2 text-sm">
-              {inspections.data.data.map((inspection) => (
-                <li key={inspection.id} className="flex flex-wrap items-center gap-2">
-                  <span>{t(`inspection.${inspection.type}`)}</span>
-                  <StatusBadgeOf map={INSPECTION_STATUS} value={inspection.status} size="sm" />
-                  {inspection.status === "completed" ? (
-                    <DocumentButton
-                      document={{ kind: "inspectionReport", id: inspection.id }}
-                      label={t("report")}
-                      title={t("reportTitle", { unit: lease.unitNo })}
-                      size="sm"
-                    />
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-muted mb-4 text-sm">{t("noInspections")}</p>
-          )}
-          <h3 className="font-semibold">{t("deposit")}</h3>
-          {deposits.data && deposits.data.data.length ? (
-            <ul className="flex flex-col gap-1 text-sm">
-              {deposits.data.data.map((deposit) => (
-                <li key={deposit.id} className="flex flex-wrap items-center gap-2">
-                  <a
-                    className="underline-offset-4 hover:underline"
-                    href={ownerPath(locale, `/deposits/${deposit.id}`)}
-                    data-testid="lease-deposit"
-                  >
-                    {formatTHB(deposit.amountSecurity, locale)}
-                  </a>
-                  <StatusBadgeOf map={DEPOSIT_STATUS} value={deposit.status} size="sm" />
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-muted text-sm">{t("noDeposit")}</p>
-          )}
-        </Card>
-      </div>
+            ) : (
+              <p className="text-muted mb-4 text-sm">{t("noInvitations")}</p>
+            )}
+            <h3 className="font-semibold">{t("inspections")}</h3>
+            {inspections.data && inspections.data.data.length ? (
+              <ul className="mb-4 flex flex-col gap-2 text-sm">
+                {inspections.data.data.map((inspection) => (
+                  <li key={inspection.id} className="flex flex-wrap items-center gap-2">
+                    <span>{t(`inspection.${inspection.type}`)}</span>
+                    <StatusBadgeOf map={INSPECTION_STATUS} value={inspection.status} size="sm" />
+                    {inspection.status === "completed" ? (
+                      <DocumentButton
+                        document={{ kind: "inspectionReport", id: inspection.id }}
+                        label={t("report")}
+                        title={t("reportTitle", { unit: lease.unitNo })}
+                        size="sm"
+                      />
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-muted mb-4 text-sm">{t("noInspections")}</p>
+            )}
+            <h3 className="font-semibold">{t("deposit")}</h3>
+            {deposits.data && deposits.data.data.length ? (
+              <ul className="flex flex-col gap-1 text-sm">
+                {deposits.data.data.map((deposit) => (
+                  <li key={deposit.id} className="flex flex-wrap items-center gap-2">
+                    <a
+                      className="underline-offset-4 hover:underline"
+                      href={ownerPath(locale, `/deposits/${deposit.id}`)}
+                      data-testid="lease-deposit"
+                    >
+                      {formatTHB(deposit.amountSecurity, locale)}
+                    </a>
+                    <StatusBadgeOf map={DEPOSIT_STATUS} value={deposit.status} size="sm" />
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-muted text-sm">{t("noDeposit")}</p>
+            )}
+          </Card>
+        </div>
+      </DetailLayout>
     </OwnerPage>
   );
 }

@@ -128,5 +128,6 @@
       "price": "Price per unit",
       "amount": "Amount"
     }
-  }
+  },
+  "emptyAction": "View invoices"
 }

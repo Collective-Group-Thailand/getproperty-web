@@ -21,7 +21,13 @@ import { releaseHandlers } from "./release";
 import { settingsHandlers } from "./settings";
 import { storageHandlers } from "./storage";
 import { agencyHandlers, initialAgencyWorld } from "./agency";
-import { contractHandlers, counterpartySignsContract, initialContractsWorld, residentAnswersOffer } from "./contracts";
+import {
+  contractHandlers,
+  counterpartySignsContract,
+  initialContractsWorld,
+  residentAnswersOffer,
+  seedSampleContract,
+} from "./contracts";
 import { growthHandlers, initialGrowthWorld } from "./growth";
 import { broadcastHandlers, initialBroadcastWorld } from "./broadcast";
 import { initialInsightWorld, insightHandlers } from "./insight";
@@ -187,7 +193,14 @@ export function resetOwnerWorld(part: string | null): boolean {
   return true;
 }
 
-export { counterpartySignsContract, providerPays, residentAnswers, residentAnswersOffer, residentSigns };
+export {
+  counterpartySignsContract,
+  seedSampleContract,
+  providerPays,
+  residentAnswers,
+  residentAnswersOffer,
+  residentSigns,
+};
 export { storagePackagePaid, storagePricePublished } from "./storage";
 export { failPost, growthPaid, publishGrowthPrice, setFacebookMode, setFreeBuildingBoost } from "./growth";
 export { sendCampaign, setBroadcastEnabled, setBroadcastPrice } from "./broadcast";

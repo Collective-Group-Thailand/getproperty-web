@@ -550,7 +550,8 @@ export const paymentHandlers: HttpHandler[] = [
     const list = docs.filter(
       (doc) =>
         (!kind || doc.kind === kind) &&
-        (!period || doc.createdAt.startsWith(period)) &&
+        // The period is a Bangkok calendar month (as the API keys it), not the UTC month of the timestamp.
+        (!period || new Date(Date.parse(doc.createdAt) + 7 * 3600_000).toISOString().startsWith(period)) &&
         (!params.get("buildingId") || doc.buildingId === params.get("buildingId") || doc.buildingId === null) &&
         (!params.get("q") || doc.title.toLowerCase().includes(params.get("q")!.toLowerCase())),
     );

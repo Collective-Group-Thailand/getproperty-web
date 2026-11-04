@@ -1,23 +1,20 @@
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 
-import { UNIT_STATUS } from "@/domain/status/unit";
-import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { formatNumber, formatPercent, formatTHB } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/errors";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
+import { StatsRow } from "@/ui/components/StatsRow";
+import { LinkMenu } from "@/features/shared/console/LinkMenu";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { IconAdd } from "@/ui/icons/glyphs/add";
 import { IconRoom } from "@/ui/icons/glyphs/room";
 import { IconSettings } from "@/ui/icons/glyphs/settings";
 import { IconTag } from "@/ui/icons/glyphs/tag";
-import { IconMegaphone } from "@/ui/icons/glyphs/megaphone";
-import { IconUpload } from "@/ui/icons/glyphs/upload";
-import { IconStar } from "@/ui/icons/glyphs/star";
 
 import { ownerPath } from "../shared/links";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
@@ -41,6 +38,7 @@ export async function BuildingDetail({ context, buildingId }: { context: OwnerCo
   const t = await getTranslations("owner.buildings.detail");
   const types = await getTranslations("owner.buildings");
   const provider = await getTranslations("owner.common.provider");
+  const statuses = await getTranslations("status.unit");
   const { api, locale } = context;
   let building: Schemas["BuildingDto"];
   try {
@@ -80,54 +78,65 @@ export async function BuildingDetail({ context, buildingId }: { context: OwnerCo
         }
         actions={
           <>
+            {readOnly ? null : (
+              <Button asChild variant="secondary" iconStart={IconAdd}>
+                <a href={href("/units/new")} data-testid="open-bulk">
+                  {t("bulk")}
+                </a>
+              </Button>
+            )}
             <Button asChild iconStart={IconRoom}>
               <a href={ownerPath(locale, `/units?building=${building.id}`)} data-testid="open-board">
                 {t("board")}
               </a>
             </Button>
             {readOnly ? null : (
-              <>
-                {/* G5 (D-297): the building boost — every public listing of this tenant in the building. */}
-                <Button asChild variant="secondary" iconStart={IconMegaphone}>
-                  <a href={ownerPath(locale, "/promote#building-boost")} data-testid="open-promote">
-                    {t("promote")}
-                  </a>
-                </Button>
-                {/* G9 (D-301): verified reviews of this building (reply / report). */}
-                <Button asChild variant="secondary" iconStart={IconStar}>
-                  <a href={ownerPath(locale, `/reviews?building=${building.id}`)} data-testid="open-reviews">
-                    {t("reviews")}
-                  </a>
-                </Button>
-                <Button asChild variant="secondary" iconStart={IconUpload}>
-                  <a href={href("/import")} data-testid="open-import">
-                    {t("import")}
-                  </a>
-                </Button>
-                <Button asChild variant="secondary" iconStart={IconAdd}>
-                  <a href={href("/units/new")} data-testid="open-bulk">
-                    {t("bulk")}
-                  </a>
-                </Button>
-              </>
+              <LinkMenu
+                label={t("more")}
+                testId="building-more"
+                items={[
+                  { id: "import", label: t("import"), href: href("/import"), testId: "open-import" },
+                  // G5 (D-297): the building boost; G9 (D-301): verified reviews of this building.
+                  {
+                    id: "promote",
+                    label: t("promote"),
+                    href: ownerPath(locale, "/promote#building-boost"),
+                    testId: "open-promote",
+                  },
+                  {
+                    id: "reviews",
+                    label: t("reviews"),
+                    href: ownerPath(locale, `/reviews?building=${building.id}`),
+                    testId: "open-reviews",
+                  },
+                ]}
+              />
             )}
           </>
         }
       />
 
       {summary ? (
-        <section aria-label={t("summary")} className="flex flex-wrap gap-2" data-testid="building-summary">
-          <Badge tone="neutral">{t("units", { count: summary.total })}</Badge>
-          {(["occupied", "vacant", "reserved", "maintenance", "inactive"] as const).map((status) =>
-            summary[status] > 0 ? (
-              <span key={status} className="inline-flex items-center gap-1">
-                <StatusBadgeOf map={UNIT_STATUS} value={status} size="sm" />
-                <span className="tabular-nums">{formatNumber(summary[status], locale)}</span>
-              </span>
-            ) : null,
-          )}
-          <Badge tone="primary">{t("occupancy", { pct: formatPercent(summary.occupancyPct, locale, 1) })}</Badge>
-        </section>
+        <div data-testid="building-summary">
+          <StatsRow
+            label={t("summary")}
+            highlight="occupancy"
+            figures={[
+              { key: "total", label: t("summaryUnits"), value: formatNumber(summary.total, locale) },
+              ...(["occupied", "vacant", "reserved", "maintenance"] as const).map((status) => ({
+                key: status,
+                label: statuses(status),
+                value: formatNumber(summary[status], locale),
+                href: ownerPath(locale, `/units?building=${building.id}&view=list&status=${status}`),
+              })),
+              {
+                key: "occupancy",
+                label: t("summaryOccupancy"),
+                value: formatPercent(summary.occupancyPct, locale, 1),
+              },
+            ]}
+          />
+        </div>
       ) : null}
 
       <div className="grid gap-4 lg:grid-cols-2">

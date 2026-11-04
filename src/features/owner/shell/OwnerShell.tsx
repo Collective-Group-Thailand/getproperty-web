@@ -45,6 +45,13 @@ export async function OwnerShell({
     ...item,
     href: prefix(item.href),
     label: t(`owner.nav.${item.key}`),
+    children: item.children?.map((child) => ({
+      key: child.key,
+      href: prefix(child.href),
+      // Full message keys from the registry (`owner.common.money.tab.billing` …), typed there.
+      label: t(child.label as Parameters<typeof t>[0]),
+      testId: child.testId,
+    })),
   }));
   const groups = groupItems(
     items,

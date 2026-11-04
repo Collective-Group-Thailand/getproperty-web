@@ -10,8 +10,8 @@ import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Callout } from "@/ui/components/Callout";
-import { Card } from "@/ui/components/Card";
 import { Field } from "@/ui/components/Field";
+import { FormColumns, FormSection, FormSummary, MobileActionBar } from "@/ui/components/FormLayout";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input, Textarea } from "@/ui/components/Input";
 import { NativeSelect } from "@/ui/components/NativeSelect";
@@ -80,138 +80,165 @@ export function ManualPaymentForm({
     (method === "cash" || evidence !== null) &&
     !uploading;
 
+  const record = (testId: string) => (
+    <ConfirmAction
+      label={t("record")}
+      icon={IconPayment}
+      disabled={!ready}
+      testId={testId}
+      title={t("confirmTitle")}
+      description={t("confirmBody", {
+        amount: MONEY.test(amount) ? formatTHB(amount, locale) : "—",
+        unit: invoice?.unitNo ?? "—",
+        number: invoice?.number ?? "—",
+      })}
+      confirmLabel={t("record")}
+      phrase={invoice?.unitNo ?? undefined}
+      successMessage={t("recorded")}
+      onConfirm={(key) =>
+        unwrap(
+          browserApi().POST("/v1/owner/payments", {
+            params: { header: { "Idempotency-Key": key } },
+            body: {
+              invoiceId,
+              method,
+              amount,
+              paidAt: `${date}T${time}:00+07:00`,
+              reference: reference.trim() || undefined,
+              notes: notes.trim() || undefined,
+              whtAmount: wht || undefined,
+              evidenceDocumentId: evidence?.id,
+            },
+          }),
+        )
+      }
+      onDone={(result) => router.push(`/payments/${(result as Schemas["PaymentDto"]).id}`)}
+    />
+  );
   return (
-    <Card className="flex max-w-2xl flex-col gap-4" data-testid="manual-payment">
-      <Field label={t("invoice")} required>
-        <NativeSelect
-          value={invoiceId}
-          placeholder={t("chooseInvoice")}
-          onChange={(event) => {
-            setInvoiceId(event.target.value);
-            const chosen = invoices.find((candidate) => candidate.id === event.target.value);
-            if (chosen && !amount) setAmount(chosen.balance);
-          }}
-          options={invoices.map((candidate) => ({
-            value: candidate.id,
-            label: t("invoiceOption", {
-              number: candidate.number ?? "—",
-              unit: candidate.unitNo ?? "—",
-              party: candidate.billedPartyName,
-              balance: formatTHB(candidate.balance, locale),
-            }),
-          }))}
-          data-testid="manual-invoice"
-        />
-      </Field>
-      {invoice ? (
-        <p className="text-muted text-sm" data-testid="manual-balance">
-          {t("balance", { balance: formatTHB(invoice.balance, locale), due: formatTHB(invoice.amountDue, locale) })}
-        </p>
-      ) : null}
-      <div className="flex flex-col gap-2">
-        <span className="font-medium">{t("method")}</span>
-        <SegmentedControl
-          label={t("method")}
-          value={method}
-          onValueChange={(value) => setMethod(value as Schemas["ManualPaymentMethod"])}
-          options={[
-            { value: "cash", label: t("cash") },
-            { value: "bank_transfer_manual", label: t("transfer") },
+    <FormColumns
+      summary={
+        <FormSummary
+          title={t("summaryTitle")}
+          rows={[
+            { key: "invoice", label: t("summaryInvoice"), value: invoice?.number ?? "—" },
+            { key: "unit", label: t("summaryUnit"), value: invoice?.unitNo ?? "—" },
+            { key: "party", label: t("summaryParty"), value: invoice?.billedPartyName ?? "—" },
+            { key: "balance", label: t("summaryBalance"), value: invoice ? formatTHB(invoice.balance, locale) : "—" },
+            { key: "method", label: t("method"), value: method === "cash" ? t("cash") : t("transfer") },
           ]}
+          total={{ label: t("amount"), value: MONEY.test(amount) ? formatTHB(amount, locale) : "—" }}
+          action={record("manual-record")}
+          note={t("summaryNote")}
         />
-      </div>
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Field label={t("amount")} required hint={t("amountHint")}>
-          <Input
-            inputMode="decimal"
-            value={amount}
-            onChange={(event) => setAmount(event.target.value)}
-            data-testid="manual-amount"
-          />
-        </Field>
-        <Field label={t("date")} required>
-          <DateField name="paidDate" defaultValue={date} onChange={setDate} />
-        </Field>
-        <Field label={t("time")} required>
-          <Input type="time" value={time} onChange={(event) => setTime(event.target.value)} />
-        </Field>
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label={t("reference")}>
-          <Input value={reference} onChange={(event) => setReference(event.target.value)} />
-        </Field>
-        <Field label={t("wht")} hint={t("whtHint")}>
-          <Input inputMode="decimal" value={wht} onChange={(event) => setWht(event.target.value)} />
-        </Field>
-      </div>
-      <Field label={t("notes")}>
-        <Textarea rows={2} value={notes} onChange={(event) => setNotes(event.target.value)} />
-      </Field>
-      {method === "bank_transfer_manual" ? (
-        <div className="flex flex-col gap-2">
-          <FileDropzone
-            label={t("evidence")}
-            hint={t("evidenceHint")}
-            accept="image/*,application/pdf"
-            maxBytes={MAX_BYTES}
-            tooLargeText={t("tooLarge")}
-            chooseText={t("choose")}
-            disabled={uploading}
-            onFiles={(files) => {
-              const file = files[0];
-              if (!file) return;
-              setUploading(true);
-              setUploadFailed(false);
-              uploadOwnerFile(file, { kind: "slip", scopeType: "unit", scopeId: invoice?.unitId ?? null })
-                .then((stored) => setEvidence({ id: stored.id, name: file.name }))
-                .catch(() => setUploadFailed(true))
-                .finally(() => setUploading(false));
-            }}
-            data-testid="manual-evidence"
-          />
-          {evidence ? (
-            <p className="text-muted text-sm" data-testid="manual-evidence-name">
-              {t("attached", { file: evidence.name })}
+      }
+    >
+      <div className="flex flex-col gap-6" data-testid="manual-payment">
+        <FormSection number={1} title={t("sectionInvoice")} description={t("sectionInvoiceHint")}>
+          <Field label={t("invoice")} required>
+            <NativeSelect
+              value={invoiceId}
+              placeholder={t("chooseInvoice")}
+              onChange={(event) => {
+                setInvoiceId(event.target.value);
+                const chosen = invoices.find((candidate) => candidate.id === event.target.value);
+                if (chosen && !amount) setAmount(chosen.balance);
+              }}
+              options={invoices.map((candidate) => ({
+                value: candidate.id,
+                label: t("invoiceOption", {
+                  number: candidate.number ?? "—",
+                  unit: candidate.unitNo ?? "—",
+                  party: candidate.billedPartyName,
+                  balance: formatTHB(candidate.balance, locale),
+                }),
+              }))}
+              data-testid="manual-invoice"
+            />
+          </Field>
+          {invoice ? (
+            <p className="text-muted text-sm" data-testid="manual-balance">
+              {t("balance", { balance: formatTHB(invoice.balance, locale), due: formatTHB(invoice.amountDue, locale) })}
             </p>
           ) : null}
-          {uploadFailed ? <Callout tone="danger">{t("uploadFailed")}</Callout> : null}
-        </div>
-      ) : null}
-      <div>
-        <ConfirmAction
-          label={t("record")}
-          icon={IconPayment}
-          disabled={!ready}
-          testId="manual-record"
-          title={t("confirmTitle")}
-          description={t("confirmBody", {
-            amount: MONEY.test(amount) ? formatTHB(amount, locale) : "—",
-            unit: invoice?.unitNo ?? "—",
-            number: invoice?.number ?? "—",
-          })}
-          confirmLabel={t("record")}
-          phrase={invoice?.unitNo ?? undefined}
-          successMessage={t("recorded")}
-          onConfirm={(key) =>
-            unwrap(
-              browserApi().POST("/v1/owner/payments", {
-                params: { header: { "Idempotency-Key": key } },
-                body: {
-                  invoiceId,
-                  method,
-                  amount,
-                  paidAt: `${date}T${time}:00+07:00`,
-                  reference: reference.trim() || undefined,
-                  notes: notes.trim() || undefined,
-                  whtAmount: wht || undefined,
-                  evidenceDocumentId: evidence?.id,
-                },
-              }),
-            )
-          }
-          onDone={(result) => router.push(`/payments/${(result as Schemas["PaymentDto"]).id}`)}
-        />
+        </FormSection>
+        <FormSection number={2} title={t("sectionMoney")} description={t("sectionMoneyHint")}>
+          <div className="flex flex-col gap-2">
+            <span className="font-medium">{t("method")}</span>
+            <SegmentedControl
+              label={t("method")}
+              value={method}
+              onValueChange={(value) => setMethod(value as Schemas["ManualPaymentMethod"])}
+              options={[
+                { value: "cash", label: t("cash") },
+                { value: "bank_transfer_manual", label: t("transfer") },
+              ]}
+            />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field label={t("amount")} required hint={t("amountHint")}>
+              <Input
+                inputMode="decimal"
+                value={amount}
+                onChange={(event) => setAmount(event.target.value)}
+                data-testid="manual-amount"
+              />
+            </Field>
+            <Field label={t("date")} required>
+              <DateField name="paidDate" defaultValue={date} onChange={setDate} />
+            </Field>
+            <Field label={t("time")} required>
+              <Input type="time" value={time} onChange={(event) => setTime(event.target.value)} />
+            </Field>
+          </div>
+        </FormSection>
+        <FormSection number={3} title={t("sectionEvidence")} description={t("sectionEvidenceHint")}>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Field label={t("reference")}>
+              <Input value={reference} onChange={(event) => setReference(event.target.value)} />
+            </Field>
+            <Field label={t("wht")} hint={t("whtHint")}>
+              <Input inputMode="decimal" value={wht} onChange={(event) => setWht(event.target.value)} />
+            </Field>
+          </div>
+          <Field label={t("notes")}>
+            <Textarea rows={2} value={notes} onChange={(event) => setNotes(event.target.value)} />
+          </Field>
+          {method === "bank_transfer_manual" ? (
+            <div className="flex flex-col gap-2">
+              <FileDropzone
+                label={t("evidence")}
+                hint={t("evidenceHint")}
+                accept="image/*,application/pdf"
+                maxBytes={MAX_BYTES}
+                tooLargeText={t("tooLarge")}
+                chooseText={t("choose")}
+                disabled={uploading}
+                onFiles={(files) => {
+                  const file = files[0];
+                  if (!file) return;
+                  setUploading(true);
+                  setUploadFailed(false);
+                  uploadOwnerFile(file, { kind: "slip", scopeType: "unit", scopeId: invoice?.unitId ?? null })
+                    .then((stored) => setEvidence({ id: stored.id, name: file.name }))
+                    .catch(() => setUploadFailed(true))
+                    .finally(() => setUploading(false));
+                }}
+                data-testid="manual-evidence"
+              />
+              {evidence ? (
+                <p className="text-muted text-sm" data-testid="manual-evidence-name">
+                  {t("attached", { file: evidence.name })}
+                </p>
+              ) : null}
+              {uploadFailed ? <Callout tone="danger">{t("uploadFailed")}</Callout> : null}
+            </div>
+          ) : null}
+        </FormSection>
       </div>
-    </Card>
+      <MobileActionBar summary={MONEY.test(amount) ? formatTHB(amount, locale) : undefined}>
+        {record("manual-record-mobile")}
+      </MobileActionBar>
+    </FormColumns>
   );
 }

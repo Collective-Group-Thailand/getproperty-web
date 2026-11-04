@@ -12,11 +12,15 @@
     "searchPlaceholder": "Number, unit or resident",
     "period": "Billing month",
     "status": "Status",
-    "allStatuses": "All statuses"
+    "allStatuses": "All statuses",
+    "allPeriods": "All periods"
   },
   "empty": {
     "title": "No invoices here",
-    "body": "Invoices appear when a billing cycle is issued."
+    "body": "Invoices appear when a billing cycle is issued.",
+    "filteredTitle": "No invoices match these filters",
+    "filteredBody": "Try another status, period or search.",
+    "clear": "Clear filters"
   },
   "flag": {
     "missing_reading": "Missing reading",
@@ -171,6 +175,38 @@
       "resend": "Resent",
       "reminder": "Reminder"
     },
-    "qrAlt": "Thai QR to pay invoice {number}"
+    "qrAlt": "Thai QR to pay invoice {number}",
+    "panelTitle": "Next steps",
+    "paperKind": "Invoice",
+    "paperDraft": "Draft invoice",
+    "draftNumber": "Not yet numbered",
+    "period": "Billing period",
+    "unit": "Unit",
+    "flagsTitle": "Check before issuing",
+    "issuer": "Issued by"
+  },
+  "openCycle": "This month's cycle",
+  "figures": {
+    "label": "This month's billing",
+    "billed": "Billed",
+    "billedHint": "{count} invoices",
+    "collected": "Collected",
+    "collectedHint": "{pct} of billed",
+    "outstanding": "Outstanding",
+    "dueToday": "Due today",
+    "dueTodayHint": "{count} invoices"
+  },
+  "views": {
+    "label": "Invoice status",
+    "all": "All"
+  },
+  "column": {
+    "number": "Number · period",
+    "unit": "Unit",
+    "party": "Billed to",
+    "due": "Due",
+    "status": "Status",
+    "total": "Total",
+    "balance": "Balance"
   }
 }

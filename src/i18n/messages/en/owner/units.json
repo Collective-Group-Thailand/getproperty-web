@@ -4,7 +4,8 @@
   "chooseBuilding": "Choose a building to see its units",
   "noBuildings": {
     "title": "No building yet",
-    "body": "Add a building first."
+    "body": "Add a building first.",
+    "action": "View buildings"
   },
   "unitCount": "{count, plural, one {# unit} other {# units}}",
   "views": "View",
@@ -64,7 +65,8 @@
     "baseRent": "Base rent",
     "since": "Status since",
     "caption": "Units",
-    "empty": "No unit matches these filters"
+    "empty": "No unit matches these filters",
+    "emptyAction": "Clear filters"
   },
   "panel": {
     "profile": "Unit type",
@@ -89,7 +91,9 @@
     "serviceRequests": "Service requests",
     "openPage": "Open the unit page",
     "serviceRequestsOff": "The service module is not on",
-    "noServiceRequests": "No open service request"
+    "noServiceRequests": "No open service request",
+    "next": "This unit",
+    "board": "Open the building board"
   },
   "status": {
     "change": "Change status",

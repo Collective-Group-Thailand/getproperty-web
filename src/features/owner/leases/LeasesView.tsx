@@ -6,46 +6,66 @@ import { formatDate, formatTHB } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
-import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
-import { Icon } from "@/ui/icons";
+import { ListToolbar, ViewTabs } from "@/ui/components/ListToolbar";
+import { SimpleTable } from "@/ui/components/SimpleTable";
 import { IconAdd } from "@/ui/icons/glyphs/add";
-import { IconChevronRight } from "@/ui/icons/glyphs/chevron-right";
 import { IconLease } from "@/ui/icons/glyphs/lease";
 
 import { FilterBar } from "@/features/shared/console/FilterBar";
-import { ownerPath } from "../shared/links";
+import { ownerPath, withQuery } from "../shared/links";
+import { viewCounts } from "../shared/views";
 import { ListPagination } from "@/features/shared/console/ListPagination";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { focusedBuilding, pageParam, param, type OwnerContext } from "../shared/server";
-import { ContractsNav } from "../contracts/ContractsNav";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
-/** Leases of the tenant (F2 2.2): status filter, search by unit or party, the focused building. */
+const VIEWS = ["all", "active", "pending_signature", "draft", "notice_given", "ending", "ended"] as const;
+
+/**
+ * Leases of the tenant (F2 2.2, G3): status views with the API's counts, search by unit or party, the focused
+ * building; a table whose rows open the lease (rows of their own on a phone). The section's other pages (contract
+ * library, other contracts, renewals, employer housing) sit under "Leases" in the sidebar.
+ */
 export async function LeasesView({ context, searchParams }: { context: OwnerContext; searchParams: SearchParams }) {
   const t = await getTranslations("owner.leases");
   const status = await getTranslations("status.lease");
   const { api, locale } = context;
   const building = focusedBuilding(context);
   const statusParam = param(searchParams.status);
-  const list = await unwrap(
-    api.GET("/v1/owner/leases", {
-      params: {
-        query: {
-          page: pageParam(searchParams.page),
-          perPage: 25,
-          q: param(searchParams.q),
-          status: LEASE_VALUES.includes(statusParam as Schemas["LeaseStatus"])
-            ? (statusParam as Schemas["LeaseStatus"])
-            : undefined,
-          buildingId: building?.id,
-          sort: "startDate",
-          order: "desc",
+  const view = LEASE_VALUES.includes(statusParam as Schemas["LeaseStatus"])
+    ? (statusParam as Schemas["LeaseStatus"])
+    : "all";
+  const q = param(searchParams.q);
+  const [list, counts] = await Promise.all([
+    unwrap(
+      api.GET("/v1/owner/leases", {
+        params: {
+          query: {
+            page: pageParam(searchParams.page),
+            perPage: 25,
+            q,
+            status: view === "all" ? undefined : view,
+            buildingId: building?.id,
+            sort: "startDate",
+            order: "desc",
+          },
         },
-      },
-    }),
-  );
+      }),
+    ),
+    viewCounts(VIEWS, (key) =>
+      unwrap(
+        api.GET("/v1/owner/leases", {
+          params: {
+            query: { perPage: 1, q, buildingId: building?.id, status: key === "all" ? undefined : key },
+          },
+        }),
+      ),
+    ),
+  ]);
+  const href = (key: string) => ownerPath(locale, withQuery("/leases", { q, status: key === "all" ? undefined : key }));
+  const filtered = Boolean(q || view !== "all");
   return (
     <OwnerPage testId="leases">
       <PageHeader
@@ -59,51 +79,88 @@ export async function LeasesView({ context, searchParams }: { context: OwnerCont
           </Button>
         }
       />
-      <ContractsNav current="/leases" locale={locale} />
-      <FilterBar
-        fields={[
-          { name: "q", label: t("filter.search"), type: "search", placeholder: t("filter.searchPlaceholder") },
-          {
-            name: "status",
-            label: t("filter.status"),
-            type: "select",
-            placeholder: t("filter.allStatuses"),
-            options: LEASE_VALUES.map((value) => ({ value, label: status(value) })),
-          },
-        ]}
+      <ListToolbar
+        tabs={
+          <ViewTabs
+            label={t("views.label")}
+            current={view}
+            tabs={VIEWS.map((key) => ({
+              key,
+              href: href(key),
+              label: key === "all" ? t("views.all") : status(key),
+              count: counts[key],
+              testId: `lease-view-${key}`,
+            }))}
+          />
+        }
+        filters={
+          <FilterBar
+            variant="toolbar"
+            fields={[
+              { name: "q", label: t("filter.search"), type: "search", placeholder: t("filter.searchPlaceholder") },
+            ]}
+          />
+        }
       />
       {list.data.length === 0 ? (
-        <Card>
-          <EmptyState icon={IconLease} title={t("empty.title")} description={t("empty.body")} />
-        </Card>
+        <EmptyState
+          variant="card"
+          icon={IconLease}
+          title={filtered ? t("empty.filteredTitle") : t("empty.title")}
+          description={filtered ? t("empty.filteredBody") : t("empty.body")}
+          action={
+            filtered ? (
+              <Button asChild variant="secondary">
+                <a href={ownerPath(locale, "/leases")}>{t("empty.clear")}</a>
+              </Button>
+            ) : (
+              <Button asChild variant="secondary" iconStart={IconAdd}>
+                <a href={ownerPath(locale, "/leases/new")}>{t("newTitle")}</a>
+              </Button>
+            )
+          }
+        />
       ) : (
-        <ul className="divide-border border-border bg-surface rounded-card divide-y border" data-testid="lease-list">
-          {list.data.map((lease) => (
-            <li key={lease.id}>
-              <a
-                href={ownerPath(locale, `/leases/${lease.id}`)}
-                className="hover:bg-bg-subtle flex flex-wrap items-center gap-3 px-4 py-3"
-                data-testid="lease-row"
-                data-status={lease.status}
-              >
-                <span className="w-20 font-mono font-semibold">{lease.unitNo}</span>
-                <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="font-medium">{lease.lesseeName ?? "—"}</span>
-                  <span className="text-muted text-sm">
-                    {t("period", {
-                      start: formatDate(lease.startDate, locale),
-                      end: formatDate(lease.endDate, locale),
-                    })}
-                    {lease.buildingName ? ` · ${lease.buildingName}` : ""}
-                  </span>
+        <SimpleTable
+          caption={t("title")}
+          testId="lease-list"
+          stackOnPhones
+          minWidth="52rem"
+          columns={[
+            { key: "unit", header: t("column.unit"), phone: "meta", className: "w-24" },
+            { key: "lessee", header: t("column.lessee"), phone: "title" },
+            { key: "term", header: t("column.term"), phone: "meta" },
+            { key: "status", header: t("column.status"), phone: "status" },
+            { key: "rent", header: t("column.rent"), align: "end", phone: "figure" },
+          ]}
+          rows={list.data.map((lease) => ({
+            key: lease.id,
+            href: ownerPath(locale, `/leases/${lease.id}`),
+            testId: "lease-row",
+            data: { status: lease.status },
+            cells: {
+              unit: (
+                <span className="flex flex-col max-md:flex-row max-md:gap-1">
+                  <span className="font-mono">{lease.unitNo}</span>
+                  {lease.buildingName ? (
+                    <span className="text-muted text-sm font-normal max-md:hidden">{lease.buildingName}</span>
+                  ) : null}
                 </span>
-                <span className="tabular-nums">{formatTHB(lease.rent, locale)}</span>
-                <StatusBadgeOf map={LEASE_STATUS} value={lease.status} size="sm" />
-                <Icon icon={IconChevronRight} className="text-muted" />
-              </a>
-            </li>
-          ))}
-        </ul>
+              ),
+              lessee: <span className="truncate">{lease.lesseeName ?? "—"}</span>,
+              term: (
+                <span className="text-muted whitespace-nowrap">
+                  {t("period", {
+                    start: formatDate(lease.startDate, locale),
+                    end: formatDate(lease.endDate, locale),
+                  })}
+                </span>
+              ),
+              status: <StatusBadgeOf map={LEASE_STATUS} value={lease.status} size="sm" />,
+              rent: <span className="font-medium whitespace-nowrap">{formatTHB(lease.rent, locale)}</span>,
+            },
+          }))}
+        />
       )}
       <ListPagination
         meta={list.meta}

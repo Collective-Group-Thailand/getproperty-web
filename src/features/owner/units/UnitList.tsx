@@ -13,6 +13,7 @@ import type { Schemas } from "@/lib/api/types";
 import { DataTable } from "@/ui/components/DataTable";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { IconRoom } from "@/ui/icons/glyphs/room";
+import { Button } from "@/ui/components/Button";
 
 /**
  * The unit list (F2 2.1, DataTable): the API's page of `GET /v1/owner/units`, sorted on the server — a
@@ -101,7 +102,17 @@ export function UnitList({ rows, prefix }: { rows: Schemas["UnitDto"][]; prefix:
         copy.delete("page");
         router.replace(`${pathname}?${copy.toString()}`, { scroll: false });
       }}
-      empty={<EmptyState icon={IconRoom} title={t("empty")} />}
+      empty={
+        <EmptyState
+          icon={IconRoom}
+          title={t("empty")}
+          action={
+            <Button asChild variant="secondary">
+              <a href={pathname}>{t("emptyAction")}</a>
+            </Button>
+          }
+        />
+      }
     />
   );
 }
