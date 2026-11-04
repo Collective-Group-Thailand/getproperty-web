@@ -146,10 +146,10 @@ test("parcels: receive with a photo, a wrong PIN refused, the right PIN, a retur
   const a201 = page.locator('[data-testid="parcel-row"][data-unit="A-201"]');
   await a201.getByTestId("parcel-pick-up").click();
   const pickUp = page.getByRole("alertdialog", { name: /มอบพัสดุของห้อง A-201/ });
-  await pickUp.getByTestId("parcel-pin").fill("000000");
+  await pickUp.getByTestId("parcel-pin").getByRole("textbox", { name: "หลักที่ 1" }).fill("000000");
   await pickUp.getByRole("button", { name: "มอบพัสดุ" }).click();
   await expect(pickUp.getByTestId("problem-notice")).toHaveAttribute("data-code", "parcel.pin_mismatch");
-  await pickUp.getByTestId("parcel-pin").fill("482913");
+  await pickUp.getByTestId("parcel-pin").getByRole("textbox", { name: "หลักที่ 1" }).fill("482913");
   await pickUp.getByRole("button", { name: "มอบพัสดุ" }).click();
   await expect(page.locator('[data-testid="parcel-row"][data-unit="A-201"]')).toHaveCount(0);
 
@@ -159,7 +159,7 @@ test("parcels: receive with a photo, a wrong PIN refused, the right PIN, a retur
   await back.getByTestId("parcel-return-reason").fill("ไม่มีผู้รับเกิน 7 วัน");
   await back.getByRole("button", { name: "ส่งคืน" }).click();
   await expect(page.getByTestId("parcel-row")).toHaveCount(1);
-  await page.getByTestId("filter-view").selectOption("all");
+  await page.getByTestId("view-all").click();
   await expect(page.getByTestId("parcel-row")).toHaveCount(4);
 });
 

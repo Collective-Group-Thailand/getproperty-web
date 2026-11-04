@@ -21,7 +21,10 @@
     "all": "All",
     "empty": {
       "title": "No announcement yet",
-      "body": "Write to the whole building, some floors or some units."
+      "body": "Write to the whole building, some floors or some units.",
+      "filteredTitle": "No announcements match",
+      "clear": "Show every announcement",
+      "rules": "Go to house rules"
     },
     "col": {
       "title": "Announcement",
@@ -33,12 +36,12 @@
     "createdAt": "Created {at}",
     "wholeTenant": "All buildings",
     "someResidents": "Some floors or units",
-    "pinned": "Pinned"
+    "pinned": "Pinned",
+    "searchPlaceholder": "Announcement title"
   },
   "compose": {
     "pageTitle": "Compose an announcement",
     "pageBody": "Thai is the main text; translations are optional — residents read their language, else Thai.",
-    "crumb": "Announcements",
     "building": "Building",
     "buildingHint": "Empty = residents of every building",
     "wholeTenant": "All buildings",
@@ -63,9 +66,26 @@
     "audienceUnits": "Some units",
     "pinned": "Pin to the top",
     "expiresAt": "Expires",
-    "expiresHint": "Empty = does not expire",
+    "expiresHint": "Leave empty to keep it; it expires at the end of the chosen day.",
     "saveDraft": "Save draft",
-    "publishNow": "Publish now"
+    "publishNow": "Publish now",
+    "preview": "Preview in LINE",
+    "previewEmpty": "Type a title and message to see the preview",
+    "previewPinned": "Pinned to the top",
+    "previewPinnedUntil": "Pinned to the top until {date}",
+    "summary": "Before you send",
+    "languagesFilled": "Languages",
+    "publishNote": "Residents get it on LINE right away, outside the quiet hours.",
+    "sectionAudience": "Who receives it",
+    "sectionAudienceHint": "The building and units this goes to",
+    "sectionMessage": "Message",
+    "sectionMessageHint": "Thai first; add translations and each resident reads their own language.",
+    "sectionDisplay": "Display",
+    "sectionDisplayHint": "Pin it to the top and choose when it expires",
+    "reachFloors": "{count, plural, =0 {No floors chosen} one {# floor} other {# floors}}",
+    "reachUnits": "{count, plural, =0 {No units chosen} one {# unit} other {# units}}",
+    "saveChanges": "Save changes",
+    "audienceAllTenant": "Goes to residents of every building; choose a building above to send to some floors or units only."
   },
   "announcement": {
     "publish": "Publish",
@@ -114,7 +134,11 @@
     "anyStatus": "Any status",
     "empty": {
       "title": "No parcel waiting",
-      "body": "Receive a parcel with its photo and unit; the resident is told at once."
+      "body": "Receive a parcel with its photo and unit; the resident is told at once.",
+      "filteredTitle": "No parcels match these filters",
+      "filteredBody": "Clear the filters or search for another unit or tracking number.",
+      "clear": "Show waiting parcels",
+      "all": "Show every parcel"
     },
     "photo": "Photo",
     "unit": "Unit",
@@ -149,12 +173,22 @@
       "carrier": "Carrier",
       "trackingNo": "Tracking no.",
       "notes": "Notes"
-    }
+    },
+    "figures": {
+      "label": "Parcel figures",
+      "waiting": "Waiting",
+      "notified": "Resident told",
+      "pickedUp": "Picked up",
+      "returned": "Returned"
+    },
+    "received": "Received",
+    "pinDigit": "Digit {index}",
+    "orStaff": "Or, without the code: check the recipient's ID and confirm for them."
   },
   "facilities": {
     "title": "Facilities",
     "description": "Meeting rooms, gym and other places residents book in the app.",
-    "chooseBuilding": "Choose a building in the top bar",
+    "chooseBuilding": "Choose a building to see its facilities",
     "empty": {
       "title": "No facility yet",
       "body": "Add a facility with its booking rules."
@@ -189,7 +223,12 @@
     "save": "Save",
     "saved": "Saved",
     "edit": "Edit",
-    "editTitle": "Edit {name}"
+    "editTitle": "Edit {name}",
+    "chooseBuildingBody": "Facilities belong to a building — choose one to see its bookings and settings.",
+    "chooseBuildingPlaceholder": "Choose a building",
+    "building": "Building",
+    "goBuildings": "Go to buildings",
+    "goRules": "Go to house rules"
   },
   "bookings": {
     "title": "Bookings {from} – {to}",
@@ -251,14 +290,25 @@
     "ruleTitle": "Title",
     "body": "Text",
     "effectiveHint": "Today or later",
-    "translations": "Translations (optional)"
+    "translations": "Translations (optional)",
+    "past": "Earlier",
+    "ackCount": "{count, plural, =0 {Nobody yet} one {# resident} other {# residents}}",
+    "versionShort": "Version {version}",
+    "effectiveLine": "From {date} · {count} acknowledged",
+    "documentKind": "{building} house rules",
+    "noBuilding": "No building yet",
+    "noBuildingBody": "Add a building first, then publish its rules for residents to acknowledge.",
+    "goBuildings": "Go to buildings",
+    "goAnnouncements": "Go to announcements",
+    "publishedOn": "Published"
   },
   "contacts": {
     "title": "Contacts",
     "description": "Emergency, building, vendor and utility contacts residents see in the app.",
     "empty": {
       "title": "No contact yet",
-      "body": "Add the emergency numbers and the building's caretaker."
+      "body": "Add the emergency numbers and the building's caretaker.",
+      "announcements": "Go to announcements"
     },
     "name": "Name",
     "reach": "Reach",

@@ -1,13 +1,8 @@
 {
   "title": "Meters",
   "description": "Meter points of your buildings with their last reading.",
-  "descriptionBuilding": "Meter points of {building} with their last reading.",
-  "nav": "Meters",
-  "tab": {
-    "meters": "Meter points",
-    "reviews": "Readings to review"
-  },
-  "export": "Export readings (CSV)",
+  "descriptionBuilding": "Meter points of {building} with their last readings",
+  "export": "Export CSV",
   "noBuilding": "No building yet",
   "unit": "Unit {unit}",
   "never": "No reading yet",
@@ -32,12 +27,18 @@
   "col": {
     "meter": "Meter",
     "assignment": "Measures",
-    "health": "Health",
-    "last": "Last reading"
+    "health": "Device",
+    "last": "Last reading",
+    "source": "Source",
+    "readAt": "Read at"
   },
   "empty": {
     "title": "No meters here",
-    "body": "Meters are added with the units or by the installer."
+    "body": "Meters are added with the units or by the installer.",
+    "filteredTitle": "No meters match these filters",
+    "filteredBody": "Clear the filters or search for another code.",
+    "clear": "Show every meter",
+    "devices": "Show devices"
   },
   "detail": {
     "facts": "Meter",
@@ -66,7 +67,14 @@
     "register": "Register",
     "source": "Source",
     "photo": "Photo",
-    "photoAlt": "Meter {meter} showing {register} on {date}"
+    "photoAlt": "Meter {meter} showing {register} on {date}",
+    "last": "Last reading",
+    "serialValue": "Serial {serial}",
+    "multiplierValue": "Multiplier {multiplier}",
+    "untilValue": "Until {date}",
+    "noReadings": "No readings for this meter yet",
+    "noReadingsBody": "Readings from rounds or the device appear here.",
+    "backToMeters": "Back to meters"
   },
   "reviews": {
     "title": "Readings to review",
@@ -74,7 +82,9 @@
     "status": "Status",
     "empty": {
       "title": "Nothing to review",
-      "body": "Held readings appear here."
+      "body": "Held readings appear here.",
+      "otherTitle": "Nothing in this status",
+      "meters": "Go to meters"
     },
     "photoAlt": "Photo of meter {meter} on {date}",
     "noPhoto": "No photo",
@@ -111,6 +121,29 @@
       "rejectTitle": "Reject this reading?",
       "rejectBody": "{meter} (unit {unit}): {register} is not used; the meter is read again.",
       "rejected": "Reading rejected"
-    }
+    },
+    "col": {
+      "photo": "Photo",
+      "meter": "Meter",
+      "place": "Unit",
+      "usage": "Usage",
+      "actions": "Decision"
+    },
+    "commonArea": "Common area",
+    "ocrValue": "Read from photo {value}",
+    "avgValue": "Average {value}",
+    "position": "{at} of {total}",
+    "skip": "Skip"
+  },
+  "attention": {
+    "title": "{count} readings waiting for a check",
+    "body": "They were held because the photo read was unsure or the value looks unusual — check them before billing.",
+    "action": "Check {count} readings"
+  },
+  "noBuildingBody": "Add a building and its units first; their meters appear here.",
+  "addBuilding": "Go to buildings",
+  "nav": {
+    "meters": "Meter points",
+    "reviews": "Readings to check"
   }
 }

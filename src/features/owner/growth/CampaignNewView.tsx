@@ -45,6 +45,7 @@ export async function CampaignNewView({
       rent: formatTHB(listing.rent, locale, { decimals: 0 }),
       place: listing.transit?.name ?? listing.district,
       kind: listing.unitKind,
+      photo: listing.photos[0]?.url ?? null,
     }));
   const areaOptions: BuilderArea[] = areas.map((area) => ({
     slug: area.slug,

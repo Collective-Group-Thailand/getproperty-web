@@ -17,7 +17,9 @@
     },
     "empty": {
       "title": "No reviews yet",
-      "description": "Residents can review a building after they move out, or after a few months of living there."
+      "description": "Residents can review a building after they move out, or after a few months of living there.",
+      "clear": "Show every review",
+      "listings": "Go to listings"
     },
     "stars": "{rating} out of 5 stars",
     "verified": "Verified tenant",
@@ -44,7 +46,15 @@
       "reportReasonHint": "Up to 1,000 characters.",
       "sendReport": "Send report",
       "reported": "Report sent to the moderators"
-    }
+    },
+    "lede": "Reviews from people who lived under your leases, checked by the getproperty team before they go live.",
+    "how": {
+      "verified": "Only people who lived under one of your leases can write one; their name, unit and exact dates are never shown.",
+      "moderated": "The getproperty moderators check every review before it is published and are the only ones who can hide it.",
+      "reply": "You can reply publicly and report a review that breaks the rules."
+    },
+    "reportPending": "Waiting for the getproperty team",
+    "rating": "{rating} of 5"
   },
   "energy": {
     "title": "Energy insight",

@@ -47,7 +47,17 @@
       "property": "This property"
     },
     "since": "since {date}",
-    "percent": "{value}%"
+    "percent": "{value}%",
+    "quietHours": "{start}–{end}",
+    "representativeUnits": "Power {electric} kWh · water {water} m³",
+    "severity": {
+      "warn": "Warn, then allow",
+      "block": "Refuse"
+    },
+    "plusMinusPercent": "±{value}%",
+    "months": "{count, plural, one {# month} other {# months}}",
+    "minutes": "{count, plural, one {# minute} other {# minutes}}",
+    "structured": "Set"
   },
   "lineKind": {
     "internet": "Internet",

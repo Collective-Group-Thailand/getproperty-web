@@ -65,73 +65,92 @@ export function WorkOrderActions({ workOrder, members }: { workOrder: WorkOrder;
   const path = { workOrderId: workOrder.id };
   const subject = { title: workOrder.title, unit: workOrder.unitNo ?? t("commonArea") };
 
+  // One filled action (G4 panel): check the finished work, else finish it, else assign it, else start it.
+  const lead = can("verify")
+    ? "verify"
+    : can("complete")
+      ? "complete"
+      : can("assign") && !workOrder.assignee
+        ? "assign"
+        : can("check-in")
+          ? "check-in"
+          : can("resume")
+            ? "resume"
+            : null;
+  const variantOf = (name: string) => (lead === name ? ("primary" as const) : ("secondary" as const));
   return (
-    <div className="flex flex-col items-end gap-2">
-      <div className="flex flex-wrap gap-2" data-testid="work-order-actions">
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 [&_button]:w-full [&>*]:w-full" data-testid="work-order-actions">
         {can("assign") ? (
-          <FormDialog
-            label={workOrder.assignee ? t("reassign") : t("assign")}
-            icon={IconStaff}
-            variant={workOrder.assignee ? "secondary" : "primary"}
-            testId="work-order-assign"
-            title={t("assignTitle", subject)}
-            description={t("assignBody")}
-            submitLabel={t("assignSubmit")}
-            successMessage={t("assigned")}
-            size_="lg"
-            onSubmit={(data) =>
-              unwrap(
-                browserApi().POST("/v1/owner/work-orders/{workOrderId}/actions/assign", {
-                  params: { path },
-                  body: {
-                    assigneeUserId: text(data, "assigneeUserId") ?? null,
-                    assigneePartyId: text(data, "assigneePartyId") ?? null,
-                    scheduledAt: bangkokInstant(text(data, "scheduledAt")) ?? null,
-                    scheduledUntil: bangkokInstant(text(data, "scheduledUntil")) ?? null,
-                  },
-                }),
-              )
-            }
-          >
-            {(errors) => (
-              <>
-                <AssigneeFields
-                  members={members}
-                  allowNone={false}
-                  initial={
-                    workOrder.assignee
-                      ? {
-                          kind: workOrder.assignee.type,
-                          id: workOrder.assignee.id,
-                          name: workOrder.assignee.displayName,
-                        }
-                      : undefined
-                  }
-                  errors={errors}
-                />
-                <VisitWindowFields
-                  from={bangkokLocal(workOrder.scheduledAt)}
-                  until={bangkokLocal(workOrder.scheduledUntil)}
-                  errors={errors}
-                />
-              </>
-            )}
-          </FormDialog>
+          <div className={lead === "assign" ? "order-first" : undefined}>
+            <FormDialog
+              label={workOrder.assignee ? t("reassign") : t("assign")}
+              icon={IconStaff}
+              variant={variantOf("assign")}
+              testId="work-order-assign"
+              title={t("assignTitle", subject)}
+              description={t("assignBody")}
+              submitLabel={t("assignSubmit")}
+              successMessage={t("assigned")}
+              size_="lg"
+              onSubmit={(data) =>
+                unwrap(
+                  browserApi().POST("/v1/owner/work-orders/{workOrderId}/actions/assign", {
+                    params: { path },
+                    body: {
+                      assigneeUserId: text(data, "assigneeUserId") ?? null,
+                      assigneePartyId: text(data, "assigneePartyId") ?? null,
+                      scheduledAt: bangkokInstant(text(data, "scheduledAt")) ?? null,
+                      scheduledUntil: bangkokInstant(text(data, "scheduledUntil")) ?? null,
+                    },
+                  }),
+                )
+              }
+            >
+              {(errors) => (
+                <>
+                  <AssigneeFields
+                    members={members}
+                    allowNone={false}
+                    initial={
+                      workOrder.assignee
+                        ? {
+                            kind: workOrder.assignee.type,
+                            id: workOrder.assignee.id,
+                            name: workOrder.assignee.displayName,
+                          }
+                        : undefined
+                    }
+                    errors={errors}
+                  />
+                  <VisitWindowFields
+                    from={bangkokLocal(workOrder.scheduledAt)}
+                    until={bangkokLocal(workOrder.scheduledUntil)}
+                    errors={errors}
+                  />
+                </>
+              )}
+            </FormDialog>
+          </div>
         ) : null}
         {can("check-in") ? (
-          <Button
-            variant="secondary"
-            iconStart={IconPlay}
-            loading={step.busy}
-            data-testid="work-order-check-in"
-            onClick={() =>
-              void step.run(() =>
-                unwrap(browserApi().POST("/v1/owner/work-orders/{workOrderId}/actions/check-in", { params: { path } })),
-              )
-            }
-          >
-            {t("checkIn")}
-          </Button>
+          <div className={lead === "check-in" ? "order-first" : undefined}>
+            <Button
+              variant={variantOf("check-in")}
+              iconStart={IconPlay}
+              loading={step.busy}
+              data-testid="work-order-check-in"
+              onClick={() =>
+                void step.run(() =>
+                  unwrap(
+                    browserApi().POST("/v1/owner/work-orders/{workOrderId}/actions/check-in", { params: { path } }),
+                  ),
+                )
+              }
+            >
+              {t("checkIn")}
+            </Button>
+          </div>
         ) : null}
         {can("wait-parts") ? (
           <FormDialog
@@ -159,90 +178,100 @@ export function WorkOrderActions({ workOrder, members }: { workOrder: WorkOrder;
           </FormDialog>
         ) : null}
         {can("resume") ? (
-          <Button
-            variant="secondary"
-            iconStart={IconPlay}
-            loading={step.busy}
-            data-testid="work-order-resume"
-            onClick={() =>
-              void step.run(() =>
-                unwrap(browserApi().POST("/v1/owner/work-orders/{workOrderId}/actions/resume", { params: { path } })),
-              )
-            }
-          >
-            {t("resume")}
-          </Button>
+          <div className={lead === "resume" ? "order-first" : undefined}>
+            <Button
+              variant={variantOf("resume")}
+              iconStart={IconPlay}
+              loading={step.busy}
+              data-testid="work-order-resume"
+              onClick={() =>
+                void step.run(() =>
+                  unwrap(browserApi().POST("/v1/owner/work-orders/{workOrderId}/actions/resume", { params: { path } })),
+                )
+              }
+            >
+              {t("resume")}
+            </Button>
+          </div>
         ) : null}
         {can("complete") ? (
-          <FormDialog
-            label={t("complete")}
-            icon={IconCheckCircle}
-            testId="work-order-complete"
-            title={t("completeTitle", subject)}
-            description={t("completeBody")}
-            submitLabel={t("complete")}
-            successMessage={t("completed")}
-            onSubmit={(data) =>
-              unwrap(
-                browserApi().POST("/v1/owner/work-orders/{workOrderId}/actions/complete", {
-                  params: { path },
-                  body: { note: text(data, "note") ?? null },
-                }),
-              )
-            }
-          >
-            {(errors) => (
-              <Field label={t("completionNote")} error={errors.note}>
-                <Textarea name="note" rows={3} data-testid="completion-note" />
-              </Field>
-            )}
-          </FormDialog>
+          <div className={lead === "complete" ? "order-first" : undefined}>
+            <FormDialog
+              label={t("complete")}
+              icon={IconCheckCircle}
+              variant={variantOf("complete")}
+              testId="work-order-complete"
+              title={t("completeTitle", subject)}
+              description={t("completeBody")}
+              submitLabel={t("complete")}
+              successMessage={t("completed")}
+              onSubmit={(data) =>
+                unwrap(
+                  browserApi().POST("/v1/owner/work-orders/{workOrderId}/actions/complete", {
+                    params: { path },
+                    body: { note: text(data, "note") ?? null },
+                  }),
+                )
+              }
+            >
+              {(errors) => (
+                <Field label={t("completionNote")} error={errors.note}>
+                  <Textarea name="note" rows={3} data-testid="completion-note" />
+                </Field>
+              )}
+            </FormDialog>
+          </div>
         ) : null}
         {can("verify") ? (
-          <ConfirmAction
-            label={t("verify")}
-            icon={IconShield}
-            testId="work-order-verify"
-            title={t("verifyTitle", subject)}
-            description={t("verifyBody", { total: formatTHB(workOrder.costTotal, locale) })}
-            confirmLabel={t("verify")}
-            phrase={workOrder.unitNo ?? t("verifyPhrase")}
-            successMessage={t("verified")}
-            onConfirm={() =>
-              unwrap(browserApi().POST("/v1/owner/work-orders/{workOrderId}/actions/verify", { params: { path } }))
-            }
-          />
+          <div className={lead === "verify" ? "order-first" : undefined}>
+            <ConfirmAction
+              label={t("verify")}
+              icon={IconShield}
+              variant={variantOf("verify")}
+              testId="work-order-verify"
+              title={t("verifyTitle", subject)}
+              description={t("verifyBody", { total: formatTHB(workOrder.costTotal, locale) })}
+              confirmLabel={t("verify")}
+              phrase={workOrder.unitNo ?? t("verifyPhrase")}
+              successMessage={t("verified")}
+              onConfirm={() =>
+                unwrap(browserApi().POST("/v1/owner/work-orders/{workOrderId}/actions/verify", { params: { path } }))
+              }
+            />
+          </div>
         ) : null}
         {can("cancel") ? (
-          <ConfirmAction
-            label={t("cancel")}
-            icon={IconXCircle}
-            variant="destructive"
-            tone="destructive"
-            testId="work-order-cancel"
-            title={t("cancelTitle", subject)}
-            description={t("cancelBody")}
-            confirmLabel={t("cancel")}
-            ready={cancelReason.trim().length > 0}
-            successMessage={t("cancelled")}
-            onConfirm={() =>
-              unwrap(
-                browserApi().POST("/v1/owner/work-orders/{workOrderId}/actions/cancel", {
-                  params: { path },
-                  body: { reason: cancelReason.trim() },
-                }),
-              )
-            }
-          >
-            <Field label={t("reason")} required>
-              <Textarea
-                rows={2}
-                value={cancelReason}
-                onChange={(event) => setCancelReason(event.target.value)}
-                data-testid="work-order-cancel-reason"
-              />
-            </Field>
-          </ConfirmAction>
+          <div className="border-border mt-2 border-t pt-3">
+            <ConfirmAction
+              label={t("cancel")}
+              icon={IconXCircle}
+              variant="destructive"
+              tone="destructive"
+              testId="work-order-cancel"
+              title={t("cancelTitle", subject)}
+              description={t("cancelBody")}
+              confirmLabel={t("cancel")}
+              ready={cancelReason.trim().length > 0}
+              successMessage={t("cancelled")}
+              onConfirm={() =>
+                unwrap(
+                  browserApi().POST("/v1/owner/work-orders/{workOrderId}/actions/cancel", {
+                    params: { path },
+                    body: { reason: cancelReason.trim() },
+                  }),
+                )
+              }
+            >
+              <Field label={t("reason")} required>
+                <Textarea
+                  rows={2}
+                  value={cancelReason}
+                  onChange={(event) => setCancelReason(event.target.value)}
+                  data-testid="work-order-cancel-reason"
+                />
+              </Field>
+            </ConfirmAction>
+          </div>
         ) : null}
       </div>
       <ProblemNotice error={step.error} />

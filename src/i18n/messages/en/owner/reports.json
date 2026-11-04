@@ -82,8 +82,17 @@
   "noInsightsHint": "Pilot KPIs appear here once your pilot agreement is in place and getproperty publishes them.",
   "nav": {
     "label": "Reports",
-    "exports": "Reports & exports",
+    "exports": "Exports",
     "insights": "Insights",
     "etax": "e-Tax"
+  },
+  "noHistoryHint": "Files you export stay here to download again",
+  "otherExport": "Export",
+  "noPermissionHint": "An accountant or the owner can export; you can still see the insights",
+  "openInsights": "Open insights",
+  "groupHint": {
+    "accounting": "For your accountant and accounting software",
+    "operations": "The month's building records",
+    "tax": "Figures for your tax filings"
   }
 }

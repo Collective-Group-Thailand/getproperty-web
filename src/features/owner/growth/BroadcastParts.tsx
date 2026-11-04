@@ -7,7 +7,6 @@ import type { Locale } from "@/i18n/routing";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Card } from "@/ui/components/Card";
-import { LinkTabs } from "@/ui/components/LinkTabs";
 import { Icon, type IconGlyph } from "@/ui/icons";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 import { IconChart } from "@/ui/icons/glyphs/chart";
@@ -20,24 +19,7 @@ import { availability, perRecipient, ratePercent } from "./broadcast";
 
 type Translator = Awaited<ReturnType<typeof getTranslations<"owner.broadcast">>>;
 
-/** The promotion section's two pages: boosts & photo services, LINE broadcasts (G5, G6). */
-export async function PromoteTabs({ locale, current }: { locale: Locale; current: "boosts" | "broadcasts" }) {
-  const t = await getTranslations("owner.broadcast.tabs");
-  const boosts = ownerPath(locale, "/promote");
-  const broadcasts = ownerPath(locale, "/promote/broadcasts");
-  return (
-    <LinkTabs
-      label={t("label")}
-      current={current === "boosts" ? boosts : broadcasts}
-      tabs={[
-        { href: boosts, label: t("boosts"), testId: "promote-tab-boosts" },
-        { href: broadcasts, label: t("broadcasts"), testId: "promote-tab-broadcasts" },
-      ]}
-    />
-  );
-}
-
-const STATE_TONE = { open: "success", off: "warning", unpriced: "neutral", off_unpriced: "warning" } as const;
+const STATE_TONE = { open: "success", off: "neutral", unpriced: "neutral", off_unpriced: "neutral" } as const;
 
 /**
  * Whether sponsored broadcasts can be bought now (G6, D-300): switched on (O-023) and priced (O-027) — otherwise why
@@ -104,9 +86,12 @@ export async function ProductCard({
           <p className="text-muted m-0 text-sm">{t(`body.${state}`)}</p>
         </div>
       </div>
-      <dl className="m-0 grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <dl className="border-border m-0 grid grid-cols-2 gap-y-4 border-t pt-4 lg:grid-cols-4 lg:gap-y-0">
         {facts.map((fact) => (
-          <div key={fact.id} className="flex flex-col gap-0.5">
+          <div
+            key={fact.id}
+            className="lg:border-border flex flex-col gap-0.5 pe-4 lg:border-s lg:ps-5 lg:first:border-s-0 lg:first:ps-0"
+          >
             <dt className="text-muted text-xs">{fact.term}</dt>
             <dd className="m-0 font-semibold tabular-nums">{fact.value}</dd>
             {fact.hint ? <dd className="text-muted m-0 text-xs">{fact.hint}</dd> : null}

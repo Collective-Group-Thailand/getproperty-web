@@ -11,19 +11,20 @@ import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
-import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
-import { LinkTabs } from "@/ui/components/LinkTabs";
+import { ListToolbar, ViewTabs } from "@/ui/components/ListToolbar";
+import { SimpleTable } from "@/ui/components/SimpleTable";
+import { IconInfo } from "@/ui/icons/glyphs/info";
 import { IconSign } from "@/ui/icons/glyphs/sign";
 
 import { ownerPath } from "../shared/links";
 import { ownerCan, param, readOnly, section, type OwnerContext } from "../shared/server";
 import { AnswerMandate, InviteAgency, StopMandate } from "./MandateActions";
+import { RequestCard } from "./RequestCard";
 
 type Mandate = Schemas["MandateDto"];
-type Tab = "invited" | "active" | "past";
+type Tab = "active" | "past";
 const TAB_STATES: Record<Tab, Mandate["state"][]> = {
-  invited: ["invited"],
   active: ["accepted", "active"],
   past: ["ended", "revoked"],
 };
@@ -45,9 +46,10 @@ export function validityText(t: T, from: string, to: string | null, locale: Loca
 }
 
 /**
- * Mandates (G2, D-293). An **owner** (landlord) sees the mandates on its units, invites an agency to a unit and revokes
- * with the unit number typed; an **agency** answers invitations and ends mandates it holds. Access, listings and
- * exclusivity are decided by the API; the page shows its states and refusals.
+ * Mandates (G2, D-293; G5). An **owner** (landlord) sees the mandates on its units, invites an agency to a unit and
+ * revokes with the unit number typed; an **agency** answers invitations and ends mandates it holds. Invitations that
+ * wait for an answer come first as request cards; the mandates in force and the ended ones follow as a table. The
+ * off-platform commission rule is said once. Access, listings and exclusivity are decided by the API.
  */
 export async function MandatesView({
   context,
@@ -67,12 +69,8 @@ export async function MandatesView({
   ]);
   const all = mandates.data?.data ?? [];
   const requested = param(searchParams.view);
-  const tab: Tab =
-    requested === "invited" || requested === "active" || requested === "past"
-      ? requested
-      : isAgency && all.some((m) => m.state === "invited")
-        ? "invited"
-        : "active";
+  const tab: Tab = requested === "past" ? "past" : "active";
+  const invited = all.filter((m) => m.state === "invited");
   const shown = all.filter((m) => TAB_STATES[tab].includes(m.state));
   const base = ownerPath(locale, "/mandates");
   const units = (portfolio?.data?.units ?? []).map((u) => ({
@@ -80,6 +78,7 @@ export async function MandatesView({
     label: u.kind === "house" || u.kind === "townhouse" ? u.building.name : `${u.building.name} · ${u.unitNo}`,
   }));
   const invite = param(searchParams.invite);
+  const party = (mandate: Mandate) => (isAgency ? mandate.ownerName : mandate.agencyName);
 
   return (
     <OwnerPage testId="mandates">
@@ -92,133 +91,223 @@ export async function MandatesView({
           ) : null
         }
       />
-      <Callout tone="info">{t("outsideMoney")}</Callout>
-      <LinkTabs
-        label={t("mandates.title")}
-        current={`${base}?view=${tab}`}
-        tabs={(["invited", "active", "past"] as const).map((key) => ({
-          href: `${base}?view=${key}`,
-          label: t(`mandates.tabs.${key}`),
-          count: key === "past" ? undefined : all.filter((m) => TAB_STATES[key].includes(m.state)).length,
-          testId: `mandates-tab-${key}`,
-        }))}
-      />
+      <Callout tone="neutral" icon={IconInfo}>
+        {t("outsideMoney")}
+      </Callout>
       {!mandates.data ? (
         <SectionError error={mandates.error} />
-      ) : shown.length === 0 ? (
-        <Card padding="lg">
-          <EmptyState
-            icon={IconSign}
-            title={t(`mandates.empty.${tab}`)}
-            description={!isAgency && tab === "active" ? t("mandates.emptyOwnerHint") : undefined}
-          />
-        </Card>
       ) : (
-        <Card padding="none">
-          <ul className="divide-border m-0 list-none divide-y p-0" data-testid="mandate-rows">
-            {shown.map((mandate) => (
-              <MandateRow
-                key={mandate.id}
-                mandate={mandate}
-                t={t}
-                locale={locale}
-                isAgency={isAgency}
-                canManage={canManage}
+        <>
+          {invited.length ? (
+            <section aria-labelledby="mandates-invited" className="flex flex-col gap-3">
+              <h2 id="mandates-invited" className="text-lg font-semibold">
+                {isAgency ? t("mandates.pendingAgency") : t("mandates.pendingOwner")}
+              </h2>
+              <ul className="m-0 flex list-none flex-col gap-3 p-0">
+                {invited.map((mandate) => {
+                  const commission = commissionText(t, mandate, locale);
+                  return (
+                    <RequestCard
+                      key={mandate.id}
+                      testId="mandate-row"
+                      data={{ state: mandate.state, "unit-no": mandate.unitNo }}
+                      title={t("mandates.unit", { unitNo: mandate.unitNo })}
+                      subtitle={mandate.buildingName}
+                      status={<StatusBadgeOf map={MANDATE_STATUS} value={mandate.state} size="sm" />}
+                      facts={[
+                        {
+                          key: "party",
+                          label: isAgency ? t("deals.owner") : t("mandates.fields.agency"),
+                          value: party(mandate),
+                        },
+                        {
+                          key: "scope",
+                          label: t("mandates.fields.scope"),
+                          value: `${t(`scope.${mandate.scope}`)} · ${mandate.exclusive ? t("exclusive") : t("nonExclusive")}`,
+                        },
+                        {
+                          key: "commission",
+                          label: t("columns.commission"),
+                          value: mandate.commissionTerms ? `${commission} · ${mandate.commissionTerms}` : commission,
+                        },
+                        {
+                          key: "validity",
+                          label: t("columns.validity"),
+                          value: validityText(t, mandate.validFrom, mandate.validTo, locale),
+                        },
+                      ]}
+                      actions={
+                        canManage ? (
+                          isAgency ? (
+                            <AnswerMandate
+                              stacked
+                              mandate={mandate}
+                              summary={t("mandates.acceptBody", {
+                                scope: t(`scope.${mandate.scope}`),
+                                exclusive: mandate.exclusive ? t("exclusive") : t("nonExclusive"),
+                                commission,
+                                owner: mandate.ownerName,
+                              })}
+                            />
+                          ) : (
+                            <StopMandate mandate={mandate} mode="revoke" />
+                          )
+                        ) : null
+                      }
+                    />
+                  );
+                })}
+              </ul>
+            </section>
+          ) : null}
+
+          <section aria-labelledby="mandates-list" className="flex flex-col gap-3">
+            <h2 id="mandates-list" className="sr-only">
+              {t("mandates.title")}
+            </h2>
+            <ListToolbar
+              tabs={
+                <ViewTabs
+                  label={t("mandates.title")}
+                  current={tab}
+                  tabs={(["active", "past"] as const).map((key) => ({
+                    key,
+                    href: `${base}?view=${key}`,
+                    label: t(`mandates.tabs.${key}`),
+                    count: key === "past" ? undefined : shownCount(all, key),
+                    testId: `mandates-tab-${key}`,
+                  }))}
+                />
+              }
+            />
+            {shown.length === 0 ? (
+              <EmptyState
+                variant="card"
+                icon={IconSign}
+                title={t(`mandates.empty.${tab}`)}
+                description={!isAgency && tab === "active" ? t("mandates.emptyOwnerHint") : undefined}
+                action={
+                  tab === "past" ? (
+                    <Button asChild variant="secondary">
+                      <a href={`${base}?view=active`}>{t("mandates.toActive")}</a>
+                    </Button>
+                  ) : isAgency ? (
+                    <Button asChild variant="secondary">
+                      <a href={ownerPath(locale, "/mandated-units")}>{t("units.title")}</a>
+                    </Button>
+                  ) : (
+                    <Button asChild variant="secondary">
+                      <a href={ownerPath(locale, "/portfolio")}>{t("mandates.toPortfolio")}</a>
+                    </Button>
+                  )
+                }
               />
-            ))}
-          </ul>
-        </Card>
+            ) : (
+              <SimpleTable
+                caption={t(`mandates.tabs.${tab}`)}
+                testId="mandate-rows"
+                stackOnPhones
+                minWidth="56rem"
+                columns={[
+                  { key: "unit", header: t("columns.unit"), phone: "title" },
+                  { key: "party", header: isAgency ? t("deals.owner") : t("mandates.fields.agency"), phone: "meta" },
+                  { key: "scope", header: t("mandates.fields.scope"), phone: "hidden" },
+                  { key: "commission", header: t("columns.commission"), align: "end", phone: "figure" },
+                  { key: "validity", header: t("columns.validity"), phone: "meta" },
+                  { key: "state", header: t("columns.state"), phone: "status" },
+                  { key: "actions", header: <span className="sr-only">{t("columns.actions")}</span>, align: "end" },
+                ]}
+                rows={shown.map((mandate) => ({
+                  key: mandate.id,
+                  testId: "mandate-row",
+                  data: { state: mandate.state, "unit-no": mandate.unitNo },
+                  cells: {
+                    unit: (
+                      <span className="flex flex-col">
+                        <span className="font-medium">{t("mandates.unit", { unitNo: mandate.unitNo })}</span>
+                        <span className="text-muted text-sm">{mandate.buildingName}</span>
+                      </span>
+                    ),
+                    party: party(mandate),
+                    scope: (
+                      <span className="flex flex-wrap items-center gap-1.5">
+                        {t(`scope.${mandate.scope}`)}
+                        {mandate.exclusive ? (
+                          <Badge tone="primary" size="sm">
+                            {t("exclusive")}
+                          </Badge>
+                        ) : null}
+                      </span>
+                    ),
+                    commission: mandate.commissionAmount
+                      ? formatTHB(mandate.commissionAmount, locale)
+                      : mandate.commissionPercent
+                        ? t("commission.percentShort", { percent: formatPercent(mandate.commissionPercent, locale) })
+                        : t("commission.noneShort"),
+                    validity: (
+                      <span className="flex flex-col">
+                        {validityText(t, mandate.validFrom, mandate.validTo, locale)}
+                        {mandate.endReason ? (
+                          <span className="text-muted text-sm">
+                            {t("mandates.reasonShown", { reason: mandate.endReason })}
+                          </span>
+                        ) : null}
+                      </span>
+                    ),
+                    state: <StatusBadgeOf map={MANDATE_STATUS} value={mandate.state} size="sm" />,
+                    actions: canManage ? (
+                      <MandateRowActions mandate={mandate} t={t} locale={locale} isAgency={isAgency} />
+                    ) : null,
+                  },
+                }))}
+              />
+            )}
+          </section>
+        </>
       )}
     </OwnerPage>
   );
 }
 
-function MandateRow({
+function shownCount(all: Mandate[], tab: Tab) {
+  return all.filter((m) => TAB_STATES[tab].includes(m.state)).length;
+}
+
+function MandateRowActions({
   mandate,
   t,
   locale,
   isAgency,
-  canManage,
 }: {
   mandate: Mandate;
   t: T;
   locale: Locale;
   isAgency: boolean;
-  canManage: boolean;
 }) {
-  const commission = commissionText(t, mandate, locale);
-  const exclusive = mandate.exclusive ? t("exclusive") : t("nonExclusive");
   const held = mandate.state === "accepted" || mandate.state === "active";
   return (
-    <li
-      className="flex flex-wrap items-start justify-between gap-4 px-4 py-4 md:px-5"
-      data-testid="mandate-row"
-      data-state={mandate.state}
-      data-unit-no={mandate.unitNo}
-    >
-      <div className="flex min-w-0 flex-col gap-1">
-        <span className="flex flex-wrap items-center gap-2">
-          <span className="font-semibold">{t("mandates.unit", { unitNo: mandate.unitNo })}</span>
-          <span className="text-muted text-sm">{mandate.buildingName}</span>
-          <StatusBadgeOf map={MANDATE_STATUS} value={mandate.state} size="sm" />
-          {mandate.exclusive ? (
-            <Badge tone="primary" size="sm">
-              {t("exclusive")}
-            </Badge>
-          ) : null}
-        </span>
-        <span className="text-sm">
-          {isAgency
-            ? t("mandates.owner", { name: mandate.ownerName })
-            : t("mandates.agency", { name: mandate.agencyName })}
-          {" · "}
-          {t(`scope.${mandate.scope}`)}
-        </span>
-        <span className="text-muted text-sm">
-          {commission}
-          {mandate.commissionTerms ? ` · ${mandate.commissionTerms}` : ""}
-        </span>
-        <span className="text-muted text-sm">{validityText(t, mandate.validFrom, mandate.validTo, locale)}</span>
-        {mandate.endReason ? (
-          <span className="text-muted text-sm">{t("mandates.reasonShown", { reason: mandate.endReason })}</span>
-        ) : null}
-      </div>
-      {canManage ? (
-        <div className="flex flex-wrap gap-2">
-          {isAgency && mandate.state === "invited" ? (
-            <AnswerMandate
-              mandate={mandate}
-              summary={t("mandates.acceptBody", {
-                scope: t(`scope.${mandate.scope}`),
-                exclusive,
-                commission,
-                owner: mandate.ownerName,
-              })}
-            />
-          ) : null}
-          {mandate.contractDocumentId ? (
-            <Button asChild variant="secondary" size="sm" iconStart={IconSign}>
-              <a
-                href={ownerPath(locale, `/contracts/documents/${mandate.contractDocumentId}`)}
-                data-testid="mandate-contract"
-              >
-                {t("contract.open")}
-              </a>
-            </Button>
-          ) : !isAgency && held ? (
-            <Button asChild variant="secondary" size="sm" iconStart={IconSign}>
-              <a
-                href={ownerPath(locale, `/contracts/documents?new=brokerage_mandate&mandate=${mandate.id}`)}
-                data-testid="mandate-write-contract"
-              >
-                {t("contract.writeMandate")}
-              </a>
-            </Button>
-          ) : null}
-          {!isAgency && (held || mandate.state === "invited") ? <StopMandate mandate={mandate} mode="revoke" /> : null}
-          {isAgency && held ? <StopMandate mandate={mandate} mode="end" /> : null}
-        </div>
+    <span className="flex justify-end gap-2">
+      {mandate.contractDocumentId ? (
+        <Button asChild variant="secondary" size="sm" iconStart={IconSign}>
+          <a
+            href={ownerPath(locale, `/contracts/documents/${mandate.contractDocumentId}`)}
+            data-testid="mandate-contract"
+          >
+            {t("contract.open")}
+          </a>
+        </Button>
+      ) : !isAgency && held ? (
+        <Button asChild variant="secondary" size="sm" iconStart={IconSign}>
+          <a
+            href={ownerPath(locale, `/contracts/documents?new=brokerage_mandate&mandate=${mandate.id}`)}
+            data-testid="mandate-write-contract"
+          >
+            {t("contract.writeMandate")}
+          </a>
+        </Button>
       ) : null}
-    </li>
+      {!isAgency && held ? <StopMandate mandate={mandate} mode="revoke" /> : null}
+      {isAgency && held ? <StopMandate mandate={mandate} mode="end" /> : null}
+    </span>
   );
 }

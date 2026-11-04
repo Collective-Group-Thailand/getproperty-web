@@ -9,26 +9,35 @@ import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Checkbox } from "@/ui/components/Checkbox";
+import { OTPInput } from "@/ui/components/OTPInput";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { NativeSelect } from "@/ui/components/NativeSelect";
 import { IconAdd } from "@/ui/icons/glyphs/add";
-import { IconBack } from "@/ui/icons/glyphs/back";
 import { IconPackageCheck } from "@/ui/icons/glyphs/package-check";
 
 import { PhotoUploadField, usePhotoUploads } from "../shared/PhotoUploads";
 import { Callout } from "@/ui/components/Callout";
 
 /** Receives a parcel at the desk (D-212): photo → unit → the API notifies the recipient or the unit's residents. */
-export function ReceiveParcel({ buildingId, units }: { buildingId: string; units: { id: string; unitNo: string }[] }) {
+export function ReceiveParcel({
+  buildingId,
+  units,
+  variant = "primary",
+}: {
+  buildingId: string;
+  units: { id: string; unitNo: string }[];
+  /** `secondary` as the next step of an empty list (the head keeps the filled one). */
+  variant?: "primary" | "secondary";
+}) {
   const t = useTranslations("owner.community.parcels.receive");
   const photo = usePhotoUploads({ kind: "service_photo", scopeType: "building", scopeId: buildingId });
   return (
     <FormDialog
       label={t("action")}
       icon={IconAdd}
-      variant="primary"
-      testId="parcel-receive"
+      variant={variant}
+      testId={variant === "primary" ? "parcel-receive" : "parcel-receive-empty"}
       title={t("title")}
       description={t("body")}
       submitLabel={t("submit")}
@@ -90,11 +99,12 @@ export function ParcelHandOver({ parcel }: { parcel: Pick<Schemas["ParcelDto"], 
   const [reason, setReason] = useState("");
   const path = { parcelId: parcel.id };
   return (
-    <div className="flex flex-wrap justify-end gap-1">
+    <div className="flex flex-wrap items-center justify-end gap-1">
       <ConfirmAction
         label={t("pickUp")}
         icon={IconPackageCheck}
         size="sm"
+        variant="secondary"
         testId="parcel-pick-up"
         title={t("pickUpTitle", { unit: parcel.unitNo })}
         description={t("pickUpBody")}
@@ -111,22 +121,22 @@ export function ParcelHandOver({ parcel }: { parcel: Pick<Schemas["ParcelDto"], 
         }
       >
         <Field label={t("pin")} hint={t("pinHint")}>
-          <Input
-            inputMode="numeric"
-            autoComplete="off"
-            maxLength={6}
-            className="font-mono text-lg tracking-widest"
-            value={pin}
-            disabled={staff}
-            onChange={(event) => setPin(event.target.value.replace(/\D/g, ""))}
-            data-testid="parcel-pin"
-          />
+          <div data-testid="parcel-pin">
+            <OTPInput
+              value={pin}
+              onChange={setPin}
+              disabled={staff}
+              digitLabel={(index) => t("pinDigit", { index: index + 1 })}
+            />
+          </div>
         </Field>
-        <Checkbox label={t("staffConfirmed")} checked={staff} onCheckedChange={(on) => setStaff(on === true)} />
+        <div className="border-border flex flex-col gap-2 border-t pt-4">
+          <p className="text-muted text-sm">{t("orStaff")}</p>
+          <Checkbox label={t("staffConfirmed")} checked={staff} onCheckedChange={(on) => setStaff(on === true)} />
+        </div>
       </ConfirmAction>
       <ConfirmAction
         label={t("return")}
-        icon={IconBack}
         size="sm"
         variant="ghost"
         testId="parcel-return"

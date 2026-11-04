@@ -296,6 +296,7 @@ export function LeadStateActions({ lead }: { lead: Lead }) {
           label={t("won")}
           icon={IconCheckCircle}
           size="sm"
+          variant="secondary"
           testId="lead-won"
           title={t("wonTitle", { name })}
           description={t("wonBody")}

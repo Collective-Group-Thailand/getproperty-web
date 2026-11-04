@@ -8,7 +8,7 @@ import { LazyAlertDialog } from "@/ui/components/overlays";
 import { toast } from "@/ui/components/Toast";
 import type { IconGlyph } from "@/ui/icons";
 
-import { useMenuEntry } from "./ActionMenu";
+import { type MenuItemOptions, useMenuEntry } from "./ActionMenu";
 import { ProblemNotice, useApiAction, useIdempotencyKey } from "./useApiAction";
 
 export interface ConfirmActionProps {
@@ -49,6 +49,8 @@ export interface ConfirmActionProps {
   /** Toast after success. */
   successMessage?: string;
   onDone?: (result: unknown) => void;
+  /** Its item inside an `ActionMenu` ("⋯"), where it differs from the button (defaults: `label`, red when destructive). */
+  menuItem?: MenuItemOptions;
 }
 
 /** A button that runs an irreversible request only after a (typed) confirmation (design-system.md §4). */
@@ -70,6 +72,7 @@ export function ConfirmAction({
   explain,
   successMessage,
   onDone,
+  menuItem,
 }: ConfirmActionProps) {
   const t = useTranslations("console.confirm");
   const common = useTranslations("common");
@@ -85,7 +88,16 @@ export function ConfirmAction({
     setOpen(true);
   };
   // Inside an `ActionMenu` ("⋯") the action is a menu item and renders only its dialog.
-  const inMenu = useMenuEntry({ label, icon, testId, disabled, destructive: tone === "destructive" }, start);
+  const inMenu = useMenuEntry(
+    {
+      label: menuItem?.label ?? label,
+      icon,
+      testId,
+      disabled,
+      destructive: menuItem?.destructive ?? tone === "destructive",
+    },
+    start,
+  );
 
   return (
     <>

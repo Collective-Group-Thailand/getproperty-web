@@ -13,8 +13,14 @@
     "hidden": "Hidden while we review",
     "reports": "{count, plural, one {# report} other {# reports}}",
     "publishedOn": "Published {date}",
-    "manage": "Manage",
-    "noPhoto": "No photo yet"
+    "noPhoto": "No photo yet",
+    "size": "{size} sq m",
+    "bedrooms": "{count, plural, =0 {Studio} one {# bedroom} other {# bedrooms}}",
+    "floor": "Floor {floor}",
+    "more": "Options for {title}",
+    "edit": "Edit listing",
+    "broadcast": "Send a LINE broadcast",
+    "rejected": "Not approved — open it for the reason"
   },
   "reasons": {
     "label": "Why it is reviewed",
@@ -34,7 +40,13 @@
     "rent": "Monthly rent",
     "rentUnit": "THB",
     "submit": "Create draft",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "noUnitsHint": "A listing starts from a unit in your portfolio — add your room, house or condo first.",
+    "unitRent": "Portfolio rent {rent}",
+    "summary": "Draft listing",
+    "basics": "Headline and rent",
+    "basicsHint": "You can change both on the listing page.",
+    "next": "Photos, details and viewing times come next, on the listing page."
   },
   "editor": {
     "back": "All listings",
@@ -69,7 +81,9 @@
       "address": "Unit address (edit the unit in your portfolio)"
     },
     "facts": "{kind} · {size} · {address}",
-    "relist": "Re-open as a new listing"
+    "relist": "Re-open as a new listing",
+    "panelTitle": "Listing status",
+    "save": "Save"
   },
   "photos": {
     "title": "Photos",
@@ -86,7 +100,8 @@
     "count": "{count, plural, one {# photo} other {# photos}}",
     "saveOrder": "Save order",
     "orderSaved": "Order saved",
-    "failed": "Could not upload {name}"
+    "failed": "Could not upload {name}",
+    "captionOf": "Caption of photo {number}"
   },
   "details": {
     "title": "Details and terms",
@@ -140,7 +155,20 @@
     "save": "Save",
     "saved": "Saved",
     "showUtilityHistory": "Show the average utility bill from real bills",
-    "showUtilityHistoryHint": "Renters see the average of this unit's last 3 bills (once there are enough). The power and water rates are always shown."
+    "showUtilityHistoryHint": "Renters see the average of this unit's last 3 bills (once there are enough). The power and water rates are always shown.",
+    "sections": {
+      "texts": "Details",
+      "textsHint": "The headline and description renters read before a viewing.",
+      "terms": "Rent and terms",
+      "termsHint": "Rent, deposit and house terms.",
+      "place": "Facilities and transport",
+      "shown": "What renters see",
+      "shownHint": "Choose whether the unit number and the average utility cost are shown."
+    },
+    "months": "months",
+    "metres": "m",
+    "suggested": "Common facilities",
+    "facilityPlaceholder": "Type another facility"
   },
   "availability": {
     "title": "Viewing times",
@@ -245,7 +273,25 @@
     "noPhotos": "This listing has no photos yet",
     "downloadOne": "Download"
   },
-  "promotion": "Promotion & photo services",
-  "reviews": "Reviews",
-  "handoffs": "From getbuild ({count})"
+  "handoffs": "From getbuild ({count})",
+  "views": {
+    "label": "Listing views",
+    "all": "All",
+    "draft": "Drafts and returned",
+    "search": "Search listings",
+    "emptyTitle": "No listing matches",
+    "emptyBody": "Try other words, or show every listing.",
+    "clear": "Show all listings"
+  },
+  "tile": {
+    "title": "List a unit from your portfolio",
+    "body": "Size, rooms and address come from the portfolio — add photos and the rent.",
+    "action": "Choose a unit"
+  },
+  "nav": {
+    "mine": "My listings",
+    "promote": "Promotion",
+    "broadcasts": "LINE broadcasts",
+    "reviews": "Reviews"
+  }
 }

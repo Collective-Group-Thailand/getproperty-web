@@ -5,11 +5,11 @@ import { useId, useState } from "react";
 
 import { isApiError, problemError, toFieldName } from "@/lib/api/errors";
 import { Button, type ButtonProps } from "@/ui/components/Button";
-import { LazyDialog } from "@/ui/components/overlays";
+import { LazyDialog, LazySheet } from "@/ui/components/overlays";
 import { toast } from "@/ui/components/Toast";
 import type { IconGlyph } from "@/ui/icons";
 
-import { useMenuEntry } from "./ActionMenu";
+import { type MenuItemOptions, useMenuEntry } from "./ActionMenu";
 import { ProblemNotice, useApiAction, useIdempotencyKey } from "./useApiAction";
 
 /** The API's field errors by form field name (`lines[1].amount` → `lines.1.amount`). */
@@ -54,6 +54,10 @@ export interface FormDialogProps {
   disabled?: boolean;
   /** Opens on first render (a "new" link from another page, `?new=1`). */
   defaultOpen?: boolean;
+  /** Its item inside an `ActionMenu` ("⋯"), where it differs from the button (defaults: `label`, red when destructive). */
+  menuItem?: MenuItemOptions;
+  /** A side sheet instead of a centred dialog: a longer form beside the page it changes (connect a channel). */
+  sheet?: boolean;
 }
 
 /**
@@ -77,6 +81,8 @@ export function FormDialog({
   children,
   disabled,
   defaultOpen = false,
+  menuItem,
+  sheet = false,
 }: FormDialogProps) {
   const common = useTranslations("common");
   const formId = useId();
@@ -92,7 +98,16 @@ export function FormDialog({
     setOpen(true);
   };
   // Inside an `ActionMenu` ("⋯") the action is a menu item and renders only its dialog.
-  const inMenu = useMenuEntry({ label, icon, testId, disabled, destructive: variant === "destructive" }, start);
+  const inMenu = useMenuEntry(
+    {
+      label: menuItem?.label ?? label,
+      icon,
+      testId,
+      disabled,
+      destructive: menuItem?.destructive ?? variant === "destructive",
+    },
+    start,
+  );
 
   return (
     <>
@@ -101,7 +116,8 @@ export function FormDialog({
           {label}
         </Button>
       )}
-      <LazyDialog
+      <Overlay
+        sheet={sheet}
         open={open}
         onOpenChange={(next) => !action.busy && setOpen(next)}
         title={title}
@@ -139,9 +155,28 @@ export function FormDialog({
           {children(errors)}
           <ProblemNotice error={action.error} onAcknowledge={action.acknowledge} acknowledging={action.acknowledging} />
         </form>
-      </LazyDialog>
+      </Overlay>
     </>
   );
+}
+
+/** The dialog, or the right-hand sheet (`sheet`), with the same title, body and footer. */
+function Overlay({
+  sheet,
+  size,
+  ...props
+}: {
+  sheet: boolean;
+  size: "sm" | "md" | "lg";
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  description?: React.ReactNode;
+  closeLabel: string;
+  footer: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return sheet ? <LazySheet side="right" {...props} /> : <LazyDialog size={size} {...props} />;
 }
 
 /** A form value as a trimmed string, or `undefined` when empty. */

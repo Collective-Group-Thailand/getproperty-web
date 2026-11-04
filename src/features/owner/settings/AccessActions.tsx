@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { ActionMenu } from "@/features/shared/console/ActionMenu";
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 import { FormDialog, integer, text } from "@/features/shared/console/FormDialog";
 import { browserApi } from "@/lib/api/browser";
@@ -31,7 +32,6 @@ export function SupportGrantActions({ grant }: { grant: Schemas["SupportGrantDto
           label={t("approve")}
           icon={IconCheckCircle}
           variant="primary"
-          size="sm"
           testId={`approve-${grant.id}`}
           title={t("approveTitle")}
           description={t("approveBody", { reason: grant.reason })}
@@ -57,7 +57,6 @@ export function SupportGrantActions({ grant }: { grant: Schemas["SupportGrantDto
         <ConfirmAction
           label={t("deny")}
           icon={IconXCircle}
-          size="sm"
           variant="secondary"
           testId={`deny-${grant.id}`}
           title={t("denyTitle")}
@@ -71,7 +70,6 @@ export function SupportGrantActions({ grant }: { grant: Schemas["SupportGrantDto
         <ConfirmAction
           label={t("revoke")}
           icon={IconXCircle}
-          size="sm"
           variant="destructive"
           tone="destructive"
           testId={`revoke-${grant.id}`}
@@ -98,14 +96,23 @@ const REASONS: Schemas["GrantReason"][] = [
 ];
 
 /** `POST /v1/owner/asset-grants` — another tenant (a PM company, a contractor) gets access to a building or unit. */
-export function CreateAssetGrant({ buildings }: { buildings: { id: string; name: string }[] }) {
+export function CreateAssetGrant({
+  buildings,
+  testId = "create-grant",
+  secondary = false,
+}: {
+  buildings: { id: string; name: string }[];
+  testId?: string;
+  /** Outlined, where the page head already carries the filled one. */
+  secondary?: boolean;
+}) {
   const t = useTranslations("owner.settings.grants");
   return (
     <FormDialog
       label={t("create")}
       icon={IconAdd}
-      variant="primary"
-      testId="create-grant"
+      variant={secondary ? "secondary" : "primary"}
+      testId={testId}
       title={t("createTitle")}
       description={t("createHint")}
       submitLabel={t("create")}
@@ -180,6 +187,7 @@ export function RevokeAssetGrant({ grant }: { grant: Schemas["AssetGrantDto"] })
       variant="destructive"
       tone="destructive"
       testId={`revoke-grant-${grant.id}`}
+      menuItem={{ label: t("revokeMenu") }}
       title={t("revokeTitle")}
       description={t("revokeBody")}
       confirmLabel={t("revoke")}
@@ -198,5 +206,15 @@ export function RevokeAssetGrant({ grant }: { grant: Schemas["AssetGrantDto"] })
         <Textarea rows={2} value={reason} onChange={(event) => setReason(event.target.value)} />
       </Field>
     </ConfirmAction>
+  );
+}
+
+/** The "⋯" of a grant this tenant gave: revoke it (red, with a reason). */
+export function AssetGrantMenu({ grant }: { grant: Schemas["AssetGrantDto"] }) {
+  const t = useTranslations("owner.settings.grants");
+  return (
+    <ActionMenu label={t("menu")} testId={`grant-menu-${grant.id}`}>
+      <RevokeAssetGrant grant={grant} />
+    </ActionMenu>
   );
 }

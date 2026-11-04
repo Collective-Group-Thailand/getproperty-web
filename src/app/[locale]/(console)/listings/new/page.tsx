@@ -8,7 +8,6 @@ import { SectionError } from "@/features/shared/console/SectionError";
 import { unwrap } from "@/lib/api/client";
 import type { Locale } from "@/i18n/routing";
 import { Button } from "@/ui/components/Button";
-import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { IconHome } from "@/ui/icons/glyphs/home";
 
@@ -38,25 +37,23 @@ export default async function NewListing({
   return (
     <OwnerPage testId="listing-new-page">
       <PageHeader title={t("title")} description={t("description")} crumbs={[{ label: t("title") }]} />
-      <div className="max-w-2xl">
-        {!portfolio.data ? (
-          <SectionError error={portfolio.error} />
-        ) : units.length === 0 ? (
-          <Card padding="lg">
-            <EmptyState
-              icon={IconHome}
-              title={t("noUnits")}
-              action={
-                <Button asChild>
-                  <a href={ownerPath(locale, "/portfolio/new")}>{t("noUnitsAction")}</a>
-                </Button>
-              }
-            />
-          </Card>
-        ) : (
-          <NewListingForm units={units} initialUnitId={units.some((u) => u.id === unit) ? unit! : null} />
-        )}
-      </div>
+      {!portfolio.data ? (
+        <SectionError error={portfolio.error} />
+      ) : units.length === 0 ? (
+        <EmptyState
+          variant="card"
+          icon={IconHome}
+          title={t("noUnits")}
+          description={t("noUnitsHint")}
+          action={
+            <Button asChild variant="secondary">
+              <a href={ownerPath(locale, "/portfolio/new")}>{t("noUnitsAction")}</a>
+            </Button>
+          }
+        />
+      ) : (
+        <NewListingForm units={units} initialUnitId={units.some((u) => u.id === unit) ? unit! : null} />
+      )}
     </OwnerPage>
   );
 }

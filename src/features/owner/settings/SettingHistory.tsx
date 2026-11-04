@@ -10,10 +10,11 @@ import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
-import { Button } from "@/ui/components/Button";
+import { IconButton } from "@/ui/components/IconButton";
 import { LazyDialog } from "@/ui/components/overlays";
 import { Spinner } from "@/ui/components/Spinner";
 import { IconClock } from "@/ui/icons/glyphs/clock";
+import { IconHistory } from "@/ui/icons/glyphs/history";
 
 import { SettingValue } from "../shared/SettingValue";
 
@@ -52,18 +53,15 @@ export function SettingHistory({
 
   return (
     <>
-      <Button
-        variant="ghost"
-        size="sm"
-        iconStart={IconClock}
+      <IconButton
+        icon={IconHistory}
+        label={t("openFor", { name: label })}
         onClick={() => {
           setOpen(true);
           load();
         }}
         data-testid={`history-${setting.key}`}
-      >
-        {t("open")}
-      </Button>
+      />
       <LazyDialog
         open={open}
         onOpenChange={setOpen}

@@ -26,5 +26,6 @@
     "notFound": "This code is wrong, has expired or was withdrawn by the renter. Check the code, or ask the renter for a new letter.",
     "another": "Check another code",
     "tryAgain": "Try the code again"
-  }
+  },
+  "monthStatus": "{month} · {status}"
 }

@@ -80,7 +80,17 @@ export function Sheet({
             </DialogPrimitive.Close>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-4">{children}</div>
-          {footer ? <div className="border-border flex flex-col gap-2 border-t px-5 py-3">{footer}</div> : null}
+          {footer ? (
+            <div
+              className={cn(
+                "border-border flex flex-col gap-2 border-t px-5 py-3",
+                // A side sheet on a desktop: cancel and the action side by side at its end, like a dialog.
+                side === "right" && "sm:flex-row sm:justify-end",
+              )}
+            >
+              {footer}
+            </div>
+          ) : null}
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>

@@ -38,6 +38,7 @@ export function GenerateTm30({
       label={t("button", { building: buildingName })}
       icon={IconUpload}
       size="sm"
+      variant="secondary"
       testId="tm30-generate"
       title={t("title", { building: buildingName })}
       description={t("body", { count, building: buildingName })}

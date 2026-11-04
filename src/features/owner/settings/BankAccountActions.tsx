@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { ActionMenu } from "@/features/shared/console/ActionMenu";
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 import { text } from "@/features/shared/console/FormDialog";
 import { ProblemNotice, useApiAction, useIdempotencyKey } from "@/features/shared/console/useApiAction";
@@ -18,7 +19,7 @@ import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { NativeSelect } from "@/ui/components/NativeSelect";
 import { OTPInput } from "@/ui/components/OTPInput";
-import { LazyDialog } from "@/ui/components/overlays";
+import { LazySheet } from "@/ui/components/overlays";
 import { Stepper } from "@/ui/components/Stepper";
 import { toast } from "@/ui/components/Toast";
 import { IconAdd } from "@/ui/icons/glyphs/add";
@@ -143,7 +144,16 @@ function OtpStep({
  * (Idempotency-Key) → the SMS OTP the API sends to the owner → confirm. Until it is confirmed the
  * account stays `pending_otp` and receives nothing.
  */
-export function AddBankAccount({ buildings }: { buildings: { id: string; name: string }[] }) {
+export function AddBankAccount({
+  buildings,
+  testId = "add-bank-account",
+  secondary = false,
+}: {
+  buildings: { id: string; name: string }[];
+  testId?: string;
+  /** Outlined, where the page head already carries the filled one. */
+  secondary?: boolean;
+}) {
   const t = useTranslations("owner.settings.bank");
   const common = useTranslations("common");
   const router = useRouter();
@@ -161,21 +171,22 @@ export function AddBankAccount({ buildings }: { buildings: { id: string; name: s
     <>
       <Button
         iconStart={IconAdd}
+        variant={secondary ? "secondary" : "primary"}
         onClick={() => {
           action.reset();
           setOpen(true);
         }}
-        data-testid="add-bank-account"
+        data-testid={testId}
       >
         {t("add")}
       </Button>
-      <LazyDialog
+      <LazySheet
+        side="right"
         open={open}
         onOpenChange={(next) => (next ? setOpen(true) : close())}
         title={t("addTitle")}
         description={t("addHint")}
         closeLabel={common("close")}
-        size="md"
         footer={
           pending ? undefined : (
             <>
@@ -289,7 +300,7 @@ export function AddBankAccount({ buildings }: { buildings: { id: string; name: s
             <ProblemNotice error={action.error} />
           </form>
         )}
-      </LazyDialog>
+      </LazySheet>
     </>
   );
 }
@@ -303,10 +314,17 @@ export function ConfirmPendingAccount({ account }: { account: Schemas["BankAccou
   const [challenge, setChallenge] = useState<Schemas["OtpChallengeDto"] | null>(null);
   return (
     <>
-      <Button size="sm" iconStart={IconShield} onClick={() => setOpen(true)} data-testid={`confirm-${account.id}`}>
+      <Button
+        size="sm"
+        variant="secondary"
+        iconStart={IconShield}
+        onClick={() => setOpen(true)}
+        data-testid={`confirm-${account.id}`}
+      >
         {t("enterOtp")}
       </Button>
-      <LazyDialog
+      <LazySheet
+        side="right"
         open={open}
         onOpenChange={setOpen}
         title={t("confirmTitle", { account: account.accountNoMasked })}
@@ -321,7 +339,7 @@ export function ConfirmPendingAccount({ account }: { account: Schemas["BankAccou
             router.refresh();
           }}
         />
-      </LazyDialog>
+      </LazySheet>
     </>
   );
 }
@@ -350,5 +368,15 @@ export function RemoveBankAccount({ account }: { account: Schemas["BankAccountDt
         )
       }
     />
+  );
+}
+
+/** The "⋯" of a bank account row: remove it (red; typed with the masked number). */
+export function BankAccountMenu({ account }: { account: Schemas["BankAccountDto"] }) {
+  const t = useTranslations("owner.settings.bank");
+  return (
+    <ActionMenu label={t("menu", { account: account.accountNoMasked })} testId={`bank-menu-${account.id}`}>
+      <RemoveBankAccount account={account} />
+    </ActionMenu>
   );
 }

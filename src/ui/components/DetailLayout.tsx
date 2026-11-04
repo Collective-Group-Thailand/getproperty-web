@@ -35,6 +35,7 @@ export interface PanelStep {
  * (amount due, dates) in tabular numerals.
  */
 export function ActionPanel({
+  summary,
   title,
   status,
   description,
@@ -47,6 +48,8 @@ export function ActionPanel({
   className,
   testId,
 }: {
+  /** What the record stands at, above the next steps (an SLA clock, a deadline, an amount). */
+  summary?: React.ReactNode;
   title: React.ReactNode;
   status?: React.ReactNode;
   description?: React.ReactNode;
@@ -65,6 +68,7 @@ export function ActionPanel({
       className={cn("rounded-card border-border bg-surface shadow-card flex flex-col border", className)}
       data-testid={testId}
     >
+      {summary ? <div className="border-border border-b p-5">{summary}</div> : null}
       <div className="flex flex-col gap-2 p-5">
         <div className="flex items-start justify-between gap-3">
           <h2 className="text-base font-semibold">{title}</h2>

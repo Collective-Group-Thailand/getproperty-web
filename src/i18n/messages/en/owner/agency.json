@@ -15,7 +15,9 @@
   "commission": {
     "amount": "Commission {amount}",
     "percent": "Commission {percent} of one month's rent",
-    "none": "No commission set"
+    "none": "No commission set",
+    "percentShort": "{percent} of one month's rent",
+    "noneShort": "Not set"
   },
   "validity": {
     "open": "From {from}",
@@ -77,7 +79,11 @@
     "endBody": "Access to this unit ends at once and the agency's listing of the unit is closed.",
     "ended": "Mandate ended",
     "inviteFromPortfolio": "Invite an agency",
-    "reasonShown": "Reason: {reason}"
+    "reasonShown": "Reason: {reason}",
+    "pendingAgency": "Invitations waiting for your answer",
+    "pendingOwner": "Invitations waiting for the agency",
+    "toActive": "See mandates in force",
+    "toPortfolio": "Go to my portfolio"
   },
   "units": {
     "title": "Mandated units",
@@ -122,7 +128,9 @@
       "splitHint": "Above 0 and below 100",
       "validFrom": "Starts",
       "validTo": "Ends (optional)",
-      "note": "Note (optional)"
+      "note": "Note (optional)",
+      "splitShort": "Co-agency share",
+      "listingAgency": "Listing agency"
     },
     "proposed": "Proposal sent",
     "sign": "Sign agreement",
@@ -136,7 +144,10 @@
     "end": "End agreement",
     "endTitle": "End the co-broke agreement",
     "endBody": "Deals closed after this are not shared under this agreement.",
-    "endDone": "Agreement ended"
+    "endDone": "Agreement ended",
+    "emptyInvited": "No proposals from other agencies yet",
+    "emptyInvitedHint": "When another agency invites you to a listing, the proposal waits here for your signature.",
+    "emptyMineHint": "Propose co-broke so another agency helps find a tenant for your listing."
   },
   "deals": {
     "title": "Closed deals",
@@ -167,7 +178,19 @@
     "invoiced": "Invoiced",
     "notInvoiced": "Not invoiced yet",
     "capped": "Capped",
-    "view": "View details"
+    "toUnits": "See mandated units",
+    "toListings": "Go to my listings",
+    "source": {
+      "title": "Where the deal came from",
+      "none": "This deal did not come from a listing or a mandate here.",
+      "listing": "The listing",
+      "mandate": "The mandate",
+      "coBroke": "The co-broke agreement"
+    },
+    "paper": "Deal summary, unit {unitNo}",
+    "paperKind": "Deal summary",
+    "money": "Rent and commission",
+    "coBrokeShareOf": "Share of {name}"
   },
   "signUp": {
     "title": "Sign up as an agency",
@@ -186,7 +209,9 @@
     "amount": "Amount",
     "state": "State",
     "validity": "Period",
-    "actions": "Actions"
+    "actions": "Actions",
+    "commission": "Commission",
+    "listing": "Listing"
   },
   "contract": {
     "open": "Open the contract",

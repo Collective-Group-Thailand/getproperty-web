@@ -177,16 +177,25 @@ function ReasonField({ value, onChange }: { value: string; onChange: (value: str
 }
 
 /** The agency answers an invitation (G2): accept restates unit, scope, exclusivity, commission and owner. */
-export function AnswerMandate({ mandate, summary }: { mandate: Schemas["MandateDto"]; summary: string }) {
+export function AnswerMandate({
+  mandate,
+  summary,
+  stacked = false,
+}: {
+  mandate: Schemas["MandateDto"];
+  summary: string;
+  /** In a request card: full-width buttons, accept above decline. */
+  stacked?: boolean;
+}) {
   const t = useTranslations("owner.agency.mandates");
   const [reason, setReason] = useState("");
   const path = { mandateId: mandate.id };
   return (
-    <span className="flex flex-wrap gap-2">
+    <span className={stacked ? "flex flex-col gap-2 [&>*]:w-full" : "flex flex-wrap gap-2"}>
       <ConfirmAction
         label={t("accept")}
         icon={IconCheck}
-        size="sm"
+        size={stacked ? "md" : "sm"}
         testId="mandate-accept"
         title={t("acceptTitle", { unitNo: mandate.unitNo })}
         description={summary}
@@ -203,7 +212,7 @@ export function AnswerMandate({ mandate, summary }: { mandate: Schemas["MandateD
       <ConfirmAction
         label={t("decline")}
         icon={IconClose}
-        size="sm"
+        size={stacked ? "md" : "sm"}
         variant="secondary"
         tone="destructive"
         testId="mandate-decline"

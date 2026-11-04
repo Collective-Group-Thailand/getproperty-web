@@ -87,7 +87,8 @@
       "title": "No viewings this week",
       "description": "Bookings appear here as renters choose a time from your viewing windows.",
       "action": "Set viewing times on a listing"
-    }
+    },
+    "listTitle": "Viewings this week"
   },
   "attention": {
     "incident": "Problem reported",

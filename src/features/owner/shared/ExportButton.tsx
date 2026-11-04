@@ -26,6 +26,7 @@ export function ExportButton({
   params,
   label,
   variant = "secondary",
+  size = "md",
   testId,
   create,
 }: {
@@ -33,6 +34,7 @@ export function ExportButton({
   params: Schemas["ExportParamsDto"];
   label: string;
   variant?: ButtonProps["variant"];
+  size?: ButtonProps["size"];
   testId?: string;
   /**
    * Starts the job through an aggregate's own export endpoint instead of `POST /v1/owner/exports` (an employer's
@@ -64,6 +66,7 @@ export function ExportButton({
       <span className="flex flex-wrap items-center gap-2">
         <Button
           variant={variant}
+          size={size}
           iconStart={IconDownload}
           loading={working}
           onClick={() => {

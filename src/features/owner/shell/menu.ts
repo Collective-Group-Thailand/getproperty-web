@@ -33,8 +33,34 @@ import { IconWallet } from "@/ui/icons/glyphs/wallet";
 /** Owner console routes per menu key (F2 builds the pages; groups follow the morning-dashboard flow). */
 export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
   portfolio: { href: "/portfolio", icon: IconHome, group: "operations" },
-  listings: { href: "/listings", icon: IconMegaphone, group: "operations" },
-  leads: { href: "/leads", icon: IconInbox, group: "operations" },
+  // Listings (G5): my listings, promotion (boosts, photo services), LINE broadcasts and reviews — no owner menu keys for
+  // promotion or reviews in the API yet (contract request), so they live under listings instead of header buttons.
+  listings: {
+    href: "/listings",
+    icon: IconMegaphone,
+    group: "operations",
+    children: [
+      { key: "listings", href: "/listings", label: "owner.listings.nav.mine" },
+      { key: "promote", href: "/promote", label: "owner.listings.nav.promote", testId: "listing-promotion" },
+      {
+        key: "broadcasts",
+        href: "/promote/broadcasts",
+        label: "owner.listings.nav.broadcasts",
+        testId: "promote-tab-broadcasts",
+      },
+      { key: "reviews", href: "/reviews", label: "owner.listings.nav.reviews", testId: "listing-reviews" },
+    ],
+  },
+  // Enquiries (G5): the inbox and the week of viewings.
+  leads: {
+    href: "/leads",
+    icon: IconInbox,
+    group: "operations",
+    children: [
+      { key: "inbox", href: "/leads", label: "owner.leads.nav.inbox" },
+      { key: "viewings", href: "/leads/viewings", label: "owner.leads.nav.viewings", testId: "leads-calendar" },
+    ],
+  },
   dashboard: { href: "/dashboard", icon: IconDashboard, group: "operations" },
   buildings: { href: "/buildings", icon: IconBuilding, group: "operations" },
   units: { href: "/units", icon: IconRoom, group: "operations" },
@@ -63,13 +89,79 @@ export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
     ],
   },
   deposits: { href: "/deposits", icon: IconWallet, group: "operations" },
-  readings: { href: "/meters", icon: IconMeter, group: "operations" },
+  // Meters (G4): the meter points and the readings waiting for a check.
+  readings: {
+    href: "/meters",
+    icon: IconMeter,
+    group: "operations",
+    children: [
+      { key: "meters", href: "/meters", label: "owner.meters.nav.meters", testId: "meters-tab-meters" },
+      { key: "reviews", href: "/meters/reviews", label: "owner.meters.nav.reviews", testId: "meters-nav-reviews" },
+    ],
+  },
   devices: { href: "/devices", icon: IconGateway, group: "operations" },
   utility_loss: { href: "/loss", icon: IconLoss, group: "operations" },
-  service_requests: { href: "/service-requests", icon: IconStaff, group: "operations" },
+  // Repairs (G4): the request queue, work orders, planned maintenance and the categories' SLA — one section.
+  service_requests: {
+    href: "/service-requests",
+    icon: IconStaff,
+    group: "operations",
+    children: [
+      {
+        key: "requests",
+        href: "/service-requests",
+        label: "owner.service.nav.requests",
+        testId: "service-tab-requests",
+      },
+      {
+        key: "workOrders",
+        href: "/work-orders",
+        label: "owner.service.nav.workOrders",
+        testId: "service-tab-workOrders",
+      },
+      {
+        key: "maintenance",
+        href: "/maintenance",
+        label: "owner.service.nav.maintenance",
+        testId: "service-tab-maintenance",
+      },
+      {
+        key: "categories",
+        href: "/service-categories",
+        label: "owner.service.nav.categories",
+        testId: "service-tab-categories",
+      },
+    ],
+  },
   access: { href: "/access", icon: IconLock, group: "operations" },
   parcels: { href: "/parcels", icon: IconParcel, group: "operations" },
-  announcements: { href: "/announcements", icon: IconMegaphone, group: "operations" },
+  // Community (G4): announcements with the building's facilities, house rules and contacts under the same entry.
+  announcements: {
+    href: "/announcements",
+    icon: IconMegaphone,
+    group: "operations",
+    children: [
+      {
+        key: "announcements",
+        href: "/announcements",
+        label: "owner.community.nav.announcements",
+        testId: "community-tab-announcements",
+      },
+      {
+        key: "facilities",
+        href: "/community/facilities",
+        label: "owner.community.nav.facilities",
+        testId: "community-tab-facilities",
+      },
+      { key: "rules", href: "/community/rules", label: "owner.community.nav.rules", testId: "community-tab-rules" },
+      {
+        key: "contacts",
+        href: "/community/contacts",
+        label: "owner.community.nav.contacts",
+        testId: "community-tab-contacts",
+      },
+    ],
+  },
   rate_plans: { href: "/billing/rate-plans", icon: IconTag, group: "money" },
   // Billing (G3): the month's cycle and every invoice, one section instead of a row of tabs.
   invoices: {
@@ -93,7 +185,22 @@ export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
       { key: "documents", href: "/documents", label: "owner.common.money.tab.documents" },
     ],
   },
-  reports: { href: "/reports", icon: IconChart, group: "money" },
+  // Reports (G6): exports, the operating insights and e-Tax — one section instead of a row of tabs.
+  reports: {
+    href: "/reports",
+    icon: IconChart,
+    group: "money",
+    children: [
+      { key: "exports", href: "/reports", label: "owner.reports.nav.exports", testId: "reports-tab-exports" },
+      {
+        key: "insights",
+        href: "/reports/insights",
+        label: "owner.reports.nav.insights",
+        testId: "reports-tab-insights",
+      },
+      { key: "etax", href: "/reports/etax", label: "owner.reports.nav.etax", testId: "reports-tab-etax" },
+    ],
+  },
   members: { href: "/settings/members", icon: IconResidents, group: "settings" },
   bank_accounts: { href: "/settings/bank-accounts", icon: IconBank, group: "settings" },
   settings: { href: "/settings", icon: IconSettings, group: "settings" },
@@ -111,6 +218,20 @@ export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
 };
 
 export const OWNER_MENU_GROUPS = ["operations", "money", "settings"] as const;
+
+/**
+ * Menu keys that are sections of the settings frame (G6): its own section list carries them, so the rail shows one
+ * "ตั้งค่า" entry for all of them whenever the member is entitled to `settings`.
+ */
+export const SETTINGS_SECTION_KEYS: ReadonlySet<string> = new Set([
+  "members",
+  "bank_accounts",
+  "notifications",
+  "privacy",
+  "access_grants",
+  "support_access",
+  "audit_log",
+]);
 
 /**
  * The phone bottom nav (F1 1.3): Today, Units, Invoices, Money, More — each shown only when entitled. Landlords

@@ -31,8 +31,8 @@ type Viewing = Schemas["OwnerViewingDto"];
 const HIDDEN = new Set<Viewing["state"]>(["declined", "cancelled"]);
 
 /**
- * The viewing calendar (G7, D-295 on B7.3): one week, Monday to Sunday in Bangkok time, every viewing of every
- * listing with who comes, whether someone shows the unit or the visitor lets themself in with a time-boxed code, and
+ * The viewing calendar (G7, D-295 on B7.3; G5 week grid): one week, Monday to Sunday in Bangkok time, as a time grid
+ * on desktop and, under it, the week's viewings by day — every viewing of every listing with who comes, whether someone shows the unit or the visitor lets themself in with a time-boxed code, and
  * the code window's state. Self viewings that need the owner now (an incident, a visitor still inside after the
  * window) are listed first. Each row opens its enquiry, where the viewing is confirmed, the entry log read and the
  * access ended.
@@ -128,60 +128,175 @@ export async function ViewingCalendarView({ context, week: weekParam }: { contex
       {!viewings.data ? (
         <SectionError error={viewings.error} />
       ) : shown.length === 0 ? (
-        <Card padding="lg">
-          <EmptyState
-            icon={IconCalendar}
-            title={t("empty.title")}
-            description={t("empty.description")}
-            action={
-              <Button asChild variant="secondary">
-                <a href={ownerPath(locale, "/listings")}>{t("empty.action")}</a>
-              </Button>
-            }
-          />
-        </Card>
+        <EmptyState
+          variant="card"
+          icon={IconCalendar}
+          title={t("empty.title")}
+          description={t("empty.description")}
+          action={
+            <Button asChild variant="secondary">
+              <a href={ownerPath(locale, "/listings")}>{t("empty.action")}</a>
+            </Button>
+          }
+        />
       ) : (
-        <Card padding="none">
-          <ol className="divide-border m-0 list-none divide-y p-0" data-testid="calendar-days">
-            {week.days.map((day) => {
-              const rows = grouped.get(day) ?? [];
-              const isToday = day === today;
-              return (
-                <li
-                  key={day}
-                  className="grid gap-2 px-4 py-3 md:grid-cols-[9rem_1fr] md:gap-4 md:px-5"
-                  data-testid="calendar-day"
-                  data-day={day}
-                >
-                  <p
-                    className={cn(
-                      "m-0 flex items-baseline gap-2 text-sm md:flex-col md:gap-0",
-                      isToday && "text-primary",
-                    )}
-                  >
-                    <span className="font-semibold">
-                      {formatDate(`${day}T12:00:00+07:00`, locale, { style: "dayMonth" })}
-                    </span>
-                    <span className={cn("text-xs", isToday ? "font-semibold" : "text-muted")}>
-                      {isToday ? t("today") : weekdayName(day, locale)}
-                    </span>
-                  </p>
-                  {rows.length === 0 ? (
-                    <p className="text-muted m-0 self-center text-sm">{t("none")}</p>
-                  ) : (
-                    <ul className="m-0 grid list-none gap-2 p-0 xl:grid-cols-2">
-                      {rows.map((viewing) => (
-                        <CalendarRow key={viewing.id} viewing={viewing} locale={locale} now={now} />
-                      ))}
-                    </ul>
-                  )}
-                </li>
-              );
-            })}
-          </ol>
-        </Card>
+        <>
+          <WeekGrid days={week.days} today={today} viewings={shown} locale={locale} now={now} />
+          <section aria-labelledby="calendar-list" className="flex flex-col gap-3">
+            <h2 id="calendar-list" className="text-lg font-semibold">
+              {t("listTitle")}
+            </h2>
+            <Card padding="none">
+              <ol className="divide-border m-0 list-none divide-y p-0" data-testid="calendar-days">
+                {week.days
+                  .filter((day) => (grouped.get(day) ?? []).length > 0)
+                  .map((day) => {
+                    const rows = grouped.get(day) ?? [];
+                    const isToday = day === today;
+                    return (
+                      <li
+                        key={day}
+                        className="grid gap-2 px-4 py-3 md:grid-cols-[9rem_1fr] md:gap-4 md:px-5"
+                        data-testid="calendar-day"
+                        data-day={day}
+                      >
+                        <p className="m-0 flex items-baseline gap-2 text-sm md:flex-col md:gap-0">
+                          <span className={cn("font-semibold", isToday && "text-primary")}>
+                            {formatDate(`${day}T12:00:00+07:00`, locale, { style: "dayMonth" })}
+                          </span>
+                          <span className={cn("text-xs", isToday ? "text-primary font-semibold" : "text-muted")}>
+                            {isToday ? t("today") : weekdayName(day, locale)}
+                          </span>
+                        </p>
+                        <ul className="m-0 grid list-none gap-2 p-0 xl:grid-cols-2">
+                          {rows.map((viewing) => (
+                            <CalendarRow key={viewing.id} viewing={viewing} locale={locale} now={now} />
+                          ))}
+                        </ul>
+                      </li>
+                    );
+                  })}
+              </ol>
+            </Card>
+          </section>
+        </>
       )}
     </OwnerPage>
+  );
+}
+
+/** Minutes after midnight in Bangkok (UTC+7 all year) of an API instant. */
+const bangkokMinutes = (instant: string) => Math.round((Date.parse(instant) / 60_000 + 7 * 60) % (24 * 60));
+const HOUR_PX = 56;
+
+/**
+ * The week as a time grid (G5): Monday to Sunday in Bangkok time, the hours from 09:00 to 18:00 (wider when a viewing
+ * falls outside), today's column tinted, each viewing a pale block sized to its own duration with the person, the
+ * listing and its state. Desktop only — phones read the list under it.
+ */
+function WeekGrid({
+  days,
+  today,
+  viewings,
+  locale,
+  now,
+}: {
+  days: string[];
+  today: string;
+  viewings: Viewing[];
+  locale: Locale;
+  now: number;
+}) {
+  const starts = viewings.map((v) => bangkokMinutes(v.startsAt));
+  const ends = viewings.map(
+    (v) => bangkokMinutes(v.startsAt) + (Date.parse(v.endsAt) - Date.parse(v.startsAt)) / 60_000,
+  );
+  const first = Math.min(9, ...starts.map((m) => Math.floor(m / 60)));
+  const last = Math.max(18, ...ends.map((m) => Math.ceil(m / 60)));
+  const hours = Array.from({ length: last - first }, (_, i) => first + i);
+  const height = hours.length * HOUR_PX;
+  const byDayKey = byDay(viewings, days);
+  return (
+    <div
+      className="rounded-card border-border bg-surface shadow-card hidden overflow-hidden border md:block"
+      aria-hidden="true"
+      data-testid="calendar-grid"
+    >
+      <div className="border-border grid grid-cols-[3.5rem_repeat(7,minmax(0,1fr))] border-b">
+        <span />
+        {days.map((day) => (
+          <span
+            key={day}
+            className={cn(
+              "border-border flex flex-col items-center border-s px-2 py-2.5 text-sm",
+              day === today && "bg-primary-subtle text-primary-subtle-fg",
+            )}
+          >
+            <span className="text-xs">{weekdayShort(day, locale)}</span>
+            <span className="font-semibold tabular-nums">{Number(day.slice(8, 10))}</span>
+          </span>
+        ))}
+      </div>
+      <div className="grid grid-cols-[3.5rem_repeat(7,minmax(0,1fr))]">
+        <div className="relative" style={{ height }}>
+          {hours.map((hour, i) => (
+            <span
+              key={hour}
+              className="text-muted absolute end-2 -translate-y-1/2 text-xs tabular-nums first:translate-y-0"
+              style={{ top: i * HOUR_PX }}
+            >
+              {formatTime(`2026-01-05T${String(hour).padStart(2, "0")}:00:00+07:00`, locale)}
+            </span>
+          ))}
+        </div>
+        {days.map((day) => (
+          <div
+            key={day}
+            className={cn("border-border relative border-s", day === today && "bg-primary-subtle/40")}
+            style={{ height }}
+          >
+            {hours.map((hour, i) => (
+              <span key={hour} className="border-border absolute inset-x-0 border-t" style={{ top: i * HOUR_PX }} />
+            ))}
+            {(byDayKey.get(day) ?? []).map((viewing) => {
+              const start = bangkokMinutes(viewing.startsAt);
+              const minutes = (Date.parse(viewing.endsAt) - Date.parse(viewing.startsAt)) / 60_000;
+              const need = attention(viewing.access, now);
+              return (
+                <a
+                  key={viewing.id}
+                  href={ownerPath(locale, `/leads/${viewing.leadId}`)}
+                  tabIndex={-1}
+                  className={cn(
+                    "rounded-thumb absolute inset-x-1 flex flex-col overflow-hidden border px-1.5 py-1 text-xs leading-tight",
+                    viewing.state === "confirmed"
+                      ? "border-primary/30 bg-primary-subtle text-primary-subtle-fg"
+                      : "border-border-strong bg-surface text-fg",
+                  )}
+                  style={{
+                    top: ((start - first * 60) / 60) * HOUR_PX + 1,
+                    height: Math.max((minutes / 60) * HOUR_PX - 2, 22),
+                  }}
+                  data-testid="calendar-block"
+                >
+                  <span className="flex items-center gap-1 truncate font-semibold tabular-nums">
+                    {need === "incident" || need === "overstay" ? <Icon icon={IconAlert} className="shrink-0" /> : null}
+                    {formatTime(viewing.startsAt, locale)} {viewing.prospectName}
+                  </span>
+                  {minutes >= 45 ? <span className="truncate opacity-80">{viewing.listing.title}</span> : null}
+                </a>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function weekdayShort(day: string, locale: Locale): string {
+  return new Intl.DateTimeFormat(locale === "th" ? "th-TH" : "en-GB", { weekday: "short", timeZone: "UTC" }).format(
+    new Date(`${day}T12:00:00Z`),
   );
 }
 

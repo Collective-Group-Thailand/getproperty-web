@@ -75,14 +75,21 @@ const fields = (data: FormData) => ({
 });
 
 /** A contact residents see (emergency, building, vendor, utility) — a phone, a LINE id or both (D-212). */
-export function NewContact({ buildings }: { buildings: { id: string; name: string }[] }) {
+export function NewContact({
+  buildings,
+  variant = "primary",
+}: {
+  buildings: { id: string; name: string }[];
+  /** `secondary` as the next step of an empty list (the head keeps the filled one). */
+  variant?: "primary" | "secondary";
+}) {
   const t = useTranslations("owner.community.contacts");
   return (
     <FormDialog
       label={t("add")}
       icon={IconAdd}
-      variant="primary"
-      testId="contact-add"
+      variant={variant}
+      testId={variant === "primary" ? "contact-add" : "contact-add-empty"}
       title={t("addTitle")}
       submitLabel={t("save")}
       successMessage={t("saved")}

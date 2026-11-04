@@ -29,6 +29,15 @@ const noop = () => () => {};
 const MenuContext = createContext<Registry | null>(null);
 
 /**
+ * How a dialog action reads as an item of an `ActionMenu`, when that differs from its own button: a menu wording
+ * ("แก้ไขบทบาทและอาคาร" for "แก้ไข") or red for an action whose dialog is not destructive in tone (revoke an invitation).
+ */
+export interface MenuItemOptions {
+  label?: string;
+  destructive?: boolean;
+}
+
+/**
  * Lets a dialog action (`ConfirmAction`, `FormDialog`) live in a "⋯" menu: inside an `ActionMenu` it adds itself as a
  * menu item and renders only its dialog; elsewhere it returns false and the action renders its own button.
  */
@@ -67,12 +76,14 @@ export function ActionMenu({
   children,
   testId,
   className,
+  variant = "ghost",
 }: {
-  /** Accessible name of the button and the menu, from `src/i18n` (default "more actions"). */
+  /** Accessible name of the button and the menu ("การดำเนินการกับ สมชาย"), from `src/i18n` (default "more actions"). */
   label?: string;
   children: React.ReactNode;
   testId?: string;
   className?: string;
+  variant?: "ghost" | "secondary";
 }) {
   const common = useTranslations("common");
   const name = label ?? common("moreActions");
@@ -103,7 +114,7 @@ export function ActionMenu({
       <span className={cn("inline-flex", empty && "invisible", className)} aria-hidden={empty || undefined}>
         <DropdownMenu
           label={name}
-          trigger={<IconButton icon={IconMore} label={name} variant="ghost" data-testid={testId} />}
+          trigger={<IconButton icon={IconMore} label={name} variant={variant} data-testid={testId} />}
           items={entries.map((entry, index) => ({
             id: entry.id,
             label: <span data-testid={entry.testId}>{entry.label}</span>,

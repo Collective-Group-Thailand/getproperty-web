@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
+import { ActionMenu } from "@/features/shared/console/ActionMenu";
 import { FormDialog, text } from "@/features/shared/console/FormDialog";
 import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
@@ -57,7 +58,16 @@ const chosenBuildings = (data: FormData, buildings: { id: string }[]) =>
  * `POST /v1/owner/invitations` — a person joins the tenant with a role (D-090), limited to some buildings
  * or all; by SMS, email, a link or a LINE QR. The answer carries the code and the link to hand over.
  */
-export function InviteMember({ buildings }: { buildings: { id: string; name: string }[] }) {
+export function InviteMember({
+  buildings,
+  testId = "invite-member",
+  secondary = false,
+}: {
+  buildings: { id: string; name: string }[];
+  testId?: string;
+  /** Outlined, where the page head already carries the filled one. */
+  secondary?: boolean;
+}) {
   const t = useTranslations("owner.settings.members");
   const roles = useTranslations("glossary.tenantRole");
   const [channel, setChannel] = useState<Schemas["InvitationChannel"]>("sms");
@@ -68,8 +78,8 @@ export function InviteMember({ buildings }: { buildings: { id: string; name: str
       <FormDialog
         label={t("invite")}
         icon={IconAdd}
-        variant="primary"
-        testId="invite-member"
+        variant={secondary ? "secondary" : "primary"}
+        testId={testId}
         title={t("inviteTitle")}
         description={t("inviteHint")}
         submitLabel={t("invite")}
@@ -166,6 +176,7 @@ export function EditMember({
       icon={IconEdit}
       size="sm"
       testId={`edit-member-${member.id}`}
+      menuItem={{ label: t("editMenu") }}
       title={t("editTitle", { name: member.displayName })}
       submitLabel={t("save")}
       successMessage={t("saved")}
@@ -218,6 +229,7 @@ export function RemoveMember({ member }: { member: Schemas["MemberDto"] }) {
       variant="destructive"
       tone="destructive"
       testId={`remove-member-${member.id}`}
+      menuItem={{ label: t("removeMenu") }}
       title={t("removeTitle", { name: member.displayName })}
       description={t("removeBody")}
       confirmLabel={t("remove")}
@@ -242,6 +254,7 @@ export function RevokeInvitation({ invitation }: { invitation: Schemas["Invitati
       size="sm"
       variant="secondary"
       testId={`revoke-invitation-${invitation.id}`}
+      menuItem={{ destructive: true }}
       title={t("revokeTitle")}
       description={t("revokeBody", {
         to: invitation.phoneMasked ?? invitation.email ?? t(`channelName.${invitation.channel}`),
@@ -256,5 +269,32 @@ export function RevokeInvitation({ invitation }: { invitation: Schemas["Invitati
         )
       }
     />
+  );
+}
+
+/** The "⋯" of a member row: change role and buildings · remove from the team (red, last). */
+export function MemberMenu({
+  member,
+  buildings,
+}: {
+  member: Schemas["MemberDto"];
+  buildings: { id: string; name: string }[];
+}) {
+  const t = useTranslations("owner.settings.members");
+  return (
+    <ActionMenu label={t("menu", { name: member.displayName })} testId={`member-menu-${member.id}`}>
+      <EditMember member={member} buildings={buildings} />
+      <RemoveMember member={member} />
+    </ActionMenu>
+  );
+}
+
+/** The "⋯" of a pending invitation: revoke it. */
+export function InvitationMenu({ invitation }: { invitation: Schemas["InvitationDto"] }) {
+  const t = useTranslations("owner.settings.members");
+  return (
+    <ActionMenu label={t("invitationMenu")} testId={`invitation-menu-${invitation.id}`}>
+      <RevokeInvitation invitation={invitation} />
+    </ActionMenu>
   );
 }
