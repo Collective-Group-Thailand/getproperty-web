@@ -95,5 +95,16 @@
     "previousRegister": "Previous reading",
     "currentRegister": "Current reading"
   },
-  "chooseBuilding": "Building in focus"
+  "chooseBuilding": "Building in focus",
+  "noBuildingBody": "Add a building first, then enter the utility's bill to compare it with what the units were billed.",
+  "goBuildings": "Go to buildings",
+  "descriptionBuilding": "The utility's bill against what {building}'s units and common areas were billed",
+  "figures": "Loss figures",
+  "breakdownCaption": "Where the missing units come from",
+  "lessUnitBilled": "Less billed to units",
+  "lessCommonArea": "Less common areas",
+  "footnote": "Billed units from {source} · computed {at}",
+  "summaryCol": {
+    "building": "Building"
+  }
 }

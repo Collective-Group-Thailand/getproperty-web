@@ -4,9 +4,15 @@ import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { formatDateTime } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import { Badge } from "@/ui/components/Badge";
+import { Button } from "@/ui/components/Button";
 import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { Progress } from "@/ui/components/Progress";
 import { SimpleTable } from "@/ui/components/SimpleTable";
+import { StatusText } from "@/ui/components/StatusText";
+import { Icon } from "@/ui/icons";
+import { IconHelp } from "@/ui/icons/glyphs/help";
+import { IconShield } from "@/ui/icons/glyphs/shield";
 import { IconAlert } from "@/ui/icons/glyphs/alert";
 import { IconLock } from "@/ui/icons/glyphs/lock";
 import { IconOffline } from "@/ui/icons/glyphs/offline";
@@ -39,69 +45,75 @@ export async function LocksView({ context }: { context: OwnerContext }) {
       <PageHeader
         title={t("title")}
         description={t("description")}
-        crumbs={[{ label: t("title") }]}
         actions={
           <span className="flex flex-wrap items-center gap-2">
             {me.menu.includes("settings") ? (
-              <a
-                href={ownerPath(locale, "/settings#settings-access")}
-                className="text-primary text-sm underline-offset-4 hover:underline"
-                data-testid="access-settings-link"
-              >
-                {t("settingsLink")}
-              </a>
+              <Button asChild variant="secondary">
+                <a href={ownerPath(locale, "/settings#settings-access")} data-testid="access-settings-link">
+                  {t("settingsLink")}
+                </a>
+              </Button>
             ) : null}
             {canManage && building ? <RegisterLock buildingId={building.id} units={units} /> : null}
           </span>
         }
       />
-      <p className="text-muted text-sm" data-testid="access-rule">
-        {t("rule")}
-      </p>
+      <Card className="flex items-start gap-3" data-testid="access-rule">
+        <Icon icon={IconShield} className="text-subtle mt-0.5 shrink-0 text-lg" />
+        <p className="text-sm">{t("rule")}</p>
+      </Card>
       {locks.length === 0 ? (
-        <Card>
-          <EmptyState icon={IconLock} title={t("empty.title")} description={t("empty.body")} />
-        </Card>
+        <EmptyState
+          variant="card"
+          icon={IconLock}
+          title={t("empty.title")}
+          description={t("empty.body")}
+          action={
+            canManage && building ? (
+              <RegisterLock buildingId={building.id} units={units} variant="secondary" />
+            ) : (
+              <Button asChild variant="secondary">
+                <a href={ownerPath(locale, "/devices")}>{t("empty.devices")}</a>
+              </Button>
+            )
+          }
+        />
       ) : (
         <SimpleTable
           caption={t("title")}
           testId="lock-table"
-          minWidth="48rem"
+          stackOnPhones
+          minWidth="52rem"
           columns={[
-            { key: "name", header: t("col.lock") },
-            { key: "place", header: t("col.place") },
-            { key: "state", header: t("col.state") },
-            { key: "battery", header: t("col.battery") },
+            { key: "name", header: t("col.lock"), phone: "title" },
+            { key: "place", header: t("col.place"), phone: "meta", className: "md:w-44" },
+            { key: "state", header: t("col.state"), phone: "status", className: "md:w-40" },
+            { key: "battery", header: t("col.battery"), phone: "figure", className: "md:w-48" },
           ]}
           rows={locks.map((lock) => ({
             key: lock.id,
+            href: ownerPath(locale, `/access/${lock.id}`),
             testId: "lock-row",
-            tone: lock.batteryLow ? "warning" : "default",
             data: { scope: lock.scope, battery: lock.batteryLow ? "low" : "ok" },
             cells: {
               name: (
-                <span className="flex flex-col">
-                  <a
-                    className="font-medium underline-offset-4 hover:underline"
-                    href={ownerPath(locale, `/access/${lock.id}`)}
-                  >
-                    {lock.name}
-                  </a>
-                  <span className="text-muted font-mono text-xs">
-                    {t(`vendor.${lock.vendor}`)} · {lock.serial}
+                <span className="flex flex-col gap-0.5">
+                  <span>{lock.name}</span>
+                  <span className="text-muted text-sm font-normal">
+                    {t(`vendor.${lock.vendor}`)} · <span className="font-mono">{lock.serial}</span>
                   </span>
                 </span>
               ),
               place: (
                 <span className="flex flex-col">
                   <span>{lock.unitNo ? t("unit", { unit: lock.unitNo }) : t(`scope.${lock.scope}`)}</span>
-                  {!building ? <span className="text-muted text-xs">{buildingName(lock.buildingId)}</span> : null}
+                  {!building ? <span className="text-muted text-sm">{buildingName(lock.buildingId)}</span> : null}
                 </span>
               ),
               state: (
-                <span className="flex flex-wrap items-center gap-2">
+                <span className="flex flex-wrap items-center gap-1.5">
                   {lock.online === null ? (
-                    <Badge tone="neutral" size="sm">
+                    <Badge tone="neutral" size="sm" icon={IconHelp}>
                       {t("unknown")}
                     </Badge>
                   ) : lock.online ? (
@@ -124,16 +136,29 @@ export async function LocksView({ context }: { context: OwnerContext }) {
                 lock.batteryPct === null ? (
                   <span className="text-muted">—</span>
                 ) : (
-                  <span className="flex flex-col gap-1">
-                    {lock.batteryLow ? (
-                      <Badge tone="warning" size="sm" icon={IconAlert}>
-                        {t("batteryLow", { pct: lock.batteryPct })}
-                      </Badge>
-                    ) : (
-                      <span className="tabular-nums">{t("battery", { pct: lock.batteryPct })}</span>
-                    )}
+                  <span className="flex flex-col items-start gap-1 max-md:items-end">
+                    <span className="flex items-center gap-2">
+                      <Progress
+                        className="w-16 max-md:hidden"
+                        value={lock.batteryPct}
+                        max={100}
+                        label={t("col.battery")}
+                        valueText={t("battery", { pct: lock.batteryPct })}
+                        showCaption={false}
+                        tone={lock.batteryLow ? "warning" : "primary"}
+                      />
+                      {lock.batteryLow ? (
+                        <StatusText tone="warning" icon={IconAlert} className="tabular-nums">
+                          {t("batteryLow", { pct: lock.batteryPct })}
+                        </StatusText>
+                      ) : (
+                        <span className="text-sm tabular-nums">{t("battery", { pct: lock.batteryPct })}</span>
+                      )}
+                    </span>
                     {lock.batteryCheckedAt ? (
-                      <span className="text-muted text-xs">{formatDateTime(lock.batteryCheckedAt, locale)}</span>
+                      <span className="text-muted text-sm whitespace-nowrap">
+                        {formatDateTime(lock.batteryCheckedAt, locale)}
+                      </span>
                     ) : null}
                   </span>
                 ),

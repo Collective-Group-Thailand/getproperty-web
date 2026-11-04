@@ -21,18 +21,21 @@ const OFFERED: { action: string; type: Schemas["OperatorCommandType"] }[] = [
  * wall) and "read now" — only those `nextActions` lists. Restart and log upload stay with the platform.
  */
 export function DeviceCommands({ device }: { device: Pick<Schemas["FleetDeviceDto"], "id" | "nextActions"> }) {
+  // In the record's panel (G4): "read now" is the one filled action, "identify" outlined beneath it.
   const t = useTranslations("owner.devices.command");
   const action = useApiAction();
   const actions = new Set(device.nextActions.map((name) => name.replace(/_/g, "-")));
-  const offered = OFFERED.filter((candidate) => actions.has(candidate.action));
+  const offered = OFFERED.filter((candidate) => actions.has(candidate.action)).sort((a) =>
+    a.type === "read_now" ? -1 : 1,
+  );
   if (offered.length === 0) return null;
   return (
-    <div className="flex flex-col items-end gap-2">
-      <div className="flex flex-wrap gap-2" data-testid="device-commands">
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 [&>*]:w-full" data-testid="device-commands">
         {offered.map((candidate) => (
           <Button
             key={candidate.type}
-            variant="secondary"
+            variant={candidate.type === "read_now" ? "primary" : "secondary"}
             iconStart={candidate.type === "identify" ? IconIdentify : IconRefresh}
             loading={action.busy}
             onClick={() =>
