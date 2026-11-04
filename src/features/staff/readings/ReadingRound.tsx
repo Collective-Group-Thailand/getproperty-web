@@ -3,6 +3,7 @@
 import { METER_HEALTH_STATUS } from "@/domain/status/meterHealth";
 import { READING_STATUS } from "@/domain/status/reading";
 import { useFormatter, useLocale, useTranslations } from "next-intl";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 
@@ -13,11 +14,10 @@ import { formatDate, formatUnits } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
+import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Progress } from "@/ui/components/Progress";
-import { Icon } from "@/ui/icons";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
-import { IconChevronRight } from "@/ui/icons/glyphs/chevron-right";
 import { IconElectric } from "@/ui/icons/glyphs/electric";
 import { IconSyncFailed } from "@/ui/icons/glyphs/sync-failed";
 import { IconSyncPending } from "@/ui/icons/glyphs/sync-pending";
@@ -25,7 +25,7 @@ import { IconWater } from "@/ui/icons/glyphs/water";
 import { lazyWarm } from "@/ui/lib/lazy";
 
 import { useQueueEntries } from "../pwa/useOfflineQueue";
-import { PhotoThumb } from "../shared/PhotoThumb";
+import { StaffList, StaffSection } from "../shell/StaffList";
 import { meterUnit } from "../shared/units";
 import { roundView, type ReadingEntry } from "./roundState";
 
@@ -117,147 +117,138 @@ export function ReadingRound({ round }: { round: Schemas["RoundBuildingDto"] }) 
     );
   };
 
+  const doneEntries = view.local.filter((entry) => entry.state !== "conflict" && !view.early.has(entry.id));
+
   return (
-    <div className="flex flex-col gap-5 py-6" data-testid="reading-round">
-      <header className="flex flex-col gap-2">
+    <div className="flex flex-col gap-8 py-6" data-testid="reading-round">
+      <header className="flex flex-col gap-4">
         <h1 className="text-2xl font-semibold">{t("title")}</h1>
-        <p className="text-muted">
-          {t("subtitle", { building: round.buildingName, date: formatDate(round.cutoffAt, locale) })}
-        </p>
-        <Progress
-          label={t("progressLabel")}
-          value={view.done}
-          max={view.total}
-          valueText={t("progress", { done: view.done, total: view.total })}
-          className="mt-1"
-        />
+        <div className="rounded-card border-border bg-surface shadow-card flex flex-col gap-3 border p-5">
+          <p className="text-muted text-sm">
+            {t("subtitle", { building: round.buildingName, date: formatDate(round.cutoffAt, locale) })}
+          </p>
+          <p className="flex items-baseline gap-2" aria-hidden="true">
+            <span className="text-primary text-3xl font-semibold tabular-nums">
+              {view.done} / {view.total}
+            </span>
+            <span className="text-muted">{t("readCaption")}</span>
+          </p>
+          <Progress
+            label={t("progressLabel")}
+            value={view.done}
+            max={view.total}
+            valueText={t("progress", { done: view.done, total: view.total })}
+            showCaption={false}
+          />
+        </div>
       </header>
 
       {view.remaining.length === 0 ? (
-        <EmptyState icon={IconCheckCircle} title={t("allRead")} description={t("allReadHint")} />
+        <EmptyState
+          variant="card"
+          icon={IconCheckCircle}
+          title={t("allRead")}
+          description={t("allReadHint")}
+          action={
+            <Button asChild variant="secondary" size="lg">
+              <Link href="/">{t("backToday")}</Link>
+            </Button>
+          }
+        />
       ) : (
         view.remaining.map(({ floor, items }) => (
-          <section key={floor.floorId ?? "none"} aria-labelledby={`floor-${floor.floorId ?? "none"}`}>
-            <h2 id={`floor-${floor.floorId ?? "none"}`} className="mb-2 text-lg font-semibold">
-              {floor.floorName ?? t("noFloor")}{" "}
-              <span className="text-muted text-base font-normal tabular-nums">
-                {t("count", { count: items.length })}
-              </span>
-            </h2>
-            <ul className="flex flex-col gap-3" data-testid="round-items">
-              {items.map((item) => {
-                const conflict = view.local.find(
-                  (e) => e.meta.assetItemId === item.assetItemId && e.state === "conflict",
-                );
-                const readEarly = view.local.find(
-                  (e) => e.meta.assetItemId === item.assetItemId && view.early.has(e.id),
-                );
-                return (
-                  <li key={item.assetItemId}>
-                    <button
-                      type="button"
-                      onClick={() => open({ item, entry: conflict })}
-                      className="rounded-card border-border bg-surface shadow-card hover:bg-bg-subtle flex min-h-24 w-full items-center gap-3 border p-3 text-start"
-                      data-testid="round-item"
-                      data-asset={item.assetItemId}
-                    >
-                      {item.lastReading?.photoDocumentId ? (
-                        <PhotoThumb
-                          fileId={item.lastReading.photoDocumentId}
-                          alt={t("lastPhoto", { unit: item.unitNo ?? item.code })}
-                        />
-                      ) : (
-                        <span className="rounded-control bg-primary-subtle text-primary-subtle-fg flex size-20 shrink-0 items-center justify-center">
-                          <Icon icon={item.utility === "electric" ? IconElectric : IconWater} size={32} />
-                        </span>
-                      )}
-                      <span className="flex min-w-0 flex-1 flex-col gap-1">
-                        <span className="text-xl font-semibold">
-                          {item.unitNo ?? item.code}{" "}
-                          <span className="text-muted text-base font-normal">· {t(`utility.${item.utility}`)}</span>
-                        </span>
-                        {item.lastReading ? (
-                          <span className="text-muted text-sm">
-                            {t("last", {
+          <StaffSection
+            key={floor.floorId ?? "none"}
+            id={`floor-${floor.floorId ?? "none"}`}
+            title={floor.floorName ?? t("noFloor")}
+            count={items.length}
+          >
+            <div data-testid="round-items">
+              <StaffList
+                label={floor.floorName ?? t("noFloor")}
+                groups={[
+                  {
+                    key: "items",
+                    rows: items.map((item) => {
+                      const conflict = view.local.find(
+                        (e) => e.meta.assetItemId === item.assetItemId && e.state === "conflict",
+                      );
+                      const readEarly = view.local.find(
+                        (e) => e.meta.assetItemId === item.assetItemId && view.early.has(e.id),
+                      );
+                      const badges = [
+                        item.lastReading ? <ReadingSourceBadge key="source" source={item.lastReading.source} /> : null,
+                        item.iot && item.health ? (
+                          <StatusBadgeOf key="health" map={METER_HEALTH_STATUS} value={item.health} size="sm" />
+                        ) : null,
+                        conflict ? (
+                          <Badge key="conflict" tone="danger" size="sm" icon={IconSyncFailed}>
+                            {t("conflictBadge")}
+                          </Badge>
+                        ) : null,
+                        readEarly ? (
+                          <Badge key="early" tone="info" size="sm">
+                            {t("earlyBadge", { date: formatDate(round.windowStart, locale) })}
+                          </Badge>
+                        ) : null,
+                      ].filter(Boolean);
+                      return {
+                        key: item.assetItemId,
+                        onSelect: () => open({ item, entry: conflict }),
+                        icon: item.utility === "electric" ? IconElectric : IconWater,
+                        title: `${item.unitNo ?? item.code} · ${t(`utility.${item.utility}`)}`,
+                        meta: item.lastReading
+                          ? t("last", {
                               value: formatUnits(item.lastReading.register, meterUnit(item.utility), locale),
                               date: formatDate(item.lastReading.readAt, locale),
-                            })}
-                          </span>
-                        ) : (
-                          <span className="text-muted text-sm">{t("noLast")}</span>
-                        )}
-                        <span className="flex flex-wrap gap-1">
-                          {item.lastReading ? <ReadingSourceBadge source={item.lastReading.source} /> : null}
-                          {item.iot && item.health ? (
-                            <StatusBadgeOf map={METER_HEALTH_STATUS} value={item.health} size="sm" />
-                          ) : null}
-                          {conflict ? (
-                            <Badge tone="danger" size="sm" icon={IconSyncFailed}>
-                              {t("conflictBadge")}
-                            </Badge>
-                          ) : null}
-                          {readEarly ? (
-                            <Badge tone="info" size="sm">
-                              {t("earlyBadge", { date: formatDate(round.windowStart, locale) })}
-                            </Badge>
-                          ) : null}
-                        </span>
-                      </span>
-                      <Icon icon={IconChevronRight} size={24} className="text-muted" />
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          </section>
+                            })
+                          : t("noLast"),
+                        status: badges.length ? <>{badges}</> : undefined,
+                        testId: "round-item",
+                        data: { asset: item.assetItemId },
+                      };
+                    }),
+                  },
+                ]}
+              />
+            </div>
+          </StaffSection>
         ))
       )}
 
-      {view.local.some((entry) => entry.state !== "conflict" && !view.early.has(entry.id)) ? (
-        <section aria-labelledby="round-done" className="flex flex-col gap-2">
-          <h2 id="round-done" className="text-lg font-semibold">
-            {t("doneTitle")}{" "}
-            <span className="text-muted text-base font-normal tabular-nums">{t("count", { count: view.done })}</span>
-          </h2>
-          <ul className="divide-border rounded-card border-border bg-surface divide-y border" data-testid="round-done">
-            {view.local
-              .filter((entry) => entry.state !== "conflict" && !view.early.has(entry.id))
-              .map((entry) => {
-                const reading = entry.state === "sent" ? (entry.result as Schemas["MeterReadingDto"] | null) : null;
-                const value = reading?.register ?? entry.meta.typedValue;
-                return (
-                  <li key={entry.id}>
-                    <button
-                      type="button"
-                      onClick={() => open({ item: itemFor(entry), entry })}
-                      className="hover:bg-bg-subtle flex min-h-14 w-full items-center gap-3 px-3 py-2 text-start"
-                      data-testid="round-done-item"
-                      data-asset={entry.meta.assetItemId}
-                      data-state={entry.state}
-                    >
-                      <span className="flex min-w-0 flex-1 flex-col">
-                        <span className="font-semibold">
-                          {entry.meta.unitNo ?? entry.meta.code} · {t(`utility.${entry.meta.utility}`)}
-                        </span>
-                        <span className="text-muted text-sm tabular-nums">
-                          {value ? formatUnits(value, meterUnit(entry.meta.utility), locale) : t("ocrPending")}
-                          {" · "}
-                          {format.relativeTime(entry.createdAt)}
-                        </span>
-                      </span>
-                      {reading ? (
+      {doneEntries.length > 0 ? (
+        <StaffSection id="round-done" title={t("doneTitle")} count={view.done}>
+          <div data-testid="round-done">
+            <StaffList
+              label={t("doneTitle")}
+              groups={[
+                {
+                  key: "done",
+                  rows: doneEntries.map((entry) => {
+                    const reading = entry.state === "sent" ? (entry.result as Schemas["MeterReadingDto"] | null) : null;
+                    const value = reading?.register ?? entry.meta.typedValue;
+                    return {
+                      key: entry.id,
+                      onSelect: () => open({ item: itemFor(entry), entry }),
+                      icon: reading ? IconCheckCircle : IconSyncPending,
+                      title: `${entry.meta.unitNo ?? entry.meta.code} · ${t(`utility.${entry.meta.utility}`)}`,
+                      meta: `${value ? formatUnits(value, meterUnit(entry.meta.utility), locale) : t("ocrPending")} · ${format.relativeTime(entry.createdAt)}`,
+                      status: reading ? (
                         <StatusBadgeOf map={READING_STATUS} value={reading.reviewState} size="sm" />
                       ) : (
                         <Badge tone="neutral" size="sm" icon={IconSyncPending}>
                           {t("waiting")}
                         </Badge>
-                      )}
-                    </button>
-                  </li>
-                );
-              })}
-          </ul>
-        </section>
+                      ),
+                      testId: "round-done-item",
+                      data: { asset: entry.meta.assetItemId, state: entry.state },
+                    };
+                  }),
+                },
+              ]}
+            />
+          </div>
+        </StaffSection>
       ) : null}
     </div>
   );

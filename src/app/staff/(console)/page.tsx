@@ -20,5 +20,7 @@ export default async function StaffToday({
     requireOperator("staff", { login: "/login", selectTenant: "/select-tenant" }),
     staffScope(),
   ]);
-  return <TodayView scope={scope} menu={actor.me.menu} mine={mine !== "0"} />;
+  return (
+    <TodayView scope={scope} menu={actor.me.menu} mine={mine !== "0"} tenantName={actor.me.currentTenant.displayName} />
+  );
 }

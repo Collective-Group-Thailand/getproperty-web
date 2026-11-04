@@ -9,15 +9,14 @@ import { Callout } from "@/ui/components/Callout";
 import { CountBadge } from "@/ui/components/CountBadge";
 import { IconButton } from "@/ui/components/IconButton";
 import { LazyAlertDialog, LazySheet } from "@/ui/components/overlays";
-import { IconOffline } from "@/ui/icons/glyphs/offline";
 import { IconSyncFailed } from "@/ui/icons/glyphs/sync-failed";
 import { IconSyncPending } from "@/ui/icons/glyphs/sync-pending";
 
 import { useOfflineQueue, useOnlineStatus } from "./useOfflineQueue";
 
 /**
- * Offline indicator + sync badge of the staff shell (F1 1.3 §1, ADR-0007): shows when the device is
- * offline and how many submissions wait; the sheet lists them, with the API's reason for each one it
+ * Sync badge of the staff shell (F1 1.3 §1, ADR-0007; the offline band is `OfflineBanner`): how many submissions
+ * wait; the sheet lists them, with the API's reason for each one it
  * refused (a conflict is never retried blindly — the staff member retries or removes it).
  */
 export function SyncCenter() {
@@ -33,12 +32,7 @@ export function SyncCenter() {
   const sent = queue.entries.filter((entry) => entry.state === "sent").reverse();
 
   return (
-    <div className="flex items-center gap-1">
-      {online ? null : (
-        <Badge tone="warning" icon={IconOffline} size="sm" className="whitespace-nowrap">
-          <span data-testid="offline-indicator">{t("offline")}</span>
-        </Badge>
-      )}
+    <div className="flex items-center">
       <IconButton
         icon={queue.conflicts > 0 ? IconSyncFailed : IconSyncPending}
         size="lg"

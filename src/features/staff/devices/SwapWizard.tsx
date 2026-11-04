@@ -23,6 +23,7 @@ import { Stepper } from "@/ui/components/Stepper";
 import { IconBack } from "@/ui/icons/glyphs/back";
 import { IconForward } from "@/ui/icons/glyphs/forward";
 
+import { StaffActionBar } from "../shell/StaffList";
 import { useCameraLabels, useKeypadLabels, useScanLabels } from "../shared/labels";
 import { meterUnit } from "../shared/units";
 import { TextField } from "./fields";
@@ -161,6 +162,17 @@ export function SwapWizard({ points, initialMeter }: { points: StaffMeterPoint[]
       />
     );
 
+  const failureNote = failure ? (
+    <Callout tone="danger" title={t("errorTitle")}>
+      {failure.detail}
+      {failure.requestId ? (
+        <span className="text-muted block font-mono text-xs">
+          {common("requestId")}: {failure.requestId}
+        </span>
+      ) : null}
+    </Callout>
+  ) : null;
+
   return (
     <section
       className="flex flex-col gap-5 py-6"
@@ -172,23 +184,13 @@ export function SwapWizard({ points, initialMeter }: { points: StaffMeterPoint[]
         {t("title")}
       </h1>
       <Stepper
+        variant="bar"
         steps={steps}
         current={index}
         label={t("stepsLabel")}
         progressText={t("stepOf", { step: index + 1, total: steps.length })}
       />
       <Suspense fallback={<p className="text-muted py-6 text-center">{t("loading")}</p>}>
-        {failure ? (
-          <Callout tone="danger" title={t("errorTitle")}>
-            {failure.detail}
-            {failure.requestId ? (
-              <span className="text-muted block font-mono text-xs">
-                {common("requestId")}: {failure.requestId}
-              </span>
-            ) : null}
-          </Callout>
-        ) : null}
-
         {step === "point" ? (
           <div className="flex flex-col gap-4">
             {points === null ? (
@@ -218,9 +220,14 @@ export function SwapWizard({ points, initialMeter }: { points: StaffMeterPoint[]
                 ))}
               </fieldset>
             )}
-            <Button size="xl" block iconEnd={IconForward} disabled={!point} onClick={() => go("old")}>
-              {t("next")}
-            </Button>
+            <StaffActionBar problem={failureNote}>
+              <Button asChild variant="secondary" size="xl" className="px-4">
+                <Link href="/devices">{t("cancel")}</Link>
+              </Button>
+              <Button size="xl" iconEnd={IconForward} disabled={!point} onClick={() => go("old")}>
+                {t("next")}
+              </Button>
+            </StaffActionBar>
           </div>
         ) : null}
 
@@ -239,18 +246,19 @@ export function SwapWizard({ points, initialMeter }: { points: StaffMeterPoint[]
                 point.lastRegister ? t("last", { value: formatUnits(point.lastRegister, unit, locale) }) : undefined
               }
             />
-            <Button
-              size="xl"
-              block
-              iconEnd={IconForward}
-              disabled={!oldShot || !isCompleteDecimal(oldRegister)}
-              onClick={() => go("new")}
-            >
-              {t("next")}
-            </Button>
-            <Button variant="ghost" size="lg" iconStart={IconBack} onClick={() => go("point")}>
-              {t("back")}
-            </Button>
+            <StaffActionBar problem={failureNote}>
+              <Button variant="secondary" size="xl" className="px-4" iconStart={IconBack} onClick={() => go("point")}>
+                {t("back")}
+              </Button>
+              <Button
+                size="xl"
+                iconEnd={IconForward}
+                disabled={!oldShot || !isCompleteDecimal(oldRegister)}
+                onClick={() => go("new")}
+              >
+                {t("next")}
+              </Button>
+            </StaffActionBar>
           </div>
         ) : null}
 
@@ -287,18 +295,19 @@ export function SwapWizard({ points, initialMeter }: { points: StaffMeterPoint[]
               onChange={setNewRegister}
               maxDecimals={3}
             />
-            <Button
-              size="xl"
-              block
-              iconEnd={IconForward}
-              disabled={!newShot || !isCompleteDecimal(newRegister)}
-              onClick={() => go("confirm")}
-            >
-              {t("next")}
-            </Button>
-            <Button variant="ghost" size="lg" iconStart={IconBack} onClick={() => go("old")}>
-              {t("back")}
-            </Button>
+            <StaffActionBar problem={failureNote}>
+              <Button variant="secondary" size="xl" className="px-4" iconStart={IconBack} onClick={() => go("old")}>
+                {t("back")}
+              </Button>
+              <Button
+                size="xl"
+                iconEnd={IconForward}
+                disabled={!newShot || !isCompleteDecimal(newRegister)}
+                onClick={() => go("confirm")}
+              >
+                {t("next")}
+              </Button>
+            </StaffActionBar>
           </div>
         ) : null}
 
@@ -329,19 +338,20 @@ export function SwapWizard({ points, initialMeter }: { points: StaffMeterPoint[]
                 className="min-h-12 text-lg"
               />
             </div>
-            <Button
-              size="xl"
-              block
-              loading={busy}
-              disabled={!reason.trim()}
-              onClick={() => void submit()}
-              data-testid="swap-submit"
-            >
-              {t("submit")}
-            </Button>
-            <Button variant="ghost" size="lg" iconStart={IconBack} onClick={() => go("new")}>
-              {t("back")}
-            </Button>
+            <StaffActionBar problem={failureNote}>
+              <Button variant="secondary" size="xl" className="px-4" iconStart={IconBack} onClick={() => go("new")}>
+                {t("back")}
+              </Button>
+              <Button
+                size="xl"
+                loading={busy}
+                disabled={!reason.trim()}
+                onClick={() => void submit()}
+                data-testid="swap-submit"
+              >
+                {t("submit")}
+              </Button>
+            </StaffActionBar>
           </div>
         ) : null}
 

@@ -17,5 +17,8 @@ export const STAFF_MENU: MenuRegistry<Schemas["StaffMenuKey"]> = {
   parcels: { href: "/parcels", icon: IconParcel, group: "work" },
 };
 
-/** Big-target bottom nav: Today, Readings, Inspect, Work orders (R2) or Devices, More. */
-export const STAFF_BOTTOM_NAV = ["readings", "inspections", "service_requests", "installs"] as const;
+/**
+ * Big-target bottom nav, by how often the work comes round (redesign G7): Today, Readings, Work orders (R2), Parcels,
+ * then More — inspections (a few a month, and every open one is on Today) and devices (installers) live there.
+ */
+export const STAFF_BOTTOM_NAV = ["readings", "service_requests", "parcels", "inspections", "installs"] as const;

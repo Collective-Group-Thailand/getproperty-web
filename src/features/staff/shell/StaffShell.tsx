@@ -11,6 +11,7 @@ import { serverEnv } from "@/lib/env/server";
 import { inboundEdgeHeaders } from "@/lib/http/server";
 
 import { DeviceLock } from "../lock/DeviceLock";
+import { staffScope } from "../shared/server";
 import { ServiceWorkerRegistrar } from "../pwa/ServiceWorkerRegistrar";
 import { STAFF_BOTTOM_NAV, STAFF_MENU } from "./menu";
 import { StaffShellFrame } from "./StaffShellFrame";
@@ -48,6 +49,7 @@ export async function StaffShell({
     ...entitled.filter((item) => !(STAFF_BOTTOM_NAV as readonly string[]).includes(item.key)),
   ].map((item) => ({ ...item, label: t(`staff.nav.${item.key}`) }));
   const readOnly = me.subscription?.readOnly ?? false;
+  const scope = await staffScope();
 
   return (
     <ReadOnlyProvider initial={readOnly}>
@@ -62,6 +64,8 @@ export async function StaffShell({
             roleLabel={t(`glossary.tenantRole.${me.currentTenant.role}`)}
             items={ordered}
             todayLabel={t("staff.nav.today")}
+            buildings={scope.buildings}
+            buildingId={scope.buildingId}
             envBadge={serverEnv().NEXT_PUBLIC_ENV_BADGE}
             vapidPublicKey={await vapidPublicKey()}
             brand={shellBrand().compact}

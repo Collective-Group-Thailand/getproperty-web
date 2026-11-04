@@ -12,8 +12,6 @@ import { describe, expect, it } from "vitest";
  * be added.
  */
 const BASELINE: Record<string, number> = {
-  "src/app/staff/(console)/devices/provision/page.tsx": 1,
-  "src/app/staff/(console)/readings/page.tsx": 1,
   "src/features/admin/billing/FieldWorkView.tsx": 1,
   "src/features/admin/billing/HardwareView.tsx": 1,
   "src/features/admin/billing/InvoicesView.tsx": 1,
@@ -76,9 +74,6 @@ const BASELINE: Record<string, number> = {
   "src/features/owner/subscription/StorageView.tsx": 2,
   "src/features/owner/subscription/SubscriptionView.tsx": 4,
   "src/features/owner/tm30/Tm30View.tsx": 2,
-  "src/features/staff/inspections/InspectionList.tsx": 1,
-  "src/features/staff/readings/ReadingRound.tsx": 1,
-  "src/features/staff/today/TodayView.tsx": 1,
   "src/ui/components/DataTable.tsx": 1,
 };
 

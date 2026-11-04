@@ -1,6 +1,7 @@
 import "server-only";
 
 import { cookies } from "next/headers";
+import { cache } from "react";
 
 import { BUILDING_COOKIE } from "@/features/shared/shell/building";
 import { unwrap, type ApiClient } from "@/lib/api/client";
@@ -19,10 +20,12 @@ export interface StaffScope {
 
 /**
  * The staff member's buildings (`GET /v1/staff/buildings`, limited to my buildings when my membership
- * is, D-090) and the focused one. Should that read fail the list falls back to the reading round,
+ * is, D-090) and the focused one — read once per request (the shell's switcher and the page share it). Should that read fail the list falls back to the reading round,
  * which answers per building of the same scope.
  */
-export async function staffScope(): Promise<StaffScope> {
+export const staffScope = cache(readStaffScope);
+
+async function readStaffScope(): Promise<StaffScope> {
   const api = await serverApi("staff");
   const [rounds, listed, jar] = await Promise.all([
     unwrap(api.GET("/v1/staff/reading-rounds/current", { params: { query: {} } })).catch(() => null),

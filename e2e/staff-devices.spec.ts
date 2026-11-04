@@ -168,10 +168,9 @@ test("binding wizard: inventory prefill, address validation, install reading pho
 
 test("swap a meter: final and initial registers with photos, reason, one request", async ({ page }) => {
   await devicesOfB(page);
-  await page
-    .locator(`[data-testid="meter-point"][data-asset="${W_B101}"]`)
-    .getByRole("link", { name: "Replace the meter" })
-    .click();
+  // The meter's actions sit behind its one "⋯" (a bottom sheet), not as links repeated under every meter.
+  await page.locator(`[data-testid="meter-point"][data-asset="${W_B101}"]`).getByTestId("meter-actions").click();
+  await page.getByRole("dialog").getByRole("link", { name: "Replace the meter" }).click();
   await hydrated(page);
   const wizard = page.getByTestId("swap-wizard");
   await expect(wizard).toHaveAttribute("data-step", "point");

@@ -13,6 +13,8 @@ export interface AppShellProps {
   rail?: React.ReactNode;
   /** Bottom nav on phones (staff, the resident app; the owner's phone layout). */
   bottomNav?: React.ReactNode;
+  /** Keep the bottom nav at every width (the staff PWA is one phone column on a tablet or a desk screen too). */
+  bottomNavAlways?: boolean;
   footer?: React.ReactNode;
   children: React.ReactNode;
   /** Text of the skip link, from `src/i18n` (WCAG 2.4.1). */
@@ -35,6 +37,7 @@ export function AppShell({
   sidebar,
   rail,
   bottomNav,
+  bottomNavAlways = false,
   footer,
   children,
   skipLabel,
@@ -99,7 +102,8 @@ export function AppShell({
           className={cn(
             "min-w-0 flex-1",
             variant === "mobile" && "max-w-phone mx-auto w-full px-4",
-            bottomNav && "pb-(--bottom-nav-h) md:pb-0 print:pb-0",
+            bottomNav && "pb-(--bottom-nav-h) print:pb-0",
+            bottomNav && !bottomNavAlways && "md:pb-0",
           )}
         >
           {children}
@@ -109,7 +113,12 @@ export function AppShell({
       {footer}
 
       {bottomNav ? (
-        <div className="border-border bg-surface z-sticky fixed inset-x-0 bottom-0 border-t pb-[env(safe-area-inset-bottom)] md:hidden print:hidden">
+        <div
+          className={cn(
+            "border-border bg-surface z-sticky fixed inset-x-0 bottom-0 border-t pb-[env(safe-area-inset-bottom)] print:hidden",
+            !bottomNavAlways && "md:hidden",
+          )}
+        >
           {bottomNav}
         </div>
       ) : null}
