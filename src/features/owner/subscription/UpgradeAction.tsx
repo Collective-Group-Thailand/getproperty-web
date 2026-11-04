@@ -21,7 +21,7 @@ export function UpgradeToSmart({ buildings }: { buildings: { id: string; name: s
     <FormDialog
       label={t("open")}
       icon={IconForward}
-      variant="primary"
+      variant="secondary"
       testId="upgrade-smart"
       title={t("title")}
       description={t("hint")}

@@ -10,7 +10,8 @@
     "title": "Upcoming viewings",
     "empty": "No viewings yet",
     "more": "{count} more",
-    "with": "with {name}"
+    "with": "with {name}",
+    "calendar": "Open the calendar"
   },
   "row": {
     "awaiting": "Waiting for you",
@@ -31,7 +32,9 @@
     "closed": {
       "title": "Nothing closed yet",
       "description": "Enquiries you win or close move here."
-    }
+    },
+    "toListings": "Go to my listings",
+    "toOpen": "See conversations in progress"
   },
   "detail": {
     "back": "All enquiries",
@@ -77,7 +80,8 @@
     "writeHint": "{count}/{max} characters",
     "tooLong": "Longer than {max} characters",
     "send": "Send",
-    "closed": "This enquiry is closed; no more messages."
+    "closed": "This enquiry is closed; no more messages.",
+    "placeholder": "Write a reply"
   },
   "viewings": {
     "title": "Viewings",
@@ -143,5 +147,16 @@
     "body": "Rent, deposit, advance and term come from the listing; the start is the prospect's move-in date. You can edit it before sending it to sign. When the lease takes effect the listing closes and the other prospects get a thank-you message in LINE.",
     "done": "Lease drafted",
     "open": "Open the lease"
+  },
+  "nav": {
+    "inbox": "Inbox",
+    "viewings": "Viewing calendar"
+  },
+  "list": {
+    "label": "Enquiries"
+  },
+  "pick": {
+    "title": "Pick a conversation on the left",
+    "body": "Its messages, viewing and the prospect's details open here."
   }
 }

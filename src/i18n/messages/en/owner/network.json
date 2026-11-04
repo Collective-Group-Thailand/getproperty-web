@@ -11,7 +11,8 @@
     "description": "New homes you bought through a getbuild developer and chose to rent out. Each one starts as a listing draft with the developer's facts.",
     "empty": {
       "title": "No units from getbuild yet",
-      "description": "When a developer that uses getbuild hands over your unit, its invitation link lands here once you claim it."
+      "description": "When a developer that uses getbuild hands over your unit, its invitation link lands here once you claim it.",
+      "action": "Go to my listings"
     },
     "transfer": "Transferred",
     "claimed": "Claimed",
@@ -57,7 +58,8 @@
     },
     "unknown": {
       "title": "We could not find this invitation",
-      "body": "The link may be incomplete or out of date. Open it again from getbuild's buyer portal."
+      "body": "The link may be incomplete or out of date. Open it again from getbuild's buyer portal.",
+      "action": "See units from getbuild"
     },
     "closed": {
       "invited": "Waiting",
@@ -94,7 +96,8 @@
     "addCompany": "Go to people",
     "empty": {
       "title": "No employer agreements",
-      "description": "Record one when a company pays for the rooms its workers stay in."
+      "description": "Record one when a company pays for the rooms its workers stay in.",
+      "action": "Add an agreement"
     },
     "anyBuilding": "Any building",
     "deductBadge": "{percent} recovered via payroll",
@@ -202,6 +205,9 @@
       "detachBody": "From the next invoice the lessee pays again. Issued invoices stay addressed as they are.",
       "detached": "The lessee pays this lease again"
     },
-    "workersLabel": "Workers"
+    "workersLabel": "Workers",
+    "panelTitle": "Agreement",
+    "noLeasesTitle": "No lease attached yet",
+    "openLeases": "Open leases"
   }
 }

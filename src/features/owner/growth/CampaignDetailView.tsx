@@ -24,6 +24,7 @@ import { ownerCan, readOnly, section, type OwnerContext } from "../shared/server
 import { ProductCard } from "./BroadcastParts";
 import { availability, CANCELLABLE, perRecipient, ratePercent, REPORTED } from "./broadcast";
 import { CancelCampaign, ScheduleCampaign } from "./CampaignActions";
+import { LinePreview } from "./LinePreview";
 
 type Campaign = Schemas["SponsoredCampaignDto"];
 type Translator = Awaited<ReturnType<typeof getTranslations<"owner.broadcast">>>;
@@ -100,7 +101,7 @@ export async function CampaignDetailView({ context, campaignId }: { context: Own
   const campaign = found.data;
   const allPublic = campaign.listings.every((listing) => listing.public);
   const draft = campaign.state === "draft";
-  const [product, report, preview, areas] = await Promise.all([
+  const [product, report, preview, areas, listings] = await Promise.all([
     section(unwrap(api.GET("/v1/owner/sponsored-campaigns/product"))),
     REPORTED.includes(campaign.state)
       ? section(
@@ -124,7 +125,19 @@ export async function CampaignDetailView({ context, campaignId }: { context: Own
         )
       : Promise.resolve(null),
     publicListingAreas(),
+    section(unwrap(api.GET("/v1/owner/listings"))),
   ]);
+  const byId = new Map((listings.data ?? []).map((listing) => [listing.id, listing]));
+  const previewListings = campaign.listings.map((one) => {
+    const listing = byId.get(one.id);
+    return {
+      id: one.id,
+      title: one.title,
+      rent: listing ? formatTHB(listing.rent, locale, { decimals: 0 }) : "—",
+      place: listing?.transit?.name ?? listing?.district ?? null,
+      photo: listing?.photos[0]?.url ?? null,
+    };
+  });
   const areaNames = new Map(areas.map((area) => [area.slug, locale === "en" ? area.nameEn : area.name]));
   const canManage = ownerCan(me, "tenant.subscription.manage") && !readOnly(me);
   const open = product.data ? availability(product.data) === "open" : false;
@@ -163,7 +176,6 @@ export async function CampaignDetailView({ context, campaignId }: { context: Own
           { label: t("tabs.broadcasts"), href: ownerPath(locale, "/promote/broadcasts") },
           { label: campaign.name },
         ]}
-        actions={actions}
       />
 
       {campaign.state === "rejected" ? (
@@ -282,70 +294,76 @@ export async function CampaignDetailView({ context, campaignId }: { context: Own
           <DescriptionList items={segmentItems(t, campaign, locale, areaNames)} />
         </Card>
 
-        <Card as="section" aria-labelledby="campaign-numbers" className="flex flex-col gap-4">
-          <h2 id="campaign-numbers" className="m-0 text-base font-semibold">
-            {t("detail.numbers")}
-          </h2>
-          <DescriptionList
-            columns={1}
-            items={[
-              {
-                id: "max",
-                term: t("detail.max"),
-                description: t("estimate.people", { count: campaign.maxRecipients }),
-              },
-              {
-                id: "estimated",
-                term: t("detail.estimated"),
-                description: (
-                  <span data-testid="campaign-estimated">
-                    {campaign.estimated === null
-                      ? t("estimate.withheld", {
-                          minimum: campaign.minimumRecipients ?? product.data?.minimumRecipients ?? 0,
-                        })
-                      : t("estimate.people", { count: campaign.estimated })}
-                  </span>
-                ),
-              },
-              {
-                id: "scheduledAt",
-                term: t("detail.scheduledAt"),
-                description: campaign.scheduledAt
-                  ? formatDateTime(campaign.scheduledAt, locale)
-                  : t("detail.notScheduled"),
-              },
-              campaign.pricePerRecipient && campaign.vatRate
-                ? {
-                    id: "price",
-                    term: t("detail.priceSnapshot"),
-                    description: (
-                      <span className="tabular-nums" data-testid="campaign-price-snapshot">
-                        {t("detail.priceSnapshotValue", {
-                          price: perRecipient(campaign.pricePerRecipient, locale),
-                          vat: ratePercent(campaign.vatRate),
-                        })}
-                      </span>
-                    ),
-                  }
-                : null,
-            ].filter((item) => item !== null)}
-          />
-          {draft && summary?.total ? (
-            <div className="border-border flex flex-col gap-1 border-t pt-4" data-testid="campaign-cost">
-              <h3 className="m-0 text-sm font-semibold">{t("detail.costTitle")}</h3>
-              <p className="text-muted m-0 text-sm">
-                {t("detail.costBody", { count: summary.count, total: summary.total })}
+        <div className="flex flex-col gap-4 lg:sticky lg:top-6">
+          <Card as="section" aria-labelledby="campaign-numbers" className="flex flex-col gap-4">
+            <h2 id="campaign-numbers" className="m-0 text-base font-semibold">
+              {t("detail.numbers")}
+            </h2>
+            <DescriptionList
+              columns={1}
+              items={[
+                {
+                  id: "max",
+                  term: t("detail.max"),
+                  description: t("estimate.people", { count: campaign.maxRecipients }),
+                },
+                {
+                  id: "estimated",
+                  term: t("detail.estimated"),
+                  description: (
+                    <span data-testid="campaign-estimated">
+                      {campaign.estimated === null
+                        ? t("estimate.withheld", {
+                            minimum: campaign.minimumRecipients ?? product.data?.minimumRecipients ?? 0,
+                          })
+                        : t("estimate.people", { count: campaign.estimated })}
+                    </span>
+                  ),
+                },
+                {
+                  id: "scheduledAt",
+                  term: t("detail.scheduledAt"),
+                  description: campaign.scheduledAt
+                    ? formatDateTime(campaign.scheduledAt, locale)
+                    : t("detail.notScheduled"),
+                },
+                campaign.pricePerRecipient && campaign.vatRate
+                  ? {
+                      id: "price",
+                      term: t("detail.priceSnapshot"),
+                      description: (
+                        <span className="tabular-nums" data-testid="campaign-price-snapshot">
+                          {t("detail.priceSnapshotValue", {
+                            price: perRecipient(campaign.pricePerRecipient, locale),
+                            vat: ratePercent(campaign.vatRate),
+                          })}
+                        </span>
+                      ),
+                    }
+                  : null,
+              ].filter((item) => item !== null)}
+            />
+            {draft && summary?.total ? (
+              <div className="border-border flex flex-col gap-1 border-t pt-4" data-testid="campaign-cost">
+                <h3 className="m-0 text-sm font-semibold">{t("detail.costTitle")}</h3>
+                <p className="text-muted m-0 text-sm">
+                  {t("detail.costBody", { count: summary.count, total: summary.total })}
+                </p>
+              </div>
+            ) : null}
+            {draft && !open ? (
+              <p className="text-muted m-0 text-sm" data-testid="campaign-schedule-waiting">
+                {t("schedule.waiting")}
               </p>
-            </div>
-          ) : null}
-          {draft && !open ? (
-            <p className="text-muted m-0 text-sm" data-testid="campaign-schedule-waiting">
-              {t("schedule.waiting")}
-            </p>
-          ) : draft ? (
-            <p className="text-muted m-0 text-sm">{t("detail.draftHint")}</p>
-          ) : null}
-        </Card>
+            ) : draft ? (
+              <p className="text-muted m-0 text-sm">{t("detail.draftHint")}</p>
+            ) : null}
+            {actions ? (
+              <div className="border-border flex flex-col gap-2 border-t pt-4 [&>*]:w-full">{actions}</div>
+            ) : null}
+          </Card>
+          <LinePreview listings={previewListings} />
+        </div>
       </div>
     </OwnerPage>
   );

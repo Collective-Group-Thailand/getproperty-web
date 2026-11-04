@@ -332,6 +332,40 @@ function invoice(
   };
 }
 
+/** The landlord's verified-photo order invoice (paid by Thai QR the day after it was issued). */
+function photoOrderInvoice(): Schemas["PlatformInvoiceDto"] {
+  const base = invoice(
+    "0199f2a0-0000-7000-8000-00000000e0a1",
+    "PIV-2026-00871",
+    TENANTS.landlord.profile.id,
+    TENANTS.landlord.profile.displayName,
+    "",
+    "paid",
+    { subtotal: "1500.00", discount: "0.00", vat: "105.00", total: "1605.00", paid: "1605.00", open: "0.00" },
+    [
+      {
+        lineNo: 1,
+        kind: "media_service",
+        description: "บริการถ่ายภาพยืนยันห้องจริง · ห้อง 8/101",
+        quantity: "1.000",
+        unitPrice: "1500.0000",
+        amount: "1500.00",
+      },
+    ],
+    0,
+  );
+  return {
+    ...base,
+    subscriptionId: null,
+    kind: "purchase",
+    periodStart: "2026-10-27",
+    periodEnd: "2026-10-27",
+    issuedAt: "2026-10-27T10:20:00+07:00",
+    dueAt: "2026-11-03T10:00:00+07:00",
+    payments: base.payments.map((payment) => ({ ...payment, paidAt: "2026-10-28T09:40:00+07:00" })),
+  };
+}
+
 function starterLines(units: number, amount: string): Schemas["PlatformInvoiceLineDto"][] {
   return [
     {
@@ -658,6 +692,9 @@ export function initialPlatformWorld(): PlatformWorld {
       starterLines(30, "750.00"),
       -1,
     ),
+    // The landlord's paid verified-photo order (mocks/owner/growth.ts seeds the order with this invoice id): a
+    // `purchase` invoice, so the order's link opens it on the landlord's subscription page (G5 capture problem 13).
+    photoOrderInvoice(),
   ];
   const world: PlatformWorld = {
     tenants,

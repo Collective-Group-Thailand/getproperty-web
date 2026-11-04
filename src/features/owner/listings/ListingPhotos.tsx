@@ -9,14 +9,16 @@ import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
 import { ApiError } from "@/lib/api/errors";
 import type { Schemas } from "@/lib/api/types";
-import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { IconButton } from "@/ui/components/IconButton";
 import { Input } from "@/ui/components/Input";
+import { Icon } from "@/ui/icons";
+import { IconAdd } from "@/ui/icons/glyphs/add";
 import { IconChevronLeft } from "@/ui/icons/glyphs/chevron-left";
 import { IconChevronRight } from "@/ui/icons/glyphs/chevron-right";
 import { IconDelete } from "@/ui/icons/glyphs/delete";
 import { IconUpload } from "@/ui/icons/glyphs/upload";
+import { cn } from "@/ui/lib/cn";
 
 import { uploadOwnerFile } from "../shared/upload";
 
@@ -127,99 +129,80 @@ export function ListingPhotos({ listingId, unitId, photos }: { listingId: string
     }
   };
 
+  const addTile = (
+    <li className={order.length === 0 ? "col-span-2 md:col-span-4" : undefined}>
+      <button
+        type="button"
+        onClick={() => input.current?.click()}
+        disabled={progress !== null}
+        className={cn(
+          "rounded-control border-border-strong text-muted hover:border-primary hover:text-primary focus-visible:ring-focus-ring duration-fast flex w-full flex-col items-center justify-center gap-1.5 border border-dashed text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none disabled:opacity-60",
+          order.length === 0 ? "min-h-48 px-6 py-10" : "aspect-[4/3]",
+        )}
+        data-testid="listing-photo-add"
+      >
+        <Icon icon={progress ? IconUpload : IconAdd} className="text-xl" />
+        <span>{progress ? t("uploading", progress) : t("add")}</span>
+        {order.length === 0 ? <span className="text-muted max-w-sm text-center font-normal">{t("empty")}</span> : null}
+      </button>
+    </li>
+  );
+
   return (
     <div className="flex flex-col gap-4" data-testid="listing-photos">
-      <div className="flex flex-wrap items-center gap-3">
-        <input
-          ref={input}
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          multiple
-          className="sr-only"
-          id={`photos-${listingId}`}
-          onChange={(event) => void upload(event.target.files)}
-          data-testid="listing-photo-input"
-          aria-label={t("add")}
-          tabIndex={-1}
-        />
-        <Button
-          variant="secondary"
-          iconStart={IconUpload}
-          loading={progress !== null}
-          onClick={() => input.current?.click()}
-          data-testid="listing-photo-add"
-        >
-          {progress ? t("uploading", progress) : t("add")}
-        </Button>
-        <span className="text-muted text-sm" data-testid="listing-photo-count">
-          {t("count", { count: order.length })}
-        </span>
-        {changed ? (
-          <Button onClick={() => void saveOrder()} loading={saving} data-testid="listing-photo-save">
-            {t("saveOrder")}
-          </Button>
-        ) : saved ? (
-          <span className="text-muted text-sm" role="status">
-            {t("orderSaved")}
-          </span>
-        ) : null}
-      </div>
-
-      {order.length === 0 ? (
-        <p className="text-muted border-border rounded-card border border-dashed p-6 text-center text-sm">
-          {t("empty")}
-        </p>
-      ) : (
-        <ol className="m-0 grid list-none grid-cols-2 gap-3 p-0 sm:grid-cols-3 lg:grid-cols-4">
-          {order.map((photo, index) => (
-            <li key={photo.id} className="flex flex-col gap-2" data-testid="listing-photo">
-              <div className="relative">
-                {/* eslint-disable-next-line @next/next/no-img-element -- signed object-storage preview */}
-                <img
-                  src={photo.url}
-                  alt={photo.caption ?? ""}
-                  className="rounded-card bg-bg-subtle aspect-[4/3] w-full object-cover"
-                />
-                {index === 0 ? (
-                  <span className="absolute start-2 top-2">
-                    <Badge tone="primary" size="sm">
-                      {t("cover")}
-                    </Badge>
-                  </span>
-                ) : null}
-              </div>
-              <Input
-                inputSize="sm"
-                value={order[index]!.caption ?? ""}
-                placeholder={t("caption")}
-                aria-label={t("caption")}
-                maxLength={200}
-                onChange={(event) => {
-                  const next = [...order];
-                  next[index] = { ...photo, caption: event.target.value };
-                  setOrder(next);
-                  setSaved(false);
-                }}
+      <input
+        ref={input}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        multiple
+        className="sr-only"
+        id={`photos-${listingId}`}
+        onChange={(event) => void upload(event.target.files)}
+        data-testid="listing-photo-input"
+        aria-label={t("add")}
+        tabIndex={-1}
+      />
+      <ol className="m-0 grid list-none grid-cols-2 gap-3 p-0 md:grid-cols-4">
+        {order.map((photo, index) => (
+          <li
+            key={photo.id}
+            className={cn("flex flex-col gap-2", index === 0 && "col-span-2 md:row-span-2")}
+            data-testid="listing-photo"
+          >
+            <div className={cn("relative", index === 0 && "md:flex-1")}>
+              {/* eslint-disable-next-line @next/next/no-img-element -- signed object-storage preview */}
+              <img
+                src={photo.url}
+                alt={photo.caption ?? ""}
+                className={cn(
+                  "bg-bg-subtle w-full object-cover",
+                  index === 0
+                    ? "rounded-panel aspect-[4/3] md:absolute md:inset-0 md:aspect-auto md:h-full"
+                    : "rounded-control aspect-[4/3]",
+                )}
               />
-              <div className="flex items-center justify-between">
-                <span className="flex gap-1">
-                  <IconButton
-                    icon={IconChevronLeft}
-                    label={t("moveLeft")}
-                    size="sm"
-                    variant="ghost"
-                    disabled={index === 0}
-                    onClick={() => move(index, -1)}
-                  />
-                  <IconButton
-                    icon={IconChevronRight}
-                    label={t("moveRight")}
-                    size="sm"
-                    variant="ghost"
-                    disabled={index === order.length - 1}
-                    onClick={() => move(index, 1)}
-                  />
+              {index === 0 ? (
+                <span className="rounded-thumb bg-surface/95 text-fg shadow-card absolute start-3 top-3 inline-flex h-6 items-center px-2 text-xs font-medium">
+                  {t("cover")}
                 </span>
+              ) : null}
+              <span className="rounded-control bg-surface/95 shadow-card absolute end-2 bottom-2 flex items-center">
+                <IconButton
+                  icon={IconChevronLeft}
+                  label={t("moveLeft")}
+                  size="sm"
+                  variant="ghost"
+                  disabled={index === 0}
+                  onClick={() => move(index, -1)}
+                />
+                <IconButton
+                  icon={IconChevronRight}
+                  label={t("moveRight")}
+                  size="sm"
+                  variant="ghost"
+                  disabled={index === order.length - 1}
+                  onClick={() => move(index, 1)}
+                />
                 <IconButton
                   icon={IconDelete}
                   label={t("remove")}
@@ -228,11 +211,45 @@ export function ListingPhotos({ listingId, unitId, photos }: { listingId: string
                   onClick={() => void remove(photo.id)}
                   data-testid="listing-photo-remove"
                 />
-              </div>
-            </li>
-          ))}
-        </ol>
-      )}
+              </span>
+            </div>
+            <Input
+              inputSize="sm"
+              value={order[index]!.caption ?? ""}
+              placeholder={t("caption")}
+              aria-label={t("captionOf", { number: index + 1 })}
+              maxLength={200}
+              onChange={(event) => {
+                const next = [...order];
+                next[index] = { ...photo, caption: event.target.value };
+                setOrder(next);
+                setSaved(false);
+              }}
+            />
+          </li>
+        ))}
+        {addTile}
+      </ol>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <span className="text-muted text-sm" data-testid="listing-photo-count">
+          {t("count", { count: order.length })}
+        </span>
+        {changed ? (
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => void saveOrder()}
+            loading={saving}
+            data-testid="listing-photo-save"
+          >
+            {t("saveOrder")}
+          </Button>
+        ) : saved ? (
+          <span className="text-muted text-sm" role="status">
+            {t("orderSaved")}
+          </span>
+        ) : null}
+      </div>
       <ProblemNotice error={error} />
     </div>
   );

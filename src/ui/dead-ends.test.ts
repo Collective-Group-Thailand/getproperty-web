@@ -37,15 +37,6 @@ const BASELINE: Record<string, number> = {
   "src/features/admin/support/SupportView.tsx": 1,
   "src/features/admin/tenants/TenantAiUsage.tsx": 1,
   "src/features/admin/tenants/TenantsView.tsx": 1,
-  "src/features/owner/agency/MandatesView.tsx": 1,
-  "src/features/owner/agency/WorkspaceViews.tsx": 2,
-  "src/features/owner/employers/EmployersView.tsx": 1,
-  "src/features/owner/growth/ListingGrowth.tsx": 1,
-  "src/features/owner/growth/PromotionView.tsx": 2,
-  "src/features/owner/handoffs/HandoffsView.tsx": 1,
-  "src/features/owner/leads/LeadsView.tsx": 1,
-  "src/features/owner/subscription/StorageView.tsx": 2,
-  "src/features/owner/subscription/SubscriptionView.tsx": 4,
   "src/ui/components/DataTable.tsx": 1,
 };
 

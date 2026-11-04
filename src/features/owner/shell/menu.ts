@@ -33,8 +33,34 @@ import { IconWallet } from "@/ui/icons/glyphs/wallet";
 /** Owner console routes per menu key (F2 builds the pages; groups follow the morning-dashboard flow). */
 export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
   portfolio: { href: "/portfolio", icon: IconHome, group: "operations" },
-  listings: { href: "/listings", icon: IconMegaphone, group: "operations" },
-  leads: { href: "/leads", icon: IconInbox, group: "operations" },
+  // Listings (G5): my listings, promotion (boosts, photo services), LINE broadcasts and reviews — no owner menu keys for
+  // promotion or reviews in the API yet (contract request), so they live under listings instead of header buttons.
+  listings: {
+    href: "/listings",
+    icon: IconMegaphone,
+    group: "operations",
+    children: [
+      { key: "listings", href: "/listings", label: "owner.listings.nav.mine" },
+      { key: "promote", href: "/promote", label: "owner.listings.nav.promote", testId: "listing-promotion" },
+      {
+        key: "broadcasts",
+        href: "/promote/broadcasts",
+        label: "owner.listings.nav.broadcasts",
+        testId: "promote-tab-broadcasts",
+      },
+      { key: "reviews", href: "/reviews", label: "owner.listings.nav.reviews", testId: "listing-reviews" },
+    ],
+  },
+  // Enquiries (G5): the inbox and the week of viewings.
+  leads: {
+    href: "/leads",
+    icon: IconInbox,
+    group: "operations",
+    children: [
+      { key: "inbox", href: "/leads", label: "owner.leads.nav.inbox" },
+      { key: "viewings", href: "/leads/viewings", label: "owner.leads.nav.viewings", testId: "leads-calendar" },
+    ],
+  },
   dashboard: { href: "/dashboard", icon: IconDashboard, group: "operations" },
   buildings: { href: "/buildings", icon: IconBuilding, group: "operations" },
   units: { href: "/units", icon: IconRoom, group: "operations" },

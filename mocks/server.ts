@@ -98,6 +98,7 @@ import { advanceRollout, resetPlatformWorld } from "./platform";
 import { resetR2World } from "./r2";
 import { emit } from "./handlers/realtime";
 import { gatewayComesOnline, readUpload, storeUpload, UPLOAD_CORS } from "./handlers/staff";
+import { listingPhotoBytes } from "./owner/listing-photos";
 import { BUILDING_A, BUILDING_B, buildingOf } from "./staff-world";
 import { expireAccessTokens, initialStaffWorld, resetState, state } from "./state";
 
@@ -469,6 +470,11 @@ async function storage(url: URL, req: IncomingMessage, res: ServerResponse) {
     return res.end();
   }
   if (req.method === "GET" && url.pathname.startsWith("/__files/")) {
+    const photo = await listingPhotoBytes(fileId);
+    if (photo) {
+      res.writeHead(200, { ...UPLOAD_CORS, "content-type": "image/jpeg", "cache-control": "private, max-age=300" });
+      return res.end(photo);
+    }
     const { body, contentType } = readUpload(fileId);
     res.writeHead(200, { ...UPLOAD_CORS, "content-type": contentType, "cache-control": "private, max-age=300" });
     return res.end(body);
