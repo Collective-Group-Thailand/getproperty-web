@@ -22,17 +22,23 @@ import { IconMegaphone } from "@/ui/icons/glyphs/megaphone";
 export function AnnouncementActions({
   announcement,
   audience,
+  layout = "row",
 }: {
   announcement: Pick<
     Schemas["AnnouncementDto"],
     "id" | "title" | "publishedAt" | "archivedAt" | "pinned" | "expiresAt"
   >;
   audience: number | null;
+  /** `panel`: stacked in the record's next-steps panel, archiving last and set apart (G4). */
+  layout?: "row" | "panel";
 }) {
   const t = useTranslations("owner.community.announcement");
   const path = { announcementId: announcement.id };
   return (
-    <div className="flex flex-wrap gap-2" data-testid="announcement-actions">
+    <div
+      className={layout === "panel" ? "flex flex-col gap-2 [&_button]:w-full [&>*]:w-full" : "flex flex-wrap gap-2"}
+      data-testid="announcement-actions"
+    >
       {!announcement.publishedAt ? (
         <ConfirmAction
           label={t("publish")}
@@ -79,19 +85,24 @@ export function AnnouncementActions({
         </FormDialog>
       ) : null}
       {!announcement.archivedAt ? (
-        <ConfirmAction
-          label={t("archive")}
-          icon={IconArchive}
-          variant="secondary"
-          testId="announcement-archive"
-          title={t("archiveTitle", { title: announcement.title })}
-          description={t("archiveBody")}
-          confirmLabel={t("archive")}
-          successMessage={t("archived")}
-          onConfirm={() =>
-            unwrap(browserApi().POST("/v1/owner/announcements/{announcementId}/actions/archive", { params: { path } }))
-          }
-        />
+        <div className={layout === "panel" ? "border-border mt-2 border-t pt-3" : "contents"}>
+          <ConfirmAction
+            label={t("archive")}
+            icon={IconArchive}
+            variant={layout === "panel" ? "destructive" : "secondary"}
+            tone={layout === "panel" ? "destructive" : "primary"}
+            testId="announcement-archive"
+            title={t("archiveTitle", { title: announcement.title })}
+            description={t("archiveBody")}
+            confirmLabel={t("archive")}
+            successMessage={t("archived")}
+            onConfirm={() =>
+              unwrap(
+                browserApi().POST("/v1/owner/announcements/{announcementId}/actions/archive", { params: { path } }),
+              )
+            }
+          />
+        </div>
       ) : null}
     </div>
   );

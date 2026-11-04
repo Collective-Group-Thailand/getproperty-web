@@ -3,10 +3,11 @@
   "description": "Locks of units, building doors and common areas.",
   "settingsLink": "Door settings (visitor codes)",
   "metaTitle": "Lock",
-  "rule": "A resident's access follows the lease: it starts with the lease and ends with it. Nobody is locked out for arrears (D-024, D-071).",
+  "rule": "A resident's access follows the lease: it starts when the lease takes effect and ends with it. Nobody is locked out for unpaid rent.",
   "empty": {
     "title": "No lock in this building",
-    "body": "Register unit locks or the building door; residents with a lease get their code automatically."
+    "body": "Register unit locks or the building door; residents with a lease get their code automatically.",
+    "devices": "Show devices"
   },
   "col": {
     "lock": "Lock",
@@ -66,7 +67,8 @@
     "activateTitle": "Start using {name}?",
     "deactivateBody": "No new code is issued on this lock; existing codes keep following the lease.",
     "activateBody": "Codes can be issued on this lock again.",
-    "saved": "Saved"
+    "saved": "Saved",
+    "panel": "This lock"
   },
   "credentials": {
     "title": "Access",

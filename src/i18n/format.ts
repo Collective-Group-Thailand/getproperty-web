@@ -236,6 +236,21 @@ export function formatRelativeTime(input: DateInput, locale: Locale = "th", now:
   return format.format(Math.round(seconds / (365 * 86400)), "year");
 }
 
+/**
+ * "6 ชม." / "45 นาที" / "3 วัน" — the length of a span (how far past an SLA, how long is left) in its largest whole
+ * unit; the sign is ignored (the caller says "past" or "left").
+ */
+export function formatDuration(milliseconds: number, locale: Locale = "th"): string {
+  const seconds = Math.abs(milliseconds) / 1000;
+  const [value, unit] =
+    Math.round(seconds / 60) < 60
+      ? [Math.max(1, Math.round(seconds / 60)), "minute"]
+      : seconds < 48 * 3600
+        ? [Math.round(seconds / 3600), "hour"]
+        : [Math.round(seconds / 86400), "day"];
+  return new Intl.NumberFormat(localeTag(locale), { style: "unit", unit, unitDisplay: "short" }).format(value);
+}
+
 /** Thai phone numbers as people read them: `081-234-5678`; a `+66` number is shown nationally. */
 export function formatPhone(value: string): string {
   const digits = value.replace(/\D/g, "");

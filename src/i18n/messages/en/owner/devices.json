@@ -24,11 +24,16 @@
     "kind": "Kind",
     "allKinds": "All kinds",
     "status": "Status",
-    "allStatuses": "All statuses"
+    "allStatuses": "All statuses",
+    "allDevices": "All"
   },
   "empty": {
     "title": "No devices",
-    "body": "Smart meters and gateways appear when they are installed."
+    "body": "Smart meters and gateways appear when they are installed.",
+    "filteredTitle": "No devices match these filters",
+    "filteredBody": "Clear the filters or search for another serial.",
+    "clear": "Show every device",
+    "meters": "Go to meters"
   },
   "command": {
     "identify": "Identify",
@@ -36,7 +41,8 @@
     "restart": "Restart",
     "upload_logs": "Upload logs",
     "ota_apply": "Update",
-    "set_log_level": "Log level"
+    "set_log_level": "Log level",
+    "other": "Other command"
   },
   "detail": {
     "facts": "Device",
@@ -62,6 +68,21 @@
     "configVersion": "Configuration {version} ({meters} meters)",
     "appliedAt": "applied {at}",
     "notApplied": "not applied yet",
-    "noEvents": "Nothing recorded."
+    "noEvents": "Nothing recorded.",
+    "health": "Connection",
+    "linkValue": {
+      "ethernet": "Ethernet",
+      "wifi": "Wi-Fi",
+      "cellular": "Cellular",
+      "lte": "Cellular (4G)",
+      "other": "Other"
+    }
+  },
+  "col": {
+    "device": "Device",
+    "kind": "Kind",
+    "lastSeen": "Last seen",
+    "ownership": "Ownership",
+    "status": "Status"
   }
 }

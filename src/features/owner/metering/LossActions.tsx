@@ -71,10 +71,13 @@ export function UtilityInvoiceButton({
   buildingId,
   utility,
   accounts,
+  variant = "secondary",
 }: {
   buildingId: string;
   utility: Schemas["Utility"];
   accounts: Schemas["UtilityAccountDto"][];
+  /** `primary` in the page head (G4), where entering the bill is the page's lead action. */
+  variant?: "primary" | "secondary";
 }) {
   const t = useTranslations("owner.loss.invoice");
   const providers = useTranslations("owner.common.provider");
@@ -99,6 +102,7 @@ export function UtilityInvoiceButton({
     <FormDialog
       label={t("add")}
       icon={IconAdd}
+      variant={variant}
       testId="utility-invoice-add"
       title={t(`title.${utility}`)}
       description={t("body")}

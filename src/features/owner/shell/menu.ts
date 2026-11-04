@@ -63,13 +63,79 @@ export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
     ],
   },
   deposits: { href: "/deposits", icon: IconWallet, group: "operations" },
-  readings: { href: "/meters", icon: IconMeter, group: "operations" },
+  // Meters (G4): the meter points and the readings waiting for a check.
+  readings: {
+    href: "/meters",
+    icon: IconMeter,
+    group: "operations",
+    children: [
+      { key: "meters", href: "/meters", label: "owner.meters.nav.meters", testId: "meters-tab-meters" },
+      { key: "reviews", href: "/meters/reviews", label: "owner.meters.nav.reviews", testId: "meters-nav-reviews" },
+    ],
+  },
   devices: { href: "/devices", icon: IconGateway, group: "operations" },
   utility_loss: { href: "/loss", icon: IconLoss, group: "operations" },
-  service_requests: { href: "/service-requests", icon: IconStaff, group: "operations" },
+  // Repairs (G4): the request queue, work orders, planned maintenance and the categories' SLA — one section.
+  service_requests: {
+    href: "/service-requests",
+    icon: IconStaff,
+    group: "operations",
+    children: [
+      {
+        key: "requests",
+        href: "/service-requests",
+        label: "owner.service.nav.requests",
+        testId: "service-tab-requests",
+      },
+      {
+        key: "workOrders",
+        href: "/work-orders",
+        label: "owner.service.nav.workOrders",
+        testId: "service-tab-workOrders",
+      },
+      {
+        key: "maintenance",
+        href: "/maintenance",
+        label: "owner.service.nav.maintenance",
+        testId: "service-tab-maintenance",
+      },
+      {
+        key: "categories",
+        href: "/service-categories",
+        label: "owner.service.nav.categories",
+        testId: "service-tab-categories",
+      },
+    ],
+  },
   access: { href: "/access", icon: IconLock, group: "operations" },
   parcels: { href: "/parcels", icon: IconParcel, group: "operations" },
-  announcements: { href: "/announcements", icon: IconMegaphone, group: "operations" },
+  // Community (G4): announcements with the building's facilities, house rules and contacts under the same entry.
+  announcements: {
+    href: "/announcements",
+    icon: IconMegaphone,
+    group: "operations",
+    children: [
+      {
+        key: "announcements",
+        href: "/announcements",
+        label: "owner.community.nav.announcements",
+        testId: "community-tab-announcements",
+      },
+      {
+        key: "facilities",
+        href: "/community/facilities",
+        label: "owner.community.nav.facilities",
+        testId: "community-tab-facilities",
+      },
+      { key: "rules", href: "/community/rules", label: "owner.community.nav.rules", testId: "community-tab-rules" },
+      {
+        key: "contacts",
+        href: "/community/contacts",
+        label: "owner.community.nav.contacts",
+        testId: "community-tab-contacts",
+      },
+    ],
+  },
   rate_plans: { href: "/billing/rate-plans", icon: IconTag, group: "money" },
   // Billing (G3): the month's cycle and every invoice, one section instead of a row of tabs.
   invoices: {

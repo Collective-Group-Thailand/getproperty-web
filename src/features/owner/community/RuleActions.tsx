@@ -18,15 +18,24 @@ const TRANSLATED = ["en", "my", "km", "lo", "zh"] as const;
  * Publishes a new version of the building's rules (D-212): in force from a date that is never in the past;
  * residents acknowledge the version in force in their app (and with the lease signature).
  */
-export function NewRuleVersion({ buildingId, latest }: { buildingId: string; latest?: Schemas["BuildingRuleDto"] }) {
+export function NewRuleVersion({
+  buildingId,
+  latest,
+  variant = "primary",
+}: {
+  buildingId: string;
+  latest?: Schemas["BuildingRuleDto"];
+  /** `secondary` as the next step of an empty page (the head keeps the filled one). */
+  variant?: "primary" | "secondary";
+}) {
   const t = useTranslations("owner.community.rules");
   const languages = useTranslations("owner.community.compose.languages");
   return (
     <FormDialog
       label={t("add")}
       icon={IconRules}
-      variant="primary"
-      testId="rule-add"
+      variant={variant}
+      testId={variant === "primary" ? "rule-add" : "rule-add-empty"}
       title={t("addTitle")}
       description={t("addBody")}
       submitLabel={t("publish")}

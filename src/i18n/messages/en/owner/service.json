@@ -11,8 +11,8 @@
     "warranty": "Referred to the developer's warranty — no SLA",
     "none": "No SLA clock",
     "due": "Due {at} · SLA {hours} h",
-    "overdue": "SLA breached · was due {when}",
-    "left": "SLA due {when}"
+    "overdueBy": "{span} past SLA",
+    "leftFor": "{span} left"
   },
   "assignee": {
     "label": "Assignee",
@@ -104,7 +104,9 @@
     "visit": "visit {at}",
     "noWorkOrders": "No work order yet.",
     "timeline": "Timeline",
-    "transition": "{from} → {to}"
+    "transition": "{from} → {to}",
+    "nextSteps": "Next steps",
+    "noNextSteps": "Nothing to do right now"
   },
   "kind": {
     "repair": "Repair",
@@ -136,7 +138,8 @@
     "sla": {
       "warning": "SLA due soon",
       "breached": "SLA breached"
-    }
+    },
+    "other": "Status updated"
   },
   "list": {
     "title": "Service requests",
@@ -145,7 +148,7 @@
     "filter": {
       "search": "Search",
       "searchPlaceholder": "Reference, unit or problem",
-      "view": "Show",
+      "view": "View",
       "open": "Open",
       "all": "All",
       "status": "Status",
@@ -153,22 +156,26 @@
       "category": "Category",
       "anyCategory": "Any category",
       "sla": "SLA",
-      "anySla": "Any SLA",
       "slaBreached": "Past the SLA",
       "warranty": "Warranty",
-      "anyWarranty": "All",
+      "anyWarranty": "In or out of warranty",
       "inWarranty": "In warranty"
     },
     "empty": {
       "title": "No open request",
-      "body": "New requests from residents, staff or automatic checks appear here."
+      "body": "New requests from residents, staff or automatic checks appear here.",
+      "filteredTitle": "No requests match these filters",
+      "filteredBody": "Clear the filters or search for something else.",
+      "breachedTitle": "Nothing is past its SLA",
+      "clear": "Show open requests",
+      "all": "Show every request"
     },
     "col": {
-      "ref": "Reference",
       "place": "Unit",
       "problem": "Problem",
       "status": "Status",
-      "sla": "SLA"
+      "sla": "SLA",
+      "reported": "Reported"
     },
     "commonArea": "Common area",
     "warranty": "Warranty",
@@ -177,7 +184,15 @@
       "meter_stale": "meter stopped reporting",
       "meter_silent": "meter silent for 24 h",
       "gateway_offline": "gateway offline",
-      "lock_battery_low": "lock battery low"
+      "lock_battery_low": "lock battery low",
+      "other": "an anomaly was detected"
+    },
+    "figures": {
+      "label": "Repair figures",
+      "open": "Open",
+      "breached": "Past SLA",
+      "new": "Waiting for triage",
+      "waiting": "Waiting for parts"
     }
   },
   "workOrders": {
@@ -191,11 +206,17 @@
       "status": "Status",
       "anyStatus": "Any status",
       "kind": "Kind",
-      "anyKind": "Any kind"
+      "anyKind": "Any kind",
+      "toVerify": "To check",
+      "searchPlaceholder": "Job, unit or assignee"
     },
     "empty": {
       "title": "No work order",
-      "body": "Create one from a service request or a maintenance plan."
+      "body": "Create one from a service request or a maintenance plan.",
+      "filteredTitle": "No work orders match these filters",
+      "filteredBody": "Clear the filters or search for something else.",
+      "clear": "Show active work orders",
+      "requests": "Go to repair requests"
     },
     "col": {
       "title": "Work",
@@ -209,7 +230,15 @@
       "user": "Staff (staff app)",
       "party": "Technician (technician app)"
     },
-    "unassigned": "Not assigned"
+    "unassigned": "Not assigned",
+    "figures": {
+      "label": "Work order figures",
+      "active": "Active",
+      "open": "Not assigned",
+      "inProgress": "In progress",
+      "done": "Waiting for your check"
+    },
+    "noVisit": "Not scheduled"
   },
   "workOrder": {
     "metaTitle": "Work order",
@@ -270,7 +299,9 @@
     "after": "After",
     "beforeAlt": "{title} before, photo {index}",
     "afterAlt": "{title} after, photo {index}",
-    "noPhotos": "No photo yet."
+    "noPhotos": "No photo yet.",
+    "nextSteps": "Next steps",
+    "noNextSteps": "Nothing to do right now"
   },
   "cost": {
     "title": "Costs",
@@ -301,13 +332,12 @@
     "amount": "Amount",
     "actions": "Actions",
     "none": "No cost yet.",
-    "total": "Total {total}"
+    "totalLabel": "Total"
   },
   "categories": {
     "title": "Categories & SLA",
     "description": "The platform's defaults and your own values; a request keeps the SLA in force when it was reported.",
-    "listTitle": "Categories",
-    "listHint": "Change the SLA hours per category.",
+    "listHint": "Requests already reported keep their SLA; new hours apply to requests reported from now on.",
     "name": "Category",
     "slaHours": "SLA (hours)",
     "source": "Source",
@@ -318,7 +348,7 @@
       "tenant": "Yours"
     },
     "inactive": "Inactive",
-    "key": "Key",
+    "key": "Category code",
     "keyHint": "Lower-case, like elevator",
     "nameTh": "Thai name",
     "nameEn": "English name",
@@ -336,7 +366,13 @@
     "reset": "Use default",
     "resetTitle": "Back to the default of {name}?",
     "resetBody": "Your value is removed (a category of your own disappears).",
-    "resetDone": "Default restored"
+    "resetDone": "Default restored",
+    "sla": "SLA",
+    "editSla": "Edit SLA",
+    "editSlaFor": "Edit the SLA of {name}",
+    "slaHoursFor": "SLA of {name} (hours)",
+    "hoursUnit": "hrs",
+    "cancelEdit": "Cancel"
   },
   "maintenance": {
     "title": "Maintenance",
@@ -365,7 +401,8 @@
     "nextDueHint": "Soonest first.",
     "empty": {
       "title": "No maintenance plan",
-      "body": "Add plans for pumps, air conditioners, locks or meters."
+      "body": "Add plans for pumps, air conditioners, locks or meters.",
+      "workOrders": "Show work orders"
     },
     "due": "Due",
     "plan": "Plan",
@@ -395,7 +432,9 @@
     "asset": "Equipment",
     "chooseAsset": "Choose equipment",
     "edit": "Edit",
-    "editTitle": "Edit {title}"
+    "editTitle": "Edit {title}",
+    "dueIn": "In {days} days",
+    "dueToday": "Due today"
   },
   "costs": {
     "title": "Who fixes, who pays",

@@ -11,15 +11,17 @@ import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
-import { LinkTabs } from "@/ui/components/LinkTabs";
+import { ViewTabs } from "@/ui/components/ListToolbar";
 import { SimpleTable } from "@/ui/components/SimpleTable";
+import { IconBuilding } from "@/ui/icons/glyphs/building";
 import { IconCalendar } from "@/ui/icons/glyphs/calendar";
+import { IconCheck } from "@/ui/icons/glyphs/check";
 import { IconChevronLeft } from "@/ui/icons/glyphs/chevron-left";
 import { IconChevronRight } from "@/ui/icons/glyphs/chevron-right";
 
 import { ownerPath, withQuery } from "../shared/links";
 import { focusedBuilding, ownerCan, readOnly, type OwnerContext } from "../shared/server";
-import { CommunityNav } from "./CommunityNav";
+import { BuildingChoice } from "../shared/BuildingChoice";
 import { BookingActions, EditFacility, NewFacility } from "./FacilityActions";
 import { bangkokToday, currentTime } from "@/features/shared/console/time";
 
@@ -45,11 +47,26 @@ export async function FacilitiesView({ context, searchParams }: { context: Owner
   if (!building) {
     return (
       <OwnerPage testId="facilities">
-        <PageHeader title={t("title")} description={t("description")} crumbs={[{ label: t("title") }]} />
-        <CommunityNav current="/community/facilities" locale={locale} />
-        <Card>
-          <EmptyState icon={IconCalendar} title={t("chooseBuilding")} />
-        </Card>
+        <PageHeader title={t("title")} description={t("description")} />
+        <EmptyState
+          variant="card"
+          icon={IconBuilding}
+          title={t("chooseBuilding")}
+          description={t("chooseBuildingBody")}
+          action={
+            context.buildings.length ? (
+              <BuildingChoice
+                buildings={context.buildings.map(({ id, name }) => ({ id, name }))}
+                label={t("building")}
+                placeholder={t("chooseBuildingPlaceholder")}
+              />
+            ) : (
+              <Button asChild variant="secondary">
+                <a href={ownerPath(locale, "/buildings")}>{t("goBuildings")}</a>
+              </Button>
+            )
+          }
+        />
       </OwnerPage>
     );
   }
@@ -83,20 +100,31 @@ export async function FacilitiesView({ context, searchParams }: { context: Owner
       <PageHeader
         title={t("title")}
         description={t("description")}
-        crumbs={[{ label: t("title") }]}
         actions={canManage ? <NewFacility buildingId={building.id} /> : null}
       />
-      <CommunityNav current="/community/facilities" locale={locale} />
       {facilities.length === 0 || !chosen ? (
-        <Card>
-          <EmptyState icon={IconCalendar} title={t("empty.title")} description={t("empty.body")} />
-        </Card>
+        <EmptyState
+          variant="card"
+          icon={IconCalendar}
+          title={t("empty.title")}
+          description={t("empty.body")}
+          action={
+            canManage ? (
+              <NewFacility buildingId={building.id} variant="secondary" />
+            ) : (
+              <Button asChild variant="secondary">
+                <a href={ownerPath(locale, "/community/rules")}>{t("goRules")}</a>
+              </Button>
+            )
+          }
+        />
       ) : (
         <>
-          <LinkTabs
+          <ViewTabs
             label={t("title")}
-            current={withQuery(base, { facility: chosen.id })}
+            current={chosen.id}
             tabs={facilities.map((facility) => ({
+              key: facility.id,
               href: withQuery(base, { facility: facility.id }),
               label: facility.name,
               testId: "facility-tab",
@@ -118,7 +146,7 @@ export async function FacilitiesView({ context, searchParams }: { context: Owner
             />
             <div className="flex flex-wrap gap-2">
               {chosen.bookingPolicy.requiresApproval ? (
-                <Badge tone="warning" size="sm">
+                <Badge tone="warning" size="sm" icon={IconCheck}>
                   {t("needsApproval")}
                 </Badge>
               ) : (

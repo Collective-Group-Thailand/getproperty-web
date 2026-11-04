@@ -95,5 +95,16 @@
     "previousRegister": "เลขครั้งก่อน",
     "currentRegister": "เลขครั้งนี้"
   },
-  "chooseBuilding": "อาคารที่เลือกอยู่"
+  "chooseBuilding": "อาคารที่เลือกอยู่",
+  "noBuildingBody": "เพิ่มอาคารก่อน แล้วกรอกบิลการไฟฟ้าหรือการประปาเพื่อเทียบกับที่เรียกเก็บจากห้อง",
+  "goBuildings": "ไปที่อาคาร",
+  "descriptionBuilding": "เทียบบิลของการไฟฟ้า / การประปา กับที่เรียกเก็บจากห้องและส่วนกลางของ{building}",
+  "figures": "ภาพรวมค่าน้ำไฟรั่วไหล",
+  "breakdownCaption": "ที่มาของหน่วยที่หายไป",
+  "lessUnitBilled": "หัก เรียกเก็บจากห้อง",
+  "lessCommonArea": "หัก ส่วนกลาง",
+  "footnote": "หน่วยที่เรียกเก็บมาจาก{source} · คำนวณเมื่อ {at}",
+  "summaryCol": {
+    "building": "อาคาร"
+  }
 }

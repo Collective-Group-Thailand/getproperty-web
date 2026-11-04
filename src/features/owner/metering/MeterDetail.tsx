@@ -11,7 +11,10 @@ import { isApiError } from "@/lib/api/errors";
 import type { Schemas } from "@/lib/api/types";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { Chart } from "@/ui/charts/Chart";
-import { DescriptionList } from "@/ui/components/DescriptionList";
+import { Button } from "@/ui/components/Button";
+import { EmptyState } from "@/ui/components/EmptyState";
+import { StatsRow } from "@/ui/components/StatsRow";
+import { IconMeter } from "@/ui/icons/glyphs/meter";
 import { LinkTabs } from "@/ui/components/LinkTabs";
 
 import { ownerPath, withQuery } from "../shared/links";
@@ -110,129 +113,147 @@ export async function MeterDetail({
         title={meter.code}
         testId="meter-title"
         description={`${meterT(`utility.${meter.utility}`)} · ${meter.name} · ${building.name}`}
-        crumbs={[{ label: meter.code }]}
       />
-      <div className="grid gap-4 lg:grid-cols-[1fr_2fr]">
-        <Card as="section" aria-labelledby="meter-facts">
-          <CardHeader title={<span id="meter-facts">{t("facts")}</span>} />
-          <DescriptionList
-            columns={1}
-            items={[
-              {
-                id: "assignment",
-                term: t("assignment"),
-                description: meter.unitNo ? (
-                  <a className="underline-offset-4 hover:underline" href={ownerPath(locale, `/units/${meter.unitId}`)}>
-                    {meterT("unit", { unit: meter.unitNo })}
-                  </a>
-                ) : (
-                  (meter.commonAreaLabel ?? meterT(`purpose.${meter.purpose}`))
-                ),
-              },
-              { id: "serial", term: t("serial"), description: meter.serial },
-              { id: "multiplier", term: t("multiplier"), description: meter.multiplier },
-              {
-                id: "initial",
-                term: t("initial"),
-                description: <span className="font-mono">{meter.initialReading}</span>,
-              },
-              { id: "since", term: t("since"), description: formatDate(meter.validFrom, locale) },
-              ...(meter.validTo
-                ? [{ id: "until", term: t("until"), description: formatDate(meter.validTo, locale) }]
-                : []),
-            ]}
+      <StatsRow
+        label={t("facts")}
+        highlight="last"
+        figures={[
+          {
+            key: "assignment",
+            label: t("assignment"),
+            value: meter.unitNo ? (
+              <a className="underline-offset-4 hover:underline" href={ownerPath(locale, `/units/${meter.unitId}`)}>
+                {meterT("unit", { unit: meter.unitNo })}
+              </a>
+            ) : (
+              (meter.commonAreaLabel ?? meterT(`purpose.${meter.purpose}`))
+            ),
+            hint: meter.serial ? t("serialValue", { serial: meter.serial }) : undefined,
+          },
+          {
+            key: "last",
+            label: t("last"),
+            value: meter.lastReading ? (
+              <span className="font-mono">{meter.lastReading.register}</span>
+            ) : (
+              meterT("never")
+            ),
+            hint: meter.lastReading ? formatDateTime(meter.lastReading.readAt, locale) : undefined,
+          },
+          {
+            key: "initial",
+            label: t("initial"),
+            value: <span className="font-mono">{meter.initialReading}</span>,
+            hint: t("multiplierValue", { multiplier: meter.multiplier }),
+          },
+          {
+            key: "since",
+            label: t("since"),
+            value: formatDate(meter.validFrom, locale),
+            hint: meter.validTo ? t("untilValue", { date: formatDate(meter.validTo, locale) }) : undefined,
+          },
+        ]}
+      />
+      <Card as="section" aria-labelledby="meter-usage" data-testid="meter-usage">
+        <CardHeader
+          title={<span id="meter-usage">{smart ? t("seriesTitle") : t("consumptionTitle")}</span>}
+          description={smart ? t("seriesHint") : t("consumptionHint")}
+        />
+        {smart ? (
+          <LinkTabs
+            label={t("buckets")}
+            current={tab(bucket)}
+            className="mb-3"
+            tabs={BUCKETS.map((value) => ({
+              href: tab(value),
+              label: t(`bucket.${value}`),
+              testId: `bucket-${value}`,
+            }))}
           />
-        </Card>
-        <Card as="section" aria-labelledby="meter-usage" data-testid="meter-usage">
-          <CardHeader
-            title={<span id="meter-usage">{smart ? t("seriesTitle") : t("consumptionTitle")}</span>}
-            description={smart ? t("seriesHint") : t("consumptionHint")}
-          />
-          {smart ? (
-            <LinkTabs
-              label={t("buckets")}
-              current={tab(bucket)}
-              className="mb-3"
-              tabs={BUCKETS.map((value) => ({
-                href: tab(value),
-                label: t(`bucket.${value}`),
-                testId: `bucket-${value}`,
-              }))}
-            />
-          ) : null}
-          <Chart
-            type={smart ? "line" : "bar"}
-            points={points}
-            title={
-              smart ? t("chartTitle", { meter: meter.code, bucket: t(`bucket.${bucket}`) }) : t("consumptionTitle")
-            }
-            formatValue={(value) => formatUnits(value, unit, locale)}
-            table={{ summary: t("table"), label: t("when"), value: t("usage") }}
-            emptyText={t("noData")}
-            data-testid="meter-chart"
-          />
-        </Card>
-      </div>
+        ) : null}
+        <Chart
+          type="line"
+          points={points}
+          title={smart ? t("chartTitle", { meter: meter.code, bucket: t(`bucket.${bucket}`) }) : t("consumptionTitle")}
+          formatValue={(value) => formatUnits(value, unit, locale)}
+          table={{ summary: t("table"), label: t("when"), value: t("usage") }}
+          emptyText={t("noData")}
+          data-testid="meter-chart"
+        />
+      </Card>
       <Card as="section" aria-labelledby="meter-readings" data-testid="meter-readings">
         <CardHeader title={<span id="meter-readings">{t("readings")}</span>} />
-        <div className="relative overflow-x-auto">
-          <table className="w-full min-w-[40rem] text-sm">
-            <caption className="sr-only">{t("readings")}</caption>
-            <thead>
-              <tr className="border-border text-muted border-b">
-                <th scope="col" className="py-2 text-start font-medium">
-                  {t("when")}
-                </th>
-                <th scope="col" className="py-2 text-end font-medium">
-                  {t("register")}
-                </th>
-                <th scope="col" className="py-2 text-end font-medium">
-                  {t("usage")}
-                </th>
-                <th scope="col" className="py-2 ps-4 text-start font-medium">
-                  {t("source")}
-                </th>
-                <th scope="col" className="py-2 text-start font-medium">
-                  {t("photo")}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {readings.data.map((reading) => (
-                <tr key={reading.id} className="border-border border-b" data-testid="reading-row">
-                  <th scope="row" className="py-2 text-start font-normal">
-                    {formatDateTime(reading.readAt, locale)}
+        {readings.data.length === 0 ? (
+          <EmptyState
+            icon={IconMeter}
+            title={t("noReadings")}
+            description={t("noReadingsBody")}
+            action={
+              <Button asChild variant="secondary">
+                <a href={ownerPath(locale, "/meters")}>{t("backToMeters")}</a>
+              </Button>
+            }
+          />
+        ) : (
+          <div className="relative overflow-x-auto">
+            <table className="w-full min-w-[40rem] text-base">
+              <caption className="sr-only">{t("readings")}</caption>
+              <thead>
+                <tr className="border-border text-muted border-b">
+                  <th scope="col" className="py-2.5 text-start text-sm font-medium">
+                    {t("when")}
                   </th>
-                  <td className="py-2 text-end font-mono tabular-nums">{reading.register}</td>
-                  <td className="py-2 text-end tabular-nums">
-                    {reading.consumption ? formatUnits(reading.consumption, unit, locale) : "—"}
-                  </td>
-                  <td className="py-2 ps-4">
-                    <span className="flex flex-wrap items-center gap-1">
-                      {isSource(reading.source) ? <ReadingSourceBadge source={reading.source} /> : null}
-                      <StatusBadgeOf map={READING_STATUS} value={reading.reviewState} size="sm" />
-                    </span>
-                  </td>
-                  <td className="py-2">
-                    {reading.evidenceDocumentId ? (
-                      <PhotoThumb
-                        fileId={reading.evidenceDocumentId}
-                        alt={t("photoAlt", {
-                          meter: meter!.code,
-                          register: reading.register,
-                          date: formatDate(reading.readAt, locale),
-                        })}
-                        size="sm"
-                      />
-                    ) : (
-                      <span className="text-muted">—</span>
-                    )}
-                  </td>
+                  <th scope="col" className="py-2.5 text-end text-sm font-medium">
+                    {t("register")}
+                  </th>
+                  <th scope="col" className="py-2.5 text-end text-sm font-medium">
+                    {t("usage")}
+                  </th>
+                  <th scope="col" className="py-2.5 ps-4 text-start text-sm font-medium">
+                    {t("source")}
+                  </th>
+                  <th scope="col" className="py-2.5 text-start text-sm font-medium">
+                    {t("photo")}
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {readings.data.map((reading) => (
+                  <tr key={reading.id} className="border-border border-b last:border-b-0" data-testid="reading-row">
+                    <th scope="row" className="py-2.5 text-start font-normal whitespace-nowrap tabular-nums">
+                      {formatDateTime(reading.readAt, locale)}
+                    </th>
+                    <td className="py-2 text-end font-mono tabular-nums">{reading.register}</td>
+                    <td className="py-2 text-end tabular-nums">
+                      {reading.consumption ? formatUnits(reading.consumption, unit, locale) : "—"}
+                    </td>
+                    <td className="py-2 ps-4">
+                      <span className="flex flex-wrap items-center gap-1">
+                        {isSource(reading.source) ? <ReadingSourceBadge source={reading.source} /> : null}
+                        <StatusBadgeOf map={READING_STATUS} value={reading.reviewState} size="sm" />
+                      </span>
+                    </td>
+                    <td className="py-2">
+                      {reading.evidenceDocumentId ? (
+                        <PhotoThumb
+                          fileId={reading.evidenceDocumentId}
+                          alt={t("photoAlt", {
+                            meter: meter!.code,
+                            register: reading.register,
+                            date: formatDate(reading.readAt, locale),
+                          })}
+                          size="thumb"
+                        />
+                      ) : (
+                        <span className="text-muted">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
         <ListPagination
           meta={readings.meta}
           path={ownerPath(locale, `/meters/${assetItemId}`)}
