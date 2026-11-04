@@ -1,12 +1,13 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { useEffect, useRef } from "react";
 
 import { SidebarNav } from "@/ui/components/AppShell";
 import { Icon } from "@/ui/icons";
 import { cn } from "@/ui/lib/cn";
 
-import { isActive } from "./menu";
+import { currentHref } from "./menu";
 import type { ShellNavGroup } from "./types";
 
 /**
@@ -25,8 +26,18 @@ export function ZoneSidebar({
   size?: "md" | "touch";
 }) {
   const pathname = usePathname();
+  const items = groups.flatMap((group) => group.items);
+  const current = currentHref(
+    items.flatMap((item) => [item.href, ...(item.children ?? []).map((child) => child.href)]),
+    pathname,
+  );
+  const root = useRef<HTMLDivElement>(null);
+  // The menu scrolls on its own: bring the open page into view (Money sits below the fold on a short screen).
+  useEffect(() => {
+    root.current?.querySelector('[aria-current="page"]')?.scrollIntoView({ block: "nearest" });
+  }, [pathname]);
   return (
-    <div className="flex flex-col gap-5" data-testid="zone-sidebar">
+    <div className="flex flex-col gap-5" data-testid="zone-sidebar" ref={root}>
       {groups.map((group) => (
         <section key={group.key} aria-labelledby={`nav-group-${group.key}`}>
           <h2
@@ -38,12 +49,18 @@ export function ZoneSidebar({
           <SidebarNav
             collapsed={collapsed}
             size={size}
-            items={group.items.map((item) => ({
-              href: item.href,
-              label: item.label,
-              icon: <Icon icon={item.icon} />,
-              active: isActive(item.href, pathname),
-            }))}
+            items={group.items.map((item) => {
+              const open = item.href === current || Boolean(item.children?.some((child) => child.href === current));
+              return {
+                href: item.href,
+                label: item.label,
+                icon: <Icon icon={item.icon} />,
+                active: open,
+                children: open
+                  ? item.children?.map((child) => ({ ...child, active: child.href === current }))
+                  : undefined,
+              };
+            })}
           />
         </section>
       ))}

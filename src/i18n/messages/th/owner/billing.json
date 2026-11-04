@@ -34,7 +34,8 @@
     "billables": "ห้องที่ออกบิล",
     "drafts": "ร่างบิล",
     "needsReview": "ต้องตรวจ",
-    "total": "ยอดรวมของรอบ"
+    "total": "ยอดรวมของรอบ",
+    "label": "ตัวเลขของรอบ"
   },
   "pendingTitle": "มิเตอร์ที่ยังไม่ได้จด",
   "pendingHint": "ก่อนตัดรอบ {cutoff} พนักงานจดผ่านรอบจดมิเตอร์",
@@ -106,5 +107,6 @@
     "quantityHint": "เว้นว่าง = 1"
   },
   "requested": "ขอให้จดแล้ว",
-  "requestedAnyone": "ขอให้ทีมงานจดแล้ว"
+  "requestedAnyone": "ขอให้ทีมงานจดแล้ว",
+  "noPropertyAction": "ดูอาคาร"
 }

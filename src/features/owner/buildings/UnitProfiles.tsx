@@ -21,6 +21,7 @@ import { IconTag } from "@/ui/icons/glyphs/tag";
 
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 import { FormDialog, text } from "@/features/shared/console/FormDialog";
+import { ownerPath } from "../shared/links";
 
 const LINE_KINDS: Schemas["LeaseLineKind"][] = [
   "internet",
@@ -172,7 +173,16 @@ export function UnitProfiles({ buildingId, profiles }: { buildingId: string; pro
       </div>
       {profiles.length === 0 ? (
         <Card>
-          <EmptyState icon={IconTag} title={t("empty.title")} description={t("empty.body")} />
+          <EmptyState
+            icon={IconTag}
+            title={t("empty.title")}
+            description={t("empty.body")}
+            action={
+              <Button asChild variant="secondary">
+                <a href={ownerPath(locale, `/buildings/${buildingId}`)}>{t("empty.action")}</a>
+              </Button>
+            }
+          />
         </Card>
       ) : (
         <ul className="grid gap-3 md:grid-cols-2">

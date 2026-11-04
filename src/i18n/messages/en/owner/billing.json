@@ -34,7 +34,8 @@
     "billables": "Units billed",
     "drafts": "Drafts",
     "needsReview": "Need review",
-    "total": "Total of the cycle"
+    "total": "Total of the cycle",
+    "label": "Cycle figures"
   },
   "pendingTitle": "Meters still to read",
   "pendingHint": "Before the cut-off {cutoff}. Staff read them in the reading round.",
@@ -106,5 +107,6 @@
     "quantityHint": "Empty = 1"
   },
   "requested": "requested",
-  "requestedAnyone": "Requested from staff"
+  "requestedAnyone": "Requested from staff",
+  "noPropertyAction": "View buildings"
 }

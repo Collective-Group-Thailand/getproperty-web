@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 import { expectAxeClean } from "./support/staff";
-import { gotoOwner, received, resetOwner, signInOwner } from "./support/owner";
+import { gotoOwner, ownerControl, received, resetOwner, signInOwner } from "./support/owner";
 
 /**
  * F2 2.4 on the mock API: payments list and detail, the slip review queue (zoomable picture,
@@ -145,7 +145,17 @@ test("arrears: aging, filters, party ledger, reminder now, export", async ({ pag
 
 test("documents archive: a month's PDFs in the viewer and the zip export", async ({ page }) => {
   await signInOwner(page);
-  await gotoOwner(page, "/documents");
+  // The archive shows one Bangkok month and opens on the current one, while the mock world dates its documents days
+  // before "now" — on the first days of a month the current one is still empty. Open the month of the newest issued
+  // invoice instead, so the run does not depend on the day of the month.
+  const { invoices } = await ownerControl<{ invoices: { issuedAt: string | null }[] }>("state");
+  const newest = invoices
+    .map((invoice) => invoice.issuedAt)
+    .filter((issuedAt): issuedAt is string => Boolean(issuedAt))
+    .sort()
+    .at(-1)!;
+  const period = new Date(Date.parse(newest) + 7 * 3600_000).toISOString().slice(0, 7);
+  await gotoOwner(page, `/documents?period=${period}`);
   await expect(page.getByTestId("document-row").first()).toBeVisible();
   await expectAxeClean(page);
   await page.getByTestId("document-open").first().click();

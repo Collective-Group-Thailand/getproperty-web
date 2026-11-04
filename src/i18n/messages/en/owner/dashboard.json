@@ -7,7 +7,8 @@
     "today": "Today",
     "clear": {
       "title": "Nothing waits for you",
-      "body": "Readings, invoices, slips and deposits are all up to date."
+      "body": "Readings, invoices, slips and deposits are all up to date.",
+      "action": "View this month's invoices"
     },
     "readings": {
       "title": "{count, plural, one {# meter} other {# meters}} to read before the cut-off",
@@ -62,6 +63,11 @@
     "etax": {
       "title": "{count, plural, one {# e-Tax document} other {# e-Tax documents}} to fix",
       "detail": "Refused by the provider or failed"
+    },
+    "count": "{count} items",
+    "group": {
+      "today": "Today ({count})",
+      "later": "Next ({count})"
     }
   },
   "kpi": {
@@ -83,7 +89,15 @@
     "cutoff": "Next cut-off {date}",
     "autoIssue": "Invoices issue themselves at {at} unless you issue them first",
     "issuedAt": "Issued {at}",
-    "none": "No billing cycle yet"
+    "none": "No billing cycle yet",
+    "stages": "Cycle stages",
+    "stage": {
+      "open": "Opened",
+      "readings_pending": "Meter readings",
+      "computed": "Review drafts",
+      "issued": "Issued",
+      "closed": "Closed"
+    }
   },
   "compliance": {
     "title": "Compliance score",

@@ -9,11 +9,16 @@
     "method": "Method",
     "allMethods": "All methods",
     "status": "Status",
-    "allStatuses": "All statuses"
+    "allStatuses": "All statuses",
+    "allMonths": "All months"
   },
   "empty": {
     "title": "No payments here",
-    "body": "Payments appear when residents pay or when you record one."
+    "body": "Payments appear when residents pay or when you record one.",
+    "filteredTitle": "No payments match these filters",
+    "filteredBody": "Try another month, method or search.",
+    "clear": "Clear filters",
+    "invoices": "View invoices"
   },
   "via": {
     "webhook": "Payment provider",
@@ -48,7 +53,12 @@
     "receiptVoided": "voided",
     "noReceipts": "No receipt.",
     "dismissed": "Dismissed",
-    "dismissedOn": "{date} — {reason}"
+    "dismissedOn": "{date} — {reason}",
+    "panelTitle": "This payment",
+    "paperKind": "Payment record",
+    "payer": "Payer",
+    "unit": "Unit",
+    "confirmedLine": "Confirmed {date} · {via}"
   },
   "reverse": {
     "button": "Reverse",
@@ -63,7 +73,8 @@
     "status": "Status",
     "empty": {
       "title": "No slips to review",
-      "body": "Slips that need a person appear here."
+      "body": "Slips that need a person appear here.",
+      "back": "View all payments"
     },
     "detailTitle": "Unit {unit} · {invoice}",
     "duplicateTitle": "This reference was already used",
@@ -137,7 +148,19 @@
     "record": "Record payment",
     "confirmTitle": "Record this payment?",
     "confirmBody": "{amount} for unit {unit}, invoice {number}. A receipt is issued to the resident.",
-    "recorded": "Payment recorded"
+    "recorded": "Payment recorded",
+    "summaryTitle": "Payment summary",
+    "summaryInvoice": "Invoice",
+    "summaryUnit": "Unit",
+    "summaryParty": "Payer",
+    "summaryBalance": "Invoice balance",
+    "summaryNote": "The invoice is settled and a receipt issued once recorded.",
+    "sectionInvoice": "Invoice paid",
+    "sectionInvoiceHint": "Choose an open invoice.",
+    "sectionMoney": "Money received",
+    "sectionMoneyHint": "How much, how and when it was received.",
+    "sectionEvidence": "Evidence and notes",
+    "sectionEvidenceHint": "Reference, withholding tax and the slip for a transfer."
   },
   "credits": {
     "title": "Credits & refunds",
@@ -164,7 +187,8 @@
       "choose": "Choose a file",
       "tooLarge": "The file is larger than 10 MB",
       "done": "Refund recorded"
-    }
+    },
+    "emptyAction": "View payments"
   },
   "resendReceipt": {
     "action": "Resend receipt",
@@ -178,7 +202,8 @@
     "description": "Money the bank reported that was not booked because it looks like a transfer already booked. Check the bank account, then book it or dismiss it.",
     "empty": {
       "title": "No payments to check",
-      "body": "A payment the bank reports that repeats one already booked waits here."
+      "body": "A payment the bank reports that repeats one already booked waits here.",
+      "back": "View all payments"
     },
     "noPermission": "An Owner or Manager (record payments) decides these.",
     "duplicateOf": "Open the payment already booked",
@@ -203,5 +228,23 @@
     "dismissReason": "Reason",
     "dismissReasonHint": "For example: the bank repeated the same notification; checked against the statement.",
     "dismissed": "Payment dismissed"
+  },
+  "record": "Record a payment",
+  "figures": {
+    "label": "This month's figures",
+    "received": "Received this month",
+    "receivedHint": "{count} payments",
+    "slips": "Slips to review",
+    "held": "Payments to check",
+    "arrears": "Overdue",
+    "arrearsHint": "{parties} parties"
+  },
+  "column": {
+    "unit": "Unit",
+    "payer": "Payer",
+    "method": "Method",
+    "paidAt": "Paid",
+    "status": "Status",
+    "amount": "Amount"
   }
 }

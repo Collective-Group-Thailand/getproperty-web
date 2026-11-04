@@ -6,7 +6,12 @@ import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { ownerContext } from "@/features/owner/shared/server";
 import { loadUnitPanel } from "@/features/owner/units/loadUnit";
 import { UnitPanel } from "@/features/owner/units/UnitPanel";
+import { UNIT_STATUS } from "@/domain/status/unit";
+import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
+import { formatTHB } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
+import { Button } from "@/ui/components/Button";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
 import { isApiError } from "@/lib/api/errors";
 
 export async function generateMetadata() {
@@ -36,20 +41,54 @@ export default async function Unit({ params }: { params: Promise<{ locale: Local
           { label: data.unit.unitNo },
         ]}
       />
-      <div className="max-w-3xl">
-        <UnitPanel
-          data={data}
-          locale={locale}
-          links={{
-            unit: `${prefix}/units/${unitId}`,
-            lease: (id) => `${prefix}/leases/${id}`,
-            newLease: `${prefix}/leases/new?unit=${unitId}`,
-            invoice: (id) => `${prefix}/invoices/${id}`,
-            meter: (id) => `${prefix}/meters/${id}`,
-            request: (id) => `${prefix}/service-requests/${id}`,
-          }}
-        />
-      </div>
+      <DetailLayout
+        panel={
+          <ActionPanel
+            title={t("panel.next")}
+            testId="unit-action-panel"
+            status={<StatusBadgeOf map={UNIT_STATUS} value={data.unit.status} />}
+            facts={[
+              ...(data.unit.baseRent
+                ? [{ key: "rent", label: t("panel.baseRent"), value: formatTHB(data.unit.baseRent, locale) }]
+                : []),
+              ...(data.unit.floorLevel ? [{ key: "floor", label: t("panel.floor"), value: data.unit.floorLevel }] : []),
+            ]}
+            primary={
+              data.lease ? (
+                <Button asChild>
+                  <a href={`${prefix}/leases/${data.lease.id}`}>{t("panel.openLease")}</a>
+                </Button>
+              ) : (
+                <Button asChild>
+                  <a href={`${prefix}/leases/new?unit=${unitId}`}>{t("panel.newLease")}</a>
+                </Button>
+              )
+            }
+            secondary={
+              building ? (
+                <Button asChild variant="secondary">
+                  <a href={ownerPath(locale, `/units?building=${building.id}`)}>{t("panel.board")}</a>
+                </Button>
+              ) : undefined
+            }
+          />
+        }
+      >
+        <div className="rounded-card border-border bg-surface shadow-card border p-5 md:p-6">
+          <UnitPanel
+            data={data}
+            locale={locale}
+            links={{
+              unit: `${prefix}/units/${unitId}`,
+              lease: (id) => `${prefix}/leases/${id}`,
+              newLease: `${prefix}/leases/new?unit=${unitId}`,
+              invoice: (id) => `${prefix}/invoices/${id}`,
+              meter: (id) => `${prefix}/meters/${id}`,
+              request: (id) => `${prefix}/service-requests/${id}`,
+            }}
+          />
+        </div>
+      </DetailLayout>
     </OwnerPage>
   );
 }

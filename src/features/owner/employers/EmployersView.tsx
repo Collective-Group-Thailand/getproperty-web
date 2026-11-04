@@ -22,7 +22,6 @@ import { IconChevronRight } from "@/ui/icons/glyphs/chevron-right";
 import { IconResidents } from "@/ui/icons/glyphs/residents";
 import { IconShield } from "@/ui/icons/glyphs/shield";
 
-import { ContractsNav } from "../contracts/ContractsNav";
 import { ownerPath } from "../shared/links";
 import { ownerCan, readOnly, section, type OwnerContext } from "../shared/server";
 import { shiftMonth, statementMonth, workerRows } from "./employer";
@@ -72,7 +71,6 @@ export async function EmployersView({ context, create }: { context: OwnerContext
           ) : undefined
         }
       />
-      <ContractsNav current="/employers" locale={locale} />
       {canManage && employers.length === 0 ? (
         <Callout
           tone="info"

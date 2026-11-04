@@ -6,18 +6,20 @@ import { formatDateTime, formatTHB } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
+import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { ListToolbar } from "@/ui/components/ListToolbar";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 
 import { FilterBar } from "@/features/shared/console/FilterBar";
 import { ownerPath, withQuery } from "../shared/links";
-import { MoneyNav } from "../shared/MoneyNav";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { param, type OwnerContext } from "../shared/server";
 import { heldCount } from "./counts";
+import { PaymentsTabs } from "./PaymentsTabs";
 import { SlipDecision, SlipImage } from "./SlipDecision";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -58,33 +60,43 @@ export async function SlipQueue({ context, searchParams }: { context: OwnerConte
     ownerPath(locale, withQuery("/payments/slips", { status: param(searchParams.status), slip: slipId }));
 
   return (
-    <OwnerPage testId="slips" wide>
-      <PageHeader title={t("title")} description={t("description")} />
-      <MoneyNav
-        section="payments"
-        current="/payments/slips"
-        locale={locale}
-        counts={{ "/payments/slips": pendingCount, "/payments/held": held }}
-      />
-      <FilterBar
-        fields={[
-          {
-            name: "status",
-            label: t("status"),
-            type: "select",
-            options: SLIP_VALUES.map((value) => ({ value, label: status(value) })),
-          },
-        ]}
+    <OwnerPage testId="slips">
+      <PageHeader title={t("title")} description={t("description")} back={null} />
+      <ListToolbar
+        tabs={<PaymentsTabs current="/payments/slips" locale={locale} slips={pendingCount} held={held} />}
+        filters={
+          <FilterBar
+            variant="toolbar"
+            fields={[
+              {
+                name: "status",
+                label: t("status"),
+                type: "select",
+                fallback: "pending_review",
+                options: SLIP_VALUES.map((value) => ({ value, label: status(value) })),
+              },
+            ]}
+          />
+        }
       />
       {list.data.length === 0 ? (
-        <Card>
-          <EmptyState icon={IconCheckCircle} title={t("empty.title")} description={t("empty.body")} />
-        </Card>
+        <EmptyState
+          variant="card"
+          icon={IconCheckCircle}
+          title={t("empty.title")}
+          description={t("empty.body")}
+          action={
+            <Button asChild variant="secondary">
+              <a href={ownerPath(locale, "/payments")}>{t("empty.back")}</a>
+            </Button>
+          }
+        />
       ) : (
         <div className="grid gap-4 lg:grid-cols-[22rem_1fr]">
           <ul
-            className="divide-border border-border bg-surface rounded-card divide-y self-start border"
+            className="divide-border border-border bg-surface rounded-card shadow-card divide-y self-start overflow-hidden border"
             data-testid="slip-list"
+            aria-label={t("title")}
           >
             {list.data.map((slip) => (
               <li key={slip.id}>

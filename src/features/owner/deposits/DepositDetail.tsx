@@ -10,8 +10,11 @@ import { isApiError } from "@/lib/api/errors";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Callout } from "@/ui/components/Callout";
+import { Button } from "@/ui/components/Button";
 import { Card, CardHeader } from "@/ui/components/Card";
-import { DescriptionList } from "@/ui/components/DescriptionList";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
+import { Paper, PaperFoot, PaperHead, PaperParties, PaperSection, PaperTotals } from "@/ui/components/Paper";
+import { Statement } from "@/ui/components/Statement";
 import { IconClock } from "@/ui/icons/glyphs/clock";
 
 import { DocumentButton } from "../shared/DocumentButton";
@@ -97,7 +100,6 @@ export async function DepositDetail({ context, depositId }: { context: OwnerCont
             {settlement ? <StatusBadgeOf map={SETTLEMENT_STATUS} value={settlement.status} /> : null}
           </span>
         }
-        actions={<SettlementActions deposit={deposit} unitId={unitId} />}
       />
 
       {settlement?.isLate ? (
@@ -135,11 +137,12 @@ export async function DepositDetail({ context, depositId }: { context: OwnerCont
         </Callout>
       ) : null}
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card as="section" aria-labelledby="deposit-amounts" data-testid="deposit-amounts">
-          <CardHeader
-            title={<span id="deposit-amounts">{t("amounts")}</span>}
-            action={
+      <DetailLayout
+        panel={
+          <ActionPanel
+            title={t("panelTitle")}
+            testId="deposit-panel"
+            status={
               days !== null ? (
                 <span data-testid="deposit-countdown">
                   <Badge
@@ -149,251 +152,301 @@ export async function DepositDetail({ context, depositId }: { context: OwnerCont
                     {days < 0 ? t("overdueBy", { days: -days }) : t("daysLeft", { days })}
                   </Badge>
                 </span>
-              ) : null
+              ) : undefined
+            }
+            facts={[
+              { key: "security", label: t("security"), value: formatTHB(deposit.amountSecurity, locale) },
+              { key: "advance", label: t("advance"), value: formatTHB(deposit.amountAdvanceRent, locale) },
+              ...(settlement
+                ? [{ key: "deadline", label: t("deadline"), value: formatDateTime(settlement.deadlineAt, locale) }]
+                : []),
+            ]}
+            primary={<SettlementActions deposit={deposit} unitId={unitId} layout="panel" />}
+            secondary={
+              <div className="flex flex-col gap-2 [&>*]:w-full">
+                {deposit.receiptNumber ? (
+                  <DocumentButton
+                    document={{ kind: "depositReceipt", id: deposit.id }}
+                    label={t("receiptPdf")}
+                    title={t("receiptTitle", { number: deposit.receiptNumber })}
+                  />
+                ) : null}
+                {settlement?.statementNumber ? (
+                  <DocumentButton
+                    document={{ kind: "depositStatement", id: deposit.id }}
+                    label={t("statementPdf")}
+                    title={t("statementTitle", { number: settlement.statementNumber })}
+                    testId="statement-pdf"
+                  />
+                ) : null}
+                {lease.data ? (
+                  <Button asChild variant="ghost">
+                    <a href={ownerPath(locale, `/leases/${lease.data.id}`)}>{t("openLease")}</a>
+                  </Button>
+                ) : null}
+              </div>
             }
           />
-          <DescriptionList
-            items={[
-              { id: "security", term: t("security"), description: formatTHB(deposit.amountSecurity, locale) },
-              { id: "advance", term: t("advance"), description: formatTHB(deposit.amountAdvanceRent, locale) },
-              {
-                id: "received",
-                term: t("received"),
-                description: deposit.receivedAt ? formatDateTime(deposit.receivedAt, locale) : null,
-              },
-              { id: "receipt", term: t("receiptNumber"), description: deposit.receiptNumber },
+        }
+      >
+        <Paper label={t("title", { unit: deposit.unitNo })} testId="deposit-amounts">
+          <PaperHead
+            kind={settlement ? t("paperSettlement") : t("paperDeposit")}
+            number={settlement?.statementNumber ?? deposit.receiptNumber ?? undefined}
+            facts={[
+              ...(deposit.receivedAt
+                ? [{ key: "received", label: t("received"), value: formatDate(deposit.receivedAt, locale) }]
+                : []),
               ...(settlement
                 ? [
-                    { id: "moveOut", term: t("moveOut"), description: formatDateTime(settlement.moveOutAt, locale) },
-                    { id: "deadline", term: t("deadline"), description: formatDateTime(settlement.deadlineAt, locale) },
-                    { id: "held", term: t("held"), description: formatTHB(settlement.depositHeld, locale) },
+                    { key: "moveOut", label: t("moveOut"), value: formatDate(settlement.moveOutAt, locale) },
+                    { key: "deadline", label: t("deadline"), value: formatDate(settlement.deadlineAt, locale) },
+                  ]
+                : []),
+            ]}
+          />
+          <PaperParties
+            items={[
+              { key: "lessee", label: t("lessee"), value: deposit.lesseeName ?? "—" },
+              { key: "unit", label: t("unit"), value: <span className="font-mono">{deposit.unitNo}</span> },
+              ...(deposit.leaseNumber
+                ? [
                     {
-                      id: "unused",
-                      term: t("advanceUnused"),
-                      description: formatTHB(settlement.advanceRentUnused, locale),
-                    },
-                    {
-                      id: "deductions",
-                      term: t("deductionsTotal"),
-                      description: (
-                        <span data-testid="deductions-total">{formatTHB(settlement.deductionsTotal, locale)}</span>
+                      key: "lease",
+                      label: t("lease"),
+                      value: lease.data ? (
+                        <a
+                          className="underline-offset-4 hover:underline"
+                          href={ownerPath(locale, `/leases/${lease.data.id}`)}
+                        >
+                          {deposit.leaseNumber}
+                        </a>
+                      ) : (
+                        deposit.leaseNumber
                       ),
-                    },
-                    {
-                      id: "utilities",
-                      term: t("utilitiesFinal"),
-                      description: formatTHB(settlement.utilitiesFinal, locale),
-                    },
-                    {
-                      id: "proposed",
-                      term: t("proposedRefund"),
-                      description: settlement.proposedRefund ? (
-                        <span data-testid="proposed-refund">{formatTHB(settlement.proposedRefund, locale)}</span>
-                      ) : null,
-                    },
-                    {
-                      id: "agreed",
-                      term: t("agreedRefund"),
-                      description: settlement.agreedRefund ? formatTHB(settlement.agreedRefund, locale) : null,
-                    },
-                    {
-                      id: "refund",
-                      term: t("refunded"),
-                      description:
-                        settlement.refundAmount && settlement.refundedAt ? (
-                          <span data-testid="refunded">
-                            {t("refundedOn", {
-                              amount: formatTHB(settlement.refundAmount, locale),
-                              date: formatDateTime(settlement.refundedAt, locale),
-                              method: settlement.refundMethod ? methods(settlement.refundMethod) : "",
-                            })}
-                          </span>
-                        ) : null,
                     },
                   ]
                 : []),
             ]}
           />
-          <div className="mt-4 flex flex-wrap gap-2">
-            {deposit.receiptNumber ? (
-              <DocumentButton
-                document={{ kind: "depositReceipt", id: deposit.id }}
-                label={t("receiptPdf")}
-                title={t("receiptTitle", { number: deposit.receiptNumber })}
-              />
-            ) : null}
-            {settlement?.statementNumber ? (
-              <DocumentButton
-                document={{ kind: "depositStatement", id: deposit.id }}
-                label={t("statementPdf")}
-                title={t("statementTitle", { number: settlement.statementNumber })}
-                testId="statement-pdf"
-              />
-            ) : null}
-            {lease.data ? (
-              <a
-                className="text-sm underline-offset-4 hover:underline"
-                href={ownerPath(locale, `/leases/${lease.data.id}`)}
-              >
-                {t("openLease")}
-              </a>
-            ) : null}
-          </div>
-        </Card>
-
-        {settlement ? (
-          <Card as="section" aria-labelledby="deposit-deductions" data-testid="deposit-deductions">
-            <CardHeader
-              title={<span id="deposit-deductions">{t("deductions")}</span>}
-              description={t("deductionsHint")}
-              action={editable ? <AddDeductionButton deposit={deposit} unitId={unitId} items={itemOptions} /> : null}
-            />
-            {settlement.items.length ? (
-              <ul className="flex flex-col gap-3">
-                {settlement.items.map((item) => (
-                  <li
-                    key={item.id}
-                    className="rounded-control border-border flex flex-col gap-2 border p-3"
-                    data-testid="deduction"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="font-medium">{item.description}</span>
-                      <span className="tabular-nums">{formatTHB(item.amount, locale)}</span>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2 text-sm">
-                      <Badge tone="neutral" size="sm">
-                        {deductionT(`kinds.${item.kind}`)}
-                      </Badge>
-                      {item.residentAccepted === true ? (
-                        <Badge tone="success" size="sm">
-                          {t("residentAccepted")}
-                        </Badge>
-                      ) : item.residentAccepted === false ? (
-                        <Badge tone="danger" size="sm">
-                          {t("residentDisputed")}
-                        </Badge>
-                      ) : null}
-                      {item.evidenceDocumentIds.map((fileId, index) => (
-                        <PhotoThumb
-                          key={fileId}
-                          fileId={fileId}
-                          alt={t("evidenceAlt", { index: index + 1, description: item.description })}
-                          size="sm"
-                        />
-                      ))}
-                      {editable ? <RemoveDeductionButton deposit={deposit} item={item} /> : null}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-muted text-sm">{t("noDeductions")}</p>
-            )}
-          </Card>
-        ) : null}
-      </div>
-
-      {settlement ? (
-        <Card as="section" aria-labelledby="deposit-comparison" data-testid="inspection-comparison">
-          <CardHeader
-            title={<span id="deposit-comparison">{t("comparison")}</span>}
-            description={t("comparisonHint")}
-          />
-          {lines.length ? (
-            <div className="relative overflow-x-auto">
-              <table className="w-full min-w-[40rem] text-sm">
-                <caption className="sr-only">{t("comparison")}</caption>
-                <thead>
-                  <tr className="border-border border-b text-start">
-                    <th scope="col" className="py-2 text-start font-medium">
-                      {t("item")}
-                    </th>
-                    <th scope="col" className="py-2 text-start font-medium">
-                      {t("moveIn")}
-                    </th>
-                    <th scope="col" className="py-2 text-start font-medium">
-                      {t("moveOutSide")}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {lines.map((line) => (
-                    <tr
-                      key={line.itemKey}
-                      className="border-border border-b align-top"
-                      data-testid="comparison-line"
-                      data-changed={line.changed ? "true" : undefined}
-                    >
-                      <th scope="row" className="py-2 pe-3 text-start font-normal">
-                        <span className="flex flex-col">
-                          <span className="font-medium">{line.label}</span>
-                          {line.area ? <span className="text-muted text-xs">{line.area}</span> : null}
-                          {line.changed ? (
-                            <Badge tone="warning" size="sm" className="mt-1 self-start">
-                              {t("changed")}
+          {settlement ? (
+            <PaperSection
+              title={t("deductions")}
+              aside={editable ? <AddDeductionButton deposit={deposit} unitId={unitId} items={itemOptions} /> : null}
+            >
+              <div data-testid="deposit-deductions">
+                {settlement.items.length ? (
+                  <ul className="border-border flex flex-col border-t">
+                    {settlement.items.map((item) => (
+                      <li
+                        key={item.id}
+                        className="border-border flex flex-col gap-2 border-b py-3 last:border-b-0"
+                        data-testid="deduction"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="font-medium">{item.description}</span>
+                          <span className="font-medium tabular-nums">{formatTHB(item.amount, locale)}</span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2 text-sm">
+                          <Badge tone="neutral" size="sm">
+                            {deductionT(`kinds.${item.kind}`)}
+                          </Badge>
+                          {item.residentAccepted === true ? (
+                            <Badge tone="success" size="sm">
+                              {t("residentAccepted")}
+                            </Badge>
+                          ) : item.residentAccepted === false ? (
+                            <Badge tone="danger" size="sm">
+                              {t("residentDisputed")}
                             </Badge>
                           ) : null}
-                        </span>
+                          {item.evidenceDocumentIds.map((fileId, index) => (
+                            <PhotoThumb
+                              key={fileId}
+                              fileId={fileId}
+                              alt={t("evidenceAlt", { index: index + 1, description: item.description })}
+                              size="sm"
+                            />
+                          ))}
+                          {editable ? <RemoveDeductionButton deposit={deposit} item={item} /> : null}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-muted text-sm">{t("noDeductions")}</p>
+                )}
+              </div>
+            </PaperSection>
+          ) : null}
+          <PaperTotals>
+            <Statement
+              caption={t("amounts")}
+              lines={
+                settlement
+                  ? [
+                      { key: "held", label: t("held"), value: formatTHB(settlement.depositHeld, locale) },
+                      {
+                        key: "unused",
+                        label: t("advanceUnused"),
+                        value: formatTHB(settlement.advanceRentUnused, locale),
+                      },
+                      {
+                        key: "deductions",
+                        label: t("deductionsTotal"),
+                        value: (
+                          <span data-testid="deductions-total">{formatTHB(settlement.deductionsTotal, locale)}</span>
+                        ),
+                      },
+                      {
+                        key: "utilities",
+                        label: t("utilitiesFinal"),
+                        value: formatTHB(settlement.utilitiesFinal, locale),
+                      },
+                      {
+                        key: "proposed",
+                        label: t("proposedRefund"),
+                        kind: settlement.agreedRefund ? "subtotal" : "result",
+                        value: settlement.proposedRefund ? (
+                          <span data-testid="proposed-refund">{formatTHB(settlement.proposedRefund, locale)}</span>
+                        ) : (
+                          "—"
+                        ),
+                      },
+                      ...(settlement.agreedRefund
+                        ? [
+                            {
+                              key: "agreed",
+                              label: t("agreedRefund"),
+                              kind: "result" as const,
+                              value: formatTHB(settlement.agreedRefund, locale),
+                            },
+                          ]
+                        : []),
+                    ]
+                  : [
+                      { key: "security", label: t("security"), value: formatTHB(deposit.amountSecurity, locale) },
+                      { key: "advance", label: t("advance"), value: formatTHB(deposit.amountAdvanceRent, locale) },
+                    ]
+              }
+            />
+          </PaperTotals>
+          {settlement?.refundAmount && settlement.refundedAt ? (
+            <PaperFoot>
+              <p data-testid="refunded">
+                {t("refunded")}{" "}
+                {t("refundedOn", {
+                  amount: formatTHB(settlement.refundAmount, locale),
+                  date: formatDateTime(settlement.refundedAt, locale),
+                  method: settlement.refundMethod ? methods(settlement.refundMethod) : "",
+                })}
+              </p>
+            </PaperFoot>
+          ) : null}
+        </Paper>
+
+        {settlement ? (
+          <Card as="section" aria-labelledby="deposit-comparison" data-testid="inspection-comparison">
+            <CardHeader
+              title={<span id="deposit-comparison">{t("comparison")}</span>}
+              description={t("comparisonHint")}
+            />
+            {lines.length ? (
+              <div className="relative overflow-x-auto" tabIndex={0} role="region" aria-label={t("comparison")}>
+                <table className="w-full min-w-[40rem] text-sm">
+                  <caption className="sr-only">{t("comparison")}</caption>
+                  <thead>
+                    <tr className="border-border border-b text-start">
+                      <th scope="col" className="py-2 text-start font-medium">
+                        {t("item")}
                       </th>
-                      {[line.moveIn, line.moveOut].map((side, index) => (
-                        <td key={index} className="py-2 pe-3">
-                          {side ? (
-                            <span className="flex flex-col gap-1">
-                              {side.condition ? (
-                                <Badge tone={CONDITION_TONE[side.condition]} size="sm" className="self-start">
-                                  {t(`condition.${side.condition}`)}
-                                </Badge>
-                              ) : null}
-                              {side.meterRegister ? <span className="font-mono">{side.meterRegister}</span> : null}
-                              {side.notes ? <span className="text-muted">{side.notes}</span> : null}
-                              <span className="flex flex-wrap gap-1">
-                                {side.photoDocumentIds.map((fileId, photo) => (
-                                  <PhotoThumb
-                                    key={fileId}
-                                    fileId={fileId}
-                                    alt={t("photoAlt", { item: line.label, index: photo + 1 })}
-                                    size="sm"
-                                  />
-                                ))}
-                              </span>
-                            </span>
-                          ) : (
-                            <span className="text-muted">{t("notInspected")}</span>
-                          )}
-                        </td>
-                      ))}
+                      <th scope="col" className="py-2 text-start font-medium">
+                        {t("moveIn")}
+                      </th>
+                      <th scope="col" className="py-2 text-start font-medium">
+                        {t("moveOutSide")}
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <p className="text-muted text-sm">{t("noComparison")}</p>
-          )}
-          {residentAdded.map((added) => (
-            <div
-              key={added.side}
-              className="border-border mt-4 flex flex-col gap-2 border-t pt-4"
-              data-testid="resident-report-note"
-            >
-              <p className="m-0 text-sm font-medium">{t(`residentAdded.${added.side}`)}</p>
-              {added.note ? <p className="m-0 text-sm">{added.note}</p> : null}
-              {added.photos.length ? (
-                <span className="flex flex-wrap gap-1">
-                  {added.photos.map((fileId, index) => (
-                    <PhotoThumb
-                      key={fileId}
-                      fileId={fileId}
-                      alt={t("residentPhotoAlt", { index: index + 1 })}
-                      size="sm"
-                    />
-                  ))}
-                </span>
-              ) : null}
-            </div>
-          ))}
-        </Card>
-      ) : null}
+                  </thead>
+                  <tbody>
+                    {lines.map((line) => (
+                      <tr
+                        key={line.itemKey}
+                        className="border-border border-b align-top"
+                        data-testid="comparison-line"
+                        data-changed={line.changed ? "true" : undefined}
+                      >
+                        <th scope="row" className="py-2 pe-3 text-start font-normal">
+                          <span className="flex flex-col">
+                            <span className="font-medium">{line.label}</span>
+                            {line.area ? <span className="text-muted text-xs">{line.area}</span> : null}
+                            {line.changed ? (
+                              <Badge tone="warning" size="sm" className="mt-1 self-start">
+                                {t("changed")}
+                              </Badge>
+                            ) : null}
+                          </span>
+                        </th>
+                        {[line.moveIn, line.moveOut].map((side, index) => (
+                          <td key={index} className="py-2 pe-3">
+                            {side ? (
+                              <span className="flex flex-col gap-1">
+                                {side.condition ? (
+                                  <Badge tone={CONDITION_TONE[side.condition]} size="sm" className="self-start">
+                                    {t(`condition.${side.condition}`)}
+                                  </Badge>
+                                ) : null}
+                                {side.meterRegister ? <span className="font-mono">{side.meterRegister}</span> : null}
+                                {side.notes ? <span className="text-muted">{side.notes}</span> : null}
+                                <span className="flex flex-wrap gap-1">
+                                  {side.photoDocumentIds.map((fileId, photo) => (
+                                    <PhotoThumb
+                                      key={fileId}
+                                      fileId={fileId}
+                                      alt={t("photoAlt", { item: line.label, index: photo + 1 })}
+                                      size="sm"
+                                    />
+                                  ))}
+                                </span>
+                              </span>
+                            ) : (
+                              <span className="text-muted">{t("notInspected")}</span>
+                            )}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-muted text-sm">{t("noComparison")}</p>
+            )}
+            {residentAdded.map((added) => (
+              <div
+                key={added.side}
+                className="border-border mt-4 flex flex-col gap-2 border-t pt-4"
+                data-testid="resident-report-note"
+              >
+                <p className="m-0 text-sm font-medium">{t(`residentAdded.${added.side}`)}</p>
+                {added.note ? <p className="m-0 text-sm">{added.note}</p> : null}
+                {added.photos.length ? (
+                  <span className="flex flex-wrap gap-1">
+                    {added.photos.map((fileId, index) => (
+                      <PhotoThumb
+                        key={fileId}
+                        fileId={fileId}
+                        alt={t("residentPhotoAlt", { index: index + 1 })}
+                        size="sm"
+                      />
+                    ))}
+                  </span>
+                ) : null}
+              </div>
+            ))}
+          </Card>
+        ) : null}
+      </DetailLayout>
     </OwnerPage>
   );
 }

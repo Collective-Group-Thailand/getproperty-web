@@ -22,7 +22,11 @@ export function ComplianceChecks({ lease }: { lease: Pick<Schemas["LeaseDto"], "
           >
             {t(`outcome.${check.outcome}`)}
           </Badge>
-          <span className="font-mono text-xs">{check.ruleId}</span>
+          <span>
+            {t.has(`rule.${check.ruleId.replace(/^compliance\./, "")}` as never)
+              ? t(`rule.${check.ruleId.replace(/^compliance\./, "")}` as never)
+              : t("rule.other")}
+          </span>
           {check.acknowledgementId ? <span className="text-muted">{t("acknowledged")}</span> : null}
         </li>
       ))}

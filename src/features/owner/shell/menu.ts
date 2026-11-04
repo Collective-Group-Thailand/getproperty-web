@@ -39,7 +39,29 @@ export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
   buildings: { href: "/buildings", icon: IconBuilding, group: "operations" },
   units: { href: "/units", icon: IconRoom, group: "operations" },
   parties: { href: "/parties", icon: IconResidents, group: "operations" },
-  leases: { href: "/leases", icon: IconLease, group: "operations" },
+  leases: {
+    href: "/leases",
+    icon: IconLease,
+    group: "operations",
+    // The lease section's pages (G3): no contracts / employer menu keys in the API yet, so they live under leases.
+    children: [
+      { key: "leases", href: "/leases", label: "owner.contracts.nav.leases", testId: "contracts-tab-leases" },
+      { key: "library", href: "/contracts", label: "owner.contracts.nav.library", testId: "contracts-tab-library" },
+      {
+        key: "documents",
+        href: "/contracts/documents",
+        label: "owner.contracts.nav.documents",
+        testId: "contracts-tab-documents",
+      },
+      { key: "renewals", href: "/renewals", label: "owner.contracts.nav.renewals", testId: "contracts-tab-renewals" },
+      {
+        key: "employers",
+        href: "/employers",
+        label: "owner.contracts.nav.employers",
+        testId: "contracts-tab-employers",
+      },
+    ],
+  },
   deposits: { href: "/deposits", icon: IconWallet, group: "operations" },
   readings: { href: "/meters", icon: IconMeter, group: "operations" },
   devices: { href: "/devices", icon: IconGateway, group: "operations" },
@@ -49,8 +71,28 @@ export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
   parcels: { href: "/parcels", icon: IconParcel, group: "operations" },
   announcements: { href: "/announcements", icon: IconMegaphone, group: "operations" },
   rate_plans: { href: "/billing/rate-plans", icon: IconTag, group: "money" },
-  invoices: { href: "/invoices", icon: IconBill, group: "money" },
-  payments: { href: "/payments", icon: IconPayment, group: "money" },
+  // Billing (G3): the month's cycle and every invoice, one section instead of a row of tabs.
+  invoices: {
+    href: "/invoices",
+    icon: IconBill,
+    group: "money",
+    children: [
+      { key: "billing", href: "/billing", label: "owner.common.money.tab.billing" },
+      { key: "invoices", href: "/invoices", label: "owner.common.money.tab.invoices" },
+    ],
+  },
+  // Money in (G3): payments (with the slips and held payments as its views), arrears, credits, documents.
+  payments: {
+    href: "/payments",
+    icon: IconPayment,
+    group: "money",
+    children: [
+      { key: "payments", href: "/payments", label: "owner.common.money.tab.payments" },
+      { key: "arrears", href: "/arrears", label: "owner.common.money.tab.arrears" },
+      { key: "credits", href: "/payments/credits", label: "owner.common.money.tab.credits" },
+      { key: "documents", href: "/documents", label: "owner.common.money.tab.documents" },
+    ],
+  },
   reports: { href: "/reports", icon: IconChart, group: "money" },
   members: { href: "/settings/members", icon: IconResidents, group: "settings" },
   bank_accounts: { href: "/settings/bank-accounts", icon: IconBank, group: "settings" },

@@ -29,7 +29,14 @@ type Contract = Pick<Schemas["ContractDto"], "id" | "title" | "number" | "nextAc
  * its sha256 are what is signed, with a drawn signature (D-062; 409 `contract.changed` when the PDF moved on) — cancel
  * with a reason, and download.
  */
-export function ContractActions({ contract }: { contract: Contract }) {
+export function ContractActions({
+  contract,
+  layout = "row",
+}: {
+  contract: Contract;
+  /** `panel`: stacked full-width in the record's `ActionPanel` (G3). */
+  layout?: "row" | "panel";
+}) {
   const t = useTranslations("owner.contracts.actions");
   const signatureLabels = useSignatureLabels();
   const [signature, setSignature] = useState<Blob | null>(null);
@@ -40,7 +47,10 @@ export function ContractActions({ contract }: { contract: Contract }) {
   const label = contract.number ?? contract.title;
 
   return (
-    <div className="flex flex-wrap gap-2" data-testid="contract-actions">
+    <div
+      className={layout === "panel" ? "flex flex-col gap-2 empty:hidden [&_button]:w-full" : "flex flex-wrap gap-2"}
+      data-testid="contract-actions"
+    >
       {can("preview") ? (
         <DocumentButton
           document={{ kind: "contractPreview", id: contract.id }}

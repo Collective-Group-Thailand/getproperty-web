@@ -49,7 +49,14 @@ type LeaseView = Pick<Schemas["LeaseDto"], "id" | "unitNo" | "nextActions" | "mo
  * renew, terminate (typed confirmation), begin and complete the move-out. Compliance refusals and
  * D-021a acknowledgements come back through each dialog with their legal reference.
  */
-export function LeaseActions({ lease }: { lease: LeaseView }) {
+export function LeaseActions({
+  lease,
+  layout = "row",
+}: {
+  lease: LeaseView;
+  /** `panel`: stacked full-width in the record's `ActionPanel` (G3). */
+  layout?: "row" | "panel";
+}) {
   const t = useTranslations("owner.leases.actions");
   const reasons = useTranslations("owner.leases.reason");
   const signatureLabels = useSignatureLabels();
@@ -77,7 +84,10 @@ export function LeaseActions({ lease }: { lease: LeaseView }) {
         });
 
   return (
-    <div className="flex flex-wrap gap-2" data-testid="lease-actions">
+    <div
+      className={layout === "panel" ? "flex flex-col gap-2 empty:hidden [&_button]:w-full" : "flex flex-wrap gap-2"}
+      data-testid="lease-actions"
+    >
       {can("send-for-signature") ? (
         <ConfirmAction
           label={t("send")}

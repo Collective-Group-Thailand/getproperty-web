@@ -85,7 +85,7 @@ export function ListToolbar({
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between",
+        "flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between",
         sticky && "bg-bg/95 z-sticky sticky top-14 -mx-4 px-4 py-2 backdrop-blur md:top-0 md:-mx-8 md:px-8",
         className,
       )}
@@ -93,7 +93,7 @@ export function ListToolbar({
     >
       {tabs ? <div className="min-w-0">{tabs}</div> : null}
       {search || filters || actions ? (
-        <div className="flex min-w-0 flex-wrap items-center gap-2 lg:flex-nowrap lg:justify-end">
+        <div className="flex min-w-0 flex-wrap items-center gap-2 xl:flex-nowrap xl:justify-end">
           {search ? <div className="w-full min-w-0 sm:w-64">{search}</div> : null}
           {filters}
           {actions}

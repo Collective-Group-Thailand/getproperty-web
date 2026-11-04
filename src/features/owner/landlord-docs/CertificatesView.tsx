@@ -6,6 +6,7 @@ import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { formatDate, formatDateTime, formatTHB } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
+import { Button } from "@/ui/components/Button";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { IconBill } from "@/ui/icons/glyphs/bill";
@@ -68,7 +69,16 @@ export async function CertificatesView({ context }: { context: OwnerContext }) {
             ))}
           </ul>
         ) : (
-          <EmptyState icon={IconBill} title={t("noneWaiting")} description={t("noneWaitingBody")} />
+          <EmptyState
+            icon={IconBill}
+            title={t("noneWaiting")}
+            description={t("noneWaitingBody")}
+            action={
+              <Button asChild variant="secondary">
+                <a href={ownerPath(locale, "/documents")}>{t("noneWaitingAction")}</a>
+              </Button>
+            }
+          />
         )}
       </Card>
       {answered.length ? (

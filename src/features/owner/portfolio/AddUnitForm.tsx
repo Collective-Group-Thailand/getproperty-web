@@ -11,7 +11,7 @@ import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
-import { Card, CardHeader } from "@/ui/components/Card";
+import { FormColumns, FormSection, FormSummary, MobileActionBar } from "@/ui/components/FormLayout";
 import { Field } from "@/ui/components/Field";
 import { Input, NumberInput } from "@/ui/components/Input";
 import { RadioCards } from "@/ui/components/RadioCards";
@@ -94,116 +94,146 @@ export function AddUnitForm() {
   const error = (name: string, path = name) => (missing[name] ? t("required") : errors[path]);
 
   return (
-    <form className="flex flex-col gap-6" onSubmit={submit} noValidate data-testid="portfolio-form">
-      <Card as="section" aria-labelledby="unit-kind" className="flex flex-col gap-4">
-        <CardHeader title={<span id="unit-kind">{t("kind.title")}</span>} description={t("kind.description")} />
-        <RadioCards
-          name="kind"
-          value={kind}
-          onValueChange={(next) => setKind(next as Kind)}
-          columns={2}
-          options={KINDS.map(({ value, icon }) => ({
-            value,
-            icon,
-            label: t(`kind.${value}.label`),
-            description: t(`kind.${value}.description`),
-          }))}
+    <FormColumns
+      summary={
+        <FormSummary
+          title={t("summary.title")}
+          note={t("summary.note")}
+          action={
+            <div className="flex flex-col gap-2">
+              <Button type="submit" form="portfolio-form" loading={action.busy} data-testid="portfolio-submit">
+                {t("submit")}
+              </Button>
+              <Button asChild variant="ghost">
+                <a href={ownerPath(locale, "/portfolio")}>{t("cancel")}</a>
+              </Button>
+            </div>
+          }
         />
-      </Card>
+      }
+    >
+      <form
+        id="portfolio-form"
+        className="flex flex-col gap-6"
+        onSubmit={submit}
+        noValidate
+        data-testid="portfolio-form"
+      >
+        <FormSection
+          number={1}
+          title={<span id="unit-kind">{t("kind.title")}</span>}
+          description={t("kind.description")}
+        >
+          <RadioCards
+            name="kind"
+            value={kind}
+            onValueChange={(next) => setKind(next as Kind)}
+            columns={2}
+            options={KINDS.map(({ value, icon }) => ({
+              value,
+              icon,
+              label: t(`kind.${value}.label`),
+              description: t(`kind.${value}.description`),
+            }))}
+          />
+        </FormSection>
 
-      <Card as="section" aria-labelledby="unit-place" className="flex flex-col gap-4">
-        <CardHeader
+        <FormSection
+          number={2}
           title={<span id="unit-place">{t("place.title")}</span>}
           description={condo ? t("place.condoDescription") : t("place.houseDescription")}
-        />
-        <div className="grid gap-4 md:grid-cols-2">
-          <Field
-            label={condo ? t("place.project") : t("place.houseName")}
-            hint={condo ? t("place.projectHint") : t("place.houseNameHint")}
-            error={error("projectName")}
-            required={condo}
-          >
-            <Input name="projectName" autoComplete="off" data-testid="portfolio-project" />
-          </Field>
-          {kind !== "house" && kind !== "townhouse" ? (
-            <Field label={t("place.unitNo")} hint={t("place.unitNoHint")} error={error("unitNo")} required={condo}>
-              <Input name="unitNo" autoComplete="off" data-testid="portfolio-unit-no" />
+        >
+          <div className="grid gap-4 md:grid-cols-2">
+            <Field
+              label={condo ? t("place.project") : t("place.houseName")}
+              hint={condo ? t("place.projectHint") : t("place.houseNameHint")}
+              error={error("projectName")}
+              required={condo}
+            >
+              <Input name="projectName" autoComplete="off" data-testid="portfolio-project" />
             </Field>
-          ) : null}
-          <Field label={t("place.line1")} hint={t("place.line1Hint")} error={error("line1", "address.line1")} required>
-            <Input name="line1" autoComplete="address-line1" data-testid="portfolio-line1" />
-          </Field>
-          <Field label={t("place.subdistrict")} error={errors["address.subdistrict"]}>
-            <Input name="subdistrict" autoComplete="off" />
-          </Field>
-          <Field label={t("place.district")} error={errors["address.district"]}>
-            <Input name="district" autoComplete="address-level2" />
-          </Field>
-          <Field label={t("place.province")} error={error("province", "address.province")} required>
-            <Input name="province" autoComplete="address-level1" data-testid="portfolio-province" />
-          </Field>
-          <Field label={t("place.postcode")} error={error("postcode", "address.postcode")} required>
-            <Input
-              name="postcode"
-              inputMode="numeric"
-              maxLength={5}
-              autoComplete="postal-code"
-              className="max-w-40 font-mono tabular-nums"
-              data-testid="portfolio-postcode"
-            />
-          </Field>
-        </div>
-      </Card>
+            {kind !== "house" && kind !== "townhouse" ? (
+              <Field label={t("place.unitNo")} hint={t("place.unitNoHint")} error={error("unitNo")} required={condo}>
+                <Input name="unitNo" autoComplete="off" data-testid="portfolio-unit-no" />
+              </Field>
+            ) : null}
+            <Field
+              label={t("place.line1")}
+              hint={t("place.line1Hint")}
+              error={error("line1", "address.line1")}
+              required
+            >
+              <Input name="line1" autoComplete="address-line1" data-testid="portfolio-line1" />
+            </Field>
+            <Field label={t("place.subdistrict")} error={errors["address.subdistrict"]}>
+              <Input name="subdistrict" autoComplete="off" />
+            </Field>
+            <Field label={t("place.district")} error={errors["address.district"]}>
+              <Input name="district" autoComplete="address-level2" />
+            </Field>
+            <Field label={t("place.province")} error={error("province", "address.province")} required>
+              <Input name="province" autoComplete="address-level1" data-testid="portfolio-province" />
+            </Field>
+            <Field label={t("place.postcode")} error={error("postcode", "address.postcode")} required>
+              <Input
+                name="postcode"
+                inputMode="numeric"
+                maxLength={5}
+                autoComplete="postal-code"
+                className="max-w-40 font-mono tabular-nums"
+                data-testid="portfolio-postcode"
+              />
+            </Field>
+          </div>
+        </FormSection>
 
-      <Card as="section" aria-labelledby="unit-details" className="flex flex-col gap-4">
-        <CardHeader
+        <FormSection
+          number={3}
           title={<span id="unit-details">{t("details.title")}</span>}
           description={t("details.description")}
-        />
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <Field label={t("details.area")} error={errors.areaSqm}>
-            <NumberInput name="areaSqm" unit={t("details.areaUnit")} />
-          </Field>
-          <Field label={t("details.bedrooms")} error={errors.bedrooms}>
-            <NumberInput name="bedrooms" inputMode="numeric" />
-          </Field>
-          <Field label={t("details.bathrooms")} error={errors.bathrooms}>
-            <NumberInput name="bathrooms" inputMode="numeric" />
-          </Field>
-          {condo || kind === "room" ? (
-            <Field label={t("details.floor")} error={errors.floorLabel}>
-              <Input name="floorLabel" autoComplete="off" />
+        >
+          <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+            <Field label={t("details.area")} error={errors.areaSqm}>
+              <NumberInput name="areaSqm" unit={t("details.areaUnit")} />
             </Field>
-          ) : null}
-        </div>
-        <div className="flex flex-col gap-2">
-          <span className="text-sm font-medium" aria-hidden="true">
-            {t("details.furnishing")}
-          </span>
-          <SegmentedControl
-            label={t("details.furnishing")}
-            value={furnishing}
-            onValueChange={(next) => setFurnishing(next as Furnishing)}
-            options={FURNISHING.map((value) => ({ value, label: t(`details.furnishingValue.${value}`) }))}
-            className="self-start"
-          />
-        </div>
-        <Field label={t("details.rent")} hint={t("details.rentHint")} error={errors.defaultRent}>
-          <div className="max-w-60">
-            <NumberInput name="defaultRent" unit={t("details.rentUnit")} data-testid="portfolio-rent" />
+            <Field label={t("details.bedrooms")} error={errors.bedrooms}>
+              <NumberInput name="bedrooms" inputMode="numeric" />
+            </Field>
+            <Field label={t("details.bathrooms")} error={errors.bathrooms}>
+              <NumberInput name="bathrooms" inputMode="numeric" />
+            </Field>
+            {condo || kind === "room" ? (
+              <Field label={t("details.floor")} error={errors.floorLabel}>
+                <Input name="floorLabel" autoComplete="off" />
+              </Field>
+            ) : null}
           </div>
-        </Field>
-      </Card>
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-medium" aria-hidden="true">
+              {t("details.furnishing")}
+            </span>
+            <SegmentedControl
+              label={t("details.furnishing")}
+              value={furnishing}
+              onValueChange={(next) => setFurnishing(next as Furnishing)}
+              options={FURNISHING.map((value) => ({ value, label: t(`details.furnishingValue.${value}`) }))}
+              className="self-start"
+            />
+          </div>
+          <Field label={t("details.rent")} hint={t("details.rentHint")} error={errors.defaultRent}>
+            <div className="max-w-60">
+              <NumberInput name="defaultRent" unit={t("details.rentUnit")} data-testid="portfolio-rent" />
+            </div>
+          </Field>
+        </FormSection>
 
-      <ProblemNotice error={action.error} />
-      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <Button asChild variant="secondary" size="lg">
-          <a href={ownerPath(locale, "/portfolio")}>{t("cancel")}</a>
-        </Button>
-        <Button type="submit" size="lg" loading={action.busy} data-testid="portfolio-submit">
-          {t("submit")}
-        </Button>
-      </div>
-    </form>
+        <ProblemNotice error={action.error} />
+        <MobileActionBar>
+          <Button type="submit" form="portfolio-form" loading={action.busy} data-testid="portfolio-submit-mobile">
+            {t("submit")}
+          </Button>
+        </MobileActionBar>
+      </form>
+    </FormColumns>
   );
 }

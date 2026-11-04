@@ -32,5 +32,6 @@
     "reason": "เหตุผล",
     "declined": "ปฏิเสธคำขอแล้ว"
   },
-  "note": "“{note}”"
+  "note": "“{note}”",
+  "noneWaitingAction": "ดูเอกสาร"
 }

@@ -13,7 +13,10 @@
   },
   "empty": {
     "title": "No leases here",
-    "body": "Start a lease from a vacant unit or with “New lease”."
+    "body": "Start a lease from a vacant unit or with “New lease”.",
+    "filteredTitle": "No leases in this view",
+    "filteredBody": "Try another status or clear the search.",
+    "clear": "View all"
   },
   "role": {
     "lessee": "Lessee",
@@ -47,7 +50,25 @@
       "warn": "Warning",
       "block": "Refused"
     },
-    "acknowledged": "acknowledged"
+    "acknowledged": "acknowledged",
+    "rule": {
+      "deposit_cap": "Deposit within the legal cap",
+      "tariff_cap": "Utilities within the set rate",
+      "no_renewal_fee": "No renewal fee",
+      "water_minimum": "Water minimum as allowed",
+      "forbidden_clause": "No forbidden clauses",
+      "bill_disclosure": "Bills disclose every charge",
+      "late_fee_policy": "Late fees as allowed",
+      "termination_notice": "Termination notice set",
+      "no_midterm_increase": "No rent increase mid-term",
+      "deposit_evidence": "Deposit deductions with evidence",
+      "no_forfeiture": "No forfeiture without cause",
+      "deposit_wear": "No deductions for normal wear",
+      "notice_period": "Notice period as required",
+      "invoice_lead_time": "Invoices sent in time",
+      "standard_contract": "Standard contract form",
+      "other": "Other rule"
+    }
   },
   "event": {
     "drafted": "Draft created",
@@ -141,7 +162,7 @@
     "contractBody": "The contract is the platform's standard residential lease ({template}) with your addendum.",
     "preview": "Preview contract",
     "previewTitle": "Contract preview — unit {unit}",
-    "edit": "Change",
+    "edit": "Edit",
     "send": "Send for signature",
     "sentTitle": "Lease {number} sent for signature",
     "sentBody": "The resident signs in the resident app; then you countersign.",
@@ -159,7 +180,16 @@
     },
     "bilingual": "Both languages in one lease",
     "bilingualHint": "Thai followed by English, signed once; the Thai text prevails if they differ.",
-    "bilingualValue": "ไทย + English (one document)"
+    "bilingualValue": "ไทย + English (one document)",
+    "summaryTerms": "{months} months · rent {rent}",
+    "summaryLines": "{lines} charges · {clauses} clauses",
+    "summaryTitle": "Lease summary",
+    "summaryStart": "Starts",
+    "summaryMonths": "Months",
+    "summaryDeposit": "Deposit",
+    "summaryAdvance": "Advance rent",
+    "summaryRent": "Monthly rent",
+    "summaryNote": "Amounts are confirmed by the system when the lease is created."
   },
   "invite": {
     "button": "Invite to the app",
@@ -324,7 +354,11 @@
       "payOnlineBody": "We pay the duty to the Revenue Department and keep the receipt with this lease.",
       "payOnlineDone": "Stamp duty paid"
     },
-    "languageBilingual": "ไทย + English"
+    "languageBilingual": "ไทย + English",
+    "panelTitle": "This lease",
+    "paperKind": "Residential lease",
+    "paperDraft": "Draft",
+    "ends": "Ends"
   },
   "preview": {
     "title": "Legal checks before the draft",
@@ -390,5 +424,16 @@
         "pay": "Pay by {date}"
       }
     }
+  },
+  "views": {
+    "label": "Lease status",
+    "all": "All"
+  },
+  "column": {
+    "unit": "Unit",
+    "lessee": "Lessee",
+    "term": "Term",
+    "status": "Status",
+    "rent": "Rent"
   }
 }

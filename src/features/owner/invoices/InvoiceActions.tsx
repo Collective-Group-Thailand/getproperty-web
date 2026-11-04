@@ -51,7 +51,14 @@ function actionsOf(invoice: Pick<Invoice, "nextActions">) {
  * tariff-cap acknowledgement), recompute, resend to the resident, send a reminder now, void before any
  * payment (typed, reason, optional replacement draft), and credit / debit notes.
  */
-export function InvoiceActions({ invoice }: { invoice: Invoice }) {
+export function InvoiceActions({
+  invoice,
+  layout = "row",
+}: {
+  invoice: Invoice;
+  /** `panel`: stacked full-width in the record's `ActionPanel`, the lead action filled, void last (G3). */
+  layout?: "row" | "panel";
+}) {
   const t = useTranslations("owner.invoices.actions");
   const locale = useLocale() as Locale;
   const can = actionsOf(invoice);
@@ -61,9 +68,16 @@ export function InvoiceActions({ invoice }: { invoice: Invoice }) {
   const path = { invoiceId: invoice.id };
   const label = invoice.number ?? invoice.unitNo ?? "";
 
+  // One filled action: issuing a draft, else reminding about an open balance, else resending.
+  const lead = can("issue") ? "issue" : can("send-reminder") ? "send-reminder" : can("resend") ? "resend" : null;
+  const variantOf = (name: string) => (lead === name ? ("primary" as const) : ("secondary" as const));
+  const panel = layout === "panel";
   return (
-    <div className="flex flex-col items-end gap-2">
-      <div className="flex flex-wrap gap-2" data-testid="invoice-actions">
+    <div className={panel ? "flex flex-col gap-2" : "flex flex-col items-end gap-2"}>
+      <div
+        className={panel ? "flex flex-col gap-2 [&_button]:w-full [&>*]:w-full" : "flex flex-wrap gap-2"}
+        data-testid="invoice-actions"
+      >
         {can("issue") ? (
           <ConfirmAction
             label={t("issue")}
@@ -104,41 +118,45 @@ export function InvoiceActions({ invoice }: { invoice: Invoice }) {
           </Button>
         ) : null}
         {can("resend") ? (
-          <ConfirmAction
-            label={t("resend")}
-            variant="secondary"
-            testId="invoice-resend"
-            title={t("resendTitle")}
-            description={t("resendBody", { number: label, party: invoice.billedPartyName })}
-            confirmLabel={t("resend")}
-            successMessage={t("resent")}
-            onConfirm={(key) =>
-              unwrap(
-                browserApi().POST("/v1/owner/invoices/{invoiceId}/actions/resend", {
-                  params: { path, header: { "Idempotency-Key": key } },
-                }),
-              )
-            }
-          />
+          <div className={panel && lead === "resend" ? "order-first" : undefined}>
+            <ConfirmAction
+              label={t("resend")}
+              variant={variantOf("resend")}
+              testId="invoice-resend"
+              title={t("resendTitle")}
+              description={t("resendBody", { number: label, party: invoice.billedPartyName })}
+              confirmLabel={t("resend")}
+              successMessage={t("resent")}
+              onConfirm={(key) =>
+                unwrap(
+                  browserApi().POST("/v1/owner/invoices/{invoiceId}/actions/resend", {
+                    params: { path, header: { "Idempotency-Key": key } },
+                  }),
+                )
+              }
+            />
+          </div>
         ) : null}
         {can("send-reminder") ? (
-          <ConfirmAction
-            label={t("remind")}
-            icon={IconBell}
-            variant="secondary"
-            testId="invoice-remind"
-            title={t("remindTitle")}
-            description={t("remindBody", { number: label, balance: formatTHB(invoice.balance, locale) })}
-            confirmLabel={t("remind")}
-            successMessage={t("reminded")}
-            onConfirm={(key) =>
-              unwrap(
-                browserApi().POST("/v1/owner/invoices/{invoiceId}/actions/send-reminder", {
-                  params: { path, header: { "Idempotency-Key": key } },
-                }),
-              )
-            }
-          />
+          <div className={panel && lead === "send-reminder" ? "order-first" : undefined}>
+            <ConfirmAction
+              label={t("remind")}
+              icon={IconBell}
+              variant={variantOf("send-reminder")}
+              testId="invoice-remind"
+              title={t("remindTitle")}
+              description={t("remindBody", { number: label, balance: formatTHB(invoice.balance, locale) })}
+              confirmLabel={t("remind")}
+              successMessage={t("reminded")}
+              onConfirm={(key) =>
+                unwrap(
+                  browserApi().POST("/v1/owner/invoices/{invoiceId}/actions/send-reminder", {
+                    params: { path, header: { "Idempotency-Key": key } },
+                  }),
+                )
+              }
+            />
+          </div>
         ) : null}
         {can("credit-note") ? <NoteButton invoice={invoice} kind="credit" /> : null}
         {can("debit-note") ? <NoteButton invoice={invoice} kind="debit" /> : null}

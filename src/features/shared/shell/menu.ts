@@ -12,6 +12,11 @@ export interface MenuDefinition {
   icon: IconGlyph;
   /** Section in the sidebar and the "more" sheet. */
   group: string;
+  /**
+   * The section's own pages (redesign G3): listed under the entry while one of them is open, so a section never adds a
+   * second row of tabs. `label` is a full message key; `testId` keeps the e2e hooks of the tabs they replace.
+   */
+  children?: readonly { key: string; href: string; label: string; testId?: string }[];
 }
 
 export interface MenuItem extends MenuDefinition {
@@ -37,6 +42,14 @@ export function entitledMenu<Key extends string>(keys: readonly Key[], registry:
     items.push({ key, ...definition });
   }
   return items;
+}
+
+/**
+ * The one entry (or section page) the current path belongs to: the longest href that is the path or a parent of it —
+ * so `/billing/rate-plans` is the rate plans, not the billing cycle.
+ */
+export function currentHref(hrefs: readonly string[], pathname: string): string | undefined {
+  return hrefs.filter((href) => isActive(href, pathname)).sort((a, b) => b.length - a.length)[0];
 }
 
 /** Whether a nav item is the current page: exact match, or the current path is below it. */

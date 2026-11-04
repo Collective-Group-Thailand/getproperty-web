@@ -13,6 +13,7 @@ import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { ListToolbar } from "@/ui/components/ListToolbar";
 import { IconBook } from "@/ui/icons/glyphs/book";
 import { IconEdit } from "@/ui/icons/glyphs/edit";
 import { IconShow } from "@/ui/icons/glyphs/show";
@@ -20,7 +21,6 @@ import { IconShow } from "@/ui/icons/glyphs/show";
 import { ownerPath } from "../shared/links";
 import { ownerCan, param, readOnly, section, type OwnerContext } from "../shared/server";
 import { ContractDisclaimer } from "./ContractDisclaimer";
-import { ContractsNav } from "./ContractsNav";
 import { CONTRACT_KINDS, LANGUAGES } from "./labels";
 import { CopyTemplate } from "./LibraryActions";
 
@@ -51,25 +51,29 @@ export async function LibraryView({ context, searchParams }: { context: OwnerCon
   return (
     <OwnerPage testId="contract-library">
       <PageHeader title={t("library.title")} description={t("library.description")} />
-      <ContractsNav current="/contracts" locale={locale} />
       {library.data ? <ContractDisclaimer disclaimer={library.data.disclaimer} locale={locale} /> : null}
-      <FilterBar
-        fields={[
-          {
-            name: "kind",
-            label: t("library.filter.kind"),
-            type: "select",
-            placeholder: t("library.filter.allKinds"),
-            options: CONTRACT_KINDS.map((value) => ({ value, label: t(`kind.${value}`) })),
-          },
-          {
-            name: "language",
-            label: t("library.filter.language"),
-            type: "select",
-            placeholder: t("library.filter.allLanguages"),
-            options: LANGUAGES.map((value) => ({ value, label: t(`language.${value}`) })),
-          },
-        ]}
+      <ListToolbar
+        filters={
+          <FilterBar
+            variant="toolbar"
+            fields={[
+              {
+                name: "kind",
+                label: t("library.filter.kind"),
+                type: "select",
+                placeholder: t("library.filter.allKinds"),
+                options: CONTRACT_KINDS.map((value) => ({ value, label: t(`kind.${value}`) })),
+              },
+              {
+                name: "language",
+                label: t("library.filter.language"),
+                type: "select",
+                placeholder: t("library.filter.allLanguages"),
+                options: LANGUAGES.map((value) => ({ value, label: t(`language.${value}`) })),
+              },
+            ]}
+          />
+        }
       />
       {!library.data ? (
         <SectionError error={library.error} />
@@ -84,7 +88,16 @@ export async function LibraryView({ context, searchParams }: { context: OwnerCon
             </div>
             {mine.length === 0 ? (
               <div className="px-4 pb-4 md:px-5">
-                <EmptyState icon={IconEdit} title={t("library.mineEmpty")} description={t("library.mineEmptyHint")} />
+                <EmptyState
+                  icon={IconEdit}
+                  title={t("library.mineEmpty")}
+                  description={t("library.mineEmptyHint")}
+                  action={
+                    <Button asChild variant="secondary">
+                      <a href="#library-platform">{t("library.mineEmptyAction")}</a>
+                    </Button>
+                  }
+                />
               </div>
             ) : (
               <TemplateList templates={mine} t={t} locale={locale} canManage={canManage} />
@@ -99,7 +112,15 @@ export async function LibraryView({ context, searchParams }: { context: OwnerCon
             </div>
             {platform.length === 0 ? (
               <div className="px-4 pb-4 md:px-5">
-                <EmptyState icon={IconBook} title={t("library.empty")} />
+                <EmptyState
+                  icon={IconBook}
+                  title={t("library.empty")}
+                  action={
+                    <Button asChild variant="secondary">
+                      <a href={ownerPath(locale, "/leases")}>{t("library.emptyAction")}</a>
+                    </Button>
+                  }
+                />
               </div>
             ) : (
               <TemplateList templates={platform} t={t} locale={locale} canManage={canManage} />

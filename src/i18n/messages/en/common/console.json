@@ -184,5 +184,10 @@
     "confirmed": "Visit confirmed",
     "confirmedAt": "The resident confirmed the visit {at}",
     "notConfirmed": "The resident has not confirmed the planned visit"
+  },
+  "period": {
+    "previous": "Previous month",
+    "next": "Next month",
+    "all": "All months"
   }
 }

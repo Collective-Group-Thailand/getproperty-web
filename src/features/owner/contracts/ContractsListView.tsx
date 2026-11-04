@@ -9,17 +9,15 @@ import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { formatDate } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
-import { Badge } from "@/ui/components/Badge";
-import { Card } from "@/ui/components/Card";
+import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
-import { Icon } from "@/ui/icons";
-import { IconChevronRight } from "@/ui/icons/glyphs/chevron-right";
+import { ListToolbar } from "@/ui/components/ListToolbar";
+import { SimpleTable } from "@/ui/components/SimpleTable";
 import { IconSign } from "@/ui/icons/glyphs/sign";
 
 import { ownerPath } from "../shared/links";
 import { ownerCan, pageParam, param, readOnly, section, type OwnerContext } from "../shared/server";
 import { ContractCreate, type ContractCreateOptions } from "./ContractCreate";
-import { ContractsNav } from "./ContractsNav";
 import { isSignableKind, SIGNABLE_KINDS } from "./labels";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -81,67 +79,95 @@ export async function ContractsListView({
           ) : null
         }
       />
-      {isAgency ? null : <ContractsNav current="/contracts/documents" locale={locale} />}
-      <FilterBar
-        fields={[
-          {
-            name: "kind",
-            label: t("library.filter.kind"),
-            type: "select",
-            placeholder: t("library.filter.allKinds"),
-            options: SIGNABLE_KINDS.map((value) => ({ value, label: t(`kind.${value}`) })),
-          },
-          {
-            name: "state",
-            label: t("documents.filterState"),
-            type: "select",
-            placeholder: t("documents.allStates"),
-            options: CONTRACT_DOCUMENT_VALUES.map((value) => ({
-              value,
-              label: t(`documents.state.${value}`),
-            })),
-          },
-        ]}
+      <ListToolbar
+        filters={
+          <FilterBar
+            variant="toolbar"
+            fields={[
+              {
+                name: "kind",
+                label: t("library.filter.kind"),
+                type: "select",
+                placeholder: t("library.filter.allKinds"),
+                options: SIGNABLE_KINDS.map((value) => ({ value, label: t(`kind.${value}`) })),
+              },
+              {
+                name: "state",
+                label: t("documents.filterState"),
+                type: "select",
+                placeholder: t("documents.allStates"),
+                options: CONTRACT_DOCUMENT_VALUES.map((value) => ({
+                  value,
+                  label: t(`documents.state.${value}`),
+                })),
+              },
+            ]}
+          />
+        }
       />
       {!list.data ? (
         <SectionError error={list.error} />
       ) : list.data.data.length === 0 ? (
-        <Card padding="lg">
-          <EmptyState icon={IconSign} title={t("documents.empty")} description={t("documents.emptyHint")} />
-        </Card>
+        <EmptyState
+          variant="card"
+          icon={IconSign}
+          title={t("documents.empty")}
+          description={t("documents.emptyHint")}
+          action={
+            <Button asChild variant="secondary">
+              <a href={ownerPath(locale, "/contracts")}>{t("documents.emptyAction")}</a>
+            </Button>
+          }
+        />
       ) : (
         <>
-          <ul
-            className="divide-border border-border bg-surface rounded-card m-0 list-none divide-y border p-0"
-            data-testid="contract-rows"
-          >
-            {list.data.data.map((contract) => {
+          <SimpleTable
+            caption={t("documents.title")}
+            testId="contract-rows"
+            stackOnPhones
+            minWidth="52rem"
+            columns={[
+              { key: "title", header: t("documents.column.title"), phone: "title" },
+              { key: "kind", header: t("documents.column.kind"), phone: "meta" },
+              { key: "signed", header: t("documents.column.signed"), phone: "meta" },
+              { key: "created", header: t("documents.column.created"), phone: "hidden" },
+              { key: "state", header: t("documents.column.state"), phone: "status" },
+            ]}
+            rows={list.data.data.map((contract) => {
               const signed = contract.signers.filter((signer) => signer.signedAt).length;
-              return (
-                <li key={contract.id} data-testid="contract-row" data-kind={contract.kind} data-state={contract.state}>
-                  <a
-                    href={ownerPath(locale, `/contracts/documents/${contract.id}`)}
-                    className="hover:bg-bg-subtle flex items-center justify-between gap-4 px-4 py-4 md:px-5"
-                  >
-                    <span className="flex min-w-0 flex-col gap-1">
-                      <span className="flex flex-wrap items-center gap-2">
-                        <span className="font-semibold">{contract.title}</span>
-                        <StatusBadgeOf map={CONTRACT_DOCUMENT_STATUS} value={contract.state} size="sm" />
-                        <StatusBadgeOf map={LEGAL_REVIEW_STATUS} value={contract.legalReviewState} size="sm" />
-                      </span>
-                      <span className="text-muted flex flex-wrap gap-x-3 text-sm">
-                        <Badge size="sm">{t(`kind.${contract.kind}`)}</Badge>
-                        {contract.number ? <span className="tabular-nums">{contract.number}</span> : null}
-                        <span>{t("documents.signedCount", { signed, total: contract.signers.length })}</span>
-                        <span>{t("documents.createdOn", { date: formatDate(contract.createdAt, locale) })}</span>
-                      </span>
+              return {
+                key: contract.id,
+                href: ownerPath(locale, `/contracts/documents/${contract.id}`),
+                testId: "contract-row",
+                data: { kind: contract.kind, state: contract.state },
+                cells: {
+                  title: (
+                    <span className="flex flex-col">
+                      <span>{contract.title}</span>
+                      {contract.number ? (
+                        <span className="text-muted font-mono text-sm font-normal">{contract.number}</span>
+                      ) : null}
                     </span>
-                    <Icon icon={IconChevronRight} className="text-muted shrink-0" />
-                  </a>
-                </li>
-              );
+                  ),
+                  kind: <span className="text-muted">{t(`kind.${contract.kind}`)}</span>,
+                  signed: (
+                    <span className="text-muted whitespace-nowrap">
+                      {t("documents.signedCount", { signed, total: contract.signers.length })}
+                    </span>
+                  ),
+                  created: (
+                    <span className="text-muted whitespace-nowrap">{formatDate(contract.createdAt, locale)}</span>
+                  ),
+                  state: (
+                    <span className="flex flex-wrap gap-1.5">
+                      <StatusBadgeOf map={CONTRACT_DOCUMENT_STATUS} value={contract.state} size="sm" />
+                      <StatusBadgeOf map={LEGAL_REVIEW_STATUS} value={contract.legalReviewState} size="sm" />
+                    </span>
+                  ),
+                },
+              };
             })}
-          </ul>
+          />
           <ListPagination
             meta={list.data.meta}
             path={ownerPath(locale, "/contracts/documents")}

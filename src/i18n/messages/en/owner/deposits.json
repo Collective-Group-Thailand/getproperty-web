@@ -7,7 +7,9 @@
     "held": "Held",
     "settling": "Being settled",
     "dueSoon": "Refunds due soon",
-    "late": "Late refunds"
+    "late": "Late refunds",
+    "label": "Deposits now",
+    "disputed": "{count} disputed"
   },
   "filter": {
     "search": "Search",
@@ -20,7 +22,11 @@
   },
   "empty": {
     "title": "No deposits here",
-    "body": "A deposit appears when a lease is signed."
+    "body": "A deposit appears when a lease is signed.",
+    "filteredTitle": "No deposits in this view",
+    "filteredBody": "Try another view or clear the search.",
+    "newLease": "New lease",
+    "clear": "View all"
   },
   "method": {
     "bank_transfer": "Bank transfer",
@@ -147,6 +153,24 @@
       "moveIn": "What the resident added when signing the move-in report",
       "moveOut": "What the resident added when signing the move-out report"
     },
-    "residentPhotoAlt": "Resident photo {index}"
+    "residentPhotoAlt": "Resident photo {index}",
+    "panelTitle": "This deposit",
+    "paperSettlement": "Deposit settlement statement",
+    "paperDeposit": "Deposit receipt",
+    "lessee": "Lessee",
+    "unit": "Unit",
+    "lease": "Lease"
+  },
+  "views": {
+    "label": "Views",
+    "all": "All",
+    "late": "Late refunds"
+  },
+  "column": {
+    "unit": "Unit",
+    "lessee": "Lessee",
+    "deadline": "Refund due",
+    "status": "Status",
+    "amount": "Deposit"
   }
 }
