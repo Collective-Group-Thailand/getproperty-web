@@ -8,7 +8,7 @@ import { LazyAlertDialog } from "@/ui/components/overlays";
 import { toast } from "@/ui/components/Toast";
 import type { IconGlyph } from "@/ui/icons";
 
-import { useControlledOpening } from "./FormDialog";
+import { type MenuItemOptions, useMenuEntry } from "./ActionMenu";
 import { ProblemNotice, useApiAction, useIdempotencyKey } from "./useApiAction";
 
 export interface ConfirmActionProps {
@@ -49,9 +49,8 @@ export interface ConfirmActionProps {
   /** Toast after success. */
   successMessage?: string;
   onDone?: (result: unknown) => void;
-  /** Controlled from outside (a row's "⋯" menu, `ActionMenu`): no trigger button is rendered. */
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
+  /** Its item inside an `ActionMenu` ("⋯"), where it differs from the button (defaults: `label`, red when destructive). */
+  menuItem?: MenuItemOptions;
 }
 
 /** A button that runs an irreversible request only after a (typed) confirmation (design-system.md §4). */
@@ -73,39 +72,37 @@ export function ConfirmAction({
   explain,
   successMessage,
   onDone,
-  open: controlledOpen,
-  onOpenChange,
+  menuItem,
 }: ConfirmActionProps) {
   const t = useTranslations("console.confirm");
   const common = useTranslations("common");
-  const [innerOpen, setInnerOpen] = useState(false);
-  const controlled = controlledOpen !== undefined;
-  const open = controlled ? controlledOpen : innerOpen;
-  const setOpen = (next: boolean) => (controlled ? onOpenChange?.(next) : setInnerOpen(next));
+  const [open, setOpen] = useState(false);
   const idempotency = useIdempotencyKey();
   const action = useApiAction();
   const explained = action.error && explain ? explain(action.error) : null;
-  useControlledOpening(controlled && open, () => {
+
+  const start = () => {
+    // Same pending action (last attempt unanswered) → same key; otherwise a fresh one (review L2).
     idempotency.renewUnless(action.unansweredAttempt());
     action.reset();
-  });
+    setOpen(true);
+  };
+  // Inside an `ActionMenu` ("⋯") the action is a menu item and renders only its dialog.
+  const inMenu = useMenuEntry(
+    {
+      label: menuItem?.label ?? label,
+      icon,
+      testId,
+      disabled,
+      destructive: menuItem?.destructive ?? tone === "destructive",
+    },
+    start,
+  );
 
   return (
     <>
-      {controlled ? null : (
-        <Button
-          variant={variant}
-          size={size}
-          iconStart={icon}
-          disabled={disabled}
-          onClick={() => {
-            // Same pending action (last attempt unanswered) → same key; otherwise a fresh one (review L2).
-            idempotency.renewUnless(action.unansweredAttempt());
-            action.reset();
-            setOpen(true);
-          }}
-          data-testid={testId}
-        >
+      {inMenu ? null : (
+        <Button variant={variant} size={size} iconStart={icon} disabled={disabled} onClick={start} data-testid={testId}>
           {label}
         </Button>
       )}

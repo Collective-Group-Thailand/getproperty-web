@@ -1,5 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
+import { ActionMenu } from "@/features/shared/console/ActionMenu";
+import { messageKey } from "@/i18n/keys";
 import { ConsolePage, PageHeader } from "@/features/shared/console/PageHeader";
 import { SectionError } from "@/features/shared/console/SectionError";
 import { SimpleTable } from "@/ui/components/SimpleTable";
@@ -31,13 +33,23 @@ export async function FlagsView({ context }: { context: AdminContext }) {
         <SimpleTable
           caption={t("title")}
           testId="flags-table"
+          stackOnPhones
           minWidth="56rem"
           columns={[
-            { key: "key", header: t("col.key") },
-            { key: "default", header: t("col.default") },
-            { key: "rollout", header: t("col.rollout"), align: "end" },
-            { key: "overrides", header: t("col.overrides") },
-            ...(manage ? [{ key: "actions", header: <span className="sr-only">{t("col.actions")}</span> }] : []),
+            { key: "key", header: t("col.key"), phone: "title" },
+            { key: "default", header: t("col.default"), phone: "status" },
+            { key: "rollout", header: t("col.rollout"), align: "end", phone: "meta", phoneLabel: true },
+            { key: "overrides", header: t("col.overrides"), phone: "meta", phoneLabel: true },
+            ...(manage
+              ? [
+                  {
+                    key: "actions",
+                    header: <span className="sr-only">{t("col.actions")}</span>,
+                    phone: "figure" as const,
+                    className: "w-14",
+                  },
+                ]
+              : []),
           ]}
           rows={flags.data.map((flag) => ({
             key: flag.key,
@@ -46,8 +58,12 @@ export async function FlagsView({ context }: { context: AdminContext }) {
             cells: {
               key: (
                 <span className="flex max-w-md flex-col">
-                  <span className="font-mono">{flag.key}</span>
-                  <span className="text-muted text-xs">{flag.description}</span>
+                  <span className="font-medium">
+                    {t.has(`name.${messageKey(flag.key)}`)
+                      ? t(`name.${messageKey(flag.key)}` as Parameters<typeof t>[0])
+                      : flag.description}
+                  </span>
+                  <span className="text-muted font-mono text-xs">{flag.key}</span>
                 </span>
               ),
               default: (
@@ -55,7 +71,7 @@ export async function FlagsView({ context }: { context: AdminContext }) {
                   {flag.defaultEnabled ? t("on") : t("off")}
                 </Badge>
               ),
-              rollout: `${flag.rolloutPct} %`,
+              rollout: <span className="tabular-nums">{t("rolloutValue", { pct: flag.rolloutPct })}</span>,
               overrides:
                 flag.overrides.length === 0 ? (
                   <span className="text-muted">{t("overrideCount", { count: 0 })}</span>
@@ -74,15 +90,23 @@ export async function FlagsView({ context }: { context: AdminContext }) {
                           {override.enabled ? t("on") : t("off")}
                         </Badge>
                         <span className="text-muted text-xs">{override.reason}</span>
-                        {manage ? (
-                          <FlagOverride flagKey={flag.key} tenantId={override.tenantId} override={override.enabled} />
-                        ) : null}
                       </li>
                     ))}
                   </ul>
                 ),
               actions: manage ? (
-                <FlagDefault flagKey={flag.key} enabled={flag.defaultEnabled} rolloutPct={flag.rolloutPct} />
+                <ActionMenu label={t("more", { key: flag.key })}>
+                  <FlagDefault flagKey={flag.key} enabled={flag.defaultEnabled} rolloutPct={flag.rolloutPct} />
+                  {flag.overrides.map((override) => (
+                    <FlagOverride
+                      key={override.tenantId}
+                      flagKey={flag.key}
+                      tenantId={override.tenantId}
+                      override={override.enabled}
+                      label={t("overrideFor", { name: names.get(override.tenantId) ?? t("aCustomer") })}
+                    />
+                  ))}
+                </ActionMenu>
               ) : null,
             },
           }))}

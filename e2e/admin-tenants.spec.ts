@@ -118,7 +118,12 @@ test("hardware and field work: the HaaS register and site surveys", async ({ pag
   await expectAxeClean(page);
   await gotoAdmin(page, `/tenants/${P.sample}/field-work`);
   await expect(page.getByTestId("site-survey-row").first()).toBeVisible();
-  await page.getByTestId("survey-schedule").first().click();
+  await page
+    .getByTestId("site-survey-row")
+    .first()
+    .getByRole("button", { name: /More actions|การทำงานเพิ่มเติม/ })
+    .click();
+  await page.getByTestId("survey-schedule").click();
   const schedule = page.getByRole("alertdialog");
   await schedule.getByTestId("survey-when").fill("2030-01-15T10:00");
   await schedule.getByRole("button", { name: "Schedule" }).click();

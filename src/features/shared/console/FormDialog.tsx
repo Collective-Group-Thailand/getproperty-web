@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useEffect, useId, useRef, useState } from "react";
+import { useId, useState } from "react";
 
 import { isApiError, problemError, toFieldName } from "@/lib/api/errors";
 import { Button, type ButtonProps } from "@/ui/components/Button";
@@ -9,6 +9,7 @@ import { LazyDialog, LazySheet } from "@/ui/components/overlays";
 import { toast } from "@/ui/components/Toast";
 import type { IconGlyph } from "@/ui/icons";
 
+import { type MenuItemOptions, useMenuEntry } from "./ActionMenu";
 import { ProblemNotice, useApiAction, useIdempotencyKey } from "./useApiAction";
 
 /** The API's field errors by form field name (`lines[1].amount` → `lines.1.amount`). */
@@ -53,12 +54,8 @@ export interface FormDialogProps {
   disabled?: boolean;
   /** Opens on first render (a "new" link from another page, `?new=1`). */
   defaultOpen?: boolean;
-  /**
-   * Controlled from outside (a row's "⋯" menu, `ActionMenu`): the dialog opens when `open` turns true and the trigger
-   * button is not rendered.
-   */
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
+  /** Its item inside an `ActionMenu` ("⋯"), where it differs from the button (defaults: `label`, red when destructive). */
+  menuItem?: MenuItemOptions;
   /** A side sheet instead of a centred dialog: a longer form beside the page it changes (connect a channel). */
   sheet?: boolean;
 }
@@ -84,40 +81,38 @@ export function FormDialog({
   children,
   disabled,
   defaultOpen = false,
-  open: controlledOpen,
-  onOpenChange,
+  menuItem,
   sheet = false,
 }: FormDialogProps) {
   const common = useTranslations("common");
   const formId = useId();
-  const [innerOpen, setInnerOpen] = useState(defaultOpen);
-  const controlled = controlledOpen !== undefined;
-  const open = controlled ? controlledOpen : innerOpen;
-  const setOpen = (next: boolean) => (controlled ? onOpenChange?.(next) : setInnerOpen(next));
+  const [open, setOpen] = useState(defaultOpen);
   const action = useApiAction();
   const idempotency = useIdempotencyKey();
   const errors = fieldErrors(action.error);
-  useControlledOpening(controlled && open, () => {
+
+  const start = () => {
+    // Same pending action (last attempt unanswered) → same key; otherwise a fresh one (review L2).
     idempotency.renewUnless(action.unansweredAttempt());
     action.reset();
-  });
+    setOpen(true);
+  };
+  // Inside an `ActionMenu` ("⋯") the action is a menu item and renders only its dialog.
+  const inMenu = useMenuEntry(
+    {
+      label: menuItem?.label ?? label,
+      icon,
+      testId,
+      disabled,
+      destructive: menuItem?.destructive ?? variant === "destructive",
+    },
+    start,
+  );
 
   return (
     <>
-      {controlled ? null : (
-        <Button
-          variant={variant}
-          size={size}
-          iconStart={icon}
-          disabled={disabled}
-          onClick={() => {
-            // Same pending action (last attempt unanswered) → same key; otherwise a fresh one (review L2).
-            idempotency.renewUnless(action.unansweredAttempt());
-            action.reset();
-            setOpen(true);
-          }}
-          data-testid={testId}
-        >
+      {inMenu ? null : (
+        <Button variant={variant} size={size} iconStart={icon} disabled={disabled} onClick={start} data-testid={testId}>
           {label}
         </Button>
       )}
@@ -182,20 +177,6 @@ function Overlay({
   children: React.ReactNode;
 }) {
   return sheet ? <LazySheet side="right" {...props} /> : <LazyDialog size={size} {...props} />;
-}
-
-/**
- * Runs `onOpen` each time a controlled dialog opens (the uncontrolled ones do it in their trigger's click): a fresh
- * Idempotency-Key unless the last attempt is unanswered, and the last error cleared.
- */
-export function useControlledOpening(opened: boolean, onOpen: () => void) {
-  const latest = useRef(onOpen);
-  useEffect(() => {
-    latest.current = onOpen;
-  });
-  useEffect(() => {
-    if (opened) latest.current();
-  }, [opened]);
 }
 
 /** A form value as a trimmed string, or `undefined` when empty. */

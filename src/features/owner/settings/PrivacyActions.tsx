@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { IconXCircle } from "@/ui/icons/glyphs/x-circle";
-import { ActionMenu, type DialogControl } from "@/features/shared/console/ActionMenu";
+import { ActionMenu } from "@/features/shared/console/ActionMenu";
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 import { ProblemNotice, useApiAction } from "@/features/shared/console/useApiAction";
 import { browserApi } from "@/lib/api/browser";
@@ -102,10 +102,11 @@ export function DsrActions({ dsr }: { dsr: Schemas["DsrDto"] }) {
       />
     </Field>
   );
-  const dialog = (action: (typeof DSR_ACTIONS)[number], control?: DialogControl) => (
+  const dialog = (action: (typeof DSR_ACTIONS)[number]) => (
     <ConfirmAction
       key={action}
       label={t(`action.${action}`)}
+      icon={action === "reject" ? IconXCircle : undefined}
       size="sm"
       variant="secondary"
       tone={action === "reject" ? "destructive" : "primary"}
@@ -117,7 +118,6 @@ export function DsrActions({ dsr }: { dsr: Schemas["DsrDto"] }) {
       ready={action !== "reject" || notes.trim().length > 0}
       successMessage={t("done")}
       onConfirm={() => run(action)}
-      {...control}
     >
       {notesField}
     </ConfirmAction>
@@ -129,20 +129,9 @@ export function DsrActions({ dsr }: { dsr: Schemas["DsrDto"] }) {
     <span className="flex items-center justify-end gap-2" data-testid={`dsr-actions-${dsr.id}`}>
       {lead ? dialog(lead) : null}
       {rejectable ? (
-        <ActionMenu
-          label={t("menu")}
-          testId={`dsr-menu-${dsr.id}`}
-          actions={[
-            {
-              id: "reject",
-              label: t("action.reject"),
-              icon: IconXCircle,
-              destructive: true,
-              testId: `dsr-reject-${dsr.id}`,
-              dialog: (control) => dialog("reject", control),
-            },
-          ]}
-        />
+        <ActionMenu label={t("menu")} testId={`dsr-menu-${dsr.id}`}>
+          {dialog("reject")}
+        </ActionMenu>
       ) : null}
     </span>
   );

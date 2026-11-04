@@ -21,27 +21,31 @@
   },
   "subscriptions": {
     "title": "Subscriptions",
-    "description": "Every tenant's subscription: plan, state, trial and pilot discount.",
+    "description": "Every customer’s plan, state, trial and pilot discount.",
     "search": "Search",
     "searchPlaceholder": "Tenant or plan",
     "state": "State",
-    "allStates": "All states",
-    "empty": "No subscription matches",
+    "allStates": "All",
+    "empty": "No subscriptions yet",
     "col": {
       "tenant": "Tenant",
       "plan": "Plan",
       "state": "State",
       "trialEnds": "Trial ends",
       "discount": "Discount"
-    }
+    },
+    "views": "Subscription states",
+    "emptyFiltered": "No subscription matches",
+    "clear": "Clear filters",
+    "openTenants": "Open customers"
   },
   "invoices": {
     "title": "Platform invoices",
     "search": "Search",
     "searchPlaceholder": "Number or tenant",
     "state": "State",
-    "allStates": "All states",
-    "empty": "No platform invoice matches",
+    "allStates": "All",
+    "empty": "No invoices yet",
     "col": {
       "number": "Number",
       "tenant": "Tenant",
@@ -50,12 +54,17 @@
       "open": "Open",
       "due": "Due",
       "state": "State"
-    }
+    },
+    "views": "Invoice states",
+    "emptyFiltered": "No invoice matches",
+    "emptyBody": "Invoices are issued monthly from each subscription.",
+    "clear": "Clear filters",
+    "openSubscriptions": "Open subscriptions"
   },
   "invoice": {
     "crumb": "Platform invoices",
     "waitingTitle": "{count, plural, one {A credit note waits for approval} other {# credit notes wait for approval}}",
-    "waitingBody": "A credit note is issued only when a second person approves it (D-091).",
+    "waitingBody": "A credit note is issued only after a second person approves it.",
     "recordPayment": "Record a payment",
     "recordPaymentTitle": "Record a payment on {number}",
     "recordPaymentBody": "{tenant} paid invoice {number} by transfer or card. Open amount: {open}. The API checks the amount; a receipt is issued.",
@@ -82,14 +91,18 @@
     "rejectCredit": "Reject",
     "rejectCreditTitle": "Reject the credit note on {number}?",
     "rejectCreditBody": "The request for {amount} is closed without a credit note.",
-    "creditRejected": "Credit note rejected"
+    "creditRejected": "Credit note rejected",
+    "panelTitle": "Payment",
+    "documentKind": "Platform invoice",
+    "billedTo": "Billed to",
+    "receipt": "receipt {number}"
   },
   "hardware": {
     "title": "Rented hardware",
     "search": "Search",
     "searchPlaceholder": "Serial",
     "state": "State",
-    "allStates": "All states",
+    "allStates": "All",
     "empty": "No rented hardware",
     "emptyHint": "Platform-owned gateways and meters appear here once registered to a tenant.",
     "register": "Register an asset",
@@ -134,7 +147,12 @@
     "replacement": "Replacement device",
     "chooseDevice": "Choose a device",
     "note": "Note",
-    "moved": "Register updated"
+    "moved": "Register updated",
+    "views": "Hardware states",
+    "emptyFiltered": "No hardware matches",
+    "clear": "Clear filters",
+    "openDevices": "Open devices",
+    "more": "More for {serial}"
   },
   "field": {
     "orders": "Install orders",
@@ -201,7 +219,13 @@
     "surveyMoved": "Survey updated",
     "scheduledFor": "Visit at",
     "findings": "Findings",
-    "openInstall": "Open the install order"
+    "openInstall": "Open the install order",
+    "someone": "Another user",
+    "noOrdersFiltered": "No order matches",
+    "clear": "Clear filters",
+    "openHardware": "Open rented hardware",
+    "noSurveysBody": "Owners ask for a survey when they want to upgrade to Smart.",
+    "openPlans": "Open price plans"
   },
   "plans": {
     "sold": "Sold",
@@ -259,7 +283,9 @@
     "publish": "Publish",
     "publishTitle": "Publish {label}?",
     "publishBody": "The version applies from its date and can no longer be edited.",
-    "published": "Version published"
+    "published": "Version published",
+    "caption": "Price plans and their versions",
+    "versionShort": "v{version}"
   },
   "storage": {
     "edit": "Edit",
@@ -274,7 +300,8 @@
       "tenants": "Tenants measured",
       "used": "Storage used",
       "nearOrOver": "Near or over",
-      "nearOrOverHint": "At {percent}% of their allowance or more"
+      "nearOrOverHint": "At {percent}% of their allowance or more",
+      "label": "Storage at a glance"
     },
     "allowance": {
       "title": "Free allowance and overage price",
@@ -303,7 +330,8 @@
       "level": "Level",
       "day": "As of",
       "percent": "{percent}%",
-      "actions": "Actions"
+      "actions": "Actions",
+      "emptyAction": "Open customers"
     },
     "gb": "{gb} GB",
     "packages": {
@@ -391,7 +419,8 @@
       "orphans": "Orphans / missing",
       "yes": "Corrected",
       "no": "Reported only",
-      "objects": "{count} objects"
+      "objects": "{count} objects",
+      "emptyAction": "See usage by customer"
     }
   },
   "messaging": {
@@ -426,6 +455,7 @@
     "publishTitle": "Publish the rate effective {date}?",
     "publishBody": "{tenant} free messages per tenant + {unit} per unit, THB {price} per message (+{vat}% VAT). Shown on the public pricing and charged from its effective date",
     "published": "Published",
-    "empty": "No rates yet"
+    "empty": "No rates yet",
+    "pendingAction": "See the version waiting to publish"
   }
 }

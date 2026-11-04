@@ -39,7 +39,10 @@ test("growth fees: dispute → credit note requested → approved by a second us
   await expect(row(SUCCESS_FEE).getByTestId("fee-invoice")).toHaveText("PIV-2026-00812");
   await expectAxeClean(finance);
 
-  await row(SUCCESS_FEE).getByTestId("fee-dispute").click();
+  await row(SUCCESS_FEE)
+    .getByRole("button", { name: /More actions|การทำงานเพิ่มเติม/ })
+    .click();
+  await finance.getByTestId("fee-dispute").click();
   const dialog = finance.getByRole("alertdialog");
   await expect(dialog).toContainText("PIV-2026-00812");
   await dialog.getByTestId("fee-dispute-reason").fill("ดีลยกเลิกภายใน 7 วัน ผู้เช่าไม่ย้ายเข้า");

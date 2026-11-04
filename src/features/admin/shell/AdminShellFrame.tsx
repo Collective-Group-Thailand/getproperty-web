@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { NotificationCentre } from "@/features/shared/notifications/NotificationCentre";
@@ -20,10 +21,14 @@ import { IconButton } from "@/ui/components/IconButton";
 import { IconInfo } from "@/ui/icons/glyphs/info";
 import { IconMenu } from "@/ui/icons/glyphs/menu";
 
+import type { TenantTab } from "../tenants/sections";
 import { CommandPalette } from "./CommandPalette";
+import { RecordNav, tenantRecordOf } from "./RecordNav";
 
 export interface AdminShellFrameProps {
   userName: string;
+  /** The phone top bar's title ("แอดมิน Collective"): the person's name lives in the account menu there. */
+  zoneLabel: string;
   rolesLabel: string;
   groups: ShellNavGroup[];
   envBadge?: string;
@@ -32,6 +37,9 @@ export interface AdminShellFrameProps {
   fakesLabel: string;
   /** The logo, rendered by the server shell (`shellBrand()`). */
   brand: ShellBrand;
+  /** The sections of a tenant record this user may open, labelled (the column's menu on a tenant's pages). */
+  tenantSections: { key: TenantTab; label: string }[];
+  recordLabels: { back: string; nav: string };
   children: React.ReactNode;
 }
 
@@ -50,6 +58,19 @@ export function AdminShellFrame(props: AdminShellFrameProps) {
   const [collapsed, toggleCollapsed] = useSidebarCollapsed("admin");
   const [menuOpen, setMenuOpen] = useState(false);
   const items = props.groups.flatMap((group) => group.items);
+  // On a tenant's pages the column becomes the record: the way back, its name, its sections (redesign G8).
+  const record = tenantRecordOf(usePathname());
+  const recordNav = (size: "md" | "touch") =>
+    record ? (
+      <RecordNav
+        tenantId={record}
+        sections={props.tenantSections}
+        back={{ label: props.recordLabels.back, href: "/tenants" }}
+        label={props.recordLabels.nav}
+        size={size}
+        collapsed={size === "md" && collapsed}
+      />
+    ) : null;
   return (
     <AppShell
       skipLabel={t("shell.skipToContent")}
@@ -63,12 +84,15 @@ export function AdminShellFrame(props: AdminShellFrameProps) {
           mobileMenu={<IconButton icon={IconMenu} label={t("shell.moreMenu")} onClick={() => setMenuOpen(true)} />}
           workspace={
             <>
-              <RailWorkspace
-                name={props.userName}
-                nameTestId="platform-user"
-                role={props.rolesLabel}
-                roleTestId="platform-roles"
-              />
+              <span className="truncate text-sm font-semibold md:hidden">{props.zoneLabel}</span>
+              <div className="max-md:hidden">
+                <RailWorkspace
+                  name={props.userName}
+                  nameTestId="platform-user"
+                  role={props.rolesLabel}
+                  roleTestId="platform-roles"
+                />
+              </div>
               {props.apiFakes || props.envBadge ? (
                 <div className="hidden flex-wrap items-center gap-1 md:flex">
                   <EnvBadge label={props.envBadge} />
@@ -82,7 +106,7 @@ export function AdminShellFrame(props: AdminShellFrameProps) {
             </>
           }
           search={<CommandPalette items={items} collapsed={collapsed} />}
-          nav={<ZoneSidebar groups={props.groups} collapsed={collapsed} />}
+          nav={recordNav("md") ?? <ZoneSidebar groups={props.groups} collapsed={collapsed} />}
           tools={
             <>
               <NotificationCentre zone="admin" />
@@ -111,12 +135,25 @@ export function AdminShellFrame(props: AdminShellFrameProps) {
         onOpenChange={setMenuOpen}
         title={t("shell.moreMenu")}
         closeLabel={t("common.close")}
-        side="bottom"
+        side="left"
       >
-        <div className="mb-4 flex items-center gap-2 md:hidden">
-          <LanguageSwitch zone="admin" />
+        <div className="flex flex-col gap-5">
+          {props.apiFakes || props.envBadge ? (
+            <div className="flex flex-wrap items-center gap-1">
+              <EnvBadge label={props.envBadge} />
+              {props.apiFakes ? (
+                <Badge tone="info" size="sm" icon={IconInfo}>
+                  {props.fakesLabel}
+                </Badge>
+              ) : null}
+            </div>
+          ) : null}
+          {record ? <div className="border-border border-b pb-4">{recordNav("touch")}</div> : null}
+          <ZoneSidebar groups={props.groups} collapsed={false} size="touch" />
+          <div className="border-border border-t pt-4">
+            <LanguageSwitch zone="admin" />
+          </div>
         </div>
-        <ZoneSidebar groups={props.groups} collapsed={false} size="touch" />
       </LazySheet>
     </AppShell>
   );

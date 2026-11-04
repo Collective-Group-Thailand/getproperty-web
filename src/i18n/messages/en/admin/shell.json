@@ -3,5 +3,11 @@
   "home": {
     "title": "Platform overview",
     "body": "Pick a page from the menu on the left"
-  }
+  },
+  "notAllowed": {
+    "title": "This page isn’t open to your role",
+    "body": "You are signed in as {role}. A platform admin can give your account the access if you need it for your work.",
+    "home": "Back to the overview"
+  },
+  "zone": "Collective admin"
 }

@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import Link from "next/link";
 
 import { SUPPORT_GRANT_STATUS } from "@/domain/status/supportGrant";
 import { ConsolePage, PageHeader } from "@/features/shared/console/PageHeader";
@@ -9,7 +10,8 @@ import { formatDateTime } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
-import { Card } from "@/ui/components/Card";
+import { Icon } from "@/ui/icons";
+import { IconLock } from "@/ui/icons/glyphs/lock";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { IconChat } from "@/ui/icons/glyphs/chat";
 import { IconShow } from "@/ui/icons/glyphs/show";
@@ -41,21 +43,30 @@ export async function GrantsTable({
   const { locale } = context;
   if (grants.length === 0)
     return (
-      <Card>
-        <EmptyState icon={IconChat} title={t("empty")} description={t("emptyHint")} />
-      </Card>
+      <EmptyState
+        variant="card"
+        icon={IconChat}
+        title={t("empty")}
+        description={t("emptyHint")}
+        action={
+          <Button asChild variant="secondary">
+            <Link href="/tenants">{t("openTenants")}</Link>
+          </Button>
+        }
+      />
     );
   return (
     <SimpleTable
       caption={t("title")}
       testId="support-grants"
-      minWidth="56rem"
+      stackOnPhones
+      minWidth="60rem"
       columns={[
-        { key: "tenant", header: t("col.tenant") },
-        { key: "reason", header: t("col.reason") },
-        { key: "window", header: t("col.window") },
-        { key: "state", header: t("col.state") },
-        { key: "actions", header: <span className="sr-only">{t("col.actions")}</span> },
+        { key: "tenant", header: t("col.tenant"), phone: "title" },
+        { key: "reason", header: t("col.reason"), phone: "meta" },
+        { key: "window", header: t("col.window"), phone: "meta" },
+        { key: "state", header: t("col.state"), phone: "status" },
+        { key: "actions", header: <span className="sr-only">{t("col.actions")}</span>, phone: "meta", align: "end" },
       ]}
       rows={grants.map((grant) => {
         const name = tenantNames.get(grant.tenantId) ?? grant.tenantId.slice(0, 8);
@@ -72,7 +83,7 @@ export async function GrantsTable({
             reason: (
               <span className="flex flex-col">
                 <span>{grant.reason}</span>
-                <span className="text-muted text-xs">
+                <span className="text-muted text-sm">
                   {grant.ticketRef ? `${grant.ticketRef} · ` : ""}
                   {t("requestedAt", { date: formatDateTime(grant.createdAt, locale) })}
                   {grant.approvedVia ? ` · ${t(`via.${grant.approvedVia}`)}` : ""}
@@ -80,12 +91,16 @@ export async function GrantsTable({
               </span>
             ),
             window:
-              grant.validFrom && grant.validTo
-                ? `${formatDateTime(grant.validFrom, locale)} – ${formatDateTime(grant.validTo, locale)}`
-                : "—",
+              grant.validFrom && grant.validTo ? (
+                <span className="text-sm">
+                  {formatDateTime(grant.validFrom, locale)} – {formatDateTime(grant.validTo, locale)}
+                </span>
+              ) : (
+                "—"
+              ),
             state: <StatusBadgeOf map={SUPPORT_GRANT_STATUS} value={grant.state} size="sm" />,
             actions: (
-              <span className="flex flex-wrap items-center gap-1">
+              <span className="flex items-center justify-end gap-1">
                 {isLive(grant) ? (
                   <Button asChild size="sm" variant="secondary" iconStart={IconShow}>
                     <a href={`/tenants/${grant.tenantId}/view`} data-testid="view-as-tenant">
@@ -141,11 +156,12 @@ export async function TenantSupport({
   const bypass = me.roles.includes("platform_admin");
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-muted max-w-2xl text-sm">
+      <div className="border-border bg-surface rounded-card shadow-card flex flex-col gap-3 border p-4 md:flex-row md:items-center md:justify-between">
+        <p className="flex max-w-2xl items-start gap-2 text-sm">
+          <Icon icon={IconLock} className="text-muted mt-0.5 shrink-0" />
           {bypass ? t("bypassHint") : live ? t("liveHint") : t("noLiveHint")}
         </p>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex shrink-0 flex-wrap gap-2">
           {live || bypass ? (
             <Button asChild variant="secondary" iconStart={IconShow}>
               <a href={`/tenants/${tenant.id}/view`} data-testid="open-view-as">

@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { ActionMenu, type DialogControl } from "@/features/shared/console/ActionMenu";
+import { ActionMenu } from "@/features/shared/console/ActionMenu";
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 import { text } from "@/features/shared/console/FormDialog";
 import { ProblemNotice, useApiAction, useIdempotencyKey } from "@/features/shared/console/useApiAction";
@@ -345,11 +345,7 @@ export function ConfirmPendingAccount({ account }: { account: Schemas["BankAccou
 }
 
 /** `POST …/actions/remove` — typed: the masked account number restated. */
-export function RemoveBankAccount({
-  account,
-  open,
-  onOpenChange,
-}: { account: Schemas["BankAccountDto"] } & DialogControl) {
+export function RemoveBankAccount({ account }: { account: Schemas["BankAccountDto"] }) {
   const t = useTranslations("owner.settings.bank");
   return (
     <ConfirmAction
@@ -359,8 +355,6 @@ export function RemoveBankAccount({
       variant="destructive"
       tone="destructive"
       testId={`remove-${account.id}`}
-      open={open}
-      onOpenChange={onOpenChange}
       title={t("removeTitle", { account: account.accountNoMasked })}
       description={t("removeBody", { bank: account.bankNameTh })}
       confirmLabel={t("remove")}
@@ -381,18 +375,8 @@ export function RemoveBankAccount({
 export function BankAccountMenu({ account }: { account: Schemas["BankAccountDto"] }) {
   const t = useTranslations("owner.settings.bank");
   return (
-    <ActionMenu
-      label={t("menu", { account: account.accountNoMasked })}
-      testId={`bank-menu-${account.id}`}
-      actions={[
-        {
-          id: "remove",
-          label: t("remove"),
-          icon: IconRemove,
-          destructive: true,
-          dialog: (control) => <RemoveBankAccount account={account} {...control} />,
-        },
-      ]}
-    />
+    <ActionMenu label={t("menu", { account: account.accountNoMasked })} testId={`bank-menu-${account.id}`}>
+      <RemoveBankAccount account={account} />
+    </ActionMenu>
   );
 }

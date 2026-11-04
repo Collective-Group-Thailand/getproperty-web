@@ -38,7 +38,7 @@ export function InvoiceActions({ invoice }: { invoice: Schemas["PlatformInvoiceD
   const actions = new Set(invoice.nextActions);
   const path = { invoiceId: invoice.id };
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-col gap-2 [&>button]:w-full">
       {actions.has("record-payment") ? (
         <ConfirmAction
           label={t("recordPayment")}

@@ -17,6 +17,8 @@ export { DescriptionList, type DescriptionItem, type DescriptionListProps } from
 export { Dialog, DialogClose, type DialogProps } from "./Dialog";
 export { DropdownMenu, type DropdownMenuProps, type MenuItem } from "./DropdownMenu";
 export { EmptyState, type EmptyStateProps } from "./EmptyState";
+export { FactGrid, type Fact } from "./FactGrid";
+export { SplitView } from "./SplitView";
 export { PhotoPlaceholder } from "./PhotoPlaceholder";
 export { EnvBadge } from "./EnvBadge";
 export { ErrorState, type ErrorStateProps } from "./ErrorState";

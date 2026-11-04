@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
-import { ActionMenu, type DialogControl } from "@/features/shared/console/ActionMenu";
+import { ActionMenu } from "@/features/shared/console/ActionMenu";
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 import { FormDialog, integer, text } from "@/features/shared/console/FormDialog";
 import { browserApi } from "@/lib/api/browser";
@@ -176,7 +176,7 @@ export function CreateAssetGrant({
 }
 
 /** `POST /v1/owner/asset-grants/{id}/actions/revoke` with a reason. */
-export function RevokeAssetGrant({ grant, open, onOpenChange }: { grant: Schemas["AssetGrantDto"] } & DialogControl) {
+export function RevokeAssetGrant({ grant }: { grant: Schemas["AssetGrantDto"] }) {
   const t = useTranslations("owner.settings.grants");
   const [reason, setReason] = useState("");
   return (
@@ -187,8 +187,7 @@ export function RevokeAssetGrant({ grant, open, onOpenChange }: { grant: Schemas
       variant="destructive"
       tone="destructive"
       testId={`revoke-grant-${grant.id}`}
-      open={open}
-      onOpenChange={onOpenChange}
+      menuItem={{ label: t("revokeMenu") }}
       title={t("revokeTitle")}
       description={t("revokeBody")}
       confirmLabel={t("revoke")}
@@ -214,18 +213,8 @@ export function RevokeAssetGrant({ grant, open, onOpenChange }: { grant: Schemas
 export function AssetGrantMenu({ grant }: { grant: Schemas["AssetGrantDto"] }) {
   const t = useTranslations("owner.settings.grants");
   return (
-    <ActionMenu
-      label={t("menu")}
-      testId={`grant-menu-${grant.id}`}
-      actions={[
-        {
-          id: "revoke",
-          label: t("revokeMenu"),
-          icon: IconXCircle,
-          destructive: true,
-          dialog: (control) => <RevokeAssetGrant grant={grant} {...control} />,
-        },
-      ]}
-    />
+    <ActionMenu label={t("menu")} testId={`grant-menu-${grant.id}`}>
+      <RevokeAssetGrant grant={grant} />
+    </ActionMenu>
   );
 }

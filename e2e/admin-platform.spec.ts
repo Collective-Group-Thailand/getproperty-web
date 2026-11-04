@@ -261,7 +261,7 @@ test("DSR console, audit search with cursor pages, outbox replay", async ({ page
   await gotoAdmin(page, "/audit");
   await expect(page.getByTestId("audit-row").first()).toBeVisible();
   await expectAxeClean(page);
-  await page.getByTestId("filter-action").fill("support_grant.*");
+  await page.getByTestId("filter-action").selectOption("support_grant.*");
   await page.getByTestId("filter-apply").click();
   await expect(page).toHaveURL(/action=support_grant/);
   for (const action of await page
@@ -273,14 +273,16 @@ test("DSR console, audit search with cursor pages, outbox replay", async ({ page
   const dead = page.locator('[data-testid="outbox-message"][data-state="dead"]').first();
   await expect(dead).toBeVisible();
   await expectAxeClean(page);
-  await dead.getByRole("button", { name: "Replay" }).click();
+  await dead.getByRole("button", { name: "More actions" }).click();
+  await page.getByRole("menuitem", { name: "Replay" }).click();
   await page.getByRole("alertdialog").getByRole("button", { name: "Replay" }).click();
   await expect(page.locator('[data-testid="outbox-message"][data-state="dead"]')).toHaveCount(0);
   await page
     .locator('[data-testid="outbox-delivery"][data-state="dead"]')
     .first()
-    .getByRole("button", { name: "Replay" })
+    .getByRole("button", { name: "More actions" })
     .click();
+  await page.getByRole("menuitem", { name: "Replay" }).click();
   await page.getByRole("alertdialog").getByRole("button", { name: "Replay" }).click();
   await expect(page.locator('[data-testid="outbox-delivery"][data-state="dead"]')).toHaveCount(0);
 });
@@ -300,12 +302,14 @@ test("platform users: create with roles, grant and revoke a role; integration ev
   await expect(dialog).toHaveCount(0);
   const row = page.locator('[data-testid="user-row"][data-email="nida@example.com"]');
   await expect(row.getByTestId("user-role")).toHaveCount(1);
-  await row.getByRole("button", { name: "Grant a role" }).click();
+  await row.getByRole("button", { name: /More for/ }).click();
+  await page.getByRole("menuitem", { name: "Grant a role" }).click();
   const grant = page.getByRole("dialog");
   await grant.getByTestId("grant-role").selectOption("support");
   await grant.getByTestId("form-submit").click();
   await expect(row.getByTestId("user-role")).toHaveCount(2);
-  await row.locator('[data-role="support"]').getByRole("button", { name: "Revoke" }).click();
+  await row.getByRole("button", { name: /More for/ }).click();
+  await page.getByRole("menuitem", { name: /Revoke.*Support/ }).click();
   const revoke = page.getByRole("alertdialog");
   await typePhrase(revoke);
   await revoke.getByRole("button", { name: "Revoke" }).click();

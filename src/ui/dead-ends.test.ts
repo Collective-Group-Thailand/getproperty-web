@@ -12,31 +12,6 @@ import { describe, expect, it } from "vitest";
  * be added.
  */
 const BASELINE: Record<string, number> = {
-  "src/features/admin/billing/FieldWorkView.tsx": 1,
-  "src/features/admin/billing/HardwareView.tsx": 1,
-  "src/features/admin/billing/InvoicesView.tsx": 1,
-  "src/features/admin/billing/MessagingRatesView.tsx": 1,
-  "src/features/admin/billing/StorageView.tsx": 2,
-  "src/features/admin/billing/SubscriptionsView.tsx": 1,
-  "src/features/admin/credentials/ProviderCredentialsPanel.tsx": 1,
-  "src/features/admin/fleet/FleetView.tsx": 2,
-  "src/features/admin/fleet/IngestView.tsx": 1,
-  "src/features/admin/fleet/OtaView.tsx": 2,
-  "src/features/admin/growth/BroadcastCampaignsView.tsx": 1,
-  "src/features/admin/growth/BroadcastSettingsView.tsx": 1,
-  "src/features/admin/growth/FeeAccrualsView.tsx": 1,
-  "src/features/admin/growth/MediaOrdersView.tsx": 1,
-  "src/features/admin/insight/RentalHandoffsView.tsx": 1,
-  "src/features/admin/insight/ReviewsModerationView.tsx": 1,
-  "src/features/admin/listings/ModerationView.tsx": 2,
-  "src/features/admin/operations/AdminHome.tsx": 1,
-  "src/features/admin/operations/AuditView.tsx": 1,
-  "src/features/admin/operations/IntegrationEventsView.tsx": 1,
-  "src/features/admin/operations/OutboxView.tsx": 2,
-  "src/features/admin/operations/PrivacyView.tsx": 1,
-  "src/features/admin/support/SupportView.tsx": 1,
-  "src/features/admin/tenants/TenantAiUsage.tsx": 1,
-  "src/features/admin/tenants/TenantsView.tsx": 1,
   "src/ui/components/DataTable.tsx": 1,
 };
 

@@ -223,6 +223,10 @@ test("OTA: register a signed release, plan a rollout; progress arrives over SSE;
 
   // Pilot ring of the same release, now that canary completed: plan, start, pause, resume, abort.
   await gotoAdmin(page, "/ota");
+  await page
+    .locator('[data-testid="release-row"][data-version="0.4.0"][data-arch="arm64"]')
+    .getByRole("button", { name: /More for|เพิ่มเติมของ/ })
+    .click();
   await page.getByTestId("plan-0.4.0-arm64").click();
   const plan = page.getByRole("dialog");
   await plan.getByTestId("rollout-ring").selectOption("pilot");
@@ -252,7 +256,8 @@ test("ingest dead letters: replay a refused payload", async ({ page }) => {
   const row = page.locator('[data-testid="ingest-row"][data-replayed="false"]').first();
   await expect(row).toBeVisible();
   await expectAxeClean(page);
-  await row.getByRole("button", { name: "Replay" }).click();
+  await row.getByRole("button", { name: "More actions" }).click();
+  await page.getByRole("menuitem", { name: "Replay" }).click();
   await page.getByRole("alertdialog").getByRole("button", { name: "Replay" }).click();
   await expect(page.locator('[data-testid="ingest-row"][data-replayed="false"]')).toHaveCount(0);
 });

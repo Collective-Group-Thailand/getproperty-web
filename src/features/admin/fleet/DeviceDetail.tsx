@@ -16,6 +16,7 @@ import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Callout } from "@/ui/components/Callout";
 import { Card, CardHeader } from "@/ui/components/Card";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { SimpleTable } from "@/ui/components/SimpleTable";
 
@@ -101,233 +102,259 @@ export async function DeviceDetail({ context, deviceId }: { context: AdminContex
         description={`${kinds(device.kind)} · ${device.vendor} ${device.model}`}
         status={<StatusBadgeOf map={DEVICE_STATUS} value={device.status} />}
       />
-      <DeviceActions device={device} tenants={[...names.entries()].map(([id, name]) => ({ id, name }))} />
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card as="section" aria-labelledby="device-facts">
-          <CardHeader title={<span id="device-facts">{t("facts")}</span>} />
-          <DescriptionList
-            items={[
-              { id: "ownership", term: t("col.ownership"), description: t(`ownership.${device.ownership}`) },
-              { id: "tenant", term: t("col.tenant"), description: tenantLabel(names, device.tenantId, t("stock")) },
+      <DetailLayout
+        panel={
+          <ActionPanel
+            title={t("manage")}
+            testId="device-panel"
+            facts={[
+              { key: "tenant", label: t("col.tenant"), value: tenantLabel(names, device.tenantId, t("stock")) },
               {
-                id: "building",
-                term: t("col.building"),
-                description: building ? buildingLabel(building) : (device.buildingId?.slice(0, 8) ?? null),
-              },
-              { id: "ring", term: t("col.ring"), description: gateway ? t(`ring.${device.otaRing}`) : null },
-              {
-                id: "transport",
-                term: transportT("term"),
-                description: gateway ? <MqttTransportBadge enabled={device.mqttWsFallback} /> : null,
-              },
-              { id: "firmware", term: t("col.firmware"), description: device.firmwareVersion },
-              { id: "arch", term: t("arch"), description: device.arch },
-              { id: "driver", term: t("driver"), description: device.driver },
-              { id: "meters", term: t("meters"), description: gateway ? formatNumber(device.meters, locale) : null },
-              {
-                id: "seen",
-                term: t("col.seen"),
-                description: device.lastSeenAt
-                  ? `${formatDateTime(device.lastSeenAt, locale)} (${formatRelativeTime(device.lastSeenAt, locale)})`
-                  : null,
+                key: "seen",
+                label: t("col.seen"),
+                value: device.lastSeenAt ? formatRelativeTime(device.lastSeenAt, locale) : "—",
               },
             ]}
+            secondary={
+              <DeviceActions device={device} tenants={[...names.entries()].map(([id, name]) => ({ id, name }))} />
+            }
           />
-        </Card>
+        }
+      >
+        <div className="grid gap-6 xl:grid-cols-2">
+          <Card as="section" aria-labelledby="device-facts">
+            <CardHeader title={<span id="device-facts">{t("facts")}</span>} />
+            <DescriptionList
+              items={[
+                { id: "ownership", term: t("col.ownership"), description: t(`ownership.${device.ownership}`) },
+                { id: "tenant", term: t("col.tenant"), description: tenantLabel(names, device.tenantId, t("stock")) },
+                {
+                  id: "building",
+                  term: t("col.building"),
+                  description: building ? buildingLabel(building) : (device.buildingId?.slice(0, 8) ?? null),
+                },
+                { id: "ring", term: t("col.ring"), description: gateway ? t(`ring.${device.otaRing}`) : null },
+                {
+                  id: "transport",
+                  term: transportT("term"),
+                  description: gateway ? (
+                    <span className="flex min-w-0 *:whitespace-normal">
+                      <MqttTransportBadge enabled={device.mqttWsFallback} />
+                    </span>
+                  ) : null,
+                },
+                { id: "firmware", term: t("col.firmware"), description: device.firmwareVersion },
+                { id: "arch", term: t("arch"), description: device.arch },
+                { id: "driver", term: t("driver"), description: device.driver },
+                { id: "meters", term: t("meters"), description: gateway ? formatNumber(device.meters, locale) : null },
+                {
+                  id: "seen",
+                  term: t("col.seen"),
+                  description: device.lastSeenAt
+                    ? `${formatDateTime(device.lastSeenAt, locale)} (${formatRelativeTime(device.lastSeenAt, locale)})`
+                    : null,
+                },
+              ]}
+            />
+          </Card>
+          {gateway ? (
+            <Card as="section" aria-labelledby="device-health" data-testid="device-health">
+              <CardHeader title={<span id="device-health">{t("health")}</span>} />
+              {health ? (
+                <DescriptionList
+                  items={[
+                    { id: "agent", term: t("agent"), description: health.agentVersion },
+                    {
+                      id: "heartbeat",
+                      term: t("heartbeat"),
+                      description: health.lastHeartbeatAt ? formatDateTime(health.lastHeartbeatAt, locale) : null,
+                    },
+                    { id: "missed", term: t("missed"), description: formatNumber(health.missedHeartbeats, locale) },
+                    { id: "link", term: t("link"), description: health.link },
+                    {
+                      id: "rssi",
+                      term: t("rssi"),
+                      description: health.rssi === null ? null : t("dbm", { value: health.rssi }),
+                    },
+                    {
+                      id: "buffered",
+                      term: t("buffered"),
+                      description:
+                        health.bufferedReadings === null ? null : formatNumber(health.bufferedReadings, locale),
+                    },
+                    {
+                      id: "lag",
+                      term: t("lag"),
+                      description: health.ingestLagMs === null ? null : t("ms", { value: health.ingestLagMs }),
+                    },
+                  ]}
+                />
+              ) : (
+                <p className="text-muted">{t("noHealth")}</p>
+              )}
+            </Card>
+          ) : null}
+        </div>
+
         {gateway ? (
-          <Card as="section" aria-labelledby="device-health" data-testid="device-health">
-            <CardHeader title={<span id="device-health">{t("health")}</span>} />
-            {health ? (
-              <DescriptionList
-                items={[
-                  { id: "agent", term: t("agent"), description: health.agentVersion },
-                  {
-                    id: "heartbeat",
-                    term: t("heartbeat"),
-                    description: health.lastHeartbeatAt ? formatDateTime(health.lastHeartbeatAt, locale) : null,
-                  },
-                  { id: "missed", term: t("missed"), description: formatNumber(health.missedHeartbeats, locale) },
-                  { id: "link", term: t("link"), description: health.link },
-                  {
-                    id: "rssi",
-                    term: t("rssi"),
-                    description: health.rssi === null ? null : t("dbm", { value: health.rssi }),
-                  },
-                  {
-                    id: "buffered",
-                    term: t("buffered"),
-                    description:
-                      health.bufferedReadings === null ? null : formatNumber(health.bufferedReadings, locale),
-                  },
-                  {
-                    id: "lag",
-                    term: t("lag"),
-                    description: health.ingestLagMs === null ? null : t("ms", { value: health.ingestLagMs }),
-                  },
-                ]}
-              />
+          <Card as="section" aria-labelledby="device-config" data-testid="device-config" data-in-sync={config.inSync}>
+            <CardHeader
+              title={<span id="device-config">{t("config")}</span>}
+              description={
+                <span data-testid="config-versions">
+                  {t("configVersions", {
+                    current: config.current ? `v${config.current.version}` : "—",
+                    applied: config.applied === null ? "—" : `v${config.applied}`,
+                  })}
+                </span>
+              }
+              action={
+                config.inSync ? (
+                  <Badge tone="success">{t("inSync")}</Badge>
+                ) : (
+                  <Badge tone="warning">{t("notApplied")}</Badge>
+                )
+              }
+            />
+            {config.drift ? (
+              <Callout tone="warning" className="mb-4" title={t("driftTitle")}>
+                {t("driftBody", { date: formatDateTime(config.drift.driftFlaggedAt!, locale) })}
+              </Callout>
+            ) : null}
+            {config.rejected ? (
+              <Callout tone="danger" className="mb-4" title={t("rejectedTitle", { version: config.rejected.version })}>
+                <span className="font-mono text-xs">{config.rejected.rejectError ?? "—"}</span>
+              </Callout>
+            ) : null}
+            {configs.length === 0 ? (
+              <p className="text-muted">{t("noConfigs")}</p>
             ) : (
-              <p className="text-muted">{t("noHealth")}</p>
+              <SimpleTable
+                caption={t("config")}
+                testId="config-table"
+                stackOnPhones
+                minWidth="48rem"
+                columns={[
+                  { key: "version", header: t("col.version") },
+                  { key: "meters", header: t("meters"), align: "end" },
+                  { key: "published", header: t("col.published") },
+                  { key: "applied", header: t("col.applied") },
+                ]}
+                rows={[...configs]
+                  .sort((a, b) => b.version - a.version)
+                  .map((row) => ({
+                    key: row.id,
+                    testId: "config-row",
+                    data: { version: row.version },
+                    tone: row.rejectedAt ? "danger" : "default",
+                    cells: {
+                      version: `v${row.version}`,
+                      meters: formatNumber(row.meters, locale),
+                      published: row.publishedAt ? formatDateTime(row.publishedAt, locale) : t("notPublished"),
+                      applied: row.appliedAt
+                        ? formatDateTime(row.appliedAt, locale)
+                        : row.rejectedAt
+                          ? t("rejectedAt", { date: formatDateTime(row.rejectedAt, locale) })
+                          : t("waiting"),
+                    },
+                  }))}
+              />
             )}
           </Card>
         ) : null}
-      </div>
 
-      {gateway ? (
-        <Card as="section" aria-labelledby="device-config" data-testid="device-config" data-in-sync={config.inSync}>
-          <CardHeader
-            title={<span id="device-config">{t("config")}</span>}
-            description={
-              <span data-testid="config-versions">
-                {t("configVersions", {
-                  current: config.current ? `v${config.current.version}` : "—",
-                  applied: config.applied === null ? "—" : `v${config.applied}`,
-                })}
-              </span>
-            }
-            action={
-              config.inSync ? (
-                <Badge tone="success">{t("inSync")}</Badge>
-              ) : (
-                <Badge tone="warning">{t("notApplied")}</Badge>
-              )
-            }
-          />
-          {config.drift ? (
-            <Callout tone="warning" className="mb-4" title={t("driftTitle")}>
-              {t("driftBody", { date: formatDateTime(config.drift.driftFlaggedAt!, locale) })}
-            </Callout>
-          ) : null}
-          {config.rejected ? (
-            <Callout tone="danger" className="mb-4" title={t("rejectedTitle", { version: config.rejected.version })}>
-              <span className="font-mono text-xs">{config.rejected.rejectError ?? "—"}</span>
-            </Callout>
-          ) : null}
-          {configs.length === 0 ? (
-            <p className="text-muted">{t("noConfigs")}</p>
-          ) : (
+        {channels.length > 0 ? (
+          <Card as="section" aria-labelledby="device-channels">
+            <CardHeader title={<span id="device-channels">{t("channels")}</span>} />
             <SimpleTable
-              caption={t("config")}
-              testId="config-table"
-              minWidth="48rem"
+              caption={t("channels")}
+              minWidth="44rem"
               columns={[
-                { key: "version", header: t("col.version") },
-                { key: "meters", header: t("meters"), align: "end" },
-                { key: "published", header: t("col.published") },
-                { key: "applied", header: t("col.applied") },
+                { key: "meter", header: t("col.meter") },
+                { key: "bus", header: t("col.bus") },
+                { key: "driver", header: t("driver") },
+                { key: "since", header: t("col.since") },
               ]}
-              rows={[...configs]
-                .sort((a, b) => b.version - a.version)
-                .map((row) => ({
-                  key: row.id,
-                  testId: "config-row",
-                  data: { version: row.version },
-                  tone: row.rejectedAt ? "danger" : "default",
+              rows={channels.map((channel) => ({
+                key: channel.id,
+                cells: {
+                  meter: channel.meterName,
+                  bus: `${channel.busType} ${channel.busId}${channel.address === null ? "" : ` #${channel.address}`}`,
+                  driver: channel.driver,
+                  since: `${formatDateTime(channel.validFrom, locale)}${channel.validTo ? ` – ${formatDateTime(channel.validTo, locale)}` : ""}`,
+                },
+              }))}
+            />
+          </Card>
+        ) : null}
+
+        {commands ? (
+          <Card as="section" aria-labelledby="device-commands">
+            <CardHeader title={<span id="device-commands">{t("commands")}</span>} description={t("commandsHint")} />
+            {!commands.data ? (
+              <SectionError error={commands.error} />
+            ) : commands.data.length === 0 ? (
+              <p className="text-muted">{t("noCommands")}</p>
+            ) : (
+              <SimpleTable
+                caption={t("commands")}
+                testId="command-table"
+                stackOnPhones
+                minWidth="52rem"
+                columns={[
+                  { key: "type", header: t("col.command") },
+                  { key: "issued", header: t("col.issued") },
+                  { key: "attempts", header: t("col.attempts"), align: "end" },
+                  { key: "result", header: t("col.result") },
+                  { key: "status", header: t("col.status") },
+                ]}
+                rows={commands.data.map((command) => ({
+                  key: command.id,
+                  testId: "command-row",
+                  data: { type: command.type, status: command.status },
                   cells: {
-                    version: `v${row.version}`,
-                    meters: formatNumber(row.meters, locale),
-                    published: row.publishedAt ? formatDateTime(row.publishedAt, locale) : t("notPublished"),
-                    applied: row.appliedAt
-                      ? formatDateTime(row.appliedAt, locale)
-                      : row.rejectedAt
-                        ? t("rejectedAt", { date: formatDateTime(row.rejectedAt, locale) })
-                        : t("waiting"),
+                    type: commandNames(command.type),
+                    issued: formatDateTime(command.issuedAt, locale),
+                    attempts: formatNumber(command.attempts, locale),
+                    result: <CommandResult command={command} label={t("logsLink")} />,
+                    status: <StatusBadgeOf map={COMMAND_STATUS} value={command.status} size="sm" />,
                   },
                 }))}
-            />
-          )}
-        </Card>
-      ) : null}
+              />
+            )}
+          </Card>
+        ) : null}
 
-      {channels.length > 0 ? (
-        <Card as="section" aria-labelledby="device-channels">
-          <CardHeader title={<span id="device-channels">{t("channels")}</span>} />
-          <SimpleTable
-            caption={t("channels")}
-            minWidth="44rem"
-            columns={[
-              { key: "meter", header: t("col.meter") },
-              { key: "bus", header: t("col.bus") },
-              { key: "driver", header: t("driver") },
-              { key: "since", header: t("col.since") },
-            ]}
-            rows={channels.map((channel) => ({
-              key: channel.id,
-              cells: {
-                meter: channel.meterName,
-                bus: `${channel.busType} ${channel.busId}${channel.address === null ? "" : ` #${channel.address}`}`,
-                driver: channel.driver,
-                since: `${formatDateTime(channel.validFrom, locale)}${channel.validTo ? ` – ${formatDateTime(channel.validTo, locale)}` : ""}`,
-              },
-            }))}
-          />
-        </Card>
-      ) : null}
-
-      {commands ? (
-        <Card as="section" aria-labelledby="device-commands">
-          <CardHeader title={<span id="device-commands">{t("commands")}</span>} description={t("commandsHint")} />
-          {!commands.data ? (
-            <SectionError error={commands.error} />
-          ) : commands.data.length === 0 ? (
-            <p className="text-muted">{t("noCommands")}</p>
+        <Card as="section" aria-labelledby="device-events">
+          <CardHeader title={<span id="device-events">{t("events")}</span>} />
+          {events.length === 0 ? (
+            <p className="text-muted">{t("noEvents")}</p>
           ) : (
             <SimpleTable
-              caption={t("commands")}
-              testId="command-table"
-              minWidth="52rem"
+              caption={t("events")}
+              testId="event-table"
+              stackOnPhones
+              minWidth="44rem"
               columns={[
-                { key: "type", header: t("col.command") },
-                { key: "issued", header: t("col.issued") },
-                { key: "attempts", header: t("col.attempts"), align: "end" },
-                { key: "result", header: t("col.result") },
-                { key: "status", header: t("col.status") },
+                { key: "type", header: t("col.event"), phone: "title" },
+                { key: "at", header: t("col.at"), phone: "meta" },
+                { key: "message", header: t("col.message"), phone: "meta" },
               ]}
-              rows={commands.data.map((command) => ({
-                key: command.id,
-                testId: "command-row",
-                data: { type: command.type, status: command.status },
+              rows={events.map((event) => ({
+                key: event.id,
+                testId: "event-row",
+                data: { type: event.type },
+                tone: deviceEventTone(event.severity),
                 cells: {
-                  type: commandNames(command.type),
-                  issued: formatDateTime(command.issuedAt, locale),
-                  attempts: formatNumber(command.attempts, locale),
-                  result: <CommandResult command={command} label={t("logsLink")} />,
-                  status: <StatusBadgeOf map={COMMAND_STATUS} value={command.status} size="sm" />,
+                  at: formatDateTime(event.occurredAt, locale),
+                  type: <DeviceEventName type={event.type} showCode />,
+                  message: event.message ?? "—",
                 },
               }))}
             />
           )}
         </Card>
-      ) : null}
-
-      <Card as="section" aria-labelledby="device-events">
-        <CardHeader title={<span id="device-events">{t("events")}</span>} />
-        {events.length === 0 ? (
-          <p className="text-muted">{t("noEvents")}</p>
-        ) : (
-          <SimpleTable
-            caption={t("events")}
-            testId="event-table"
-            minWidth="44rem"
-            columns={[
-              { key: "at", header: t("col.at") },
-              { key: "type", header: t("col.event") },
-              { key: "message", header: t("col.message") },
-            ]}
-            rows={events.map((event) => ({
-              key: event.id,
-              testId: "event-row",
-              data: { type: event.type },
-              tone: deviceEventTone(event.severity),
-              cells: {
-                at: formatDateTime(event.occurredAt, locale),
-                type: <DeviceEventName type={event.type} showCode />,
-                message: event.message ?? "—",
-              },
-            }))}
-          />
-        )}
-      </Card>
+      </DetailLayout>
     </ConsolePage>
   );
 }

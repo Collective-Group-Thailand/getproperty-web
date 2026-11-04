@@ -1,3 +1,4 @@
+import { SetProviderCredential } from "@/features/admin/credentials/CredentialActions";
 import { getTranslations } from "next-intl/server";
 
 import { ProviderCredentialsPanel } from "@/features/admin/credentials/ProviderCredentialsPanel";
@@ -26,7 +27,12 @@ export default async function Page({
   ]);
   return (
     <ConsolePage testId="provider-credentials-page">
-      <PageHeader title={t("title")} description={t("description")} crumbs={[{ label: t("title") }]} />
+      <PageHeader
+        title={t("title")}
+        description={t("description")}
+        crumbs={[{ label: t("title") }]}
+        actions={<SetProviderCredential tenantId={null} label={t("setPlatform")} testId="set-credential" />}
+      />
       <ProviderCredentialsPanel context={context} scope={{ type: "all", names }} searchParams={query} />
     </ConsolePage>
   );

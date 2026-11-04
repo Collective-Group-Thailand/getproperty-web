@@ -1,6 +1,6 @@
 {
-  "title": "Listings",
-  "description": "Review listings before they go public, handle viewers' reports and verify owners (D-252).",
+  "title": "Listing moderation",
+  "description": "Check listings before they go live, handle viewers’ reports and confirm real owners.",
   "tab": {
     "queue": "Review queue",
     "hidden": "Hidden",
@@ -9,7 +9,8 @@
     "media": "Photo services",
     "broadcasts": "LINE broadcasts",
     "reviews": "Reviews",
-    "handoffs": "getbuild handoffs"
+    "handoffs": "getbuild handoffs",
+    "moderation": "Moderation"
   },
   "col": {
     "listing": "Listing",
@@ -48,7 +49,7 @@
   "emptyHint": "New items will show up here.",
   "approve": "Approve",
   "approveTitle": "Publish \"{title}\"?",
-  "approveBody": "The listing goes live on the /rent pages at once.",
+  "approveBody": "The listing goes live on the rental site at once.",
   "approved": "Published",
   "reject": "Reject",
   "rejectTitle": "Reject \"{title}\"",
@@ -57,11 +58,11 @@
   "rejected": "Owner informed",
   "hide": "Hide",
   "hideTitle": "Hide \"{title}\"",
-  "hideHint": "The listing leaves the /rent pages until restored.",
+  "hideHint": "The listing leaves the rental site until it is restored.",
   "hidden": "Hidden",
   "restore": "Restore",
   "restoreTitle": "Restore \"{title}\"?",
-  "restoreBody": "The listing returns to the /rent pages and its open reports are dismissed.",
+  "restoreBody": "The listing returns to the rental site and its open reports are closed as no problem found.",
   "restored": "Restored",
   "verification": {
     "kinds": {
@@ -83,5 +84,13 @@
     "decided": "Decision saved",
     "note_": "Owner's note"
   },
-  "tabsLabel": "Listing tabs"
+  "tabsLabel": "Moderation views",
+  "approvePublish": "Approve and publish",
+  "emptyOpenReported": "Open reported listings",
+  "emptyOpenQueue": "Open the review queue",
+  "updatedAt": "updated {date}",
+  "factsLabel": "Listing facts",
+  "place": "Area",
+  "descriptionLabel": "Description",
+  "whyTitle": "Why it needs a look"
 }

@@ -113,7 +113,7 @@ export function BroadcastSettingsForm({ settings }: { settings: Settings }) {
       <div className="rounded-card border-border flex flex-col gap-3 border p-4">
         <Switch
           label={t("enabled")}
-          description={<span className="font-mono text-xs">{t("enabledHint")}</span>}
+          description={t("enabledHint")}
           checked={enabled}
           onCheckedChange={setEnabled}
           name="enabled"

@@ -183,7 +183,7 @@ export function RevokeRole({ user, role }: { user: Schemas["PlatformUserDto"]; r
   const [phrase] = useState(user.email ?? user.displayName);
   return (
     <ConfirmAction
-      label={t("revoke")}
+      label={t("revokeRole", { role: roles(role) })}
       icon={IconRemove}
       size="sm"
       variant="ghost"

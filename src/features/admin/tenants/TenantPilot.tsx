@@ -7,7 +7,7 @@ import { unwrap } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/errors";
 import type { Schemas } from "@/lib/api/types";
 import { Card, CardHeader } from "@/ui/components/Card";
-import { DescriptionList } from "@/ui/components/DescriptionList";
+import { FactGrid } from "@/ui/components/FactGrid";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { IconFlag } from "@/ui/icons/glyphs/flag";
 
@@ -40,6 +40,7 @@ export async function TenantPilot({
     return (
       <Card>
         <EmptyState
+          variant="plain"
           icon={IconFlag}
           title={t("none")}
           description={t("noneHint")}
@@ -64,36 +65,34 @@ export async function TenantPilot({
           description={agreement.notes ?? undefined}
           action={manage ? <PilotForm tenantId={tenant.id} pilot={agreement} /> : undefined}
         />
-        <DescriptionList
-          columns={3}
-          items={[
-            { id: "signed", term: t("signedOn"), description: formatDate(agreement.signedOn, locale) },
-            { id: "term", term: t("termMonths"), description: t("months", { count: agreement.termMonths }) },
+        <FactGrid
+          label={t("terms")}
+          facts={[
+            { key: "signed", label: t("signedOn"), value: formatDate(agreement.signedOn, locale) },
+            { key: "term", label: t("termMonths"), value: t("months", { count: agreement.termMonths }) },
             {
-              id: "discount",
-              term: t("discountPct"),
-              description: (
-                <span data-testid="pilot-discount-value">{formatPercent(agreement.discountPct, locale)}</span>
-              ),
+              key: "discount",
+              label: t("discountPct"),
+              value: <span data-testid="pilot-discount-value">{formatPercent(agreement.discountPct, locale)}</span>,
             },
-            { id: "review", term: t("kpiReviewOn"), description: formatDate(agreement.kpiReviewOn, locale) },
+            { key: "review", label: t("kpiReviewOn"), value: formatDate(agreement.kpiReviewOn, locale) },
             {
-              id: "cadence",
-              term: t("cadence"),
-              description: t.has(`cadenceName.${agreement.feedbackCadence}`)
+              key: "cadence",
+              label: t("cadence"),
+              value: t.has(`cadenceName.${agreement.feedbackCadence}`)
                 ? t(`cadenceName.${agreement.feedbackCadence}`)
                 : agreement.feedbackCadence,
             },
             {
-              id: "rights",
-              term: t("rights"),
-              description:
+              key: "rights",
+              label: t("rights"),
+              value:
                 [
                   agreement.referenceSiteRights ? t("referenceSite") : null,
                   agreement.anonymisedDataUse ? t("anonymisedData") : null,
                 ]
                   .filter(Boolean)
-                  .join(" · ") || null,
+                  .join(" · ") || "—",
             },
           ]}
         />

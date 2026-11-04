@@ -9,8 +9,8 @@ export async function generateMetadata() {
 }
 
 /** Listing moderation and owner verification (F6.5, D-252). */
-export default async function Page({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
-  const { tab } = await searchParams;
+export default async function Page({ searchParams }: { searchParams: Promise<{ tab?: string; id?: string }> }) {
+  const { tab, id } = await searchParams;
   const current = MODERATION_TABS.includes(tab as ModerationTab) ? (tab as ModerationTab) : "queue";
-  return <ModerationView context={await adminContext()} tab={current} />;
+  return <ModerationView context={await adminContext()} tab={current} selected={id} />;
 }

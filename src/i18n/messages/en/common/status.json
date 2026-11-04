@@ -231,12 +231,12 @@
     "publishing": "Publishing",
     "published": "Published",
     "failed": "Failed",
-    "dead": "Dead letter"
+    "dead": "Undeliverable"
   },
   "consumption": {
     "processed": "Processed",
     "failed": "Failed",
-    "dead": "Dead letter"
+    "dead": "Undeliverable"
   },
   "rollout": {
     "planned": "Planned",
@@ -318,7 +318,7 @@
     "sent": "Sent",
     "acked": "Acknowledged",
     "failed": "Failed",
-    "dead": "Dead letter"
+    "dead": "Undeliverable"
   },
   "etax": {
     "queued": "Queued",

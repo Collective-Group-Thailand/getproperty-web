@@ -32,25 +32,12 @@ export function ListingModerationActions({ listing }: { listing: Listing }) {
   const path = (key: string) => ({ params: { path: { listingId: listing.id }, header: { "Idempotency-Key": key } } });
   const live = listing.state === "published" || listing.state === "paused";
   return (
-    <div className="flex flex-wrap gap-1">
-      {listing.state === "pending_review" ? (
-        <ConfirmAction
-          label={t("approve")}
-          icon={IconCheckCircle}
-          size="sm"
-          testId="moderation-approve"
-          title={t("approveTitle", { title: listing.titleTh })}
-          description={t("approveBody")}
-          confirmLabel={t("approve")}
-          successMessage={t("approved")}
-          onConfirm={(key) => unwrap(browserApi().POST("/v1/admin/listings/{listingId}/actions/approve", path(key)))}
-        />
-      ) : null}
+    <div className="flex flex-wrap items-center justify-end gap-2" data-testid="moderation-decision">
       {listing.hiddenAt ? (
         <ConfirmAction
           label={t("restore")}
           icon={IconShow}
-          size="sm"
+          variant="secondary"
           testId="moderation-restore"
           title={t("restoreTitle", { title: listing.titleTh })}
           description={t("restoreBody")}
@@ -63,7 +50,6 @@ export function ListingModerationActions({ listing }: { listing: Listing }) {
         <FormDialog
           label={t("hide")}
           icon={IconHide}
-          size="sm"
           testId="moderation-hide"
           title={t("hideTitle", { title: listing.titleTh })}
           description={t("hideHint")}
@@ -89,7 +75,7 @@ export function ListingModerationActions({ listing }: { listing: Listing }) {
         <FormDialog
           label={t("reject")}
           icon={IconXCircle}
-          size="sm"
+          variant="destructive"
           testId="moderation-reject"
           title={t("rejectTitle", { title: listing.titleTh })}
           description={t("rejectHint")}
@@ -110,6 +96,18 @@ export function ListingModerationActions({ listing }: { listing: Listing }) {
             </Field>
           )}
         </FormDialog>
+      ) : null}
+      {listing.state === "pending_review" ? (
+        <ConfirmAction
+          label={t("approvePublish")}
+          icon={IconCheckCircle}
+          testId="moderation-approve"
+          title={t("approveTitle", { title: listing.titleTh })}
+          description={t("approveBody")}
+          confirmLabel={t("approve")}
+          successMessage={t("approved")}
+          onConfirm={(key) => unwrap(browserApi().POST("/v1/admin/listings/{listingId}/actions/approve", path(key)))}
+        />
       ) : null}
     </div>
   );

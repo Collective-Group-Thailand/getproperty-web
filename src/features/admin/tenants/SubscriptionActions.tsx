@@ -118,7 +118,8 @@ export function SubscribeButton({
 }
 
 /**
- * The actions the API offers on a subscription (`nextActions`): change the plan or add-ons, suspend
+ * The actions the API offers on a subscription (`nextActions`), stacked for an action panel — the everyday ones first,
+ * the destructive ones last under a hairline: change the plan or add-ons, suspend
  * (read-only tenant, D-082) and reinstate, cancel at the end of the month — each irreversible step
  * restates the tenant and asks for its slug typed back (00-master-plan.md §8).
  */
@@ -150,7 +151,7 @@ export function SubscriptionActions({
     </Field>
   );
   return (
-    <div className="flex flex-wrap gap-2" data-testid="subscription-actions">
+    <div className="flex flex-col gap-2 [&>button]:w-full" data-testid="subscription-actions">
       {actions.has("change-plan") ? (
         <FormDialog
           label={t("changePlan")}
@@ -187,31 +188,6 @@ export function SubscriptionActions({
           )}
         </FormDialog>
       ) : null}
-      {actions.has("suspend") ? (
-        <ConfirmAction
-          label={t("suspend")}
-          icon={IconLock}
-          variant="secondary"
-          tone="destructive"
-          testId="suspend"
-          title={t("suspendTitle", { name: subscription.tenantName })}
-          description={t("suspendBody", { name: subscription.tenantName })}
-          confirmLabel={t("suspend")}
-          phrase={slug}
-          ready={reason.trim().length > 0}
-          onConfirm={(idempotencyKey) =>
-            unwrap(
-              browserApi().POST("/v1/admin/subscriptions/{subscriptionId}/actions/suspend", {
-                params: { ...path.params, header: { "Idempotency-Key": idempotencyKey } },
-                body: { confirm: slug, reason: reason.trim() },
-              }),
-            )
-          }
-          successMessage={t("suspended")}
-        >
-          {reasonField("suspend")}
-        </ConfirmAction>
-      ) : null}
       {actions.has("reinstate") ? (
         <ConfirmAction
           label={t("reinstate")}
@@ -236,34 +212,63 @@ export function SubscriptionActions({
           {reasonField("reinstate")}
         </ConfirmAction>
       ) : null}
-      {actions.has("cancel") ? (
-        <ConfirmAction
-          label={t("cancel")}
-          icon={IconXCircle}
-          variant="secondary"
-          tone="destructive"
-          testId="cancel-subscription"
-          title={t("cancelTitle", { name: subscription.tenantName })}
-          description={t("cancelBody", { name: subscription.tenantName })}
-          confirmLabel={t("cancel")}
-          phrase={slug}
-          ready={reason.trim().length > 0}
-          onConfirm={(idempotencyKey) =>
-            unwrap(
-              browserApi().POST("/v1/admin/subscriptions/{subscriptionId}/actions/cancel", {
-                ...path,
-                params: { ...path.params, header: { "Idempotency-Key": idempotencyKey } },
-                body: { reason: reason.trim(), effectiveDate },
-              }),
-            )
-          }
-          successMessage={t("cancelled")}
-        >
-          {reasonField("cancel")}
-          <Field label={t("effectiveDate")} hint={t("effectiveDateHint")}>
-            <DateField name="effectiveDate" onChange={setEffectiveDate} />
-          </Field>
-        </ConfirmAction>
+      {actions.has("suspend") || actions.has("cancel") ? (
+        <div className="border-border mt-2 flex flex-col gap-2 border-t pt-3 [&_button]:w-full">
+          {actions.has("suspend") ? (
+            <ConfirmAction
+              label={t("suspend")}
+              icon={IconLock}
+              variant="destructive"
+              tone="destructive"
+              testId="suspend"
+              title={t("suspendTitle", { name: subscription.tenantName })}
+              description={t("suspendBody", { name: subscription.tenantName })}
+              confirmLabel={t("suspend")}
+              phrase={slug}
+              ready={reason.trim().length > 0}
+              onConfirm={(idempotencyKey) =>
+                unwrap(
+                  browserApi().POST("/v1/admin/subscriptions/{subscriptionId}/actions/suspend", {
+                    params: { ...path.params, header: { "Idempotency-Key": idempotencyKey } },
+                    body: { confirm: slug, reason: reason.trim() },
+                  }),
+                )
+              }
+              successMessage={t("suspended")}
+            >
+              {reasonField("suspend")}
+            </ConfirmAction>
+          ) : null}
+          {actions.has("cancel") ? (
+            <ConfirmAction
+              label={t("cancel")}
+              icon={IconXCircle}
+              variant="destructive"
+              tone="destructive"
+              testId="cancel-subscription"
+              title={t("cancelTitle", { name: subscription.tenantName })}
+              description={t("cancelBody", { name: subscription.tenantName })}
+              confirmLabel={t("cancel")}
+              phrase={slug}
+              ready={reason.trim().length > 0}
+              onConfirm={(idempotencyKey) =>
+                unwrap(
+                  browserApi().POST("/v1/admin/subscriptions/{subscriptionId}/actions/cancel", {
+                    ...path,
+                    params: { ...path.params, header: { "Idempotency-Key": idempotencyKey } },
+                    body: { reason: reason.trim(), effectiveDate },
+                  }),
+                )
+              }
+              successMessage={t("cancelled")}
+            >
+              {reasonField("cancel")}
+              <Field label={t("effectiveDate")} hint={t("effectiveDateHint")}>
+                <DateField name="effectiveDate" onChange={setEffectiveDate} />
+              </Field>
+            </ConfirmAction>
+          ) : null}
+        </div>
       ) : null}
     </div>
   );

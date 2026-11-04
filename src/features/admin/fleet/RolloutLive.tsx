@@ -13,9 +13,11 @@ import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
-import { Card, CardHeader } from "@/ui/components/Card";
+import { Card } from "@/ui/components/Card";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
 import { Progress } from "@/ui/components/Progress";
 import { SimpleTable } from "@/ui/components/SimpleTable";
+import { cn } from "@/ui/lib/cn";
 
 import { RolloutControls } from "./OtaActions";
 import { rolloutProgress } from "./rollout";
@@ -53,75 +55,125 @@ export function RolloutLive({
   });
 
   const progress = rolloutProgress(rollout);
+  const counts = rollout.counts as Record<string, number>;
   return (
     <div className="flex flex-col gap-6" data-testid="rollout-live" data-status={rollout.status} data-updates={updates}>
-      <Card as="section" aria-labelledby="rollout-progress">
-        <CardHeader
-          title={
-            <span id="rollout-progress" className="flex flex-wrap items-center gap-2">
-              {t("progressTitle", { version: rollout.release.version, ring: rings(rollout.ring) })}
-              <StatusBadgeOf map={ROLLOUT_STATUS} value={rollout.status} size="sm" />
-            </span>
-          }
-          description={t("progressHint", { pct: rollout.maxFailuresPct })}
-          action={<RolloutControls rollout={rollout} onChanged={reload} />}
-        />
-        <Progress
-          value={progress.done}
-          max={Math.max(progress.total, 1)}
-          label={t("progressLabel")}
-          valueText={t("progressText", { done: progress.done, total: progress.total })}
-        />
-        <dl className="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4" data-testid="rollout-counts">
-          {(["queued", "commanded", "started", "applied", "failed", "rolled_back"] as const).map((status) => (
-            <div key={status} className="flex flex-col" data-status={status}>
-              <dt className="text-muted">{t(`deviceState.${status}`)}</dt>
-              <dd className="font-semibold tabular-nums" data-testid={`count-${status}`}>
-                {formatNumber((rollout.counts as Record<string, number>)[status] ?? 0, locale)}
-              </dd>
+      <DetailLayout
+        panel={
+          <ActionPanel
+            title={t("controlTitle")}
+            status={<StatusBadgeOf map={ROLLOUT_STATUS} value={rollout.status} />}
+            facts={[
+              {
+                key: "version",
+                label: t("col.version"),
+                value: <span className="font-mono">{rollout.release.version}</span>,
+              },
+              { key: "arch", label: t("arch"), value: <span className="font-mono">{rollout.release.arch}</span> },
+              { key: "ring", label: t("col.ring"), value: rings(rollout.ring) },
+              {
+                key: "digest",
+                label: t("digestLabel"),
+                value: (
+                  <span className="font-mono" title={rollout.release.sha256}>
+                    {rollout.release.sha256.slice(0, 12)}
+                  </span>
+                ),
+              },
+            ]}
+            secondary={<RolloutControls rollout={rollout} onChanged={reload} />}
+          />
+        }
+      >
+        <Card as="section" aria-labelledby="rollout-progress">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex flex-col gap-1">
+              <h2 id="rollout-progress" className="text-muted text-sm font-medium">
+                {t("progressLabel")}
+              </h2>
+              <p className="text-primary text-3xl font-semibold tracking-tight tabular-nums">
+                {t("progressFigure", { done: progress.done, total: progress.total })}
+              </p>
             </div>
-          ))}
-        </dl>
-        <p className="text-muted mt-3 text-xs" aria-live="polite">
-          {realtime === "open" ? t("live") : t("notLive")}
-          {rollout.startedAt ? ` · ${t("startedAt", { date: formatDateTime(rollout.startedAt, locale) })}` : ""}
-          {rollout.finishedAt ? ` · ${t("finishedAt", { date: formatDateTime(rollout.finishedAt, locale) })}` : ""}
-        </p>
-      </Card>
-      <SimpleTable
-        caption={t("gateways")}
-        testId="rollout-devices"
-        minWidth="44rem"
-        columns={[
-          { key: "gateway", header: t("col.gateway") },
-          { key: "from", header: t("col.from") },
-          { key: "updated", header: t("col.updated") },
-          { key: "error", header: t("col.error") },
-          { key: "status", header: t("col.status") },
-        ]}
-        rows={rollout.devices.map((device) => ({
-          key: device.deviceId,
-          testId: "rollout-device",
-          data: { status: device.status, device: device.deviceId },
-          tone: device.status === "failed" || device.status === "rolled_back" ? "danger" : "default",
-          cells: {
-            gateway: (
-              <a href={`/devices/${device.deviceId}`} className="font-mono hover:underline">
-                {serials[device.deviceId] ?? device.deviceId.slice(0, 8)}
-              </a>
-            ),
-            from: device.fromVersion ?? "—",
-            updated: formatDateTime(device.updatedAt, locale),
-            error: device.error ? <span className="font-mono text-xs">{device.error}</span> : "—",
-            status: (
-              <span className="flex items-center gap-1">
-                <StatusBadgeOf map={OTA_DEVICE_STATUS} value={device.status} size="sm" />
-                {device.status === "applied" ? <Badge size="sm">{rollout.release.version}</Badge> : null}
-              </span>
-            ),
-          },
-        }))}
-      />
+            <p className="text-muted flex items-center gap-2 text-sm" aria-live="polite">
+              <span
+                aria-hidden="true"
+                className={
+                  realtime === "open" ? "bg-success size-2 rounded-full" : "bg-border-strong size-2 rounded-full"
+                }
+              />
+              {realtime === "open" ? t("live") : t("notLive")}
+            </p>
+          </div>
+          <Progress
+            className="mt-4"
+            value={progress.done}
+            max={Math.max(progress.total, 1)}
+            label={t("progressLabel")}
+            valueText={t("progressText", { done: progress.done, total: progress.total })}
+          />
+          <dl
+            className="border-border rounded-control mt-5 grid grid-cols-2 overflow-hidden border sm:grid-cols-3 xl:grid-cols-6"
+            data-testid="rollout-counts"
+          >
+            {(["queued", "commanded", "started", "applied", "failed", "rolled_back"] as const).map((status) => (
+              <div
+                key={status}
+                className={cn("border-border -ms-px -mt-px flex flex-col gap-0.5 border-s border-t px-4 py-3")}
+                data-status={status}
+              >
+                <dt className="text-muted text-sm">{t(`deviceState.${status}`)}</dt>
+                <dd className="text-lg font-semibold tabular-nums" data-testid={`count-${status}`}>
+                  {formatNumber(counts[status] ?? 0, locale)}
+                </dd>
+              </div>
+            ))}
+          </dl>
+          <p className="text-muted mt-4 text-sm">
+            {t("progressHint", { pct: rollout.maxFailuresPct })}
+            {rollout.startedAt ? ` · ${t("startedAt", { date: formatDateTime(rollout.startedAt, locale) })}` : ""}
+            {rollout.finishedAt ? ` · ${t("finishedAt", { date: formatDateTime(rollout.finishedAt, locale) })}` : ""}
+          </p>
+        </Card>
+      </DetailLayout>
+      <section aria-labelledby="rollout-gateways" className="flex flex-col gap-3">
+        <h2 id="rollout-gateways" className="text-lg font-semibold">
+          {t("gateways")}
+        </h2>
+        <SimpleTable
+          caption={t("gateways")}
+          testId="rollout-devices"
+          stackOnPhones
+          minWidth="52rem"
+          columns={[
+            { key: "gateway", header: t("col.gateway"), phone: "title" },
+            { key: "from", header: t("col.from"), phone: "meta" },
+            { key: "updated", header: t("col.updated"), phone: "meta" },
+            { key: "error", header: t("col.error"), phone: "meta" },
+            { key: "status", header: t("col.status"), phone: "status" },
+          ]}
+          rows={rollout.devices.map((device) => ({
+            key: device.deviceId,
+            href: `/devices/${device.deviceId}`,
+            testId: "rollout-device",
+            data: { status: device.status, device: device.deviceId },
+            cells: {
+              gateway: (
+                <span className="font-mono font-semibold">{serials[device.deviceId] ?? t("gatewayUnknown")}</span>
+              ),
+              from: <span className="font-mono text-sm">{device.fromVersion ?? "—"}</span>,
+              updated: <span className="whitespace-nowrap">{formatDateTime(device.updatedAt, locale)}</span>,
+              error: device.error ? <span className="font-mono text-sm">{device.error}</span> : "—",
+              status: (
+                <span className="flex items-center gap-1">
+                  <StatusBadgeOf map={OTA_DEVICE_STATUS} value={device.status} size="sm" />
+                  {device.status === "applied" ? <Badge size="sm">{rollout.release.version}</Badge> : null}
+                </span>
+              ),
+            },
+          }))}
+        />
+      </section>
     </div>
   );
 }

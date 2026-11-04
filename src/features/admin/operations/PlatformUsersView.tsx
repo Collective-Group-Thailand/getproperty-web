@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { ActionMenu } from "@/features/shared/console/ActionMenu";
 import { ConsolePage, PageHeader } from "@/features/shared/console/PageHeader";
 import { SectionError } from "@/features/shared/console/SectionError";
 import { formatDate, formatDateTime } from "@/i18n/format";
@@ -29,14 +30,20 @@ export async function PlatformUsersView({ context }: { context: AdminContext }) 
         <SimpleTable
           caption={t("title")}
           testId="user-table"
+          stackOnPhones
           minWidth="56rem"
           columns={[
-            { key: "name", header: t("col.name") },
-            { key: "roles", header: t("col.roles") },
-            { key: "totp", header: t("col.totp") },
-            { key: "login", header: t("col.login") },
-            { key: "status", header: t("col.status") },
-            { key: "actions", header: <span className="sr-only">{t("col.actions")}</span> },
+            { key: "name", header: t("col.name"), phone: "title" },
+            { key: "roles", header: t("col.roles"), phone: "meta" },
+            { key: "totp", header: t("col.totp"), phone: "status", phoneLabel: true },
+            { key: "login", header: t("col.login"), phone: "meta", phoneLabel: true },
+            { key: "status", header: t("col.status"), phone: "hidden" },
+            {
+              key: "actions",
+              header: <span className="sr-only">{t("col.actions")}</span>,
+              phone: "figure",
+              className: "w-14",
+            },
           ]}
           rows={users.data.map((user) => ({
             key: user.id,
@@ -46,11 +53,11 @@ export async function PlatformUsersView({ context }: { context: AdminContext }) 
               name: (
                 <span className="flex flex-col">
                   <span className="font-semibold">{user.displayName}</span>
-                  <span className="text-muted text-xs">{user.email ?? "—"}</span>
+                  <span className="text-muted text-sm">{user.email ?? "—"}</span>
                 </span>
               ),
               roles: (
-                <ul className="flex flex-col gap-1">
+                <ul className="flex flex-wrap gap-1.5">
                   {user.roles.map((held) => (
                     <li
                       key={held.role}
@@ -64,21 +71,31 @@ export async function PlatformUsersView({ context }: { context: AdminContext }) 
                           {t("until", { date: formatDate(held.expiresAt, locale) })}
                         </span>
                       ) : null}
-                      {manage && user.id !== me.user.id ? <RevokeRole user={user} role={held.role} /> : null}
                     </li>
                   ))}
                 </ul>
               ),
               totp: user.totpEnabled ? (
-                t("totpOn")
+                <span className="text-muted text-sm">{t("totpOn")}</span>
               ) : (
                 <Badge size="sm" tone="warning">
                   {t("totpOff")}
                 </Badge>
               ),
-              login: user.lastLoginAt ? formatDateTime(user.lastLoginAt, locale) : t("never"),
+              login: (
+                <span className="whitespace-nowrap">
+                  {user.lastLoginAt ? formatDateTime(user.lastLoginAt, locale) : t("never")}
+                </span>
+              ),
               status: t(`status.${user.status}`),
-              actions: manage ? <GrantRole user={user} /> : null,
+              actions: manage ? (
+                <ActionMenu label={t("more", { name: user.displayName })}>
+                  <GrantRole user={user} />
+                  {user.id !== me.user.id
+                    ? user.roles.map((held) => <RevokeRole key={held.role} user={user} role={held.role} />)
+                    : null}
+                </ActionMenu>
+              ) : null,
             },
           }))}
         />

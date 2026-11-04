@@ -34,7 +34,10 @@
     "reasonHint": "The account sees this — say clearly what must change",
     "rejectConfirm": "Stop campaign",
     "rejected": "Campaign stopped",
-    "invalidState": "This campaign has already finished or ended and cannot be stopped"
+    "invalidState": "This campaign has already finished or ended and cannot be stopped",
+    "all": "All",
+    "clear": "Clear filter",
+    "openListings": "Open listing moderation"
   },
   "settings": {
     "title": "Sponsored LINE broadcasts",
@@ -44,13 +47,13 @@
     "on": "On",
     "off": "Off",
     "onBody": "Accounts can schedule campaigns; the job sends every minute in turn.",
-    "offBody": "Accounts can draft and estimate, but cannot schedule, and nothing is sent. Switch it on only with LINE Thailand’s written confirmation (O-023).",
+    "offBody": "Shops can draft and see recipient counts but cannot schedule, and nothing is sent. Turn it on only after LINE Thailand has confirmed in writing.",
     "consenting": "People consenting",
     "consentingValue": "{count, plural, one {# person} other {# people}}",
     "consentingHint": "At the current text version (total only)",
     "formTitle": "Values in force",
     "enabled": "Accounts may schedule campaigns",
-    "enabledHint": "broadcast.sponsored.enabled",
+    "enabledHint": "Shops can schedule sponsored messages once this is on.",
     "confirmLine": "LINE Thailand confirmed in writing, and the evidence is named in the reason below",
     "confirmLineRequired": "Confirm LINE Thailand’s written confirmation before switching it on",
     "maxPerWeek": "Messages per person per week",
@@ -86,7 +89,7 @@
   },
   "consent": {
     "title": "Consent text",
-    "description": "What people read before opting in to recommendations (platform.recommendations), in Thai and English",
+    "description": "What people read before agreeing to room recommendations, in Thai and English.",
     "version": "Version {version}",
     "since": "In force since {date}",
     "none": "No text in force",

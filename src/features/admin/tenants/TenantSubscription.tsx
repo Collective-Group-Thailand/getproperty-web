@@ -9,7 +9,8 @@ import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Callout } from "@/ui/components/Callout";
 import { Card, CardHeader } from "@/ui/components/Card";
-import { DescriptionList } from "@/ui/components/DescriptionList";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
+import { FactGrid, type Fact } from "@/ui/components/FactGrid";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Timeline } from "@/ui/components/Timeline";
 import { IconWallet } from "@/ui/icons/glyphs/wallet";
@@ -45,6 +46,7 @@ export async function TenantSubscription({
   tenant: Schemas["TenantProfileDto"];
 }) {
   const t = await getTranslations("admin.tenants.subscription");
+  const states = await getTranslations("status.subscription");
   const { api, locale, me } = context;
   const [list, plans] = await Promise.all([
     section(unwrap(api.GET("/v1/admin/subscriptions", { params: { query: { tenantId: tenant.id, perPage: 10 } } }))),
@@ -62,6 +64,7 @@ export async function TenantSubscription({
     return (
       <Card>
         <EmptyState
+          variant="plain"
           icon={IconWallet}
           title={t("none")}
           description={t("noneHint")}
@@ -80,102 +83,126 @@ export async function TenantSubscription({
       }),
     ),
   );
+  const facts: Fact[] = [
+    {
+      key: "addons",
+      label: t("addons"),
+      value: subscription.addons.length ? subscription.addons.map((addon) => addon.nameTh).join(", ") : t("noAddons"),
+    },
+    { key: "period", label: t("billingPeriod"), value: t(`period.${subscription.billingPeriod}`) },
+    { key: "started", label: t("started"), value: formatDate(subscription.startedAt, locale) },
+    { key: "trial", label: t("trialEnds"), value: formatDateTime(subscription.trialEndsAt, locale) },
+    {
+      key: "activated",
+      label: t("activated"),
+      value: subscription.activatedAt ? formatDate(subscription.activatedAt, locale) : "—",
+    },
+    {
+      key: "discount",
+      label: t("discount"),
+      value: subscription.discountPct !== "0.00" ? formatPercent(subscription.discountPct, locale) : "—",
+      hint: subscription.discountPct !== "0.00" ? (subscription.discountReason ?? undefined) : undefined,
+    },
+    ...(subscription.pastDueSince
+      ? [
+          {
+            key: "pastDue",
+            label: t("pastDueSince"),
+            value: formatDate(subscription.pastDueSince, locale),
+            tone: "warning" as const,
+          },
+        ]
+      : []),
+    ...(subscription.suspendedAt
+      ? [
+          {
+            key: "suspended",
+            label: t("suspendedAt"),
+            value: formatDateTime(subscription.suspendedAt, locale),
+            tone: "danger" as const,
+          },
+        ]
+      : []),
+    ...(subscription.cancelEffectiveDate
+      ? [
+          {
+            key: "cancel",
+            label: t("cancelEffective"),
+            value: formatDate(subscription.cancelEffectiveDate, locale),
+            hint: subscription.cancelReason ?? undefined,
+          },
+        ]
+      : []),
+  ];
   return (
-    <div className="flex flex-col gap-6" data-testid="subscription" data-state={subscription.state}>
-      {subscription.readOnly ? (
-        <Callout tone="warning" title={t("readOnlyTitle")}>
-          {t("readOnlyBody")}
-        </Callout>
-      ) : null}
-      <Card as="section" aria-labelledby="subscription-card">
-        <CardHeader
-          title={
-            <span id="subscription-card" className="flex flex-wrap items-center gap-2">
-              {subscription.plan.nameTh}
-              <StatusBadgeOf map={SUBSCRIPTION_STATUS} value={subscription.state} />
-            </span>
-          }
-          description={t("planVersion", { key: subscription.plan.key, version: subscription.plan.version })}
-          action={
-            manage ? <SubscriptionActions subscription={subscription} slug={tenant.slug} {...options} /> : undefined
-          }
-        />
-        <DescriptionList
-          columns={3}
-          items={[
-            {
-              id: "addons",
-              term: t("addons"),
-              description: subscription.addons.length
-                ? subscription.addons.map((addon) => addon.nameTh).join(", ")
-                : t("noAddons"),
-            },
-            { id: "period", term: t("billingPeriod"), description: t(`period.${subscription.billingPeriod}`) },
-            { id: "started", term: t("started"), description: formatDate(subscription.startedAt, locale) },
-            { id: "trial", term: t("trialEnds"), description: formatDateTime(subscription.trialEndsAt, locale) },
-            {
-              id: "activated",
-              term: t("activated"),
-              description: subscription.activatedAt ? formatDate(subscription.activatedAt, locale) : null,
-            },
-            {
-              id: "discount",
-              term: t("discount"),
-              description:
-                subscription.discountPct !== "0.00"
-                  ? `${formatPercent(subscription.discountPct, locale)} · ${subscription.discountReason ?? ""}`
-                  : null,
-            },
-            {
-              id: "pastDue",
-              term: t("pastDueSince"),
-              description: subscription.pastDueSince ? formatDate(subscription.pastDueSince, locale) : null,
-            },
-            {
-              id: "suspended",
-              term: t("suspendedAt"),
-              description: subscription.suspendedAt ? formatDateTime(subscription.suspendedAt, locale) : null,
-            },
-            {
-              id: "cancel",
-              term: t("cancelEffective"),
-              description: subscription.cancelEffectiveDate
-                ? `${formatDate(subscription.cancelEffectiveDate, locale)} · ${subscription.cancelReason ?? ""}`
-                : null,
-            },
-          ]}
-        />
-      </Card>
-      <Card as="section" aria-labelledby="subscription-events">
-        <CardHeader title={<span id="subscription-events">{t("history")}</span>} />
-        {events.data ? (
-          events.data.length === 0 ? (
-            <p className="text-muted">{t("noHistory")}</p>
+    <div data-testid="subscription" data-state={subscription.state}>
+      <DetailLayout
+        panel={
+          <ActionPanel
+            title={t("panelTitle")}
+            status={<StatusBadgeOf map={SUBSCRIPTION_STATUS} value={subscription.state} />}
+            facts={[
+              { key: "plan", label: t("plan"), value: subscription.plan.nameTh },
+              { key: "version", label: t("version"), value: subscription.plan.version },
+            ]}
+            secondary={
+              manage ? <SubscriptionActions subscription={subscription} slug={tenant.slug} {...options} /> : undefined
+            }
+          />
+        }
+      >
+        {subscription.readOnly ? (
+          <Callout tone="warning" title={t("readOnlyTitle")}>
+            {t("readOnlyBody")}
+          </Callout>
+        ) : null}
+        <Card as="section" aria-labelledby="subscription-card">
+          <CardHeader
+            title={<span id="subscription-card">{subscription.plan.nameTh}</span>}
+            description={t("planVersionLine", { version: subscription.plan.version })}
+          />
+          <FactGrid facts={facts} label={subscription.plan.nameTh} />
+        </Card>
+        <Card as="section" aria-labelledby="subscription-events">
+          <CardHeader title={<span id="subscription-events">{t("history")}</span>} />
+          {events.data ? (
+            events.data.length === 0 ? (
+              <p className="text-muted">{t("noHistory")}</p>
+            ) : (
+              <Timeline
+                events={events.data.map((event) => ({
+                  id: event.id,
+                  title: t.has(`event.${messageKey(event.type, "subscription.")}`)
+                    ? t(`event.${messageKey(event.type, "subscription.")}`)
+                    : event.type,
+                  time: formatDateTime(event.occurredAt, locale),
+                  description: describe(
+                    event.data,
+                    (value) => (states.has(value) ? states(value as Parameters<typeof states>[0]) : value),
+                    (key) => (plans.data ?? []).find((one) => one.key === key)?.nameTh ?? key,
+                  ),
+                }))}
+              />
+            )
           ) : (
-            <Timeline
-              events={events.data.map((event) => ({
-                id: event.id,
-                title: t.has(`event.${messageKey(event.type, "subscription.")}`)
-                  ? t(`event.${messageKey(event.type, "subscription.")}`)
-                  : event.type,
-                time: formatDateTime(event.occurredAt, locale),
-                description: describe(event.data),
-              }))}
-            />
-          )
-        ) : (
-          <SectionError error={events.error} />
-        )}
-      </Card>
+            <SectionError error={events.error} />
+          )}
+        </Card>
+      </DetailLayout>
     </div>
   );
 }
 
-/** An event's data as the API sent it ("from → to", plan key, reason) — no interpretation. */
-function describe(data: Record<string, unknown>): string | undefined {
+/** An event's data in words: the states by their names ("ทดลองใช้ → ใช้งานอยู่"), the plan by its name, the reason. */
+function describe(
+  data: Record<string, unknown>,
+  state: (value: string) => string,
+  plan: (key: string) => string,
+): string | undefined {
   const parts: string[] = [];
-  if (typeof data.from === "string" && typeof data.to === "string") parts.push(`${data.from} → ${data.to}`);
-  if (typeof data.plan === "string") parts.push(data.plan);
+  if (typeof data.from === "string" && typeof data.to === "string")
+    parts.push(`${state(data.from)} → ${state(data.to)}`);
+  if (typeof data.plan === "string") parts.push(plan(data.plan));
   if (typeof data.reason === "string" && data.reason) parts.push(data.reason);
   return parts.length ? parts.join(" · ") : undefined;
 }
