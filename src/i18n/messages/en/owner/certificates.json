@@ -32,5 +32,6 @@
     "reason": "Reason",
     "declined": "Request declined"
   },
-  "note": "“{note}”"
+  "note": "“{note}”",
+  "noneWaitingAction": "View documents"
 }

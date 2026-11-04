@@ -17,7 +17,11 @@
   },
   "empty": {
     "title": "No residents yet",
-    "body": "Add a resident here or while creating a lease."
+    "body": "Add a resident here or while creating a lease.",
+    "filteredTitle": "No one matches this search",
+    "filteredBody": "Try another name, phone or type.",
+    "clear": "Clear the search",
+    "add": "Add a resident"
   },
   "form": {
     "type": "Type",
@@ -132,7 +136,8 @@
     },
     "empty": {
       "title": "No link requests waiting",
-      "body": "When someone signs in with a phone that matches a party, the request waits here."
+      "body": "When someone signs in with a phone that matches a party, the request waits here.",
+      "back": "View residents"
     },
     "confirm": "Confirm",
     "confirmTitle": "Confirm this is {party}?",
@@ -144,5 +149,11 @@
     "rejectReason": "Reason",
     "rejected": "Request rejected",
     "alreadyDecided": "Someone already decided this request; the list is up to date."
+  },
+  "column": {
+    "name": "Name",
+    "contact": "Contact",
+    "type": "Type",
+    "line": "LINE"
   }
 }

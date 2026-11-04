@@ -12,11 +12,15 @@
     "searchPlaceholder": "เลขที่ ห้อง หรือผู้เช่า",
     "period": "เดือนที่เรียกเก็บ",
     "status": "สถานะ",
-    "allStatuses": "ทุกสถานะ"
+    "allStatuses": "ทุกสถานะ",
+    "allPeriods": "ทุกรอบบิล"
   },
   "empty": {
     "title": "ยังไม่มีบิล",
-    "body": "บิลจะแสดงเมื่อออกบิลประจำรอบแล้ว"
+    "body": "บิลจะแสดงเมื่อออกบิลประจำรอบแล้ว",
+    "filteredTitle": "ไม่พบบิลที่ตรงกับตัวกรอง",
+    "filteredBody": "ลองสถานะ รอบบิล หรือคำค้นหาอื่น",
+    "clear": "ล้างตัวกรอง"
   },
   "flag": {
     "missing_reading": "ไม่มีเลขมิเตอร์",
@@ -171,6 +175,38 @@
       "resend": "ส่งซ้ำ",
       "reminder": "เตือนชำระ"
     },
-    "qrAlt": "Thai QR สำหรับชำระบิล {number}"
+    "qrAlt": "Thai QR สำหรับชำระบิล {number}",
+    "panelTitle": "สิ่งที่ทำได้กับบิลนี้",
+    "paperKind": "ใบแจ้งหนี้",
+    "paperDraft": "ร่างใบแจ้งหนี้",
+    "draftNumber": "ยังไม่ออกเลขที่",
+    "period": "รอบบิล",
+    "unit": "ห้อง",
+    "flagsTitle": "ต้องดูก่อนออกบิล",
+    "issuer": "ผู้ออกบิล"
+  },
+  "openCycle": "รอบบิลเดือนนี้",
+  "figures": {
+    "label": "บิลเดือนนี้",
+    "billed": "เรียกเก็บ",
+    "billedHint": "{count} ใบ",
+    "collected": "เก็บได้",
+    "collectedHint": "{pct} ของยอดเรียกเก็บ",
+    "outstanding": "ยังค้าง",
+    "dueToday": "ครบกำหนดวันนี้",
+    "dueTodayHint": "{count} ใบ"
+  },
+  "views": {
+    "label": "สถานะบิล",
+    "all": "ทั้งหมด"
+  },
+  "column": {
+    "number": "เลขที่ · รอบ",
+    "unit": "ห้อง",
+    "party": "ผู้ถูกเรียกเก็บ",
+    "due": "ครบกำหนด",
+    "status": "สถานะ",
+    "total": "ยอดบิล",
+    "balance": "คงค้าง"
   }
 }

@@ -15,11 +15,12 @@ import { EmptyState } from "@/ui/components/EmptyState";
 import { Input } from "@/ui/components/Input";
 import { SimpleTable } from "@/ui/components/SimpleTable";
 
-import { MoneyNav } from "../shared/MoneyNav";
 import { ownerCan, param, readOnly, section, type OwnerContext } from "../shared/server";
 import { PLAN_KINDS } from "./constants";
 import { CreateRatePlan, DeleteRatePlan, EditRatePlan, NewRateVersion } from "./RatePlanActions";
 import { describeTiers } from "./tiers";
+import { IconTag } from "@/ui/icons/glyphs/tag";
+import { ownerPath } from "../shared/links";
 
 const UNITS = /^\d{1,6}(\.\d{1,3})?$/;
 const PROVIDERS: Schemas["UtilityProvider"][] = ["mea", "pea", "mwa", "pwa"];
@@ -147,7 +148,6 @@ export async function RatePlansView({
           ) : null
         }
       />
-      <MoneyNav section="billing" current="/billing/rate-plans" locale={locale} />
 
       <Card as="section" aria-labelledby="rates-cap" data-testid="tariff-cap">
         <CardHeader title={<span id="rates-cap">{t("cap.title")}</span>} description={t("cap.description")} />
@@ -289,7 +289,20 @@ export async function RatePlansView({
         <SectionError error={plans.error} />
       ) : plans.data.length === 0 ? (
         <Card>
-          <EmptyState title={t("empty")} description={t("emptyHint")} />
+          <EmptyState
+            icon={IconTag}
+            title={t("empty")}
+            description={t("emptyHint")}
+            action={
+              manage ? (
+                <CreateRatePlan buildings={buildings.map((building) => ({ id: building.id, name: building.name }))} />
+              ) : (
+                <Button asChild variant="secondary">
+                  <a href={ownerPath(locale, "/invoices")}>{t("emptyAction")}</a>
+                </Button>
+              )
+            }
+          />
         </Card>
       ) : (
         PLAN_KINDS.filter((kind) => plans.data!.some((plan) => plan.kind === kind)).map((kind) => (

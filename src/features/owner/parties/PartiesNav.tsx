@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
-import { LinkTabs } from "@/ui/components/LinkTabs";
+import { ViewTabs } from "@/ui/components/ListToolbar";
 
 import { ownerPath } from "../shared/links";
 import { ownerCan, type OwnerContext } from "../shared/server";
@@ -8,7 +8,7 @@ import { ownerCan, type OwnerContext } from "../shared/server";
 type Current = "/parties" | "/parties/link-requests" | "/tm30";
 
 /**
- * The People section's sub-pages (F2 2.2 + release fixes): parties · phone sign-ins waiting for the Owner
+ * The People section's views (F2 2.2 + release fixes; view tabs since G3): parties · phone sign-ins waiting for the Owner
  * (D-226) · TM30 notifications (D-052, `tm30.manage` only). Counts come from the page that renders them.
  */
 export async function PartiesNav({
@@ -28,10 +28,11 @@ export async function PartiesNav({
     ...(ownerCan(me, "tm30.manage") ? [{ path: "/tm30" as const, key: "tm30" }] : []),
   ];
   return (
-    <LinkTabs
+    <ViewTabs
       label={t("label")}
-      current={ownerPath(locale, current)}
+      current={current}
       tabs={tabs.map((tab) => ({
+        key: tab.path,
         href: ownerPath(locale, tab.path),
         label: t(tab.key),
         count: counts[tab.path],

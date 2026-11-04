@@ -21,7 +21,9 @@ export function PeriodPicker({
   label,
   previousLabel,
   nextLabel,
+  allLabel,
   className,
+  testId,
 }: {
   /** Newest first, from the API. */
   periods: string[];
@@ -32,10 +34,16 @@ export function PeriodPicker({
   label: string;
   previousLabel: string;
   nextLabel: string;
+  /**
+   * A list filter (not a report) may show every period: this first choice ("ทุกเดือน") is the empty value. From it,
+   * "previous" goes to the newest period.
+   */
+  allLabel?: string;
   className?: string;
+  testId?: string;
 }) {
   const index = periods.indexOf(value);
-  const older = index >= 0 ? periods[index + 1] : undefined;
+  const older = index >= 0 ? periods[index + 1] : allLabel !== undefined && !value ? periods[0] : undefined;
   const newer = index > 0 ? periods[index - 1] : undefined;
   return (
     <div className={cn("flex items-center gap-1", className)} data-testid="period-picker">
@@ -52,7 +60,9 @@ export function PeriodPicker({
           inputSize="sm"
           value={value}
           onChange={(event) => onChange(event.target.value)}
+          placeholder={allLabel}
           options={periods.map((period) => ({ value: period, label: formatPeriodKey(period, locale) }))}
+          data-testid={testId}
         />
       </div>
       <IconButton

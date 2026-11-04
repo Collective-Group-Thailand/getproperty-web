@@ -4,8 +4,8 @@ import { formatDateTime, formatNumber } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
-import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { ListToolbar } from "@/ui/components/ListToolbar";
 import { IconBill } from "@/ui/icons/glyphs/bill";
 
 import { DocumentButton } from "../shared/DocumentButton";
@@ -13,10 +13,10 @@ import { ExportButton } from "../shared/ExportButton";
 import { FilterBar } from "@/features/shared/console/FilterBar";
 import { ownerPath } from "../shared/links";
 import { ListPagination } from "@/features/shared/console/ListPagination";
-import { MoneyNav } from "../shared/MoneyNav";
+import { LinkMenu } from "@/features/shared/console/LinkMenu";
+import { billingPeriods } from "../shared/periods";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { focusedBuilding, ownerCan, pageParam, param, type OwnerContext } from "../shared/server";
-import { heldCount, slipsToReview } from "./counts";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 const KINDS: Schemas["DocumentKind"][] = [
@@ -73,7 +73,7 @@ export async function DocumentsView({ context, searchParams }: { context: OwnerC
   const unitId = unitParam && UUID.test(unitParam) ? unitParam : null;
   const kinds = unitId ? UNIT_KINDS : KINDS;
   const kindFilter = kinds.includes(kind as Schemas["DocumentKind"]) ? (kind as Schemas["DocumentKind"]) : undefined;
-  const [list, slips, held] = await Promise.all([
+  const [list, periods] = await Promise.all([
     unitId
       ? unwrap(
           api.GET("/v1/owner/documents", {
@@ -94,8 +94,7 @@ export async function DocumentsView({ context, searchParams }: { context: OwnerC
             },
           }),
         ),
-    slipsToReview(api),
-    heldCount(api, building?.id),
+    billingPeriods(context, currentMonth(), param(searchParams.period)),
   ]);
   return (
     <OwnerPage testId="documents">
@@ -109,74 +108,105 @@ export async function DocumentsView({ context, searchParams }: { context: OwnerC
         }
         actions={
           unitId ? undefined : (
-            <div className="flex flex-wrap gap-2">
-              <Button asChild variant="secondary">
-                <a href={ownerPath(locale, "/certificates")} data-testid="documents-certificates">
-                  {t("links.certificates")}
-                </a>
-              </Button>
-              <Button asChild variant="secondary">
-                <a href={ownerPath(locale, "/income")} data-testid="documents-income">
-                  {t("links.income")}
-                </a>
-              </Button>
+            <>
               <ExportButton
                 kind="document_archive_zip"
                 params={{ period, buildingId: building?.id }}
                 label={t("zip")}
                 testId="documents-zip"
               />
-            </div>
+              <LinkMenu
+                label={t("links.more")}
+                testId="documents-more"
+                items={[
+                  {
+                    id: "certificates",
+                    label: t("links.certificates"),
+                    href: ownerPath(locale, "/certificates"),
+                    testId: "documents-certificates",
+                  },
+                  {
+                    id: "income",
+                    label: t("links.income"),
+                    href: ownerPath(locale, "/income"),
+                    testId: "documents-income",
+                  },
+                ]}
+              />
+            </>
           )
         }
       />
-      {unitId ? null : (
-        <MoneyNav
-          section="payments"
-          current="/documents"
-          locale={locale}
-          counts={{ "/payments/slips": slips, "/payments/held": held }}
-        />
-      )}
-      <FilterBar
-        fields={
-          unitId
-            ? [
-                {
-                  name: "kind",
-                  label: t("filter.kind"),
-                  type: "select",
-                  placeholder: t("filter.allKinds"),
-                  options: kinds.map((value) => ({ value, label: t(`kind.${value}`) })),
-                },
-              ]
-            : [
-                { name: "period", label: t("filter.period"), type: "month" },
-                {
-                  name: "kind",
-                  label: t("filter.kind"),
-                  type: "select",
-                  placeholder: t("filter.allKinds"),
-                  options: kinds.map((value) => ({ value, label: t(`kind.${value}`) })),
-                },
-                { name: "q", label: t("filter.search"), type: "search", placeholder: t("filter.searchPlaceholder") },
-              ]
+      <ListToolbar
+        filters={
+          <FilterBar
+            variant="toolbar"
+            fields={
+              unitId
+                ? [
+                    {
+                      name: "kind",
+                      label: t("filter.kind"),
+                      type: "select",
+                      placeholder: t("filter.allKinds"),
+                      options: kinds.map((value) => ({ value, label: t(`kind.${value}`) })),
+                    },
+                  ]
+                : [
+                    {
+                      name: "q",
+                      label: t("filter.search"),
+                      type: "search",
+                      placeholder: t("filter.searchPlaceholder"),
+                    },
+                    // The archive is always one month (the API requires it): no "every month" here.
+                    { name: "period", label: t("filter.period"), type: "period", periods, fallback: period },
+                    {
+                      name: "kind",
+                      label: t("filter.kind"),
+                      type: "select",
+                      placeholder: t("filter.allKinds"),
+                      options: kinds.map((value) => ({ value, label: t(`kind.${value}`) })),
+                    },
+                  ]
+            }
+          />
         }
       />
       {list.data.length === 0 ? (
-        <Card>
-          <EmptyState
-            icon={IconBill}
-            title={unitId ? t("unit.empty") : t("empty.title")}
-            description={unitId ? t("unit.emptyBody") : t("empty.body")}
-          />
-        </Card>
+        <EmptyState
+          variant="card"
+          icon={IconBill}
+          title={unitId ? t("unit.empty") : t("empty.title")}
+          description={unitId ? t("unit.emptyBody") : t("empty.body")}
+          action={
+            unitId ? (
+              <Button asChild variant="secondary">
+                <a href={ownerPath(locale, "/portfolio")}>{t("unit.emptyAction")}</a>
+              </Button>
+            ) : periods[periods.indexOf(period) + 1] ? (
+              <Button asChild variant="secondary">
+                <a href={ownerPath(locale, `/documents?period=${periods[periods.indexOf(period) + 1]}`)}>
+                  {t("empty.previous")}
+                </a>
+              </Button>
+            ) : (
+              <Button asChild variant="secondary">
+                <a href={ownerPath(locale, "/invoices")}>{t("empty.invoices")}</a>
+              </Button>
+            )
+          }
+        />
       ) : (
-        <ul className="divide-border border-border bg-surface rounded-card divide-y border" data-testid="document-list">
+        <ul
+          className="divide-border border-border bg-surface rounded-card shadow-card divide-y border"
+          data-testid="document-list"
+          aria-label={unitId ? t("unit.title") : t("title")}
+        >
           {list.data.map((document) => (
             <li
               key={document.id}
-              className="flex items-center gap-3 px-4 py-3"
+              className="flex items-center gap-4 px-4 py-3 md:px-5"
               data-testid="document-row"
               data-kind={document.kind}
             >

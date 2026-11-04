@@ -465,6 +465,54 @@ function visibleContract(ok: Ok, id: string) {
 let contractSeq = 0;
 const documentIds = new Map<string, string>();
 
+/**
+ * Capture / UAT hook (redesign G3): a reservation for the sample tenant's first unit and party, sent for signature —
+ * the console's "one contract" page has a row to open without driving the create form. Returns the contract id.
+ */
+export function seedSampleContract(tenantId: string): string | null {
+  const template = w().templates.find((t) => t.tenantId === null && t.kind === "reservation");
+  const pinned = template?.versions.find((v) => v.language === "th" && v.state === "published");
+  const unit = state.owner.units.find((u) => u.status === "vacant") ?? state.owner.units[0];
+  const party = state.owner.parties[0];
+  const self = Object.values(TENANTS).find((tenant) => tenant.profile.id === tenantId)?.profile;
+  if (!template || !pinned || !unit || !party || !self) return null;
+  const contract: MockContract = {
+    id: crypto.randomUUID(),
+    tenantId,
+    kind: "reservation",
+    title: `${template.name} ${unit.unitNo}`,
+    number: `RSV-2569-${String(++contractSeq).padStart(5, "0")}`,
+    state: "pending_signature",
+    language: pinned.language,
+    templateVersionId: pinned.id,
+    templateKey: template.key,
+    templateVersion: pinned.version,
+    legalReviewState: pinned.legalReviewState,
+    leaseId: null,
+    unitId: unit.id,
+    coBrokeAgreementId: null,
+    mandateId: null,
+    counterpartyTenantId: null,
+    signers: [
+      { index: 0, role: "lessor", name: self.displayName, partyId: null, tenantId, signedAt: now() },
+      { index: 1, role: "prospect", name: party.displayName, partyId: party.id, tenantId: null, signedAt: null },
+    ],
+    variables: {
+      fee: "3000.00",
+      rent: unit.baseRent ?? "4500.00",
+      moveInDate: today(),
+      refundTerms: "คืนเต็มจำนวนหากยกเลิกภายใน 7 วัน",
+    },
+    sha256: null,
+    sentAt: now(),
+    signedAt: null,
+    cancelledAt: null,
+    createdAt: now(),
+  };
+  w().contracts.push(contract);
+  return contract.id;
+}
+
 /** Test hook: the other side (resident / prospect / counterparty) signs every remaining signer slot. */
 export function counterpartySignsContract(contractId: string): boolean {
   const c = w().contracts.find((candidate) => candidate.id === contractId);

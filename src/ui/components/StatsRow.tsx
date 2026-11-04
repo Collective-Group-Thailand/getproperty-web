@@ -34,7 +34,8 @@ export function StatsRow({ figures, highlight, label, className }: StatsRowProps
         "rounded-card border-border bg-surface shadow-card grid grid-cols-2 overflow-hidden border",
         figures.length >= 3 && "md:grid-cols-3",
         figures.length >= 4 && "lg:grid-cols-4",
-        figures.length >= 5 && "xl:grid-cols-5",
+        figures.length === 5 && "xl:grid-cols-5",
+        figures.length >= 6 && "lg:grid-cols-3 xl:grid-cols-6",
         className,
       )}
     >

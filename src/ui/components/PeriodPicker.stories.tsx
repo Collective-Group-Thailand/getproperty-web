@@ -21,3 +21,21 @@ function Demo() {
   );
 }
 export const Default: StoryObj<typeof PeriodPicker> = { render: () => <Demo /> };
+
+function FilterDemo() {
+  const [value, setValue] = useState("");
+  return (
+    <PeriodPicker
+      periods={["2026-11", "2026-10", "2026-09", "2026-08"]}
+      value={value}
+      onChange={setValue}
+      locale="th"
+      label="เดือน"
+      previousLabel="เดือนก่อน"
+      nextLabel="เดือนถัดไป"
+      allLabel="ทุกเดือน"
+    />
+  );
+}
+/** A list filter: the first choice shows every month. */
+export const AsListFilter: StoryObj<typeof PeriodPicker> = { render: () => <FilterDemo /> };

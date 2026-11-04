@@ -3,7 +3,8 @@
   "description": "Properties, their buildings and units",
   "empty": {
     "title": "No property yet",
-    "body": "Add a property, then its buildings, floors and units — or import the units from Excel in a minute."
+    "body": "Add a property, then its buildings, floors and units — or import the units from Excel in a minute.",
+    "action": "Open settings"
   },
   "noBuildings": "No building in this property yet.",
   "cardMeta": "{type} · {units} units · {floors} floors",
@@ -106,7 +107,10 @@
     "noProfiles": "No unit type yet.",
     "profileRent": "Rent {rent}",
     "promote": "Promote building",
-    "reviews": "Reviews"
+    "reviews": "Reviews",
+    "more": "More",
+    "summaryUnits": "Units",
+    "summaryOccupancy": "Occupancy"
   },
   "import": {
     "title": "Import units from Excel",
@@ -220,7 +224,8 @@
     "created": "Unit type created",
     "empty": {
       "title": "No unit types yet",
-      "body": "Unit types carry the default rent, deposit and lease lines of new leases."
+      "body": "Unit types carry the default rent, deposit and lease lines of new leases.",
+      "action": "Back to the building"
     },
     "summary": "Rent {rent} · deposit {deposit} mo · advance {advance} mo",
     "edit": "Edit",

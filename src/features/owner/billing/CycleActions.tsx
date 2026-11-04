@@ -42,7 +42,7 @@ export function CycleActions({
   members = [],
   missing = 0,
 }: {
-  cycle: Pick<Schemas["BillingCycleDto"], "id" | "nextActions" | "propertyName" | "periodKey">;
+  cycle: Pick<Schemas["BillingCycleDto"], "id" | "nextActions" | "propertyName" | "periodKey" | "status">;
   periodLabel: string;
   draftCount: number;
   totalLabel: string;
@@ -57,13 +57,15 @@ export function CycleActions({
   const [skipped, setSkipped] = useState<Skipped[] | null>(null);
   const can = (name: string) => cycle.nextActions.includes(name);
   const path = { billingCycleId: cycle.id };
+  // The filled action follows the stage (G3): compute while readings come in, issue once the drafts are computed.
+  const issueLeads = cycle.status === "computed" || !can("compute");
 
   return (
     <div className="flex flex-col items-end gap-2">
       <div className="flex flex-wrap gap-2" data-testid="cycle-actions">
         {can("compute") ? (
           <Button
-            variant="secondary"
+            variant={issueLeads ? "secondary" : "primary"}
             iconStart={IconRefresh}
             loading={compute.busy}
             onClick={() =>
@@ -118,6 +120,7 @@ export function CycleActions({
           <ConfirmAction
             label={t("issueAll")}
             icon={IconBill}
+            variant={issueLeads ? "primary" : "secondary"}
             testId="cycle-issue"
             title={t("issueTitle")}
             description={t("issueBody", {

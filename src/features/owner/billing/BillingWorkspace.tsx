@@ -8,19 +8,19 @@ import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { formatDateTime, formatNumber, formatPeriodKey, formatTHB } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
+import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Badge } from "@/ui/components/Badge";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { EmptyState } from "@/ui/components/EmptyState";
-import { LinkTabs } from "@/ui/components/LinkTabs";
-import { Stat } from "@/ui/components/Stat";
+import { ListToolbar, ViewTabs } from "@/ui/components/ListToolbar";
+import { StatsRow } from "@/ui/components/StatsRow";
 import { Stepper } from "@/ui/components/Stepper";
 import { IconBill } from "@/ui/icons/glyphs/bill";
 
 import { FilterBar } from "@/features/shared/console/FilterBar";
 import { ownerPath, withQuery } from "../shared/links";
-import { MoneyNav } from "../shared/MoneyNav";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { focusedBuilding, param, section, type OwnerContext } from "../shared/server";
 import { SettingValue } from "../shared/SettingValue";
@@ -60,16 +60,17 @@ export async function BillingWorkspace({
   const property = context.properties.find((candidate) => candidate.id === propertyId);
   const header = (
     <>
-      <PageHeader title={t("title")} description={t("description")} crumbs={[{ label: t("title") }]} />
-      <MoneyNav section="billing" current="/billing" locale={locale} />
+      <PageHeader title={t("title")} description={t("description")} />
       {context.properties.length > 1 ? (
         <FilterBar
+          variant="toolbar"
           fields={[
             {
               name: "property",
               label: t("property"),
               type: "select",
               placeholder: t("chooseProperty"),
+              fallback: propertyId,
               options: context.properties.map((candidate) => ({ value: candidate.id, label: candidate.name })),
             },
           ]}
@@ -82,7 +83,15 @@ export async function BillingWorkspace({
       <OwnerPage testId="billing">
         {header}
         <Card>
-          <EmptyState icon={IconBill} title={t("noProperty")} />
+          <EmptyState
+            icon={IconBill}
+            title={t("noProperty")}
+            action={
+              <Button asChild variant="secondary">
+                <a href={ownerPath(locale, "/buildings")}>{t("noPropertyAction")}</a>
+              </Button>
+            }
+          />
         </Card>
       </OwnerPage>
     );
@@ -139,20 +148,22 @@ export async function BillingWorkspace({
     <OwnerPage testId="billing">
       {header}
       {cycles.data.length > 1 ? (
-        <LinkTabs
-          label={t("periods")}
-          current={ownerPath(
-            locale,
-            withQuery("/billing", { property: param(searchParams.property), cycle: cycle.id }),
-          )}
-          tabs={cycles.data.slice(0, 6).map((candidate) => ({
-            href: ownerPath(
-              locale,
-              withQuery("/billing", { property: param(searchParams.property), cycle: candidate.id }),
-            ),
-            label: formatPeriodKey(candidate.periodKey, locale),
-            testId: "cycle-tab",
-          }))}
+        <ListToolbar
+          tabs={
+            <ViewTabs
+              label={t("periods")}
+              current={cycle.id}
+              tabs={cycles.data.slice(0, 6).map((candidate) => ({
+                key: candidate.id,
+                href: ownerPath(
+                  locale,
+                  withQuery("/billing", { property: param(searchParams.property), cycle: candidate.id }),
+                ),
+                label: formatPeriodKey(candidate.periodKey, locale),
+                testId: "cycle-tab",
+              }))}
+            />
+          }
         />
       ) : null}
 
@@ -224,14 +235,25 @@ export async function BillingWorkspace({
         ) : null}
       </Card>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4" data-testid="cycle-stats">
-        <Stat
-          label={t("stats.billables")}
-          value={formatNumber(stat(stats, "billables") ?? cycle.invoices.length, locale)}
+      <div data-testid="cycle-stats">
+        <StatsRow
+          label={t("stats.label")}
+          highlight={(stat(stats, "needsReview") ?? 0) > 0 ? "needsReview" : undefined}
+          figures={[
+            {
+              key: "billables",
+              label: t("stats.billables"),
+              value: formatNumber(stat(stats, "billables") ?? cycle.invoices.length, locale),
+            },
+            { key: "drafts", label: t("stats.drafts"), value: formatNumber(drafts.length, locale) },
+            {
+              key: "needsReview",
+              label: t("stats.needsReview"),
+              value: formatNumber(stat(stats, "needsReview") ?? 0, locale),
+            },
+            { key: "total", label: t("stats.total"), value: totalLabel },
+          ]}
         />
-        <Stat label={t("stats.drafts")} value={formatNumber(drafts.length, locale)} />
-        <Stat label={t("stats.needsReview")} value={formatNumber(stat(stats, "needsReview") ?? 0, locale)} />
-        <Stat label={t("stats.total")} value={totalLabel} />
       </div>
 
       <Card as="section" aria-labelledby="readings-pending" data-testid="readings-pending">

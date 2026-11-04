@@ -30,6 +30,7 @@
  *   POST /__mock/owner/deposits/<id>/resident-response?answer=accepted|disputed
  *   POST /__mock/owner/payments/webhook?invoice=<number>  the payment provider pays an invoice's QR
  *   POST /__mock/owner/slips/qr-duplicate  a slip of the same amount as a QR payment already booked (D-220)
+ *   POST /__mock/owner/contracts/sample            a reservation sent for signature (capture data for one contract)
  *   POST /__mock/owner/link-requests?party=<id>  a phone sign-in matched the party: a pending link request (D-226)
  *   GET  /__mock/owner/received?op=  requests the owner world received (body, Idempotency-Key)
  *   POST /__mock/owner/growth/price?product=<key>|all|addon   publish a growth price (G4/G5, O-027)
@@ -74,6 +75,7 @@ import {
   addSelfViewingLead,
   assistantControl,
   counterpartySignsContract,
+  seedSampleContract,
   failPost,
   growthPaid,
   providerPays,
@@ -346,6 +348,10 @@ function ownerControl(url: URL, req: IncomingMessage): { status: number; body: u
   }
   // G3: the other side signs a contract (resident / prospect in LINE, the counterparty tenant); the resident answers
   // a renewal offer (`?answer=accept|decline`).
+  if (req.method === "POST" && parts[0] === "contracts" && parts[1] === "sample") {
+    const id = seedSampleContract(TENANTS.sample.profile.id);
+    return id ? { status: 200, body: { id } } : { status: 409, body: { error: "no template, unit or party" } };
+  }
   if (req.method === "POST" && parts[0] === "contracts" && parts[2] === "counterparty-sign") {
     return counterpartySignsContract(parts[1] ?? "")
       ? { status: 200, body: { ok: true } }

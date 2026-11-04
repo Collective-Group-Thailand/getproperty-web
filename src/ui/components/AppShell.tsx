@@ -140,6 +140,8 @@ export interface NavItem {
   onSelect?: () => void;
   /** Extra decoration after the icon (a count badge); decorative — the label carries the meaning. */
   badge?: React.ReactNode;
+  /** The section's own pages, listed under the entry (pass them only while the section is open). */
+  children?: { href: string; label: string; active?: boolean; testId?: string }[];
 }
 
 /**
@@ -158,27 +160,56 @@ export function SidebarNav({
 }) {
   return (
     <ul className="flex flex-col gap-0.5 px-3">
-      {items.map((item) => (
-        <li key={item.href}>
-          <a
-            href={item.href}
-            aria-current={item.active ? "page" : undefined}
-            title={collapsed ? item.label : undefined}
-            className={cn(
-              "rounded-control duration-fast flex items-center gap-3 px-2.5 text-sm transition-colors",
-              size === "touch" ? "h-11 text-base" : "h-10",
-              item.active
-                ? "bg-primary-subtle text-primary-subtle-fg font-semibold"
-                : "text-muted hover:bg-bg-subtle hover:text-fg font-medium",
-              collapsed && "justify-center px-0",
-            )}
-          >
-            <span className={cn("shrink-0 text-lg", item.active ? "text-primary" : "text-subtle")}>{item.icon}</span>
-            <span className={cn("min-w-0 flex-1 truncate", collapsed && "sr-only")}>{item.label}</span>
-            {item.badge && !collapsed ? <span className="shrink-0">{item.badge}</span> : null}
-          </a>
-        </li>
-      ))}
+      {items.map((item) => {
+        // An open section marks the page under it; the entry itself only reads as the open section.
+        const open = Boolean(item.children?.length) && !collapsed;
+        const current = item.active && !(open && item.children?.some((child) => child.active));
+        return (
+          <li key={item.href}>
+            <a
+              href={item.href}
+              aria-current={current ? "page" : undefined}
+              title={collapsed ? item.label : undefined}
+              className={cn(
+                "rounded-control duration-fast flex items-center gap-3 px-2.5 text-sm transition-colors",
+                size === "touch" ? "h-11 text-base" : "h-10",
+                current
+                  ? "bg-primary-subtle text-primary-subtle-fg font-semibold"
+                  : item.active
+                    ? "text-fg hover:bg-bg-subtle font-semibold"
+                    : "text-muted hover:bg-bg-subtle hover:text-fg font-medium",
+                collapsed && "justify-center px-0",
+              )}
+            >
+              <span className={cn("shrink-0 text-lg", item.active ? "text-primary" : "text-subtle")}>{item.icon}</span>
+              <span className={cn("min-w-0 flex-1 truncate", collapsed && "sr-only")}>{item.label}</span>
+              {item.badge && !collapsed ? <span className="shrink-0">{item.badge}</span> : null}
+            </a>
+            {item.children && item.children.length > 0 && !collapsed ? (
+              <ul className="border-border ms-[1.3rem] mt-0.5 mb-1 flex flex-col gap-0.5 border-s ps-2.5">
+                {item.children.map((child) => (
+                  <li key={child.href}>
+                    <a
+                      href={child.href}
+                      aria-current={child.active ? "page" : undefined}
+                      data-testid={child.testId}
+                      className={cn(
+                        "rounded-control duration-fast flex items-center px-2.5 transition-colors",
+                        size === "touch" ? "h-11 text-base" : "h-9 text-sm",
+                        child.active
+                          ? "bg-primary-subtle text-primary-subtle-fg font-semibold"
+                          : "text-muted hover:bg-bg-subtle hover:text-fg font-medium",
+                      )}
+                    >
+                      <span className="min-w-0 flex-1 truncate">{child.label}</span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </li>
+        );
+      })}
     </ul>
   );
 }

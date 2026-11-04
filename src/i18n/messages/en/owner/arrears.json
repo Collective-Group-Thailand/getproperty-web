@@ -33,7 +33,9 @@
   },
   "empty": {
     "title": "Nothing overdue",
-    "body": "No resident owes money with these filters."
+    "body": "No resident owes money with these filters.",
+    "clear": "Clear filters",
+    "payments": "View payments"
   },
   "policy": "Reminders and late fees",
   "policyHint": "The policy in force; it is changed in the settings.",
@@ -76,5 +78,7 @@
       "amount": "Amount",
       "balance": "Balance"
     }
-  }
+  },
+  "figuresLabel": "Overdue by age",
+  "daysValue": "{count} days"
 }

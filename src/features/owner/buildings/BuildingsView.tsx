@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { formatNumber } from "@/i18n/format";
+import { Button } from "@/ui/components/Button";
 import { Badge } from "@/ui/components/Badge";
 import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
@@ -31,7 +32,16 @@ export async function BuildingsView({ context }: { context: OwnerContext }) {
       />
       {properties.length === 0 ? (
         <Card>
-          <EmptyState icon={IconBuilding} title={t("empty.title")} description={t("empty.body")} />
+          <EmptyState
+            icon={IconBuilding}
+            title={t("empty.title")}
+            description={t("empty.body")}
+            action={
+              <Button asChild variant="secondary">
+                <a href={ownerPath(locale, "/settings")}>{t("empty.action")}</a>
+              </Button>
+            }
+          />
         </Card>
       ) : (
         properties.map((property) => {

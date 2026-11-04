@@ -112,7 +112,11 @@
       "rentUnit": "THB"
     },
     "cancel": "Cancel",
-    "submit": "Save unit"
+    "submit": "Save unit",
+    "summary": {
+      "title": "Before you save",
+      "note": "Once saved the unit joins your portfolio; add photos and a listing later."
+    }
   },
   "paperwork": {
     "title": "Paperwork",

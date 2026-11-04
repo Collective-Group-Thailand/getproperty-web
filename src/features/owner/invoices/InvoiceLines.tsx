@@ -59,9 +59,7 @@ export function InvoiceLines({
     <div className="flex flex-col gap-4" data-testid={testId}>
       {groups.map((group) => (
         <section key={group.source} aria-label={t(`source.${group.source}`)} data-source={group.source}>
-          <h3 className="text-muted mb-1 text-xs font-semibold tracking-wide uppercase">
-            {t(`source.${group.source}`)}
-          </h3>
+          <h3 className="text-muted mb-1 text-sm font-medium">{t(`source.${group.source}`)}</h3>
           <ul className="divide-border flex flex-col divide-y">
             {group.lines.map((line) => (
               <li
@@ -72,7 +70,7 @@ export function InvoiceLines({
               >
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <span className="font-medium">{line.description}</span>
-                  <span className="tabular-nums" data-testid="line-amount">
+                  <span className="font-medium whitespace-nowrap tabular-nums" data-testid="line-amount">
                     {formatTHB(line.amount, locale)}
                   </span>
                 </div>

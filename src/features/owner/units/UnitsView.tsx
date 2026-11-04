@@ -4,7 +4,7 @@ import { unwrap } from "@/lib/api/client";
 import { Button } from "@/ui/components/Button";
 import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
-import { LinkTabs } from "@/ui/components/LinkTabs";
+import { ListToolbar, ViewTabs } from "@/ui/components/ListToolbar";
 import { Icon } from "@/ui/icons";
 import { IconAdd } from "@/ui/icons/glyphs/add";
 import { IconBuilding } from "@/ui/icons/glyphs/building";
@@ -42,7 +42,16 @@ export async function UnitsView({ context, searchParams }: { context: OwnerConte
         <PageHeader title={t("title")} description={t("chooseBuilding")} />
         {context.buildings.length === 0 ? (
           <Card>
-            <EmptyState icon={IconBuilding} title={t("noBuildings.title")} description={t("noBuildings.body")} />
+            <EmptyState
+              icon={IconBuilding}
+              title={t("noBuildings.title")}
+              description={t("noBuildings.body")}
+              action={
+                <Button asChild variant="secondary">
+                  <a href={ownerPath(locale, "/buildings")}>{t("noBuildings.action")}</a>
+                </Button>
+              }
+            />
           </Card>
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="choose-building">
@@ -93,12 +102,12 @@ export async function UnitsView({ context, searchParams }: { context: OwnerConte
   const tabHref = (which: "board" | "list") =>
     ownerPath(locale, withQuery("/units", { ...base, view: which === "list" ? "list" : undefined }));
   const viewTabs = (
-    <LinkTabs
+    <ViewTabs
       label={t("views")}
-      current={tabHref(view)}
+      current={view}
       tabs={[
-        { href: tabHref("board"), label: t("boardTab"), testId: "tab-board" },
-        { href: tabHref("list"), label: t("listTab"), testId: "tab-list" },
+        { key: "board", href: tabHref("board"), label: t("boardTab"), testId: "tab-board" },
+        { key: "list", href: tabHref("list"), label: t("listTab"), testId: "tab-list" },
       ]}
     />
   );
@@ -110,7 +119,7 @@ export async function UnitsView({ context, searchParams }: { context: OwnerConte
     return (
       <OwnerPage testId="units" wide>
         {header}
-        {viewTabs}
+        <ListToolbar tabs={viewTabs} />
         <UnitBoard board={board} links={{ prefix }} />
       </OwnerPage>
     );
@@ -142,28 +151,33 @@ export async function UnitsView({ context, searchParams }: { context: OwnerConte
   return (
     <OwnerPage testId="units">
       {header}
-      {viewTabs}
-      <FilterBar
-        fields={[
-          { name: "q", label: t("filter.search"), type: "search", placeholder: t("filter.searchPlaceholder") },
-          {
-            name: "status",
-            label: t("filter.status"),
-            type: "select",
-            placeholder: t("filter.allStatuses"),
-            options: (["vacant", "reserved", "occupied", "maintenance", "inactive"] as const).map((value) => ({
-              value,
-              label: statuses(value),
-            })),
-          },
-          {
-            name: "floor",
-            label: t("filter.floor"),
-            type: "select",
-            placeholder: t("filter.allFloors"),
-            options: floors.map((floor) => ({ value: floor.id, label: floor.name })),
-          },
-        ]}
+      <ListToolbar
+        tabs={viewTabs}
+        filters={
+          <FilterBar
+            variant="toolbar"
+            fields={[
+              { name: "q", label: t("filter.search"), type: "search", placeholder: t("filter.searchPlaceholder") },
+              {
+                name: "status",
+                label: t("filter.status"),
+                type: "select",
+                placeholder: t("filter.allStatuses"),
+                options: (["vacant", "reserved", "occupied", "maintenance", "inactive"] as const).map((value) => ({
+                  value,
+                  label: statuses(value),
+                })),
+              },
+              {
+                name: "floor",
+                label: t("filter.floor"),
+                type: "select",
+                placeholder: t("filter.allFloors"),
+                options: floors.map((floor) => ({ value: floor.id, label: floor.name })),
+              },
+            ]}
+          />
+        }
       />
       <SavedViews storageKey="owner-units" />
       <UnitList rows={list.data} prefix={prefix} />

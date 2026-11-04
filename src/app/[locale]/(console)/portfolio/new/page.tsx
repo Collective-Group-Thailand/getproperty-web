@@ -21,9 +21,7 @@ export default async function AddPortfolioUnit({ params }: { params: Promise<{ l
         description={t("portfolio.form.description")}
         crumbs={[{ label: t("portfolio.form.title") }]}
       />
-      <div className="max-w-3xl">
-        <AddUnitForm />
-      </div>
+      <AddUnitForm />
     </OwnerPage>
   );
 }

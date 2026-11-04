@@ -34,7 +34,9 @@ export function ShellBreadcrumbs({
 }) {
   const pathname = usePathname();
   const [extra, setExtra] = useState<Crumb[]>([]);
+  // A section's own pages (billing cycle, arrears …) are sections too: no way "back" from one to another.
   const section = items
+    .flatMap((item) => [item, ...(item.children ?? [])])
     .filter((item) => isActive(item.href, pathname))
     .sort((a, b) => b.href.length - a.href.length)[0];
 

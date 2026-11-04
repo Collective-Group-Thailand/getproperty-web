@@ -190,7 +190,16 @@ export function RemoveDeductionButton({ deposit, item }: { deposit: Deposit; ite
 }
 
 /** The settlement's next step: propose to the resident, revise, record the refund, or record the receipt. */
-export function SettlementActions({ deposit, unitId }: { deposit: Deposit; unitId: string | null }) {
+export function SettlementActions({
+  deposit,
+  unitId,
+  layout = "row",
+}: {
+  deposit: Deposit;
+  unitId: string | null;
+  /** `panel`: stacked full-width in the record's `ActionPanel` (G3). */
+  layout?: "row" | "panel";
+}) {
   const t = useTranslations("owner.deposits.actions");
   const methods = useTranslations("owner.deposits.method");
   const can = (name: string) => deposit.nextActions.includes(name);
@@ -205,7 +214,10 @@ export function SettlementActions({ deposit, unitId }: { deposit: Deposit; unitI
     MONEY.test(refund.amount) && !evidence.uploading && (refund.method !== "bank_transfer" || evidence.ids.length > 0);
 
   return (
-    <div className="flex flex-wrap gap-2" data-testid="settlement-actions">
+    <div
+      className={layout === "panel" ? "flex flex-col gap-2 empty:hidden [&_button]:w-full" : "flex flex-wrap gap-2"}
+      data-testid="settlement-actions"
+    >
       {can("record-receipt") ? (
         <ConfirmAction
           label={t("recordReceipt")}

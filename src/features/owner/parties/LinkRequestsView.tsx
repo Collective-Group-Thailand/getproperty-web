@@ -8,7 +8,8 @@ import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Callout } from "@/ui/components/Callout";
-import { Card } from "@/ui/components/Card";
+import { Button } from "@/ui/components/Button";
+import { ListToolbar } from "@/ui/components/ListToolbar";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 
@@ -38,7 +39,7 @@ export async function LinkRequestRow({
   const t = await getTranslations("owner.parties.linkRequests");
   return (
     <div
-      className="flex flex-wrap items-center gap-3 px-4 py-3"
+      className="flex flex-wrap items-center gap-3 px-4 py-3.5 md:px-5"
       data-testid="link-request-row"
       data-state={request.state}
       data-request={request.id}
@@ -86,6 +87,7 @@ export async function LinkRequestsView({
   searchParams: SearchParams;
 }) {
   const t = await getTranslations("owner.parties.linkRequests");
+  const p = await getTranslations("owner.parties");
   const states = await getTranslations("status.linkRequest");
   const { api, locale, me } = context;
   const stateParam = param(searchParams.state) ?? "pending";
@@ -109,11 +111,36 @@ export async function LinkRequestsView({
   const canDecide = ownerCan(me, "party.link.manage") && !readOnly(me);
   return (
     <OwnerPage testId="link-requests">
-      <PageHeader title={t("title")} description={t("description")} />
-      <PartiesNav
-        context={context}
-        current="/parties/link-requests"
-        counts={{ "/parties/link-requests": pending, "/tm30": tm30 }}
+      <PageHeader title={p("title")} description={t("description")} back={null} />
+      <ListToolbar
+        tabs={
+          <PartiesNav
+            context={context}
+            current="/parties/link-requests"
+            counts={{ "/parties/link-requests": pending, "/tm30": tm30 }}
+          />
+        }
+        filters={
+          <FilterBar
+            variant="toolbar"
+            fields={[
+              {
+                name: "state",
+                label: t("filter.state"),
+                type: "select",
+                // No parameter = the pending ones (what needs the Owner); `all` lifts the filter.
+                placeholder: states("pending"),
+                options: [
+                  ...LINK_REQUEST_VALUES.filter((value) => value !== "pending").map((value) => ({
+                    value,
+                    label: states(value),
+                  })),
+                  { value: "all", label: t("filter.all") },
+                ],
+              },
+            ]}
+          />
+        }
       />
       {!canDecide ? (
         <Callout tone="info">{t("ownerOnly")}</Callout>
@@ -122,32 +149,23 @@ export async function LinkRequestsView({
           {t("howBody")}
         </Callout>
       )}
-      <FilterBar
-        fields={[
-          {
-            name: "state",
-            label: t("filter.state"),
-            type: "select",
-            // No parameter = the pending ones (what needs the Owner); `all` lifts the filter.
-            placeholder: states("pending"),
-            options: [
-              ...LINK_REQUEST_VALUES.filter((value) => value !== "pending").map((value) => ({
-                value,
-                label: states(value),
-              })),
-              { value: "all", label: t("filter.all") },
-            ],
-          },
-        ]}
-      />
       {list.data.length === 0 ? (
-        <Card>
-          <EmptyState icon={IconCheckCircle} title={t("empty.title")} description={t("empty.body")} />
-        </Card>
+        <EmptyState
+          variant="card"
+          icon={IconCheckCircle}
+          title={t("empty.title")}
+          description={t("empty.body")}
+          action={
+            <Button asChild variant="secondary">
+              <a href={ownerPath(locale, "/parties")}>{t("empty.back")}</a>
+            </Button>
+          }
+        />
       ) : (
         <ul
-          className="divide-border border-border bg-surface rounded-card divide-y border"
+          className="divide-border border-border bg-surface rounded-card shadow-card divide-y border"
           data-testid="link-request-list"
+          aria-label={t("title")}
         >
           {list.data.map((request) => (
             <li key={request.id}>
