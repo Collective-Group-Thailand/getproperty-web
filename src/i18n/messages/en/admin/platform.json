@@ -28,13 +28,22 @@
     "defaultOn": "On by default",
     "rollout": "Rollout (%)",
     "rolloutHint": "Share of tenants that get the flag when it is off by default",
-    "overrideCount": "{count, plural, =0 {none} one {# tenant} other {# tenants}}"
+    "overrideCount": "{count, plural, =0 {none} one {# tenant} other {# tenants}}",
+    "name": {
+      "channel_web_push": "Web push for operators",
+      "module_service_requests": "Service requests and work orders",
+      "billing_auto_issue": "Automatic billing-cycle issue"
+    },
+    "rolloutValue": "{pct} %",
+    "more": "More for {key}",
+    "overrideFor": "Set for {name}",
+    "aCustomer": "a customer"
   },
   "settings": {
     "title": "Platform settings",
-    "description": "Every setting key with the platform value in force, the scopes that may override it and who may edit it. A change is a new effective-dated version with a reason.",
+    "description": "Values every customer starts from. A change is a new version with an effective date and a reason; customers may override where noted.",
     "filter": "Filter",
-    "filterPlaceholder": "Key or description, e.g. billing.",
+    "filterPlaceholder": "Search settings",
     "col": {
       "key": "Setting",
       "value": "Platform value",
@@ -48,7 +57,124 @@
       "property": "Property"
     },
     "credentialsLink": "Provider credentials",
-    "broadcastLink": "Sponsored LINE broadcasts"
+    "broadcastLink": "Sponsored LINE broadcasts",
+    "catalog": {
+      "storage_free_gb": {
+        "name": "Free storage per customer type",
+        "help": "Storage every customer gets without paying, by customer type.",
+        "unit": "GB"
+      },
+      "storage_price_per_gb_month": {
+        "name": "Price of extra storage",
+        "help": "Monthly price per GB above the free allowance; empty means it is not sold to that type yet.",
+        "unit": "THB / GB / month"
+      },
+      "storage_packs": {
+        "name": "Storage packages",
+        "help": "Add-on packages customers can buy."
+      },
+      "storage_notice_at_percent": {
+        "name": "Storage notices",
+        "help": "Usage levels at which the customer is told their storage is filling up.",
+        "unit": "%"
+      },
+      "storage_record_bytes": {
+        "name": "Size counted per record",
+        "help": "Bytes counted towards storage for each record, by document kind.",
+        "unit": "bytes"
+      },
+      "subscription_trial_days": {
+        "name": "Trial length",
+        "help": "How long a new subscription is free before it becomes active.",
+        "unit": "days"
+      },
+      "subscription_invoice_due_days": {
+        "name": "Invoice payment term",
+        "help": "Days from issuing a platform invoice to its due date.",
+        "unit": "days"
+      },
+      "support_grant_max_hours": {
+        "name": "Longest support grant",
+        "help": "The longest window an owner can approve for support to read their data.",
+        "unit": "hours"
+      },
+      "reminders_schedule": {
+        "name": "Payment reminders",
+        "help": "Days after the due date (and grace) when residents get a LINE reminder.",
+        "unit": "days after due"
+      },
+      "notifications_quiet_hours": {
+        "name": "Quiet hours",
+        "help": "No non-urgent messages to residents in these hours (Bangkok time)."
+      },
+      "ai_usage_metering": {
+        "name": "Bill AI beyond the allowance",
+        "help": "Charge OCR use above what the plan includes."
+      },
+      "compliance_tariff_cap_severity": {
+        "name": "Rate above the utility tariff",
+        "help": "How a utility rate above the published tariff is treated."
+      },
+      "payments_duplicate_window_hours": {
+        "name": "Duplicate payment window",
+        "help": "A QR callback or bank row of the same amount as a slip from the same payer and unit within this window is held as a possible duplicate.",
+        "unit": "hours"
+      },
+      "etax_enabled": {
+        "name": "e-Tax submission",
+        "help": "Submit receipts of VAT-registered customers to their e-Tax provider (opt-in)."
+      },
+      "analytics_reminder_effective_days": {
+        "name": "Reminder effect window",
+        "help": "A payment within this many days of a reminder counts as an effect of the reminder.",
+        "unit": "days"
+      },
+      "tm30_notify_within_hours": {
+        "name": "TM30 notice deadline",
+        "help": "Hours within which a foreigner's stay must be reported to Immigration.",
+        "unit": "hours"
+      }
+    },
+    "mapKey": {
+      "_default": "Default",
+      "invoice": "Invoice",
+      "receipt": "Receipt",
+      "meter_reading": "Meter reading",
+      "start": "Starts",
+      "end": "Ends",
+      "enabled": "On"
+    },
+    "enumValue": {
+      "warn": "Warn",
+      "block": "Block"
+    },
+    "section": {
+      "storage": "Storage",
+      "subscription": "Subscriptions",
+      "support": "Support access",
+      "messages": "Messages and reminders",
+      "money": "Payments and compliance",
+      "ai": "AI",
+      "other": "Other"
+    },
+    "sectionsLabel": "Setting sections",
+    "provenance": "Platform value · in force since {date}",
+    "tenantMayOverride": "customers may set their own",
+    "manageThere": "Manage",
+    "on": "On",
+    "off": "Off",
+    "notCharged": "Not charged",
+    "items": "{count, plural, =0 {None yet} other {# items}}",
+    "structured": "Set on its own page",
+    "noMatch": "No setting matches",
+    "clear": "Clear search",
+    "editTitle": "Change: {name}",
+    "valueLegend": "New value",
+    "emptyMeansOff": "Empty = not charged yet",
+    "listItem": "Value {index}",
+    "removeItem": "Remove value {index}",
+    "addItem": "Add a value",
+    "provenanceNone": "Platform value"
   },
   "templates": {
     "title": "Message templates",
@@ -102,7 +228,12 @@
     "testSend": "Send me a test",
     "testSendTitle": "Send a test of {key}",
     "testSendBody": "The published version goes to you only, over {channel}, with the sample data.",
-    "testSent": "Test sent"
+    "testSent": "Test sent",
+    "name": {
+      "invoice_issued": "New invoice to a resident",
+      "tenant_bank_account_changed": "Receiving account changed"
+    },
+    "panelTitle": "Template"
   },
   "guides": {
     "title": "Guides",
@@ -178,6 +309,9 @@
     "unpublish": "Take off the site",
     "unpublishTitle": "Take this guide off the site?",
     "unpublishBody": "\"{title}\" disappears from the site at once. It stays here and can be published again.",
-    "unpublished": "Taken off"
+    "unpublished": "Taken off",
+    "panelTitle": "Publishing",
+    "slug": "Address",
+    "previewLabel": "As readers see it"
   }
 }

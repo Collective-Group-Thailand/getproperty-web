@@ -160,7 +160,7 @@
     },
     "setRing": "กลุ่มอัปเดต",
     "setRingTitle": "กลุ่มอัปเดตของ {serial}",
-    "setRingHint": "เกตเวย์ Canary ได้รุ่นใหม่ก่อน ตามด้วย Pilot แล้วทั้งหมด (D-183)",
+    "setRingHint": "เกตเวย์ Canary ได้รุ่นใหม่ก่อน ตามด้วย Pilot แล้วทั้งหมด",
     "save": "บันทึก",
     "ringSet": "บันทึกกลุ่มแล้ว",
     "command": "ส่งคำสั่ง",
@@ -267,7 +267,15 @@
       "rings": "รอบอัปเดต",
       "actions": "การดำเนินการ"
     },
-    "digest": "sha256 {sha}… · กุญแจ {key}"
+    "digest": "sha256 {sha}… · กุญแจ {key}",
+    "noRolloutsHint": "วางแผนรอบอัปเดตจากรุ่นด้านล่าง",
+    "toReleases": "ไปที่รุ่นเฟิร์มแวร์",
+    "releaseMore": "เพิ่มเติมของ {version}",
+    "controlTitle": "ควบคุมรอบอัปเดต",
+    "arch": "สถาปัตยกรรม",
+    "digestLabel": "ค่าตรวจสอบ",
+    "progressFigure": "{done} / {total} เครื่อง",
+    "gatewayUnknown": "เกตเวย์"
   },
   "ingest": {
     "title": "ข้อมูลที่ระบบรับไม่ได้",
@@ -292,7 +300,7 @@
       "processing_error": "ประมวลผลผิดพลาด"
     },
     "empty": "ไม่มีข้อมูลที่ถูกปฏิเสธ",
-    "gateway": "เปิดเกตเวย์",
+    "gateway": "เกตเวย์",
     "bytes": "{count} ไบต์",
     "replayedAt": "ส่งซ้ำเมื่อ {date}",
     "col": {
@@ -301,7 +309,15 @@
       "reason": "เหตุผล",
       "payload": "ข้อมูล",
       "replay": "ส่งซ้ำ"
-    }
+    },
+    "emptyFiltered": "ไม่พบรายการที่ตรงกับตัวกรอง",
+    "emptyHint": "ข้อมูลอุปกรณ์ที่แพลตฟอร์มรับไม่ได้จะแสดงที่นี่พร้อมเหตุผล",
+    "clear": "ล้างตัวกรอง",
+    "openDevices": "ดูอุปกรณ์",
+    "details": "รายละเอียด",
+    "outcome": "ผลการส่งซ้ำ",
+    "openGateway": "เปิดเกตเวย์",
+    "id": "รหัสรายการ"
   },
   "transport": {
     "enable": "อนุญาตสำรองผ่าน WebSocket",
@@ -324,5 +340,12 @@
     "risksRef": "getproperty-api ADR-0015 · ข้อตัดสินใจ D-239",
     "reason": "เหตุผล",
     "reasonHint": "3–500 ตัวอักษร เช่น เลขตั๋วไฟร์วอลล์ของอาคาร บันทึกไว้ในประวัติการใช้งาน"
-  }
+  },
+  "statsLabel": "อุปกรณ์ตามสถานะ",
+  "aBuilding": "อาคารที่เลือก",
+  "noDevicesFiltered": "ไม่พบอุปกรณ์ที่ตรงกับตัวกรอง",
+  "clearFilters": "ล้างตัวกรอง",
+  "openTenants": "ดูองค์กรลูกค้า",
+  "manage": "การจัดการ",
+  "backHome": "กลับหน้าภาพรวม"
 }

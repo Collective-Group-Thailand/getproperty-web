@@ -1,3 +1,4 @@
+import { SetProviderCredential } from "@/features/admin/credentials/CredentialActions";
 import { getTranslations } from "next-intl/server";
 
 import { ProviderCredentialsPanel } from "@/features/admin/credentials/ProviderCredentialsPanel";
@@ -20,8 +21,14 @@ export default async function Page({
 }) {
   const [{ tenantId }, context, query] = await Promise.all([params, adminContext(), searchParams]);
   const tenant = await loadTenant(context, tenantId);
+  const t = await getTranslations("admin.credentials");
   return (
-    <TenantFrame context={context} tenant={tenant} current="credentials">
+    <TenantFrame
+      context={context}
+      tenant={tenant}
+      current="credentials"
+      actions={<SetProviderCredential tenantId={tenant.id} label={t("set")} testId="set-credential" />}
+    >
       <ProviderCredentialsPanel
         context={context}
         scope={{ type: "tenant", tenantId: tenant.id }}

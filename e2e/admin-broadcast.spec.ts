@@ -87,12 +87,13 @@ test("campaigns: a scheduled campaign is stopped with a reason; the owner sees w
   const row = admin.getByTestId("admin-campaign-row").first();
   await expect(row).toHaveAttribute("data-state", "scheduled");
   await expectAxeClean(admin);
-  await row.getByTestId("campaign-reject").click();
+  await row.getByRole("button", { name: /More actions|การทำงานเพิ่มเติม/ }).click();
+  await admin.getByTestId("campaign-reject").click();
   const dialog = admin.getByRole("alertdialog");
   await dialog.getByTestId("campaign-reject-reason").fill("ข้อความประกาศไม่ตรงกับห้องจริง");
   await dialog.getByRole("button", { name: /Stop campaign|ระงับแคมเปญ/ }).click();
   await expect(row).toHaveAttribute("data-state", "rejected");
-  await expect(row.getByTestId("campaign-reject")).toHaveCount(0);
+  await expect(admin.getByTestId("campaign-reject")).toHaveCount(0);
 
   await owner.reload();
   await expect(owner.getByTestId("campaign-state")).toHaveAttribute("data-state", "rejected");

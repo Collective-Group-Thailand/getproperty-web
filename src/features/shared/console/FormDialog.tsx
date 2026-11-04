@@ -9,6 +9,7 @@ import { LazyDialog } from "@/ui/components/overlays";
 import { toast } from "@/ui/components/Toast";
 import type { IconGlyph } from "@/ui/icons";
 
+import { useMenuEntry } from "./ActionMenu";
 import { ProblemNotice, useApiAction, useIdempotencyKey } from "./useApiAction";
 
 /** The API's field errors by form field name (`lines[1].amount` → `lines.1.amount`). */
@@ -84,23 +85,22 @@ export function FormDialog({
   const idempotency = useIdempotencyKey();
   const errors = fieldErrors(action.error);
 
+  const start = () => {
+    // Same pending action (last attempt unanswered) → same key; otherwise a fresh one (review L2).
+    idempotency.renewUnless(action.unansweredAttempt());
+    action.reset();
+    setOpen(true);
+  };
+  // Inside an `ActionMenu` ("⋯") the action is a menu item and renders only its dialog.
+  const inMenu = useMenuEntry({ label, icon, testId, disabled, destructive: variant === "destructive" }, start);
+
   return (
     <>
-      <Button
-        variant={variant}
-        size={size}
-        iconStart={icon}
-        disabled={disabled}
-        onClick={() => {
-          // Same pending action (last attempt unanswered) → same key; otherwise a fresh one (review L2).
-          idempotency.renewUnless(action.unansweredAttempt());
-          action.reset();
-          setOpen(true);
-        }}
-        data-testid={testId}
-      >
-        {label}
-      </Button>
+      {inMenu ? null : (
+        <Button variant={variant} size={size} iconStart={icon} disabled={disabled} onClick={start} data-testid={testId}>
+          {label}
+        </Button>
+      )}
       <LazyDialog
         open={open}
         onOpenChange={(next) => !action.busy && setOpen(next)}

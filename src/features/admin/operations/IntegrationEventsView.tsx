@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 
 import { INTEGRATION_STATUS, INTEGRATION_VALUES } from "@/domain/status/integration";
+import { DetailDrawer } from "@/features/shared/console/DetailDrawer";
 import { ListPagination } from "@/features/shared/console/ListPagination";
 import { ConsolePage, PageHeader } from "@/features/shared/console/PageHeader";
 import { SectionError } from "@/features/shared/console/SectionError";
@@ -9,12 +9,15 @@ import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { formatDateTime, formatNumber } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
-import { Card } from "@/ui/components/Card";
+import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { IconLink } from "@/ui/icons/glyphs/link";
 import { SimpleTable } from "@/ui/components/SimpleTable";
 
 import { enumParam, pageParam, param, section, tenantLabel, tenantNames, type AdminContext } from "../shared/server";
+import { eventTypeLabel } from "./auditLabels";
 import { GetFilters } from "./GetFilters";
+import { EventDetails } from "./OutboxView";
 
 const SYSTEMS: Schemas["IntegrationSystem"][] = ["getbuild", "getpack"];
 const DIRECTIONS: Schemas["IntegrationDirection"][] = ["inbound", "outbound"];
@@ -39,6 +42,8 @@ export async function IntegrationEventsView({
   const system = enumParam(searchParams.system, SYSTEMS);
   const direction = enumParam(searchParams.direction, DIRECTIONS);
   const q = param(searchParams.q)?.trim() || undefined;
+  const ops = await getTranslations("admin.operations");
+  const filtered = Boolean(state || system || direction || q);
   const [list, names] = await Promise.all([
     section(
       unwrap(
@@ -58,6 +63,7 @@ export async function IntegrationEventsView({
         label={t("filters")}
         submitLabel={t("apply")}
         testId="integration-filters"
+        clear={filtered ? { label: t("clear"), href: "/integration-events" } : null}
         fields={[
           {
             name: "q",
@@ -65,7 +71,7 @@ export async function IntegrationEventsView({
             type: "text",
             value: q,
             placeholder: t("searchPlaceholder"),
-            width: "18rem",
+            width: "w-64",
           },
           {
             name: "state",
@@ -96,66 +102,88 @@ export async function IntegrationEventsView({
           },
         ]}
       />
-      <p className="text-muted text-sm">
-        {t("outboxHint")}{" "}
-        <Link href="/outbox" className="text-primary underline underline-offset-4">
-          {t("outbox")}
-        </Link>
-      </p>
       {!list.data ? (
         <SectionError error={list.error} />
       ) : list.data.data.length === 0 ? (
-        <Card>
-          <EmptyState title={t("empty")} description={t("emptyBody")} />
-        </Card>
+        <EmptyState
+          variant="card"
+          icon={IconLink}
+          title={filtered ? t("emptyFiltered") : t("empty")}
+          description={filtered ? undefined : t("emptyBody")}
+          action={
+            <Button asChild variant="secondary">
+              <a href={filtered ? "/integration-events" : "/outbox"}>{filtered ? t("clear") : t("outbox")}</a>
+            </Button>
+          }
+        />
       ) : (
         <>
           <SimpleTable
             caption={t("title")}
             testId="integration-events-table"
-            minWidth="52rem"
+            stackOnPhones
+            minWidth="64rem"
             columns={[
-              { key: "event", header: t("col.event") },
-              { key: "system", header: t("col.system") },
-              { key: "tenant", header: t("col.tenant") },
-              { key: "occurred", header: t("col.occurred") },
-              { key: "attempts", header: t("col.attempts"), align: "end" },
-              { key: "error", header: t("col.error") },
-              { key: "state", header: t("col.state") },
+              { key: "event", header: t("col.event"), phone: "title" },
+              { key: "system", header: t("col.system"), phone: "meta" },
+              { key: "tenant", header: t("col.tenant"), phone: "meta" },
+              { key: "occurred", header: t("col.occurred"), phone: "hidden" },
+              { key: "attempts", header: t("col.attempts"), align: "end", phone: "hidden" },
+              { key: "error", header: t("col.error"), phone: "meta" },
+              { key: "state", header: t("col.state"), phone: "status" },
+              { key: "details", header: <span className="sr-only">{t("details")}</span>, phone: "meta", align: "end" },
             ]}
             rows={list.data.data.map((event) => ({
               key: event.id,
               testId: "integration-event",
               data: { state: event.state, system: event.system, direction: event.direction },
-              tone:
-                event.state === "dead" || event.state === "failed" || event.state === "rejected" ? "danger" : "default",
               cells: {
                 event: (
-                  <span className="flex flex-col">
-                    <span className="font-mono text-xs">{event.type}</span>
-                    <span className="text-muted font-mono text-xs">
-                      {t("subject", { subject: event.aggregateRef ?? event.id, version: event.contractVersion })}
-                    </span>
+                  <span className="flex flex-col gap-0.5">
+                    <span className="font-medium">{eventTypeLabel(ops, event.type) ?? event.type}</span>
+                    <span className="text-muted font-mono text-xs">{event.type}</span>
                   </span>
                 ),
                 system: (
                   <span className="flex flex-col">
-                    <span className="font-mono text-xs">{event.system}</span>
-                    <span className="text-muted text-xs">{t(`directionValue.${event.direction}`)}</span>
+                    <span>{event.system}</span>
+                    <span className="text-muted text-sm">{t(`directionValue.${event.direction}`)}</span>
                   </span>
                 ),
-                tenant: tenantLabel(names, event.tenantId, t("platform")),
-                occurred: formatDateTime(event.occurredAt, locale),
+                tenant: (
+                  <span className="md:whitespace-nowrap">{tenantLabel(names, event.tenantId, t("platform"))}</span>
+                ),
+                occurred: <span className="whitespace-nowrap">{formatDateTime(event.occurredAt, locale)}</span>,
                 attempts: formatNumber(event.attempts, locale),
                 error: event.lastError ? (
-                  <span className="font-mono text-xs break-all">
-                    {event.lastError.length > 160 ? `${event.lastError.slice(0, 160)}…` : event.lastError}
+                  <span className="line-clamp-2 font-mono text-xs break-words" title={event.lastError}>
+                    {event.lastError}
                   </span>
                 ) : (
-                  "—"
+                  <span className="text-muted">—</span>
+                ),
+                details: (
+                  <DetailDrawer
+                    label={t("details")}
+                    title={eventTypeLabel(ops, event.type) ?? event.type}
+                    description={formatDateTime(event.occurredAt, locale)}
+                  >
+                    <EventDetails
+                      error={event.lastError}
+                      attempts={event.attempts}
+                      ids={[
+                        { label: t("eventId"), value: event.id },
+                        ...(event.aggregateRef ? [{ label: t("subjectRef"), value: event.aggregateRef }] : []),
+                      ]}
+                      facts={[
+                        { label: t("col.event"), value: event.type },
+                        { label: t("contract"), value: event.contractVersion },
+                      ]}
+                    />
+                  </DetailDrawer>
                 ),
                 state: (
-                  <span className="flex flex-col gap-1">
+                  <span className="flex flex-col items-start gap-1 max-md:items-end">
                     <StatusBadgeOf map={INTEGRATION_STATUS} value={event.state} size="sm" />
                     {event.ackedAt ? (
                       <span className="text-muted text-xs">

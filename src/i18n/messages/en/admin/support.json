@@ -1,6 +1,6 @@
 {
   "title": "Support grants",
-  "description": "Time-boxed, read-only access into a tenant (D-090): requested by Support, approved by the tenant's Owner in-app or by a platform admin for an incident. Every read is audited.",
+  "description": "Time-boxed, read-only access into a tenant: requested by Support, approved by the tenant's Owner in-app or by a platform admin for an incident. Every read is audited.",
   "empty": "No support grants",
   "emptyHint": "Ask the tenant's Owner for access from the tenant's Support tab.",
   "col": {
@@ -59,6 +59,16 @@
       "success": "Allowed",
       "denied": "Refused",
       "failure": "Failed"
+    },
+    "stripLive": "Viewing as the customer · read-only · access ends {time}",
+    "stripBypass": "Viewing as the customer · read-only · emergency access, every read audited",
+    "resource": {
+      "members": "Members",
+      "audit_log": "Activity history",
+      "invoices": "Invoices",
+      "buildings": "Buildings"
     }
-  }
+  },
+  "openTenants": "Open customers",
+  "more": "More for {name}"
 }

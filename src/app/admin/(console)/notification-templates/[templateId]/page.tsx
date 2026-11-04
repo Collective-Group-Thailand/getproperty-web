@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { TemplateDetail } from "@/features/admin/platform/TemplatesView";
+import { orNotAllowed } from "@/features/admin/shared/NotAllowed";
 import { adminContext } from "@/features/admin/shared/server";
 
 export async function generateMetadata() {
@@ -11,5 +12,5 @@ export async function generateMetadata() {
 /** One notification template: versions, preview, test send, publish (F5 5.2). */
 export default async function Page({ params }: { params: Promise<{ templateId: string }> }) {
   const [{ templateId }, context] = await Promise.all([params, adminContext()]);
-  return <TemplateDetail context={context} templateId={templateId} />;
+  return orNotAllowed(context, () => TemplateDetail({ context, templateId }));
 }

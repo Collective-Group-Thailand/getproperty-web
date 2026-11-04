@@ -1,4 +1,5 @@
 import { getTranslations } from "next-intl/server";
+import Link from "next/link";
 
 import { INSTALL_ORDER_STATUS, INSTALL_ORDER_VALUES } from "@/domain/status/installOrder";
 import { SITE_SURVEY_STATUS, SITE_SURVEY_VALUES } from "@/domain/status/siteSurvey";
@@ -10,11 +11,12 @@ import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { formatDate, formatDateTime } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
-import { Card } from "@/ui/components/Card";
+import { Button } from "@/ui/components/Button";
+import { ListToolbar } from "@/ui/components/ListToolbar";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { IconChecklist } from "@/ui/icons/glyphs/checklist";
 
-import { can, enumParam, pageParam, section, type AdminContext } from "../shared/server";
+import { can, enumParam, pageParam, section, tenantNames, type AdminContext } from "../shared/server";
 import { InstallOrderActions, SiteSurveyActions, type Assignee } from "./FieldActions";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -53,7 +55,7 @@ export async function FieldWork({
   const { api, locale, me } = context;
   const manage = can(me, "admin.device.manage") || can(me, "admin.subscription.manage");
   const kind = enumParam(searchParams.kind, KINDS);
-  const [orders, surveys, people] = await Promise.all([
+  const [orders, surveys, people, names, plans] = await Promise.all([
     section(
       unwrap(
         api.GET("/v1/admin/install-orders", {
@@ -77,53 +79,78 @@ export async function FieldWork({
       ),
     ),
     manage ? assignees(context) : Promise.resolve([] as Assignee[]),
+    tenantNames(),
+    section(unwrap(api.GET("/v1/admin/price-plans"))),
   ]);
-  const nameOf = (id: string | null) => (id ? (people.find((p) => p.id === id)?.name ?? id.slice(0, 8)) : t("nobody"));
+  const planNames = new Map((plans.data ?? []).map((plan) => [plan.key, plan.nameTh]));
+  const nameOf = (id: string | null) => (id ? (people.find((p) => p.id === id)?.name ?? t("someone")) : t("nobody"));
+  const tenantOf = (id: string) => names.get(id) ?? t("tenantLink");
+  const filtered = Boolean(kind || searchParams.state);
 
   return (
-    <div className="flex flex-col gap-8">
-      <section aria-labelledby="install-orders" className="flex flex-col gap-3">
+    <div className="flex flex-col gap-10">
+      <section aria-labelledby="install-orders" className="flex flex-col gap-4">
         <h2 id="install-orders" className="text-lg font-semibold">
           {t("orders")}
         </h2>
-        <FilterBar
-          fields={[
-            {
-              name: "state",
-              label: t("state"),
-              type: "select",
-              placeholder: t("allStates"),
-              options: INSTALL_ORDER_VALUES.map((value) => ({ value, label: status(value) })),
-            },
-            {
-              name: "kind",
-              label: t("kind"),
-              type: "select",
-              placeholder: t("allKinds"),
-              options: KINDS.map((value) => ({ value, label: t(`kindName.${value}`) })),
-            },
-          ]}
+        <ListToolbar
+          filters={
+            <FilterBar
+              variant="toolbar"
+              fields={[
+                {
+                  name: "state",
+                  label: t("state"),
+                  type: "select",
+                  placeholder: t("allStates"),
+                  options: INSTALL_ORDER_VALUES.map((value) => ({ value, label: status(value) })),
+                },
+                {
+                  name: "kind",
+                  label: t("kind"),
+                  type: "select",
+                  placeholder: t("allKinds"),
+                  options: KINDS.map((value) => ({ value, label: t(`kindName.${value}`) })),
+                },
+              ]}
+            />
+          }
         />
         {!orders.data ? (
           <SectionError error={orders.error} />
         ) : orders.data.data.length === 0 ? (
-          <Card>
-            <EmptyState icon={IconChecklist} title={t("noOrders")} />
-          </Card>
+          <EmptyState
+            variant="card"
+            icon={IconChecklist}
+            title={filtered ? t("noOrdersFiltered") : t("noOrders")}
+            action={
+              <Button asChild variant="secondary">
+                <a href={filtered ? path : tenantId ? `/tenants/${tenantId}/hardware` : "/subscriptions/hardware"}>
+                  {filtered ? t("clear") : t("openHardware")}
+                </a>
+              </Button>
+            }
+          />
         ) : (
           <>
             <SimpleTable
               caption={t("orders")}
               testId="install-orders"
-              minWidth="56rem"
+              stackOnPhones
+              minWidth="60rem"
               columns={[
-                { key: "building", header: t("col.building") },
-                { key: "kind", header: t("col.kind") },
-                { key: "items", header: t("col.items") },
-                { key: "assignee", header: t("col.assignee") },
-                { key: "due", header: t("col.due") },
-                { key: "state", header: t("col.state") },
-                { key: "actions", header: <span className="sr-only">{t("col.actions")}</span> },
+                { key: "building", header: t("col.building"), phone: "title" },
+                { key: "kind", header: t("col.kind"), phone: "meta" },
+                { key: "items", header: t("col.items"), align: "end", phone: "meta" },
+                { key: "assignee", header: t("col.assignee"), phone: "meta" },
+                { key: "due", header: t("col.due"), phone: "hidden" },
+                { key: "state", header: t("col.state"), phone: "status" },
+                {
+                  key: "actions",
+                  header: <span className="sr-only">{t("col.actions")}</span>,
+                  phone: "figure",
+                  className: "w-14",
+                },
               ]}
               rows={orders.data.data.map((order) => ({
                 key: order.id,
@@ -133,23 +160,20 @@ export async function FieldWork({
                   building: (
                     <span className="flex flex-col">
                       <span className="font-semibold">{order.buildingName}</span>
-                      {tenantId ? null : (
-                        <a
-                          href={`/tenants/${order.tenantId}/field-work`}
-                          className="text-muted text-xs hover:underline"
-                        >
-                          {t("tenantLink")}
-                        </a>
-                      )}
+                      {tenantId ? null : <span className="text-muted text-sm">{tenantOf(order.tenantId)}</span>}
                     </span>
                   ),
                   kind: t(`kindName.${order.kind}`),
-                  items: t("itemsValue", {
-                    done: order.items.filter((item) => item.done).length,
-                    total: order.items.length,
-                  }),
+                  items: (
+                    <span className="whitespace-nowrap">
+                      {t("itemsValue", {
+                        done: order.items.filter((item) => item.done).length,
+                        total: order.items.length,
+                      })}
+                    </span>
+                  ),
                   assignee: nameOf(order.assignedTo),
-                  due: order.dueAt ? formatDate(order.dueAt, locale) : "—",
+                  due: order.dueAt ? <span className="whitespace-nowrap">{formatDate(order.dueAt, locale)}</span> : "—",
                   state: <StatusBadgeOf map={INSTALL_ORDER_STATUS} value={order.state} size="sm" />,
                   actions:
                     manage && order.nextActions.length > 0 ? (
@@ -162,37 +186,64 @@ export async function FieldWork({
           </>
         )}
       </section>
-      <section aria-labelledby="site-surveys" className="flex flex-col gap-3">
+      <section aria-labelledby="site-surveys" className="flex flex-col gap-4">
         <h2 id="site-surveys" className="text-lg font-semibold">
           {t("surveys")}
         </h2>
-        <FilterBar
-          fields={[
-            {
-              name: "surveyState",
-              label: t("state"),
-              type: "select",
-              placeholder: t("allStates"),
-              options: SITE_SURVEY_VALUES.map((value) => ({ value, label: surveyStatus(value) })),
-            },
-          ]}
+        <ListToolbar
+          filters={
+            <FilterBar
+              variant="toolbar"
+              fields={[
+                {
+                  name: "surveyState",
+                  label: t("state"),
+                  type: "select",
+                  placeholder: t("allStates"),
+                  options: SITE_SURVEY_VALUES.map((value) => ({ value, label: surveyStatus(value) })),
+                },
+              ]}
+            />
+          }
         />
         {!surveys.data ? (
           <SectionError error={surveys.error} />
         ) : surveys.data.length === 0 ? (
-          <p className="text-muted">{t("noSurveys")}</p>
+          <EmptyState
+            variant="card"
+            icon={IconChecklist}
+            title={t("noSurveys")}
+            description={t("noSurveysBody")}
+            action={
+              searchParams.surveyState ? (
+                <Button asChild variant="secondary">
+                  <a href={path}>{t("clear")}</a>
+                </Button>
+              ) : (
+                <Button asChild variant="secondary">
+                  <Link href="/subscriptions/plans">{t("openPlans")}</Link>
+                </Button>
+              )
+            }
+          />
         ) : (
           <SimpleTable
             caption={t("surveys")}
             testId="site-surveys"
-            minWidth="52rem"
+            stackOnPhones
+            minWidth="56rem"
             columns={[
-              { key: "created", header: t("col.requested") },
-              { key: "plan", header: t("col.plan") },
-              { key: "scheduled", header: t("col.scheduled") },
-              { key: "notes", header: t("col.notes") },
-              { key: "state", header: t("col.state") },
-              { key: "actions", header: <span className="sr-only">{t("col.actions")}</span> },
+              { key: "created", header: t("col.requested"), phone: "title" },
+              { key: "plan", header: t("col.plan"), phone: "meta" },
+              { key: "scheduled", header: t("col.scheduled"), phone: "meta" },
+              { key: "notes", header: t("col.notes"), phone: "hidden" },
+              { key: "state", header: t("col.state"), phone: "status" },
+              {
+                key: "actions",
+                header: <span className="sr-only">{t("col.actions")}</span>,
+                phone: "figure",
+                className: "w-14",
+              },
             ]}
             rows={surveys.data.map((survey) => ({
               key: survey.id,
@@ -201,15 +252,11 @@ export async function FieldWork({
               cells: {
                 created: (
                   <span className="flex flex-col">
-                    <span>{formatDate(survey.createdAt, locale)}</span>
-                    {tenantId ? null : (
-                      <a href={`/tenants/${survey.tenantId}/field-work`} className="text-muted text-xs hover:underline">
-                        {t("tenantLink")}
-                      </a>
-                    )}
+                    <span className="whitespace-nowrap">{formatDate(survey.createdAt, locale)}</span>
+                    {tenantId ? null : <span className="text-muted text-sm">{tenantOf(survey.tenantId)}</span>}
                   </span>
                 ),
-                plan: survey.targetPlanKey,
+                plan: planNames.get(survey.targetPlanKey) ?? survey.targetPlanKey,
                 scheduled: survey.scheduledFor
                   ? `${formatDateTime(survey.scheduledFor, locale)} · ${nameOf(survey.assignedTo)}`
                   : "—",

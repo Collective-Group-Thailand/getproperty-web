@@ -1,22 +1,31 @@
 import { getTranslations } from "next-intl/server";
-import { notFound } from "next/navigation";
 
 import { RENTAL_HANDOFF_STATUS, RENTAL_HANDOFF_VALUES } from "@/domain/status";
-import { FilterBar } from "@/features/shared/console/FilterBar";
+import { ActionMenu } from "@/features/shared/console/ActionMenu";
 import { ListPagination } from "@/features/shared/console/ListPagination";
 import { ConsolePage, PageHeader } from "@/features/shared/console/PageHeader";
 import { SectionError } from "@/features/shared/console/SectionError";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { formatDate, formatDateTime } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
-import { Badge } from "@/ui/components/Badge";
-import { Card } from "@/ui/components/Card";
+import { Button } from "@/ui/components/Button";
+import { ListToolbar } from "@/ui/components/ListToolbar";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { SimpleTable } from "@/ui/components/SimpleTable";
 import { IconBuilding } from "@/ui/icons/glyphs/building";
 
-import { ListingsTabs } from "../listings/ModerationView";
-import { can, enumParam, pageParam, section, tenantLabel, tenantNames, type AdminContext } from "../shared/server";
+import { StateTabs } from "../shared/lists";
+import { NotAllowed } from "../shared/NotAllowed";
+import {
+  can,
+  enumParam,
+  pageParam,
+  section,
+  tenantLabel,
+  tenantNames,
+  withQuery,
+  type AdminContext,
+} from "../shared/server";
 import { ResendHandoff } from "./ResendHandoff";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -38,7 +47,8 @@ export async function RentalHandoffsView({
   const listings = await getTranslations("admin.listings");
   const status = await getTranslations("status.rentalHandoff");
   const { api, locale, me } = context;
-  if (!can(me, "admin.tenant.read")) notFound();
+  if (!can(me, "admin.tenant.read")) return <NotAllowed context={context} />;
+  const state = enumParam(searchParams.state, RENTAL_HANDOFF_VALUES);
   const [list, names] = await Promise.all([
     section(
       unwrap(
@@ -47,7 +57,7 @@ export async function RentalHandoffsView({
             query: {
               page: pageParam(searchParams.page),
               perPage: 25,
-              state: enumParam(searchParams.state, RENTAL_HANDOFF_VALUES),
+              state,
             },
           },
         }),
@@ -58,38 +68,54 @@ export async function RentalHandoffsView({
   const resend = can(me, "admin.tenant.manage");
   return (
     <ConsolePage testId="admin-handoffs">
-      <PageHeader title={listings("title")} description={listings("description")} />
-      <ListingsTabs context={context} current="/listings/handoffs" />
-      <p className="text-muted m-0 text-sm">{t("intro")}</p>
-      <FilterBar
-        fields={[
-          {
-            name: "state",
-            label: t("state"),
-            type: "select",
-            placeholder: t("allStates"),
-            options: RENTAL_HANDOFF_VALUES.map((value) => ({ value, label: status(value) })),
-          },
-        ]}
+      <PageHeader title={listings("tab.handoffs")} description={t("intro")} />
+      <ListToolbar
+        tabs={
+          <StateTabs
+            states={RENTAL_HANDOFF_VALUES}
+            current={state}
+            total={(one) =>
+              unwrap(api.GET("/v1/admin/rental-handoffs", { params: { query: { perPage: 1, state: one } } }))
+            }
+            href={(one) => withQuery("/listings/handoffs", { state: one })}
+            label={(one) => status(one)}
+            allLabel={t("all")}
+            navLabel={t("state")}
+          />
+        }
       />
       {!list.data ? (
         <SectionError error={list.error} />
       ) : list.data.data.length === 0 ? (
-        <Card>
-          <EmptyState icon={IconBuilding} title={t("empty")} description={t("emptyHint")} />
-        </Card>
+        <EmptyState
+          variant="card"
+          icon={IconBuilding}
+          title={t("empty")}
+          description={t("emptyHint")}
+          action={
+            <Button asChild variant="secondary">
+              <a href={state ? "/listings/handoffs" : "/listings"}>{state ? t("clear") : t("openListings")}</a>
+            </Button>
+          }
+        />
       ) : (
         <>
           <SimpleTable
             caption={listings("tab.handoffs")}
             testId="admin-handoff-table"
+            stackOnPhones
             minWidth="60rem"
             columns={[
-              { key: "unit", header: t("col.unit") },
-              { key: "delivery", header: t("col.delivery") },
-              { key: "state", header: t("col.state") },
-              { key: "landlord", header: t("col.landlord") },
-              { key: "actions", header: <span className="sr-only">{t("col.actions")}</span> },
+              { key: "unit", header: t("col.unit"), phone: "title" },
+              { key: "delivery", header: t("col.delivery"), phone: "meta" },
+              { key: "state", header: t("col.state"), phone: "status" },
+              { key: "landlord", header: t("col.landlord"), phone: "meta" },
+              {
+                key: "actions",
+                header: <span className="sr-only">{t("col.actions")}</span>,
+                phone: "figure",
+                className: "w-14",
+              },
             ]}
             rows={list.data.data.map((handoff) => ({
               key: handoff.id,
@@ -101,12 +127,9 @@ export async function RentalHandoffsView({
                     <span className="font-semibold">
                       {handoff.buildingRef} · {handoff.unitRef}
                     </span>
-                    <span className="text-muted text-xs">
+                    <span className="text-muted text-sm font-normal">
                       {t("developer", { ref: handoff.developerRef })} ·{" "}
-                      {t("transfer", { date: formatDate(handoff.transferDate, locale) })}
-                    </span>
-                    <span>
-                      <Badge size="sm">{handoff.campaignTag}</Badge>
+                      {t("transfer", { date: formatDate(handoff.transferDate, locale) })} · {handoff.campaignTag}
                     </span>
                   </span>
                 ),
@@ -117,12 +140,12 @@ export async function RentalHandoffsView({
                         ? t("delivered", { date: formatDateTime(handoff.deliveredAt, locale) })
                         : t("notDelivered")}
                     </span>
-                    <span className="text-muted text-xs tabular-nums">
+                    <span className="text-muted text-sm tabular-nums">
                       {t("attempts", { count: handoff.deliveryAttempts })} ·{" "}
                       {t("expires", { date: formatDate(handoff.expiresAt, locale) })}
                     </span>
                     {handoff.lastDeliveryError ? (
-                      <span className="text-muted text-xs" data-testid="admin-handoff-error">
+                      <span className="text-sm" data-testid="admin-handoff-error">
                         {t("lastError", { error: handoff.lastDeliveryError })}
                       </span>
                     ) : null}
@@ -138,7 +161,9 @@ export async function RentalHandoffsView({
                 ),
                 actions:
                   resend && handoff.state === "invited" ? (
-                    <ResendHandoff handoffId={handoff.id} unit={`${handoff.buildingRef} · ${handoff.unitRef}`} />
+                    <ActionMenu>
+                      <ResendHandoff handoffId={handoff.id} unit={`${handoff.buildingRef} · ${handoff.unitRef}`} />
+                    </ActionMenu>
                   ) : null,
               },
             }))}

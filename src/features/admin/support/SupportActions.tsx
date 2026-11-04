@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { ActionMenu } from "@/features/shared/console/ActionMenu";
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 import { FormDialog, text } from "@/features/shared/console/FormDialog";
 import { browserApi } from "@/lib/api/browser";
@@ -62,7 +63,7 @@ export function GrantActions({ grant, tenantName }: { grant: Schemas["SupportGra
   const [hours, setHours] = useState("4");
   const path = { params: { path: { supportGrantId: grant.id } } };
   return (
-    <div className="flex flex-wrap gap-1">
+    <ActionMenu label={t("more", { name: tenantName })}>
       {grant.nextActions.includes("approve-incident") ? (
         <ConfirmAction
           label={t("approveIncident")}
@@ -104,6 +105,6 @@ export function GrantActions({ grant, tenantName }: { grant: Schemas["SupportGra
           successMessage={t("revoked")}
         />
       ) : null}
-    </div>
+    </ActionMenu>
   );
 }

@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
+import { orNotAllowed } from "@/features/admin/shared/NotAllowed";
 import { adminContext } from "@/features/admin/shared/server";
 import { TariffDetail } from "@/features/admin/tariffs/TariffsView";
 
@@ -17,5 +18,5 @@ export default async function Page({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const [{ tariffId }, query, context] = await Promise.all([params, searchParams, adminContext()]);
-  return <TariffDetail context={context} tariffId={tariffId} searchParams={query} />;
+  return orNotAllowed(context, () => TariffDetail({ context, tariffId, searchParams: query }));
 }

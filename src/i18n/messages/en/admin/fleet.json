@@ -160,7 +160,7 @@
     },
     "setRing": "OTA ring",
     "setRingTitle": "OTA ring of {serial}",
-    "setRingHint": "Canary gateways get a release first, then pilot, then all (D-183).",
+    "setRingHint": "Canary gateways get a release first, then pilot, then all.",
     "save": "Save",
     "ringSet": "Ring saved",
     "command": "Send a command",
@@ -267,7 +267,15 @@
       "rings": "Rollouts",
       "actions": "Actions"
     },
-    "digest": "sha256 {sha}… · key {key}"
+    "digest": "sha256 {sha}… · key {key}",
+    "noRolloutsHint": "Plan one from a release below.",
+    "toReleases": "Go to releases",
+    "releaseMore": "More for {version}",
+    "controlTitle": "Control the rollout",
+    "arch": "Architecture",
+    "digestLabel": "Digest",
+    "progressFigure": "{done} / {total} gateways",
+    "gatewayUnknown": "Gateway"
   },
   "ingest": {
     "title": "Ingest dead letters",
@@ -292,7 +300,7 @@
       "processing_error": "Processing error"
     },
     "empty": "Nothing refused",
-    "gateway": "Open the gateway",
+    "gateway": "Gateway",
     "bytes": "{count} bytes",
     "replayedAt": "Replayed {date}",
     "col": {
@@ -301,7 +309,15 @@
       "reason": "Reason",
       "payload": "Payload",
       "replay": "Replay"
-    }
+    },
+    "emptyFiltered": "Nothing matches these filters",
+    "emptyHint": "Telemetry the platform refuses shows up here with the reason.",
+    "clear": "Clear filters",
+    "openDevices": "Open devices",
+    "details": "Details",
+    "outcome": "Replay result",
+    "openGateway": "Open the gateway",
+    "id": "Entry id"
   },
   "transport": {
     "enable": "Allow WebSocket fallback",
@@ -324,5 +340,12 @@
     "risksRef": "getproperty-api ADR-0015 · decision D-239",
     "reason": "Reason",
     "reasonHint": "3–500 characters, e.g. the building's firewall ticket. Stored in the audit log."
-  }
+  },
+  "statsLabel": "Devices by state",
+  "aBuilding": "the chosen building",
+  "noDevicesFiltered": "No device matches",
+  "clearFilters": "Clear filters",
+  "openTenants": "Open customers",
+  "manage": "Manage",
+  "backHome": "Back to the overview"
 }

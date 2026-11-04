@@ -25,7 +25,7 @@ export function VersionActions({ version, label }: { version: Schemas["TariffVer
   const [notes, setNotes] = useState("");
   const path = { params: { path: { versionId: version.id } } };
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-col gap-2 [&>button]:w-full">
       {version.nextActions.includes("verify") ? (
         <ConfirmAction
           label={t("verify")}

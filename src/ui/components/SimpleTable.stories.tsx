@@ -54,3 +54,21 @@ export const StackedOnPhones: Story = {
   },
   parameters: { viewport: { defaultViewport: "mobile1" } },
 };
+
+/** Bare counts named by their header in a phone row (`phoneLabel`): "ออนไลน์ 3 · ออฟไลน์ 1", never "3 / 1". */
+export const PhoneLabels: Story = {
+  args: {
+    caption: "เกตเวย์รายอาคาร",
+    stackOnPhones: true,
+    columns: [
+      { key: "building", header: "อาคาร", phone: "title" },
+      { key: "online", header: "ออนไลน์", align: "end", phoneLabel: true },
+      { key: "offline", header: "ออฟไลน์", align: "end", phoneLabel: true },
+    ],
+    rows: [
+      { key: "a", cells: { building: "อาคาร A", online: "3", offline: "0" } },
+      { key: "b", cells: { building: "อาคาร B", online: "1", offline: "1" } },
+    ],
+  },
+  parameters: { viewport: { defaultViewport: "mobile1" } },
+};

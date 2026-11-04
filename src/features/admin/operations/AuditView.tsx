@@ -6,12 +6,15 @@ import { formatDateTime } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
-import { Card } from "@/ui/components/Card";
+import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { IconHistory } from "@/ui/icons/glyphs/history";
 import { SimpleTable } from "@/ui/components/SimpleTable";
 
-import { param, section, withQuery, type AdminContext } from "../shared/server";
-import { actorLabel } from "../support/ViewAsTenant";
+import { CopyValue, DetailDrawer } from "@/features/shared/console/DetailDrawer";
+
+import { param, section, tenantNames, withQuery, type AdminContext } from "../shared/server";
+import { auditActionLabel, auditActorLabel, auditSubjectLabel, platformUserNames } from "./auditLabels";
 import { GetFilters } from "./GetFilters";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -25,23 +28,30 @@ export function bangkokDay(value: string | undefined, end = false): string | und
   return new Date(`${value}T${end ? "23:59:59.999" : "00:00:00.000"}+07:00`).toISOString();
 }
 
-/** The before/after of an audit row, as the API stored them (pretty JSON, nothing reinterpreted). */
-function Change({ entry, label }: { entry: Schemas["AuditEntryDto"]; label: string }) {
-  if (!entry.before && !entry.after && Object.keys(entry.metadata).length === 0) return <span>—</span>;
-  return (
-    <details className="max-w-md">
-      <summary className="text-primary cursor-pointer text-xs">{label}</summary>
-      <pre className="bg-bg-subtle rounded-control relative mt-1 max-h-64 overflow-auto p-2 text-xs whitespace-pre-wrap">
-        {JSON.stringify({ before: entry.before, after: entry.after, metadata: entry.metadata }, null, 2)}
-      </pre>
-    </details>
-  );
-}
+/** The action filter: each area ("support_grant.*") and every action the message files name, in words. */
+const ACTION_FILTERS = [
+  "support_grant.*",
+  "support_grant.used",
+  "support_grant.requested",
+  "support_grant.bypassed",
+  "utility_tariff.*",
+  "subscription.*",
+  "tenant.*",
+  "provider_credential.*",
+  "platform_user.*",
+  "setting.*",
+  "feature_flag.*",
+  "notification_template.*",
+  "outbox.*",
+  "ota.*",
+  "pii.decrypted",
+] as const;
 
 /**
- * Audit search (F5 5.2, D-090): the platform audit log by action (`support_grant.*` prefixes work), actor,
- * subject, tenant and Bangkok day range; newest first, cursor pages ("older entries"), every row with
- * its outcome, the support grant it was read under and its before/after.
+ * Audit search (F5 5.2, D-090, redesign G8): the platform audit log by action, customer and Bangkok day range — one
+ * toolbar; a dense table with each action in words (and its context: under a support grant), who did it, what it was
+ * about and the outcome; "before / after" opens a side drawer with the stored change and the reference ids. Newest
+ * first, cursor pages ("older entries").
  */
 export async function AuditView({ context, searchParams }: { context: AdminContext; searchParams: SearchParams }) {
   const t = await getTranslations("admin.operations.audit");
@@ -55,12 +65,31 @@ export async function AuditView({ context, searchParams }: { context: AdminConte
     to: bangkokDay(param(searchParams.to), true),
   };
   const cursor = param(searchParams.cursor);
-  const rows = await section(
-    unwrap(api.GET("/v1/admin/audit-log", { params: { query: { ...filters, cursor, limit: 50 } } })),
-  );
+  const [rows, names, users] = await Promise.all([
+    section(unwrap(api.GET("/v1/admin/audit-log", { params: { query: { ...filters, cursor, limit: 50 } } }))),
+    tenantNames(),
+    platformUserNames(context),
+  ]);
   const keep = Object.fromEntries(
     ["action", "actorId", "subjectId", "tenantId", "from", "to"].map((name) => [name, param(searchParams[name])]),
   );
+  const filtered = Object.values(keep).some(Boolean);
+  const actionOption = (code: string) => {
+    if (code.endsWith(".*")) {
+      const domain = `domainName.${code.slice(0, -2)}`;
+      return t("actionArea", { area: t.has(domain) ? t(domain as Parameters<typeof t>[0]) : code });
+    }
+    return auditActionLabel(t, code) ?? code;
+  };
+  const subject = (entry: Schemas["AuditEntryDto"]) => {
+    const kind = auditSubjectLabel(t, entry.subjectType);
+    const tenantId =
+      entry.subjectType === "core.tenant"
+        ? entry.subjectId
+        : ((entry.metadata as { tenantId?: string }).tenantId ?? null);
+    const tenant = tenantId ? names.get(tenantId) : undefined;
+    return { kind, tenant };
+  };
   return (
     <ConsolePage testId="audit">
       <PageHeader title={t("title")} description={t("description")} />
@@ -68,92 +97,124 @@ export async function AuditView({ context, searchParams }: { context: AdminConte
         label={t("search")}
         submitLabel={t("apply")}
         testId="audit-filters"
+        clear={filtered ? { label: t("clear"), href: "/audit" } : null}
         fields={[
+          { name: "from", label: t("from"), type: "date", value: keep.from },
+          { name: "to", label: t("to"), type: "date", value: keep.to },
           {
             name: "action",
             label: t("action"),
-            type: "text",
+            type: "select",
             value: keep.action,
-            placeholder: t("actionPlaceholder"),
-            width: "w-56",
-          },
-          {
-            name: "actorId",
-            label: t("actor"),
-            type: "text",
-            value: keep.actorId,
-            placeholder: t("idPlaceholder"),
-            width: "w-72",
-          },
-          {
-            name: "subjectId",
-            label: t("subject"),
-            type: "text",
-            value: keep.subjectId,
-            placeholder: t("idPlaceholder"),
-            width: "w-72",
+            options: [
+              { value: "", label: t("anyAction") },
+              ...(keep.action && !(ACTION_FILTERS as readonly string[]).includes(keep.action)
+                ? [{ value: keep.action, label: actionOption(keep.action) }]
+                : []),
+              ...ACTION_FILTERS.map((code) => ({ value: code, label: actionOption(code) })),
+            ],
           },
           {
             name: "tenantId",
             label: t("tenant"),
-            type: "text",
+            type: "select",
             value: keep.tenantId,
-            placeholder: t("idPlaceholder"),
-            width: "w-72",
+            options: [
+              { value: "", label: t("anyTenant") },
+              ...[...names.entries()].map(([value, label]) => ({ value, label })),
+            ],
           },
-          { name: "from", label: t("from"), type: "date", value: keep.from, width: "w-40" },
-          { name: "to", label: t("to"), type: "date", value: keep.to, width: "w-40" },
         ]}
       />
+      {keep.actorId || keep.subjectId ? (
+        <p className="text-muted text-sm" data-testid="audit-id-filter">
+          {t("idFilter")}{" "}
+          <a
+            href={withQuery("/audit", { ...keep, actorId: undefined, subjectId: undefined })}
+            className="text-primary hover:underline"
+          >
+            {t("clearIds")}
+          </a>
+        </p>
+      ) : null}
       {!rows.data ? (
         <SectionError error={rows.error} />
       ) : rows.data.data.length === 0 ? (
-        <Card>
-          <EmptyState title={t("empty")} description={t("emptyHint")} />
-        </Card>
+        <EmptyState
+          variant="card"
+          icon={IconHistory}
+          title={t("empty")}
+          description={filtered ? t("emptyHint") : t("emptyAll")}
+          action={
+            <Button asChild variant="secondary">
+              <a href={filtered ? "/audit" : "/"}>{filtered ? t("clear") : t("home")}</a>
+            </Button>
+          }
+        />
       ) : (
         <SimpleTable
           caption={t("title")}
           testId="audit-table"
+          stackOnPhones
           minWidth="64rem"
           columns={[
-            { key: "at", header: t("col.at") },
-            { key: "action", header: t("col.action") },
-            { key: "actor", header: t("col.actor") },
-            { key: "subject", header: t("col.subject") },
-            { key: "outcome", header: t("col.outcome") },
-            { key: "change", header: t("col.change") },
+            { key: "at", header: t("col.at"), phone: "meta", className: "w-44" },
+            { key: "action", header: t("col.action"), phone: "title" },
+            { key: "actor", header: t("col.actor"), phone: "meta" },
+            { key: "subject", header: t("col.subject"), phone: "meta" },
+            { key: "outcome", header: t("col.outcome"), phone: "status" },
+            { key: "change", header: <span className="sr-only">{t("col.change")}</span>, phone: "meta", align: "end" },
           ]}
-          rows={rows.data.data.map((entry) => ({
-            key: entry.id,
-            testId: "audit-row",
-            data: { action: entry.action, outcome: entry.outcome },
-            tone: entry.outcome === "denied" ? "warning" : entry.outcome === "failure" ? "danger" : "default",
-            cells: {
-              at: <span className="whitespace-nowrap">{formatDateTime(entry.occurredAt, locale)}</span>,
-              action: (
-                <span className="flex flex-col gap-1">
-                  <span className="font-mono text-xs">{entry.action}</span>
-                  {entry.supportGrantId ? (
-                    <Badge size="sm" tone="info">
-                      {t("underGrant")}
+          rows={rows.data.data.map((entry) => {
+            const about = subject(entry);
+            const label = auditActionLabel(t, entry.action);
+            const actor = auditActorLabel(t, entry.actor, users);
+            return {
+              key: entry.id,
+              testId: "audit-row",
+              data: { action: entry.action, outcome: entry.outcome },
+              cells: {
+                at: <span className="whitespace-nowrap tabular-nums">{formatDateTime(entry.occurredAt, locale)}</span>,
+                action: (
+                  <span className="flex flex-col gap-1">
+                    <span className="flex flex-wrap items-center gap-2">
+                      <span className="font-medium">{label ?? entry.action}</span>
+                      {entry.supportGrantId ? (
+                        <Badge size="sm" tone="info">
+                          {t("underGrant")}
+                        </Badge>
+                      ) : null}
+                    </span>
+                  </span>
+                ),
+                actor,
+                subject: (
+                  <span className="flex flex-col">
+                    <span>{about.tenant ?? about.kind ?? "—"}</span>
+                    {about.tenant && about.kind ? <span className="text-muted text-sm">{about.kind}</span> : null}
+                  </span>
+                ),
+                outcome:
+                  entry.outcome === "success" ? (
+                    <span className="text-muted text-sm">{t(`outcome.${entry.outcome}`)}</span>
+                  ) : (
+                    <Badge size="sm" tone={entry.outcome === "denied" ? "warning" : "danger"}>
+                      {t(`outcome.${entry.outcome}`)}
                     </Badge>
-                  ) : null}
-                </span>
-              ),
-              actor: <span className="font-mono text-xs">{actorLabel(entry.actor)}</span>,
-              subject: entry.subjectType ? (
-                <span className="flex flex-col">
-                  <span className="text-xs">{entry.subjectType}</span>
-                  <span className="text-muted font-mono text-xs">{entry.subjectId?.slice(0, 8) ?? ""}</span>
-                </span>
-              ) : (
-                "—"
-              ),
-              outcome: t(`outcome.${entry.outcome}`),
-              change: <Change entry={entry} label={t("details")} />,
-            },
-          }))}
+                  ),
+                change: (
+                  <DetailDrawer
+                    label={t("details")}
+                    title={label ?? entry.action}
+                    description={`${formatDateTime(entry.occurredAt, locale)} · ${actor}`}
+                    testId={`audit-details-${entry.id}`}
+                  >
+                    <AuditDetails entry={entry} />
+                  </DetailDrawer>
+                ),
+              },
+            };
+          })}
         />
       )}
       <nav aria-label={t("pages")} className="flex justify-between gap-2">
@@ -179,5 +240,86 @@ export async function AuditView({ context, searchParams }: { context: AdminConte
         ) : null}
       </nav>
     </ConsolePage>
+  );
+}
+
+/** The drawer of one audit row: the reason, the stored change (before → after, formatted), the reference ids. */
+async function AuditDetails({ entry }: { entry: Schemas["AuditEntryDto"] }) {
+  const t = await getTranslations("admin.operations.audit");
+  const reason = (entry.metadata as { reason?: unknown }).reason;
+  const pretty = (value: unknown) => JSON.stringify(value, null, 2);
+  const { reason: _omit, ...metadata } = entry.metadata as Record<string, unknown>;
+  void _omit;
+  return (
+    <>
+      {typeof reason === "string" && reason ? (
+        <section className="flex flex-col gap-1.5">
+          <h3 className="text-sm font-semibold">{t("reason")}</h3>
+          <p className="bg-bg-subtle rounded-control m-0 p-3 text-sm">{reason}</p>
+        </section>
+      ) : null}
+      <section className="flex flex-col gap-1.5">
+        <h3 className="text-sm font-semibold">{t("change")}</h3>
+        {entry.before || entry.after ? (
+          <div className="grid gap-2">
+            <div className="flex flex-col gap-1">
+              <span className="text-muted text-xs">{t("before")}</span>
+              <pre className="bg-bg-subtle rounded-control relative m-0 max-h-56 overflow-auto p-3 font-mono text-xs whitespace-pre-wrap">
+                {entry.before ? pretty(entry.before) : "—"}
+              </pre>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-muted text-xs">{t("after")}</span>
+              <pre className="bg-primary-subtle text-primary-subtle-fg rounded-control relative m-0 max-h-56 overflow-auto p-3 font-mono text-xs whitespace-pre-wrap">
+                {entry.after ? pretty(entry.after) : "—"}
+              </pre>
+            </div>
+          </div>
+        ) : (
+          <p className="text-muted m-0 text-sm">{t("noChange")}</p>
+        )}
+      </section>
+      {Object.keys(metadata).length > 0 ? (
+        <section className="flex flex-col gap-1.5">
+          <h3 className="text-sm font-semibold">{t("context")}</h3>
+          <pre className="bg-bg-subtle rounded-control relative m-0 max-h-56 overflow-auto p-3 font-mono text-xs whitespace-pre-wrap">
+            {pretty(metadata)}
+          </pre>
+        </section>
+      ) : null}
+      <section className="flex flex-col gap-2">
+        <h3 className="text-sm font-semibold">{t("references")}</h3>
+        <dl className="flex flex-col gap-2 text-sm">
+          <div className="flex flex-col gap-0.5">
+            <dt className="text-muted">{t("eventId")}</dt>
+            <dd>
+              <CopyValue value={entry.id} label={t("eventId")} />
+            </dd>
+          </div>
+          {entry.subjectId ? (
+            <div className="flex flex-col gap-0.5">
+              <dt className="text-muted">{t("subjectId")}</dt>
+              <dd>
+                <CopyValue value={entry.subjectId} label={t("subjectId")} />
+              </dd>
+            </div>
+          ) : null}
+          {entry.supportGrantId ? (
+            <div className="flex flex-col gap-0.5">
+              <dt className="text-muted">{t("grantId")}</dt>
+              <dd>
+                <CopyValue value={entry.supportGrantId} label={t("grantId")} />
+              </dd>
+            </div>
+          ) : null}
+          {entry.ip ? (
+            <div className="flex flex-col gap-0.5">
+              <dt className="text-muted">{t("ip")}</dt>
+              <dd className="font-mono">{entry.ip}</dd>
+            </div>
+          ) : null}
+        </dl>
+      </section>
+    </>
   );
 }

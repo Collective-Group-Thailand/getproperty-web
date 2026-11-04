@@ -8,6 +8,7 @@ import { LazyAlertDialog } from "@/ui/components/overlays";
 import { toast } from "@/ui/components/Toast";
 import type { IconGlyph } from "@/ui/icons";
 
+import { useMenuEntry } from "./ActionMenu";
 import { ProblemNotice, useApiAction, useIdempotencyKey } from "./useApiAction";
 
 export interface ConfirmActionProps {
@@ -77,23 +78,22 @@ export function ConfirmAction({
   const action = useApiAction();
   const explained = action.error && explain ? explain(action.error) : null;
 
+  const start = () => {
+    // Same pending action (last attempt unanswered) → same key; otherwise a fresh one (review L2).
+    idempotency.renewUnless(action.unansweredAttempt());
+    action.reset();
+    setOpen(true);
+  };
+  // Inside an `ActionMenu` ("⋯") the action is a menu item and renders only its dialog.
+  const inMenu = useMenuEntry({ label, icon, testId, disabled, destructive: tone === "destructive" }, start);
+
   return (
     <>
-      <Button
-        variant={variant}
-        size={size}
-        iconStart={icon}
-        disabled={disabled}
-        onClick={() => {
-          // Same pending action (last attempt unanswered) → same key; otherwise a fresh one (review L2).
-          idempotency.renewUnless(action.unansweredAttempt());
-          action.reset();
-          setOpen(true);
-        }}
-        data-testid={testId}
-      >
-        {label}
-      </Button>
+      {inMenu ? null : (
+        <Button variant={variant} size={size} iconStart={icon} disabled={disabled} onClick={start} data-testid={testId}>
+          {label}
+        </Button>
+      )}
       <LazyAlertDialog
         open={open}
         onOpenChange={(next) => {

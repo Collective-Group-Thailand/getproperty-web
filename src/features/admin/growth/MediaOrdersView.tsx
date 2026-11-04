@@ -12,14 +12,18 @@ import { isApiError } from "@/lib/api/errors";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Callout } from "@/ui/components/Callout";
+import { Button } from "@/ui/components/Button";
 import { Card, CardHeader } from "@/ui/components/Card";
-import { DescriptionList } from "@/ui/components/DescriptionList";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
+import { FactGrid } from "@/ui/components/FactGrid";
+import { ListToolbar } from "@/ui/components/ListToolbar";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { SimpleTable } from "@/ui/components/SimpleTable";
 import { IconCamera } from "@/ui/icons/glyphs/camera";
 
-import { ListingsTabs } from "../listings/ModerationView";
-import { can, enumParam, pageParam, param, section, type AdminContext } from "../shared/server";
+import { StateTabs } from "../shared/lists";
+import { NotAllowed } from "../shared/NotAllowed";
+import { can, enumParam, pageParam, param, section, withQuery, type AdminContext } from "../shared/server";
 import { CancelMediaOrder, DeliverMedia, ScheduleMediaVisit } from "./MediaOrderActions";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -57,7 +61,9 @@ export async function MediaOrdersView({
   const listings = await getTranslations("admin.listings");
   const status = await getTranslations("status.mediaService");
   const { api, locale, me } = context;
-  if (!can(me, "admin.listing.verify")) notFound();
+  if (!can(me, "admin.listing.verify")) return <NotAllowed context={context} />;
+  const q = param(searchParams.q);
+  const state = enumParam(searchParams.state, MEDIA_SERVICE_VALUES);
   const list = await section(
     unwrap(
       api.GET("/v1/admin/media-service-orders", {
@@ -65,8 +71,8 @@ export async function MediaOrdersView({
           query: {
             page: pageParam(searchParams.page),
             perPage: 25,
-            q: param(searchParams.q),
-            state: enumParam(searchParams.state, MEDIA_SERVICE_VALUES),
+            q,
+            state,
           },
         },
       }),
@@ -77,63 +83,74 @@ export async function MediaOrdersView({
     : [];
   return (
     <ConsolePage testId="admin-media-orders">
-      <PageHeader title={listings("title")} description={listings("description")} />
-      <ListingsTabs context={context} current="/listings/media" />
-      <p className="text-muted m-0 text-sm">{t("intro")}</p>
-      <FilterBar
-        fields={[
-          { name: "q", label: t("search"), type: "search", placeholder: t("searchPlaceholder") },
-          {
-            name: "state",
-            label: t("state"),
-            type: "select",
-            placeholder: t("allStates"),
-            options: MEDIA_SERVICE_VALUES.map((value) => ({ value, label: status(value) })),
-          },
-        ]}
+      <PageHeader title={listings("tab.media")} description={t("intro")} />
+      <ListToolbar
+        tabs={
+          <StateTabs
+            states={MEDIA_SERVICE_VALUES}
+            current={state}
+            total={(one) =>
+              unwrap(api.GET("/v1/admin/media-service-orders", { params: { query: { perPage: 1, q, state: one } } }))
+            }
+            href={(one) => withQuery("/listings/media", { q, state: one })}
+            label={(one) => status(one)}
+            allLabel={t("all")}
+            navLabel={t("state")}
+          />
+        }
+        filters={
+          <FilterBar
+            variant="toolbar"
+            fields={[{ name: "q", label: t("search"), type: "search", placeholder: t("searchPlaceholder") }]}
+          />
+        }
       />
       {!list.data ? (
         <SectionError error={list.error} />
       ) : list.data.data.length === 0 ? (
-        <Card>
-          <EmptyState icon={IconCamera} title={t("empty")} description={t("emptyHint")} />
-        </Card>
+        <EmptyState
+          variant="card"
+          icon={IconCamera}
+          title={t("empty")}
+          description={t("emptyHint")}
+          action={
+            <Button asChild variant="secondary">
+              <a href={q || state ? "/listings/media" : "/listings"}>{q || state ? t("clear") : t("openListings")}</a>
+            </Button>
+          }
+        />
       ) : (
         <>
           <SimpleTable
             caption={listings("tab.media")}
             testId="media-orders"
-            minWidth="56rem"
+            stackOnPhones
+            minWidth="60rem"
             columns={[
-              { key: "order", header: t("col.order") },
-              { key: "tenant", header: t("col.tenant") },
-              { key: "state", header: t("col.state") },
-              { key: "next", header: t("col.next") },
-              { key: "price", header: t("col.price"), align: "end" },
+              { key: "order", header: t("col.order"), phone: "title" },
+              { key: "tenant", header: t("col.tenant"), phone: "meta" },
+              { key: "state", header: t("col.state"), phone: "status" },
+              { key: "next", header: t("col.next"), phone: "meta" },
+              { key: "price", header: t("col.price"), align: "end", phone: "figure" },
             ]}
             rows={rows.map(({ order, next }) => ({
               key: order.id,
+              href: `/listings/media/${order.id}`,
               testId: "media-order-row",
               data: { state: order.state, id: order.id },
               cells: {
                 order: (
                   <span className="flex flex-col">
-                    <a href={`/listings/media/${order.id}`} className="font-semibold hover:underline">
-                      {order.name}
-                    </a>
-                    <span className="text-muted text-sm">
+                    <span className="font-semibold">{order.name}</span>
+                    <span className="text-muted text-sm font-normal">
                       {[order.listingTitle, t("unit", { unit: order.unitNo })].filter(Boolean).join(" · ")}
                     </span>
                   </span>
                 ),
-                tenant: (
-                  <a href={`/tenants/${order.tenantId}`} className="hover:underline">
-                    {order.tenantName}
-                  </a>
-                ),
+                tenant: order.tenantName,
                 state: <StatusBadgeOf map={MEDIA_SERVICE_STATUS} value={order.state} size="sm" />,
                 next: <span className="text-sm">{next}</span>,
-                price: <span className="tabular-nums">{formatTHB(order.price, locale)}</span>,
+                price: <span className="whitespace-nowrap tabular-nums">{formatTHB(order.price, locale)}</span>,
               },
             }))}
           />
@@ -169,7 +186,7 @@ export async function MediaOrderDetail({ context, orderId }: { context: AdminCon
   const t = await getTranslations("admin.growth.media");
   const listings = await getTranslations("admin.listings");
   const { api, locale, me } = context;
-  if (!can(me, "admin.listing.verify")) notFound();
+  if (!can(me, "admin.listing.verify")) return <NotAllowed context={context} />;
   const result = await section(
     unwrap(api.GET("/v1/admin/media-service-orders/{orderId}", { params: { path: { orderId } } })),
   );
@@ -184,6 +201,7 @@ export async function MediaOrderDetail({ context, orderId }: { context: AdminCon
   const order = result.data;
   const open = order.state === "requested" || order.state === "scheduled";
   const cancellable = order.state !== "delivered" && order.state !== "cancelled";
+  const next = await nextStep(order, locale);
   return (
     <ConsolePage testId="admin-media-order">
       <PageHeader
@@ -193,91 +211,91 @@ export async function MediaOrderDetail({ context, orderId }: { context: AdminCon
           .join(" · ")}
         status={<StatusBadgeOf map={MEDIA_SERVICE_STATUS} value={order.state} />}
         crumbs={[{ label: listings("tab.media"), href: "/listings/media" }, { label: order.name }]}
-        actions={cancellable ? <CancelMediaOrder order={order} /> : null}
       />
-      <p className="text-muted m-0" data-testid="media-order-next">
-        {await nextStep(order, locale)}
-      </p>
-      <Card as="section" aria-labelledby="media-order-facts">
-        <CardHeader title={<span id="media-order-facts">{t("facts")}</span>} />
-        <DescriptionList
-          columns={2}
-          items={[
-            {
-              id: "tenant",
-              term: t("col.tenant"),
-              description: (
-                <a href={`/tenants/${order.tenantId}`} className="hover:underline">
-                  {order.tenantName}
-                </a>
-              ),
-            },
-            { id: "unit", term: t("unitLabel"), description: order.unitNo },
-            {
-              id: "price",
-              term: t("col.price"),
-              description: <span className="tabular-nums">{formatTHB(order.price, locale)}</span>,
-            },
-            {
-              id: "invoice",
-              term: t("invoice"),
-              description: order.invoice ? (
-                <a href={`/subscriptions/invoices/${order.invoice.id}`} className="font-mono hover:underline">
-                  {order.invoice.number}
-                </a>
-              ) : (
-                "—"
-              ),
-            },
-            { id: "ordered", term: t("ordered"), description: formatDateTime(order.createdAt, locale) },
-            {
-              id: "paid",
-              term: t("paid"),
-              description: order.requestedAt ? formatDateTime(order.requestedAt, locale) : "—",
-            },
-            {
-              id: "visit",
-              term: t("when"),
-              description: order.scheduledFor ? formatDateTime(order.scheduledFor, locale) : "—",
-            },
-            { id: "partner", term: t("partnerRef"), description: order.partnerRef ?? "—" },
-            { id: "note", term: t("ownerNote"), description: order.note ?? "—", wide: true },
-          ]}
-        />
-      </Card>
-
-      {order.state === "pending_payment" ? <Callout tone="warning">{t("waitPayment")}</Callout> : null}
-
-      {open ? (
-        <Card as="section" aria-labelledby="media-order-visit" className="flex flex-col gap-4">
-          <CardHeader
-            title={<span id="media-order-visit">{t("visitTitle")}</span>}
-            description={t("visitHint")}
-            action={<ScheduleMediaVisit order={order} defaultWhen={wallClock(order.scheduledFor)} />}
+      <DetailLayout
+        panel={
+          <ActionPanel
+            title={open ? t("visitTitle") : t("panelTitle")}
+            testId="media-order-panel"
+            description={<span data-testid="media-order-next">{next}</span>}
+            facts={[
+              { key: "price", label: t("col.price"), value: formatTHB(order.price, locale) },
+              {
+                key: "visit",
+                label: t("when"),
+                value: order.scheduledFor ? formatDateTime(order.scheduledFor, locale) : "—",
+              },
+            ]}
+            primary={
+              open ? <ScheduleMediaVisit order={order} defaultWhen={wallClock(order.scheduledFor)} /> : undefined
+            }
+            destructive={cancellable ? <CancelMediaOrder order={order} /> : undefined}
           />
-        </Card>
-      ) : null}
-
-      {open ? (
-        <Card as="section" aria-labelledby="media-order-deliver" className="flex flex-col gap-4">
-          <CardHeader
-            title={<span id="media-order-deliver">{t("deliverTitle")}</span>}
-            description={t("deliverIntro")}
+        }
+      >
+        {order.state === "pending_payment" ? <Callout tone="warning">{t("waitPayment")}</Callout> : null}
+        {order.state === "delivered" ? (
+          <Callout tone="success" title={t("deliveredTitle", { count: order.deliverableDocumentIds.length })}>
+            {order.deliveredAt ? t("deliveredAt", { date: formatDateTime(order.deliveredAt, locale) }) : null}
+          </Callout>
+        ) : null}
+        {order.state === "cancelled" ? (
+          <Callout tone="neutral" title={t("cancelledTitle")}>
+            {order.cancelReason}
+          </Callout>
+        ) : null}
+        <Card as="section" aria-labelledby="media-order-facts">
+          <CardHeader title={<span id="media-order-facts">{t("facts")}</span>} />
+          <FactGrid
+            label={t("facts")}
+            facts={[
+              {
+                key: "tenant",
+                label: t("col.tenant"),
+                value: (
+                  <a href={`/tenants/${order.tenantId}`} className="hover:underline">
+                    {order.tenantName}
+                  </a>
+                ),
+              },
+              { key: "unit", label: t("unitLabel"), value: order.unitNo },
+              {
+                key: "invoice",
+                label: t("invoice"),
+                value: order.invoice ? (
+                  <a href={`/subscriptions/invoices/${order.invoice.id}`} className="font-mono hover:underline">
+                    {order.invoice.number}
+                  </a>
+                ) : (
+                  "—"
+                ),
+              },
+              { key: "ordered", label: t("ordered"), value: formatDateTime(order.createdAt, locale) },
+              {
+                key: "paid",
+                label: t("paid"),
+                value: order.requestedAt ? formatDateTime(order.requestedAt, locale) : "—",
+              },
+              { key: "partner", label: t("partnerRef"), value: order.partnerRef ?? "—" },
+            ]}
           />
-          <DeliverMedia order={order} />
+          {order.note ? (
+            <div className="mt-4 flex flex-col gap-1">
+              <span className="text-muted text-sm">{t("ownerNote")}</span>
+              <p className="m-0 max-w-prose">{order.note}</p>
+            </div>
+          ) : null}
         </Card>
-      ) : null}
-
-      {order.state === "delivered" ? (
-        <Callout tone="success" title={t("deliveredTitle", { count: order.deliverableDocumentIds.length })}>
-          {order.deliveredAt ? t("deliveredAt", { date: formatDateTime(order.deliveredAt, locale) }) : null}
-        </Callout>
-      ) : null}
-      {order.state === "cancelled" ? (
-        <Callout tone="neutral" title={t("cancelledTitle")}>
-          {order.cancelReason}
-        </Callout>
-      ) : null}
+        {open ? (
+          <Card as="section" aria-labelledby="media-order-deliver" className="flex flex-col gap-4">
+            <CardHeader
+              title={<span id="media-order-deliver">{t("deliverTitle")}</span>}
+              description={t("deliverIntro")}
+            />
+            <DeliverMedia order={order} />
+          </Card>
+        ) : null}
+      </DetailLayout>
     </ConsolePage>
   );
 }

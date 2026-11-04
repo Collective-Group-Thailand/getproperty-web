@@ -231,12 +231,12 @@
     "publishing": "กำลังส่ง",
     "published": "ส่งแล้ว",
     "failed": "ส่งไม่สำเร็จ",
-    "dead": "ส่งไม่ได้ (dead letter)"
+    "dead": "ส่งไม่ได้"
   },
   "consumption": {
     "processed": "ประมวลผลแล้ว",
     "failed": "ล้มเหลว",
-    "dead": "ส่งไม่ได้ (dead letter)"
+    "dead": "ส่งไม่ได้"
   },
   "rollout": {
     "planned": "วางแผนแล้ว",
@@ -318,7 +318,7 @@
     "sent": "ส่งแล้ว",
     "acked": "ปลายทางรับแล้ว",
     "failed": "ล้มเหลว",
-    "dead": "ส่งไม่ได้ (dead letter)"
+    "dead": "ส่งไม่ได้"
   },
   "etax": {
     "queued": "รอส่ง",

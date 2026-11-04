@@ -14,6 +14,7 @@ export function PageHeader({
   actions,
   crumbs,
   back,
+  backOnPhonesOnly,
   className,
   testId,
 }: {
@@ -24,13 +25,21 @@ export function PageHeader({
   crumbs?: Crumb[];
   /** An explicit way back; `null` hides the shell's. */
   back?: { label: React.ReactNode; href: string } | null;
+  /** The navigation column already shows the way back (a record's own menu): the link only on phones. */
+  backOnPhonesOnly?: boolean;
   className?: string;
   testId?: string;
 }) {
   return (
     <header className={cn("flex flex-col gap-3", className)}>
       {crumbs ? <PageCrumbs items={crumbs} /> : null}
-      <ShellBackLink back={back} />
+      {backOnPhonesOnly ? (
+        <div className="md:hidden">
+          <ShellBackLink back={back} />
+        </div>
+      ) : (
+        <ShellBackLink back={back} />
+      )}
       <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between md:gap-8">
         <div className="flex min-w-0 flex-col gap-1.5">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">

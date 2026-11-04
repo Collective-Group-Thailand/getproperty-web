@@ -240,7 +240,8 @@ test("F11: a gateway's WebSocket fallback (D-239) and a tenant's write-only prov
   await expect(row.locator("code").last()).toHaveText(/^[0-9a-f]{6,}$/);
   await expect(admin.locator("body")).not.toContainText(secret);
 
-  await row.getByTestId("revoke-credential").click();
+  await row.getByRole("button", { name: /More for|เพิ่มเติมของ/ }).click();
+  await admin.getByTestId("revoke-credential").click();
   const revoke = admin.getByRole("alertdialog");
   await revoke.getByTestId("revoke-reason").fill("web integration: revoke the test account");
   await typePhrase(revoke);

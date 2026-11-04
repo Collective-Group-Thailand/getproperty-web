@@ -185,7 +185,7 @@ export function RolloutControls({ rollout, onChanged }: { rollout: Schemas["OtaR
   const path = { rolloutId: rollout.id };
   const label = `${rollout.release.version} · ${rollout.ring}`;
   return (
-    <div className="flex flex-wrap gap-2" data-testid="rollout-controls">
+    <div className="flex flex-col gap-2 [&>button]:w-full" data-testid="rollout-controls">
       {actions.has("start") ? (
         <ConfirmAction
           label={t("start")}
@@ -236,25 +236,27 @@ export function RolloutControls({ rollout, onChanged }: { rollout: Schemas["OtaR
         />
       ) : null}
       {actions.has("abort") ? (
-        <ConfirmAction
-          label={t("abort")}
-          variant="destructive"
-          tone="destructive"
-          testId="rollout-abort"
-          title={t("abortTitle", { label })}
-          description={t("abortBody")}
-          confirmLabel={t("abort")}
-          phrase={rollout.release.version}
-          successMessage={t("aborted")}
-          onDone={onChanged}
-          onConfirm={(key) =>
-            unwrap(
-              browserApi().POST("/v1/admin/ota/rollouts/{rolloutId}/actions/abort", {
-                params: { path, header: { "Idempotency-Key": key } },
-              }),
-            )
-          }
-        />
+        <div className="border-border mt-2 border-t pt-3 [&>button]:w-full">
+          <ConfirmAction
+            label={t("abort")}
+            variant="destructive"
+            tone="destructive"
+            testId="rollout-abort"
+            title={t("abortTitle", { label })}
+            description={t("abortBody")}
+            confirmLabel={t("abort")}
+            phrase={rollout.release.version}
+            successMessage={t("aborted")}
+            onDone={onChanged}
+            onConfirm={(key) =>
+              unwrap(
+                browserApi().POST("/v1/admin/ota/rollouts/{rolloutId}/actions/abort", {
+                  params: { path, header: { "Idempotency-Key": key } },
+                }),
+              )
+            }
+          />
+        </div>
       ) : null}
     </div>
   );

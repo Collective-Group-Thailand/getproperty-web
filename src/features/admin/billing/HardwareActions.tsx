@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { ActionMenu } from "@/features/shared/console/ActionMenu";
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 import { DateField } from "@/features/shared/console/DateField";
 import { FormDialog, integer, text } from "@/features/shared/console/FormDialog";
@@ -98,7 +99,7 @@ export function HaasAssetActions({
   const [note, setNote] = useState("");
   const [replacement, setReplacement] = useState(replacements[0]?.id ?? "");
   return (
-    <div className="flex flex-wrap gap-1">
+    <ActionMenu label={t("more", { serial: asset.serial })} testId={`haas-more-${asset.serial}`}>
       {asset.nextActions.map((action) => (
         <ConfirmAction
           key={action}
@@ -146,6 +147,6 @@ export function HaasAssetActions({
           </Field>
         </ConfirmAction>
       ))}
-    </div>
+    </ActionMenu>
   );
 }

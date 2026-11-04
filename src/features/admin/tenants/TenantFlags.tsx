@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { SectionError } from "@/features/shared/console/SectionError";
 import { SimpleTable } from "@/ui/components/SimpleTable";
+import { messageKey } from "@/i18n/keys";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
@@ -31,11 +32,22 @@ export async function TenantFlags({ context, tenant }: { context: AdminContext; 
     <SimpleTable
       caption={t("tenantTitle")}
       testId="tenant-flags"
+      stackOnPhones
+      minWidth="48rem"
       columns={[
-        { key: "key", header: t("col.key") },
-        { key: "value", header: t("col.value") },
-        { key: "source", header: t("col.source") },
-        ...(manage ? [{ key: "actions", header: <span className="sr-only">{t("col.actions")}</span> }] : []),
+        { key: "key", header: t("col.key"), phone: "title" },
+        { key: "value", header: t("col.value"), phone: "status" },
+        { key: "source", header: t("col.source"), phone: "meta" },
+        ...(manage
+          ? [
+              {
+                key: "actions",
+                header: <span className="sr-only">{t("col.actions")}</span>,
+                phone: "meta" as const,
+                align: "end" as const,
+              },
+            ]
+          : []),
       ]}
       rows={keys.map((key) => {
         const override = definitions.get(key)?.overrides.find((o) => o.tenantId === tenant.id) ?? null;
@@ -46,10 +58,12 @@ export async function TenantFlags({ context, tenant }: { context: AdminContext; 
           cells: {
             key: (
               <span className="flex flex-col">
-                <span className="font-mono">{key}</span>
-                {definitions.get(key)?.description ? (
-                  <span className="text-muted text-xs">{definitions.get(key)!.description}</span>
-                ) : null}
+                <span className="font-medium">
+                  {t.has(`name.${messageKey(key)}`)
+                    ? t(`name.${messageKey(key)}` as Parameters<typeof t>[0])
+                    : definitions.get(key)?.description || key}
+                </span>
+                <span className="text-muted font-mono text-xs">{key}</span>
               </span>
             ),
             value: (

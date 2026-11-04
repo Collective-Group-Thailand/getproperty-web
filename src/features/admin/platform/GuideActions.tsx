@@ -302,7 +302,7 @@ export function UnpublishGuide({ guide }: { guide: Guide }) {
     <ConfirmAction
       label={t("unpublish")}
       icon={IconHide}
-      variant="secondary"
+      variant="destructive"
       testId="unpublish-guide"
       title={t("unpublishTitle")}
       description={t("unpublishBody", { title: guide.title })}

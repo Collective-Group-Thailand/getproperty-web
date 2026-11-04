@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { ActionMenu } from "@/features/shared/console/ActionMenu";
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 import { bangkokInstant } from "@/features/shared/console/SettingEditor";
 import { browserApi } from "@/lib/api/browser";
@@ -41,7 +42,7 @@ export function InstallOrderActions({
       }),
     );
   return (
-    <div className="flex flex-wrap gap-1">
+    <ActionMenu>
       {order.nextActions.map((action) => (
         <ConfirmAction
           key={action}
@@ -94,7 +95,7 @@ export function InstallOrderActions({
           </Field>
         </ConfirmAction>
       ))}
-    </div>
+    </ActionMenu>
   );
 }
 
@@ -118,7 +119,7 @@ export function SiteSurveyActions({ survey, assignees }: { survey: Schemas["Site
       }),
     );
   return (
-    <div className="flex flex-wrap gap-1">
+    <ActionMenu>
       <ConfirmAction
         label={t("surveyAction.schedule")}
         size="sm"
@@ -191,6 +192,6 @@ export function SiteSurveyActions({ survey, assignees }: { survey: Schemas["Site
         onConfirm={() => act("cancel", { notes: notes.trim() || null })}
         successMessage={t("surveyMoved")}
       />
-    </div>
+    </ActionMenu>
   );
 }

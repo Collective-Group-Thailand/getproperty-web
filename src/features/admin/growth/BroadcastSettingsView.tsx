@@ -1,6 +1,5 @@
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 
 import { ConsolePage, PageHeader } from "@/features/shared/console/PageHeader";
 import { SectionError } from "@/features/shared/console/SectionError";
@@ -15,6 +14,7 @@ import { IconMegaphone } from "@/ui/icons/glyphs/megaphone";
 import { IconResidents } from "@/ui/icons/glyphs/residents";
 import { IconRules } from "@/ui/icons/glyphs/rules";
 
+import { NotAllowed } from "../shared/NotAllowed";
 import { can, section, type AdminContext } from "../shared/server";
 import { BroadcastSettingsForm } from "./BroadcastSettingsForm";
 import { PublishConsentText } from "./PublishConsentText";
@@ -29,7 +29,7 @@ export async function BroadcastSettingsView({ context }: { context: AdminContext
   const t = await getTranslations("admin.broadcast");
   const listings = await getTranslations("admin.listings");
   const { api, locale, me } = context;
-  if (!can(me, "admin.setting.manage")) notFound();
+  if (!can(me, "admin.setting.manage")) return <NotAllowed context={context} />;
   const settings = await section(unwrap(api.GET("/v1/admin/broadcast/settings")));
   const text = settings.data?.consentText ?? null;
 
@@ -103,10 +103,12 @@ export async function BroadcastSettingsView({ context }: { context: AdminContext
               title={<span id="broadcast-consent">{t("consent.title")}</span>}
               description={t("consent.description")}
               action={
-                <PublishConsentText
-                  current={text ? { th: text.th, en: text.en } : null}
-                  consentingCount={settings.data.consenting}
-                />
+                text ? (
+                  <PublishConsentText
+                    current={{ th: text.th, en: text.en }}
+                    consentingCount={settings.data.consenting}
+                  />
+                ) : null
               }
             />
             {text ? (
@@ -139,7 +141,11 @@ export async function BroadcastSettingsView({ context }: { context: AdminContext
                 </div>
               </>
             ) : (
-              <EmptyState icon={IconRules} title={t("consent.none")} />
+              <EmptyState
+                icon={IconRules}
+                title={t("consent.none")}
+                action={<PublishConsentText current={null} consentingCount={settings.data.consenting} />}
+              />
             )}
           </Card>
         </>
