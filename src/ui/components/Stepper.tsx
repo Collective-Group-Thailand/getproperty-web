@@ -43,7 +43,8 @@ export function Stepper({
     return (
       <nav aria-label={label} className={cn("flex flex-col gap-3", className)}>
         <div className="flex flex-col gap-0.5">
-          <p className="text-muted text-sm" data-testid="stepper-progress">
+          {/* With every name under its dot the line repeats them on a wide screen; it stays for phones and readers. */}
+          <p className={cn("text-muted text-sm", labelled && "md:sr-only")} data-testid="stepper-progress">
             {progressText}
           </p>
           <p className="text-xl font-semibold">{steps[current]?.label}</p>
@@ -67,7 +68,8 @@ export function Stepper({
     );
   return (
     <nav aria-label={label} className={cn("flex flex-col gap-2", className)}>
-      <p className="text-muted text-sm" data-testid="stepper-progress">
+      {/* With every name under its dot the line repeats them on a wide screen; it stays for phones and readers. */}
+      <p className={cn("text-muted text-sm", labelled && "md:sr-only")} data-testid="stepper-progress">
         {progressText}
         <span className="text-fg ms-2 font-semibold">{steps[current]?.label}</span>
       </p>

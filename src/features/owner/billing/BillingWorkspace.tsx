@@ -14,12 +14,13 @@ import { Badge } from "@/ui/components/Badge";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { EmptyState } from "@/ui/components/EmptyState";
-import { ListToolbar, ViewTabs } from "@/ui/components/ListToolbar";
 import { StatsRow } from "@/ui/components/StatsRow";
 import { Stepper } from "@/ui/components/Stepper";
+import { Icon } from "@/ui/icons";
 import { IconBill } from "@/ui/icons/glyphs/bill";
+import { IconChevronRight } from "@/ui/icons/glyphs/chevron-right";
 
-import { FilterBar } from "@/features/shared/console/FilterBar";
+import { FilterBar, type FilterField } from "@/features/shared/console/FilterBar";
 import { ownerPath, withQuery } from "../shared/links";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { focusedBuilding, param, section, type OwnerContext } from "../shared/server";
@@ -58,26 +59,32 @@ export async function BillingWorkspace({
   const building = focusedBuilding(context);
   const propertyId = param(searchParams.property) ?? building?.propertyId ?? context.properties[0]?.id;
   const property = context.properties.find((candidate) => candidate.id === propertyId);
-  const header = (
-    <>
-      <PageHeader title={t("title")} description={t("description")} />
-      {context.properties.length > 1 ? (
-        <FilterBar
-          variant="toolbar"
-          fields={[
-            {
-              name: "property",
-              label: t("property"),
-              type: "select",
-              placeholder: t("chooseProperty"),
-              fallback: propertyId,
-              options: context.properties.map((candidate) => ({ value: candidate.id, label: candidate.name })),
-            },
-          ]}
-        />
-      ) : null}
-    </>
+  const propertyField: FilterField[] =
+    context.properties.length > 1
+      ? [
+          {
+            name: "property",
+            label: t("property"),
+            type: "select",
+            placeholder: t("chooseProperty"),
+            fallback: propertyId,
+            options: context.properties.map((candidate) => ({ value: candidate.id, label: candidate.name })),
+          },
+        ]
+      : [];
+  // Stitch G3 billing: the project and the month sit in the page head (right), not in rows of their own.
+  const head = (periodField: FilterField[] = []) => (
+    <PageHeader
+      title={t("title")}
+      description={t("description")}
+      actions={
+        propertyField.length || periodField.length ? (
+          <FilterBar variant="toolbar" fields={[...propertyField, ...periodField]} />
+        ) : undefined
+      }
+    />
   );
+  const header = head();
   if (!property) {
     return (
       <OwnerPage testId="billing">
@@ -101,6 +108,7 @@ export async function BillingWorkspace({
     api.GET("/v1/owner/billing-cycles", { params: { query: { propertyId: property.id, perPage: 12 } } }),
   );
   const chosen =
+    cycles.data.find((cycle) => cycle.periodKey === param(searchParams.period)) ??
     cycles.data.find((cycle) => cycle.id === param(searchParams.cycle)) ??
     cycles.data.find((cycle) => cycle.status !== "closed" && cycle.status !== "cancelled") ??
     cycles.data[0];
@@ -146,228 +154,249 @@ export async function BillingWorkspace({
 
   return (
     <OwnerPage testId="billing">
-      {header}
-      {cycles.data.length > 1 ? (
-        <ListToolbar
-          tabs={
-            <ViewTabs
-              label={t("periods")}
-              current={cycle.id}
-              tabs={cycles.data.slice(0, 6).map((candidate) => ({
-                key: candidate.id,
-                href: ownerPath(
-                  locale,
-                  withQuery("/billing", { property: param(searchParams.property), cycle: candidate.id }),
-                ),
-                label: formatPeriodKey(candidate.periodKey, locale),
-                testId: "cycle-tab",
-              }))}
+      {head(
+        cycles.data.length > 1
+          ? [
+              {
+                name: "period",
+                label: t("periods"),
+                type: "period",
+                periods: cycles.data.map((candidate) => candidate.periodKey),
+                fallback: cycle.periodKey,
+              },
+            ]
+          : [],
+      )}
+
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-8">
+        <div className="flex min-w-0 flex-col gap-6">
+          <Card as="section" aria-labelledby="cycle-title" data-testid="cycle-workspace" data-status={cycle.status}>
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <h2 id="cycle-title" className="text-lg font-semibold">
+                  {t("cycleTitle", { property: cycle.propertyName, period: periodLabel })}
+                </h2>
+                <StatusBadgeOf map={BILLING_CYCLE_STATUS} value={cycle.status} />
+              </div>
+              <CycleActions
+                cycle={cycle}
+                periodLabel={periodLabel}
+                draftCount={drafts.length}
+                totalLabel={totalLabel}
+                members={members}
+                missing={pending.filter(({ item }) => !item.iot).length}
+              />
+            </div>
+            {cycle.status !== "cancelled" ? (
+              <Stepper
+                className="mt-6"
+                labelled
+                steps={STEPS.map((id) => ({ id, label: t(`step.${id}`) }))}
+                current={stepIndex}
+                label={t("steps")}
+                progressText={t("progress", { step: stepIndex + 1, total: STEPS.length })}
+              />
+            ) : null}
+            {cycle.autoIssueAt ? (
+              <div className="mt-4" data-testid="auto-issue-banner">
+                <Callout tone="info" title={t("autoIssueTitle")}>
+                  {t("autoIssueBody", { at: formatDateTime(cycle.autoIssueAt, locale) })}
+                </Callout>
+              </div>
+            ) : null}
+          </Card>
+
+          <div data-testid="cycle-stats">
+            <StatsRow
+              label={t("stats.label")}
+              highlight={(stat(stats, "needsReview") ?? 0) > 0 ? "needsReview" : undefined}
+              figures={[
+                {
+                  key: "billables",
+                  label: t("stats.billables"),
+                  value: formatNumber(stat(stats, "billables") ?? cycle.invoices.length, locale),
+                },
+                { key: "drafts", label: t("stats.drafts"), value: formatNumber(drafts.length, locale) },
+                {
+                  key: "needsReview",
+                  label: t("stats.needsReview"),
+                  value: formatNumber(stat(stats, "needsReview") ?? 0, locale),
+                },
+                { key: "total", label: t("stats.total"), value: totalLabel },
+              ]}
             />
-          }
-        />
-      ) : null}
-
-      <Card as="section" aria-labelledby="cycle-title" data-testid="cycle-workspace" data-status={cycle.status}>
-        <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="flex flex-col gap-1">
-            <h2 id="cycle-title" className="text-lg font-semibold">
-              {t("cycleTitle", { property: cycle.propertyName, period: periodLabel })}
-            </h2>
-            <StatusBadgeOf map={BILLING_CYCLE_STATUS} value={cycle.status} />
           </div>
-          <CycleActions
-            cycle={cycle}
-            periodLabel={periodLabel}
-            draftCount={drafts.length}
-            totalLabel={totalLabel}
-            members={members}
-            missing={pending.filter(({ item }) => !item.iot).length}
-          />
-        </div>
-        {cycle.status !== "cancelled" ? (
-          <Stepper
-            className="mt-4"
-            steps={STEPS.map((id) => ({ id, label: t(`step.${id}`) }))}
-            current={stepIndex}
-            label={t("steps")}
-            progressText={t("progress", { step: stepIndex + 1, total: STEPS.length })}
-          />
-        ) : null}
-        <DescriptionList
-          className="mt-4"
-          columns={3}
-          items={[
-            { id: "cutoff", term: t("cutoff"), description: formatDateTime(cycle.cutOffAt, locale) },
-            { id: "grace", term: t("grace"), description: formatDateTime(cycle.graceDeadlineAt, locale) },
-            { id: "estimate", term: t("estimatePolicy"), description: t(`estimate.${cycle.estimatePolicy}`) },
-            {
-              id: "requested",
-              term: t("readingsRequested"),
-              description: cycle.readingsRequestedAt ? formatDateTime(cycle.readingsRequestedAt, locale) : null,
-            },
-            {
-              id: "computed",
-              term: t("computedAt"),
-              description: cycle.computedAt ? formatDateTime(cycle.computedAt, locale) : null,
-            },
-            {
-              id: "issued",
-              term: t("issuedAt"),
-              description: cycle.issuedAt ? formatDateTime(cycle.issuedAt, locale) : null,
-            },
-            ...(autoIssue
-              ? [
-                  {
-                    id: "auto",
-                    term: t("autoIssueSetting"),
-                    description: <SettingValue setting={autoIssue} locale={locale} />,
-                  },
-                ]
-              : []),
-          ]}
-        />
-        {cycle.autoIssueAt ? (
-          <div className="mt-4" data-testid="auto-issue-banner">
-            <Callout tone="info" title={t("autoIssueTitle")}>
-              {t("autoIssueBody", { at: formatDateTime(cycle.autoIssueAt, locale) })}
-            </Callout>
-          </div>
-        ) : null}
-      </Card>
 
-      <div data-testid="cycle-stats">
-        <StatsRow
-          label={t("stats.label")}
-          highlight={(stat(stats, "needsReview") ?? 0) > 0 ? "needsReview" : undefined}
-          figures={[
-            {
-              key: "billables",
-              label: t("stats.billables"),
-              value: formatNumber(stat(stats, "billables") ?? cycle.invoices.length, locale),
-            },
-            { key: "drafts", label: t("stats.drafts"), value: formatNumber(drafts.length, locale) },
-            {
-              key: "needsReview",
-              label: t("stats.needsReview"),
-              value: formatNumber(stat(stats, "needsReview") ?? 0, locale),
-            },
-            { key: "total", label: t("stats.total"), value: totalLabel },
-          ]}
-        />
-      </div>
-
-      <Card as="section" aria-labelledby="readings-pending" data-testid="readings-pending">
-        <CardHeader
-          title={<span id="readings-pending">{t("pendingTitle")}</span>}
-          description={t("pendingHint", { cutoff: formatDateTime(cycle.cutOffAt, locale) })}
-        />
-        {pending.length ? (
-          <div className="relative overflow-x-auto">
-            <table className="w-full min-w-[40rem] text-sm">
-              <caption className="sr-only">{t("pendingTitle")}</caption>
-              <thead>
-                <tr className="border-border text-muted border-b">
-                  <th scope="col" className="py-2 text-start font-medium">
-                    {t("unit")}
-                  </th>
-                  <th scope="col" className="py-2 text-start font-medium">
-                    {t("meter")}
-                  </th>
-                  <th scope="col" className="py-2 text-start font-medium">
-                    {t("lastReading")}
-                  </th>
-                  <th scope="col" className="py-2 text-start font-medium">
-                    {t("health")}
-                  </th>
-                  <th scope="col" className="py-2 text-start font-medium">
-                    {t("assigned")}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {pending.map(({ round, item }) => (
-                  <tr key={item.meterAssignmentId} className="border-border border-b" data-testid="pending-row">
-                    <th scope="row" className="py-2 text-start font-normal">
-                      <span className="flex flex-col">
-                        <span className="font-mono font-semibold">{item.unitNo ?? "—"}</span>
-                        <span className="text-muted text-xs">{round.buildingName}</span>
-                      </span>
-                    </th>
-                    <td className="py-2">
-                      <a
-                        className="font-mono underline-offset-4 hover:underline"
-                        href={ownerPath(locale, `/meters/${item.assetItemId}`)}
-                      >
-                        {item.code}
-                      </a>{" "}
-                      <span className="text-muted">{t(`utility.${item.utility}`)}</span>
-                    </td>
-                    <td className="py-2">
-                      {item.lastReading ? (
-                        <span className="flex flex-wrap items-center gap-2">
-                          <span className="font-mono tabular-nums">{item.lastReading.register}</span>
-                          {isSource(item.lastReading.source) ? (
-                            <ReadingSourceBadge source={item.lastReading.source} />
+          <Card as="section" aria-labelledby="readings-pending" data-testid="readings-pending">
+            <CardHeader
+              title={<span id="readings-pending">{t("pendingTitle")}</span>}
+              description={t("pendingHint", { cutoff: formatDateTime(cycle.cutOffAt, locale) })}
+            />
+            {pending.length ? (
+              <div className="relative overflow-x-auto">
+                <table className="w-full min-w-[40rem] text-sm">
+                  <caption className="sr-only">{t("pendingTitle")}</caption>
+                  <thead>
+                    <tr className="border-border text-muted border-b">
+                      <th scope="col" className="py-2 text-start font-medium">
+                        {t("unit")}
+                      </th>
+                      <th scope="col" className="py-2 text-start font-medium">
+                        {t("meter")}
+                      </th>
+                      <th scope="col" className="py-2 text-start font-medium">
+                        {t("lastReading")}
+                      </th>
+                      <th scope="col" className="py-2 text-start font-medium">
+                        {t("health")}
+                      </th>
+                      <th scope="col" className="py-2 text-start font-medium">
+                        {t("assigned")}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pending.map(({ round, item }) => (
+                      <tr key={item.meterAssignmentId} className="border-border border-b" data-testid="pending-row">
+                        <th scope="row" className="py-2 text-start font-normal">
+                          <span className="flex flex-col">
+                            <span className="font-mono font-semibold">{item.unitNo ?? "—"}</span>
+                            <span className="text-muted text-xs">{round.buildingName}</span>
+                          </span>
+                        </th>
+                        <td className="py-2">
+                          <a
+                            className="font-mono underline-offset-4 hover:underline"
+                            href={ownerPath(locale, `/meters/${item.assetItemId}`)}
+                          >
+                            {item.code}
+                          </a>{" "}
+                          <span className="text-muted">{t(`utility.${item.utility}`)}</span>
+                        </td>
+                        <td className="py-2">
+                          {item.lastReading ? (
+                            <span className="flex flex-wrap items-center gap-2">
+                              <span className="font-mono tabular-nums">{item.lastReading.register}</span>
+                              {isSource(item.lastReading.source) ? (
+                                <ReadingSourceBadge source={item.lastReading.source} />
+                              ) : null}
+                              <span className="text-muted">{formatDateTime(item.lastReading.readAt, locale)}</span>
+                            </span>
+                          ) : (
+                            <span className="text-muted">{t("never")}</span>
+                          )}
+                        </td>
+                        <td className="py-2">
+                          {item.health ? (
+                            <StatusBadgeOf map={METER_HEALTH_STATUS} value={item.health} size="sm" />
                           ) : null}
-                          <span className="text-muted">{formatDateTime(item.lastReading.readAt, locale)}</span>
-                        </span>
-                      ) : (
-                        <span className="text-muted">{t("never")}</span>
-                      )}
-                    </td>
-                    <td className="py-2">
-                      {item.health ? <StatusBadgeOf map={METER_HEALTH_STATUS} value={item.health} size="sm" /> : null}
-                    </td>
-                    <td className="py-2" data-testid="pending-assignee">
-                      {item.assignee ? (
-                        <span className="flex flex-wrap items-center gap-2">
-                          <span>{item.assignee.displayName}</span>
-                          {item.requested ? (
+                        </td>
+                        <td className="py-2" data-testid="pending-assignee">
+                          {item.assignee ? (
+                            <span className="flex flex-wrap items-center gap-2">
+                              <span>{item.assignee.displayName}</span>
+                              {item.requested ? (
+                                <Badge tone="info" size="sm">
+                                  {t("requested")}
+                                </Badge>
+                              ) : null}
+                            </span>
+                          ) : item.requested ? (
                             <Badge tone="info" size="sm">
-                              {t("requested")}
+                              {t("requestedAnyone")}
                             </Badge>
-                          ) : null}
-                        </span>
-                      ) : item.requested ? (
-                        <Badge tone="info" size="sm">
-                          {t("requestedAnyone")}
-                        </Badge>
-                      ) : (
-                        <span className="text-muted">{item.iot ? t("assignedIot") : t("assignedStaff")}</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <p className="text-muted text-sm" data-testid="no-pending">
-            {t("noPending")}
-          </p>
-        )}
-      </Card>
+                          ) : (
+                            <span className="text-muted">{item.iot ? t("assignedIot") : t("assignedStaff")}</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-muted text-sm" data-testid="no-pending">
+                {t("noPending")}
+              </p>
+            )}
+          </Card>
 
-      <Card as="section" aria-labelledby="drafts-title" data-testid="cycle-drafts">
-        <CardHeader title={<span id="drafts-title">{t("draftsTitle")}</span>} description={t("draftsHint")} />
-        {drafts.length ? <DraftReview drafts={drafts} /> : <p className="text-muted text-sm">{t("noDrafts")}</p>}
-      </Card>
+          <Card as="section" aria-labelledby="drafts-title" data-testid="cycle-drafts">
+            <CardHeader title={<span id="drafts-title">{t("draftsTitle")}</span>} description={t("draftsHint")} />
+            {drafts.length ? <DraftReview drafts={drafts} /> : <p className="text-muted text-sm">{t("noDrafts")}</p>}
+          </Card>
 
-      {issued.length ? (
-        <Card as="section" aria-labelledby="issued-title" data-testid="cycle-issued">
-          <CardHeader
-            title={<span id="issued-title">{t("issuedTitle", { count: issued.length })}</span>}
-            action={
-              <a
-                className="text-sm underline-offset-4 hover:underline"
-                href={ownerPath(locale, withQuery("/invoices", { cycle: cycle.id }))}
-              >
-                {t("openInvoices")}
-              </a>
-            }
-          />
-        </Card>
-      ) : null}
+          {issued.length ? (
+            <Card as="section" aria-labelledby="issued-title" data-testid="cycle-issued">
+              <CardHeader
+                title={<span id="issued-title">{t("issuedTitle", { count: issued.length })}</span>}
+                action={
+                  <a
+                    className="text-sm underline-offset-4 hover:underline"
+                    href={ownerPath(locale, withQuery("/invoices", { cycle: cycle.id }))}
+                  >
+                    {t("openInvoices")}
+                  </a>
+                }
+              />
+            </Card>
+          ) : null}
+        </div>
+
+        {/* The cycle's settings and its own timeline in a quiet rail (Stitch G3 billing "ตั้งค่ารอบนี้"). */}
+        <aside className="flex flex-col gap-6 lg:sticky lg:top-8" aria-label={t("rail.label")}>
+          <Card as="section" aria-labelledby="cycle-settings" data-testid="cycle-settings">
+            <CardHeader title={<span id="cycle-settings">{t("rail.settings")}</span>} />
+            <DescriptionList
+              columns={1}
+              items={[
+                { id: "cutoff", term: t("cutoff"), description: formatDateTime(cycle.cutOffAt, locale) },
+                { id: "grace", term: t("grace"), description: formatDateTime(cycle.graceDeadlineAt, locale) },
+                { id: "estimate", term: t("estimatePolicy"), description: t(`estimate.${cycle.estimatePolicy}`) },
+                ...(autoIssue
+                  ? [
+                      {
+                        id: "auto",
+                        term: t("autoIssueSetting"),
+                        description: <SettingValue setting={autoIssue} locale={locale} />,
+                      },
+                    ]
+                  : []),
+              ]}
+            />
+            <a
+              href={ownerPath(locale, "/settings")}
+              className="text-primary mt-4 inline-flex min-h-11 items-center gap-1 text-sm font-medium underline-offset-4 hover:underline"
+            >
+              {t("rail.change")}
+              <Icon icon={IconChevronRight} className="rtl:rotate-180" />
+            </a>
+          </Card>
+          <Card as="section" aria-labelledby="cycle-timeline" data-testid="cycle-timeline">
+            <CardHeader title={<span id="cycle-timeline">{t("rail.timeline")}</span>} />
+            <DescriptionList
+              columns={1}
+              items={[
+                {
+                  id: "requested",
+                  term: t("readingsRequested"),
+                  description: cycle.readingsRequestedAt ? formatDateTime(cycle.readingsRequestedAt, locale) : null,
+                },
+                {
+                  id: "computed",
+                  term: t("computedAt"),
+                  description: cycle.computedAt ? formatDateTime(cycle.computedAt, locale) : null,
+                },
+                {
+                  id: "issued",
+                  term: t("issuedAt"),
+                  description: cycle.issuedAt ? formatDateTime(cycle.issuedAt, locale) : null,
+                },
+              ]}
+            />
+          </Card>
+        </aside>
+      </div>
     </OwnerPage>
   );
 }

@@ -68,5 +68,10 @@
     "term": "Broker connection",
     "wsFallback": "WebSocket fallback on (device JWT only)",
     "mtlsOnly": "MQTT over TLS with certificate (8883)"
-  }
+  },
+  "etaxProvider": {
+    "inet": "INET (Internet Thailand)",
+    "other": "your configured provider"
+  },
+  "deviceEventOther": "Other device event"
 }

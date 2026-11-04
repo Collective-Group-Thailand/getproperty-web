@@ -12,6 +12,7 @@ import { ApiError, NetworkError } from "@/lib/api/errors";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
+import { IconForward } from "@/ui/icons/glyphs/forward";
 import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
 import { Textarea } from "@/ui/components/Input";
@@ -218,9 +219,12 @@ export function ServiceThread({
               </span>
             </Callout>
           ) : null}
-          <div>
+          {/* Outlined: the record's own next step keeps the page's one filled action (REDESIGN-PROMPT §5). */}
+          <div className={touch ? undefined : "flex justify-end"}>
             <Button
               type="submit"
+              variant="secondary"
+              iconEnd={IconForward}
               size={touch ? "xl" : "md"}
               block={touch}
               loading={sending}

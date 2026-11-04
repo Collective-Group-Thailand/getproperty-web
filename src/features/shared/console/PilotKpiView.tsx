@@ -4,13 +4,11 @@ import { formatDate, formatDecimal, formatNumber } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
-import { Card, CardHeader } from "@/ui/components/Card";
-import { DescriptionList } from "@/ui/components/DescriptionList";
-import { LinkTabs } from "@/ui/components/LinkTabs";
+import { ListToolbar, ViewTabs } from "@/ui/components/ListToolbar";
+import { StatsRow } from "@/ui/components/StatsRow";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 import { IconClock } from "@/ui/icons/glyphs/clock";
 import { IconXCircle } from "@/ui/icons/glyphs/x-circle";
-
 import { SimpleTable } from "@/ui/components/SimpleTable";
 
 /** How each of the seven D-083 KPIs reads (the values themselves are the API's decimal strings). */
@@ -23,6 +21,10 @@ const UNIT: Record<string, "hours" | "pct" | "score" | "yesNo"> = {
   meter_uptime: "pct",
   csat: "score",
 };
+
+/** A target as the agreement states it (">=90%", "<1%", "+10pts", "-80%") in words: "อย่างน้อย 90 %". */
+const TARGET = /^(>=|<=|>|<|\+|-)?\s*(\d+(?:\.\d+)?)\s*(%|pts|h)?$/;
+const OPERATOR = { ">=": "atLeast", "<=": "atMost", ">": "above", "<": "below", "+": "up", "-": "down" } as const;
 
 /**
  * The pilot's seven KPIs (D-083, D-206) for the platform admin and the tenant's own insights: baseline,
@@ -51,31 +53,53 @@ export async function PilotKpiView({
         return formatDecimal(raw, locale, 2);
     }
   };
-  const target = (raw: string | boolean) => (typeof raw === "boolean" ? (raw ? t("yes") : t("no")) : raw);
+  const target = (raw: string | boolean) => {
+    if (typeof raw === "boolean") return raw ? t("yes") : t("no");
+    const match = TARGET.exec(raw.trim());
+    if (!match) return raw;
+    const [, operator, number, unit] = match;
+    const amount =
+      unit === "%"
+        ? t("pct", { value: formatDecimal(number!, locale, 2) })
+        : unit === "pts"
+          ? t("points", { value: formatDecimal(number!, locale, 2) })
+          : unit === "h"
+            ? t("hours", { value: formatDecimal(number!, locale, 2) })
+            : formatDecimal(number!, locale, 2);
+    return operator ? t(`target.${OPERATOR[operator as keyof typeof OPERATOR]}`, { value: amount }) : amount;
+  };
   return (
     <div className="flex flex-col gap-4" data-testid="pilot-kpis" data-window={kpis.window}>
-      <LinkTabs
-        label={t("window")}
-        current={windowHref(kpis.window)}
-        tabs={(["30d", "90d"] as const).map((window) => ({
-          href: windowHref(window),
-          label: t(`windowName.${window}`),
-        }))}
+      <ListToolbar
+        tabs={
+          <ViewTabs
+            label={t("window")}
+            current={kpis.window}
+            tabs={(["30d", "90d"] as const).map((window) => ({
+              key: window,
+              href: windowHref(window),
+              label: t(`windowName.${window}`),
+            }))}
+          />
+        }
+        actions={
+          <p className="text-muted text-sm">
+            {t("range", { from: formatDate(kpis.from, locale), to: formatDate(kpis.to, locale) })}
+            {kpis.kpiReviewOn ? ` · ${t("review", { date: formatDate(kpis.kpiReviewOn, locale) })}` : ""}
+          </p>
+        }
       />
-      <p className="text-muted text-sm">
-        {t("range", { from: formatDate(kpis.from, locale), to: formatDate(kpis.to, locale) })}
-        {kpis.kpiReviewOn ? ` · ${t("review", { date: formatDate(kpis.kpiReviewOn, locale) })}` : ""}
-      </p>
       <SimpleTable
         caption={t("title")}
         testId="kpi-table"
         minWidth="44rem"
+        stackOnPhones
         columns={[
-          { key: "kpi", header: t("col.kpi") },
-          { key: "baseline", header: t("col.baseline"), align: "end" },
-          { key: "current", header: t("col.current"), align: "end" },
-          { key: "target", header: t("col.target"), align: "end" },
-          { key: "met", header: t("col.met") },
+          { key: "kpi", header: t("col.kpi"), phone: "title" },
+          { key: "current", header: t("col.current"), align: "end", phone: "figure" },
+          { key: "baseline", header: t("col.baseline"), align: "end", phone: "meta", phoneLabel: true },
+          { key: "target", header: t("col.target"), align: "end", phone: "meta", phoneLabel: true },
+          { key: "met", header: t("col.met"), phone: "status" },
         ]}
         rows={kpis.kpis.map((kpi) => ({
           key: kpi.kpi,
@@ -84,8 +108,8 @@ export async function PilotKpiView({
           cells: {
             kpi: t.has(`name.${kpi.kpi}`) ? t(`name.${kpi.kpi}`) : kpi.kpi,
             baseline: value(kpi.kpi, kpi.baseline),
-            current: <strong>{value(kpi.kpi, kpi.current)}</strong>,
-            target: <span className="font-mono">{target(kpi.target)}</span>,
+            current: <span className="font-semibold">{value(kpi.kpi, kpi.current)}</span>,
+            target: target(kpi.target),
             met:
               kpi.met === null ? (
                 <Badge size="sm" tone="neutral" icon={IconClock}>
@@ -103,43 +127,48 @@ export async function PilotKpiView({
           },
         }))}
       />
-      <Card as="section" aria-labelledby="kpi-acceptance">
-        <CardHeader title={<span id="kpi-acceptance">{t("acceptance")}</span>} description={t("acceptanceHint")} />
-        <DescriptionList
-          columns={2}
-          items={[
+      <section aria-labelledby="kpi-acceptance" className="flex flex-col gap-3" data-testid="kpi-acceptance">
+        <div>
+          <h3 id="kpi-acceptance" className="font-semibold">
+            {t("acceptance")}
+          </h3>
+          <p className="text-muted text-sm">{t("acceptanceHint")}</p>
+        </div>
+        <StatsRow
+          label={t("acceptance")}
+          figures={[
             {
-              id: "auto",
-              term: t("buildingsAuto"),
-              description: formatNumber(kpis.acceptance.buildingsBillingAutomatically, locale),
+              key: "auto",
+              label: t("buildingsAuto"),
+              value: formatNumber(kpis.acceptance.buildingsBillingAutomatically, locale),
             },
             {
-              id: "firstCycle",
-              term: t("firstCycle"),
-              description:
+              key: "firstCycle",
+              label: t("firstCycle"),
+              value:
                 kpis.acceptance.firstFullCycleWithin1h === null
-                  ? null
+                  ? t("noData")
                   : kpis.acceptance.firstFullCycleWithin1h
                     ? t("yes")
                     : t("no"),
             },
             {
-              id: "qr",
-              term: t("paidByQr"),
-              description: kpis.acceptance.paidByQrPct
+              key: "qr",
+              label: t("paidByQr"),
+              value: kpis.acceptance.paidByQrPct
                 ? t("pct", { value: formatDecimal(kpis.acceptance.paidByQrPct, locale, 2) })
-                : null,
+                : t("noData"),
             },
             {
-              id: "line",
-              term: t("viaLine"),
-              description: kpis.acceptance.serviceRequestsViaLinePct
+              key: "line",
+              label: t("viaLine"),
+              value: kpis.acceptance.serviceRequestsViaLinePct
                 ? t("pct", { value: formatDecimal(kpis.acceptance.serviceRequestsViaLinePct, locale, 2) })
-                : null,
+                : t("noData"),
             },
           ]}
         />
-      </Card>
+      </section>
     </div>
   );
 }

@@ -79,3 +79,30 @@ export function ShellBackLink({ back }: { back?: { label: React.ReactNode; href:
     </Link>
   );
 }
+
+/**
+ * Phones, record pages (Stitch G3 revision, "invoice document — phone"): a 56-px top bar with the way back ("‹ บิล")
+ * that covers the shell's own bar (wordmark, building, search, bell) while the record is open. The record's "⋯"
+ * (`ActionPanel` `more`) moves into its end when this bar is on the page (`data-record-top`); the lead action is the
+ * bottom bar. Renders nothing on a section's own page.
+ */
+export function ShellRecordTopBar({ back }: { back?: { label: React.ReactNode; href: string } | null }) {
+  const trail = useContext(TrailContext);
+  const target = back === undefined ? trail.back : back;
+  if (!target) return null;
+  return (
+    <div
+      data-record-top=""
+      className="border-border bg-surface fixed inset-x-0 top-0 z-[calc(var(--z-sticky)+1)] flex h-14 items-center border-b px-2 pe-14 md:hidden print:hidden"
+    >
+      <Link
+        href={target.href}
+        className="text-fg hover:bg-bg-subtle rounded-control focus-visible:ring-focus-ring inline-flex min-h-11 min-w-0 items-center gap-1 px-2 text-base font-medium focus-visible:ring-2 focus-visible:outline-none"
+        data-testid="record-back"
+      >
+        <Icon icon={IconChevronLeft} className="shrink-0 text-lg rtl:rotate-180" />
+        <span className="truncate">{target.label}</span>
+      </Link>
+    </div>
+  );
+}

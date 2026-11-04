@@ -108,5 +108,11 @@
   },
   "requested": "ขอให้จดแล้ว",
   "requestedAnyone": "ขอให้ทีมงานจดแล้ว",
-  "noPropertyAction": "ดูอาคาร"
+  "noPropertyAction": "ดูอาคาร",
+  "rail": {
+    "label": "ตั้งค่าและเหตุการณ์ของรอบ",
+    "settings": "ตั้งค่ารอบนี้",
+    "change": "เปลี่ยนในตั้งค่า",
+    "timeline": "ความคืบหน้าของรอบ"
+  }
 }

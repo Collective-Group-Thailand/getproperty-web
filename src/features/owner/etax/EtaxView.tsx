@@ -45,6 +45,7 @@ export function bangkokMonth(now = Date.now()): string {
 export async function EtaxView({ context, searchParams }: { context: OwnerContext; searchParams: SearchParams }) {
   const t = await getTranslations("owner.etax");
   const states = await getTranslations("status.etax");
+  const providers = await getTranslations("glossary.etaxProvider");
   const { api, locale, me } = context;
   const tenant = await section(unwrap(api.GET("/v1/owner/tenant")));
   const vat = tenant.data?.vatRegistered ?? false;
@@ -175,7 +176,13 @@ export async function EtaxView({ context, searchParams }: { context: OwnerContex
             <span className="tabular-nums">
               {t("summary.total")} <span className="text-fg font-medium">{formatTHB(s.signed.total, locale)}</span>
             </span>
-            <span>{s.enabled ? t("summary.enabled", { provider: s.provider ?? "—" }) : t("summary.disabled")}</span>
+            <span>
+              {s.enabled
+                ? t("summary.enabled", {
+                    provider: s.provider && providers.has(s.provider) ? providers(s.provider) : providers("other"),
+                  })
+                : t("summary.disabled")}
+            </span>
           </div>
           {s.byType.length ? (
             <details className="px-1" data-testid="etax-by-type">

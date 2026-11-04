@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { TM30_STATUS, TM30_VALUES } from "@/domain/status/tm30";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
-import { formatDate, formatDateTime, formatDuration, formatNumber } from "@/i18n/format";
+import { formatCountry, formatDate, formatDateTime, formatDuration, formatNumber } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
@@ -257,7 +257,9 @@ export async function Tm30View({ context, searchParams }: { context: OwnerContex
                     <span className="font-medium">{row.name}</span>
                     <span className="text-muted text-sm">
                       {[
-                        row.nationality ? t("nationality", { code: row.nationality }) : t("noNationality"),
+                        row.nationality
+                          ? t("nationality", { country: formatCountry(row.nationality, locale) })
+                          : t("noNationality"),
                         row.arrivalDate ? t("arrived", { date: formatDate(row.arrivalDate, locale) }) : null,
                       ]
                         .filter(Boolean)

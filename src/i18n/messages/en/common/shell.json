@@ -22,7 +22,7 @@
   },
   "readOnly": {
     "title": "This account is read-only",
-    "body": "The subscription is suspended. You can view and export data, but cannot change it or issue invoices until the subscription is paid (D-082).",
+    "body": "The subscription is suspended. You can view and export data, but cannot change it or issue invoices until the subscription is paid.",
     "action": "View subscription"
   },
   "breadcrumbs": "Breadcrumbs",

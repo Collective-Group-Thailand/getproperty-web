@@ -107,7 +107,7 @@
     "emptyHint": "Platform-owned gateways and meters appear here once registered to a tenant.",
     "register": "Register an asset",
     "registerTitle": "Register rented hardware",
-    "registerHint": "A platform-owned device placed at a tenant for a term (D-081). The book value is computed by the API.",
+    "registerHint": "A platform-owned device placed at a tenant for a term. The book value is computed by the API.",
     "registered": "Asset registered",
     "tenant": "Tenant",
     "device": "Device",

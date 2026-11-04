@@ -2,6 +2,7 @@ import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 
 import { ConsolePage, PageHeader } from "@/features/shared/console/PageHeader";
+import { ShellBackLink } from "@/features/shared/shell/ShellBreadcrumbs";
 import { SectionError } from "@/features/shared/console/SectionError";
 import type { SettingValueType } from "@/features/shared/console/SettingEditor";
 import { formatDate, formatDecimal } from "@/i18n/format";
@@ -11,9 +12,18 @@ import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Input } from "@/ui/components/Input";
+import { Icon, type IconGlyph } from "@/ui/icons";
+import { IconArchive } from "@/ui/icons/glyphs/archive";
+import { IconBank } from "@/ui/icons/glyphs/bank";
+import { IconChat } from "@/ui/icons/glyphs/chat";
+import { IconChevronRight } from "@/ui/icons/glyphs/chevron-right";
+import { IconCpu } from "@/ui/icons/glyphs/cpu";
+import { IconHelp } from "@/ui/icons/glyphs/help";
 import { IconKey } from "@/ui/icons/glyphs/key";
 import { IconMegaphone } from "@/ui/icons/glyphs/megaphone";
 import { IconSettings } from "@/ui/icons/glyphs/settings";
+import { IconWallet } from "@/ui/icons/glyphs/wallet";
+import { cn } from "@/ui/lib/cn";
 
 import { can, param, section, type AdminContext } from "../shared/server";
 import { PlatformSettingEditor } from "./PlatformSettingEditor";
@@ -22,6 +32,15 @@ import { settingShape } from "./settingShape";
 /** The sections of the page, in reading order; a key's area (its first segment) decides where it goes. */
 const SECTIONS = ["storage", "subscription", "support", "messages", "money", "ai", "other"] as const;
 type Section = (typeof SECTIONS)[number];
+const SECTION_ICON: Record<Section, IconGlyph> = {
+  storage: IconArchive,
+  subscription: IconWallet,
+  support: IconHelp,
+  messages: IconChat,
+  money: IconBank,
+  ai: IconCpu,
+  other: IconSettings,
+};
 const AREA: Record<string, Section> = {
   storage: "storage",
   subscription: "subscription",
@@ -60,6 +79,10 @@ export async function SettingsView({
   const { api, locale, me } = context;
   const settings = await section(unwrap(api.GET("/v1/admin/settings")));
   const q = param(searchParams.q)?.toLowerCase();
+  // Phones (like the owner settings): `/settings` is a list of the sections; `?section=` opens one with a way back.
+  const requested = param(searchParams.section);
+  const openSection = SECTIONS.find((key) => key === requested);
+  const phoneIndex = !openSection && !q;
   const permissions = new Set(me.permissions);
 
   const catalog = (key: string, field: "name" | "help" | "unit") => {
@@ -190,7 +213,12 @@ export async function SettingsView({
       ) : (
         <div className="grid items-start gap-6 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-10">
           <nav aria-label={t("sectionsLabel")} className="flex flex-col gap-4 lg:sticky lg:top-8">
-            <form method="get" role="search">
+            {openSection ? (
+              <div className="lg:hidden">
+                <ShellBackLink back={{ label: t("sectionsLabel"), href: "/settings" }} />
+              </div>
+            ) : null}
+            <form method="get" role="search" className={cn(openSection && "max-lg:hidden")}>
               <label>
                 <span className="sr-only">{t("filter")}</span>
                 <Input
@@ -215,8 +243,29 @@ export async function SettingsView({
                 </li>
               ))}
             </ul>
+            {phoneIndex ? (
+              <ul
+                className="rounded-card border-border bg-surface shadow-card divide-border divide-y border lg:hidden"
+                data-testid="settings-index"
+              >
+                {grouped.map((group) => (
+                  <li key={group.key}>
+                    <a
+                      href={`/settings?section=${group.key}`}
+                      className="hover:bg-bg-subtle flex min-h-14 items-center gap-3 px-4 py-2"
+                      data-testid={`settings-index-${group.key}`}
+                    >
+                      <Icon icon={SECTION_ICON[group.key]} className="text-subtle shrink-0 text-xl" />
+                      <span className="min-w-0 flex-1 truncate text-base font-medium">{t(`section.${group.key}`)}</span>
+                      <span className="text-muted text-sm tabular-nums">{group.settings.length}</span>
+                      <Icon icon={IconChevronRight} className="text-subtle shrink-0 rtl:rotate-180" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </nav>
-          <div className="flex min-w-0 flex-col gap-8">
+          <div className={cn("flex min-w-0 flex-col gap-8", phoneIndex && "max-lg:hidden")}>
             {grouped.length === 0 ? (
               <EmptyState
                 variant="card"
@@ -234,7 +283,10 @@ export async function SettingsView({
                 key={group.key}
                 id={`settings-${group.key}`}
                 aria-labelledby={`settings-${group.key}-title`}
-                className="flex scroll-mt-8 flex-col gap-3"
+                className={cn(
+                  "flex scroll-mt-8 flex-col gap-3",
+                  openSection && group.key !== openSection && "max-lg:hidden",
+                )}
               >
                 <h2 id={`settings-${group.key}-title`} className="text-lg font-semibold">
                   {t(`section.${group.key}`)}

@@ -151,7 +151,13 @@ export function FilterBar({
     const clearHref = clearQuery.toString() ? `${pathname}?${clearQuery.toString()}` : pathname;
     return (
       <div
-        className={cn("flex w-full min-w-0 items-center gap-2 md:flex-wrap xl:w-auto xl:flex-nowrap", className)}
+        className={cn(
+          // Without a search field the phone row holds only the sheet trigger: it sits beside the toolbar's actions
+          // (CSV, sort) instead of taking a row of its own.
+          "flex min-w-0 items-center gap-2 md:w-full md:flex-wrap xl:w-auto xl:justify-end",
+          search.length > 0 ? "w-full" : "w-auto",
+          className,
+        )}
         role="search"
         aria-busy={pending}
         data-testid="filter-bar"
@@ -186,7 +192,7 @@ export function FilterBar({
           </div>
         ))}
         {others.length > 0 ? (
-          <div className={cn("md:hidden", search.length === 0 && "ms-auto")}>
+          <div className="md:hidden">
             <FilterSheet
               label={sheet("label")}
               count={used}

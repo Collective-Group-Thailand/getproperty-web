@@ -423,7 +423,11 @@
       "emptyHint": "Residents' requests to see, fix or erase their data arrive here with their legal due date",
       "clear": "Show every state",
       "openAudit": "Open the audit log",
-      "menu": "More actions for this request"
+      "menu": "More actions for this request",
+      "phrase": {
+        "fulfil": "fulfil request",
+        "reject": "reject request"
+      }
     },
     "accepted": "Accepted",
     "notAccepted": "Not accepted",
@@ -591,7 +595,7 @@
       "support_other": "Other"
     },
     "modules": "Modules",
-    "modulesHint": "Comma separated, e.g. readings, invoices; empty for all",
+    "modulesHint": "Choose what the grantee may see; none chosen means everything",
     "validTo": "Until",
     "validToHint": "Leave empty for no end date",
     "revoke": "Revoke",

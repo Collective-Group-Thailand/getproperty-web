@@ -52,7 +52,7 @@ test("pricing: free to use, fee per collected payment, hardware add-ons from the
   await expect(model.getByRole("heading", { name: "ค่าธรรมเนียมการรับชำระ" })).toBeVisible();
   // Per-unit subscription plans are no longer sold; only add-ons from the API are listed.
   const addons = page.getByTestId("pricing-plans");
-  await expect(addons.getByRole("heading", { name: "Access Add-on" })).toBeVisible();
+  await expect(addons.getByTestId("pricing-addon").filter({ hasText: "Access Add-on" })).toBeVisible();
   await expect(addons).not.toContainText("Apartment Starter");
 });
 

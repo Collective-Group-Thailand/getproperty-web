@@ -32,7 +32,7 @@
     "status": "Status",
     "actions": "Actions"
   },
-  "nationality": "Nationality {code}",
+  "nationality": "{country} national",
   "noNationality": "Nationality not recorded",
   "arrived": "Arrived {date}",
   "missing": "Still missing: {fields}",

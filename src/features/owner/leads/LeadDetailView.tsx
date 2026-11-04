@@ -6,7 +6,7 @@ import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { SectionError } from "@/features/shared/console/SectionError";
 import { currentTime } from "@/features/shared/console/time";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
-import { formatDate, formatDateTime } from "@/i18n/format";
+import { formatCountry, formatDate, formatDateTime } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/errors";
 import { Badge } from "@/ui/components/Badge";
@@ -111,7 +111,11 @@ export async function LeadDetailView({
       term: t("prospect.occupants"),
       value: lead.occupants ? t("prospect.occupantsValue", { count: lead.occupants }) : notGiven,
     },
-    { id: "nationality", term: t("prospect.nationality"), value: lead.nationality ?? notGiven },
+    {
+      id: "nationality",
+      term: t("prospect.nationality"),
+      value: lead.nationality ? formatCountry(lead.nationality, locale) : notGiven,
+    },
     {
       id: "channel",
       term: t("prospect.channel"),

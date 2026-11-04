@@ -4,7 +4,7 @@
  * gateway heartbeat reports, `data { meterId, from, to, lastReadAt }`, severity `warning` / `info`).
  *
  * The contract types `type` as a free string, so the list is presentation only: a type it does not name is
- * shown as its code, never hidden. Labels live in `glossary.deviceEvent.<type>` (th / en).
+ * shown as "other device event" (its code kept in a data attribute), never hidden. Labels live in `glossary.deviceEvent.<type>` (th / en).
  */
 export const DEVICE_EVENT_TYPES = [
   "meter_offline",

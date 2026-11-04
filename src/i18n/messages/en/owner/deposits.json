@@ -125,7 +125,7 @@
     "statementTitle": "Settlement statement {number}",
     "openLease": "Open the lease",
     "deductions": "Deductions",
-    "deductionsHint": "Each deduction needs the inspection record and evidence (D-023).",
+    "deductionsHint": "Each deduction needs the inspection record and evidence.",
     "noDeductions": "No deductions.",
     "residentAccepted": "Accepted by resident",
     "residentDisputed": "Disputed by resident",

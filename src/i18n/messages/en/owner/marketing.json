@@ -183,11 +183,32 @@
         "who": "Choose per building who bears the fee, within what the law allows",
         "invoice": "A tax invoice for the fees every month",
         "slip": "Residents may transfer straight to your account; the slip is verified and the payment confirmed for you"
-      }
+      },
+      "lede": "Charged per payment the system confirms for you. Everything else is free.",
+      "col": {
+        "method": "How you are paid",
+        "rate": "Rate"
+      },
+      "rows": {
+        "qr": {
+          "method": "Resident pays by QR in the system",
+          "when": "Deducted before the money reaches the building's account"
+        },
+        "slip": {
+          "method": "Resident transfers straight to your account",
+          "when": "The system checks the slip; billed monthly"
+        }
+      },
+      "rateAsk": "Ask us on LINE",
+      "ask": "Ask for the rate on LINE"
     },
     "addons": {
       "title": "Add-ons",
-      "body": "Buy separately when you are ready — never required"
+      "body": "Buy separately when you are ready — never required",
+      "col": {
+        "item": "Add-on",
+        "price": "Price"
+      }
     },
     "line": {
       "title": "Bills in LINE: two ways",

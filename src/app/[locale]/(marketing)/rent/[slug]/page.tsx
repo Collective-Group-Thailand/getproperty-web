@@ -20,7 +20,14 @@ import { Badge } from "@/ui/components/Badge";
 import { PhotoPlaceholder } from "@/ui/components/PhotoPlaceholder";
 import { cn } from "@/ui/lib/cn";
 import { Button } from "@/ui/components/Button";
-import { Icon } from "@/ui/icons";
+import { Icon, type IconGlyph } from "@/ui/icons";
+import { IconCalendar } from "@/ui/icons/glyphs/calendar";
+import { IconDoor } from "@/ui/icons/glyphs/door";
+import { IconFloor } from "@/ui/icons/glyphs/floor";
+import { IconHome } from "@/ui/icons/glyphs/home";
+import { IconRoom } from "@/ui/icons/glyphs/room";
+import { IconWater } from "@/ui/icons/glyphs/water";
+import { IconXCircle } from "@/ui/icons/glyphs/x-circle";
 import { IconChat } from "@/ui/icons/glyphs/chat";
 import { IconCheck } from "@/ui/icons/glyphs/check";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
@@ -83,21 +90,43 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
     listing.geo ? `${listing.geo.lat},${listing.geo.lng}` : (listing.address ?? listing.title),
   )}`;
   const yesNo = (value: boolean) => (value ? t("detail.yes") : t("detail.no"));
+  type Fact = { term: string; value: string; icon: IconGlyph };
   const facts = (
     [
-      listing.sizeSqm ? [t("detail.size"), t("card.sqm", { size: formatDecimal(listing.sizeSqm, locale, 1) })] : null,
-      listing.bedrooms !== null ? [t("search.bedrooms"), t("card.bedrooms", { count: listing.bedrooms })] : null,
-      listing.bathrooms !== null ? [t("detail.bathrooms"), String(listing.bathrooms)] : null,
-      listing.floor ? [t("detail.floor"), listing.floor] : null,
-      listing.furnishing ? [t("detail.furnishing"), t(`detail.furnishings.${listing.furnishing}`)] : null,
-      [
-        t("detail.available"),
-        listing.availableFrom ? formatDate(listing.availableFrom, locale) : t("detail.availableNow"),
-      ],
-      [t("detail.petsLabel"), yesNo(listing.petsAllowed)],
-      [t("detail.smokingLabel"), yesNo(listing.smokingAllowed)],
-    ] as ([string, string] | null)[]
-  ).filter((fact): fact is [string, string] => fact !== null);
+      listing.sizeSqm
+        ? {
+            term: t("detail.size"),
+            value: t("card.sqm", { size: formatDecimal(listing.sizeSqm, locale, 1) }),
+            icon: IconRoom,
+          }
+        : null,
+      listing.bedrooms !== null
+        ? { term: t("search.bedrooms"), value: t("card.bedrooms", { count: listing.bedrooms }), icon: IconDoor }
+        : null,
+      listing.bathrooms !== null
+        ? { term: t("detail.bathrooms"), value: String(listing.bathrooms), icon: IconWater }
+        : null,
+      listing.floor ? { term: t("detail.floor"), value: listing.floor, icon: IconFloor } : null,
+      listing.furnishing
+        ? { term: t("detail.furnishing"), value: t(`detail.furnishings.${listing.furnishing}`), icon: IconHome }
+        : null,
+      {
+        term: t("detail.available"),
+        value: listing.availableFrom ? formatDate(listing.availableFrom, locale) : t("detail.availableNow"),
+        icon: IconCalendar,
+      },
+      {
+        term: t("detail.petsLabel"),
+        value: yesNo(listing.petsAllowed),
+        icon: listing.petsAllowed ? IconCheckCircle : IconXCircle,
+      },
+      {
+        term: t("detail.smokingLabel"),
+        value: yesNo(listing.smokingAllowed),
+        icon: listing.smokingAllowed ? IconCheckCircle : IconXCircle,
+      },
+    ] as (Fact | null)[]
+  ).filter((fact): fact is Fact => fact !== null);
 
   return (
     <>
@@ -167,11 +196,23 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
             <h2 id="facts" className="m-0 text-2xl">
               {t("detail.facts")}
             </h2>
-            <dl className="border-border m-0 mt-5 grid grid-cols-2 border-t sm:grid-cols-4">
-              {facts.map(([term, value]) => (
-                <div key={term} className="border-border border-b py-4 pe-4">
-                  <dt className="text-muted text-sm">{term}</dt>
-                  <dd className="m-0 mt-1 font-semibold">{value}</dd>
+            {/* One white card, 4 × 2 on a desktop (2 × 4 on a phone): an icon, the fact's name, its value. */}
+            <dl
+              className="border-border bg-surface rounded-card shadow-card m-0 mt-5 grid grid-cols-2 gap-x-4 gap-y-5 border p-5 sm:grid-cols-4 md:p-6"
+              data-testid="listing-facts"
+            >
+              {facts.map((fact) => (
+                <div key={fact.term} className="flex items-start gap-3">
+                  <span
+                    aria-hidden="true"
+                    className="bg-bg-subtle text-muted rounded-control grid size-9 shrink-0 place-items-center"
+                  >
+                    <Icon icon={fact.icon} className="text-lg" />
+                  </span>
+                  <div className="min-w-0">
+                    <dt className="text-muted text-sm">{fact.term}</dt>
+                    <dd className="m-0 font-semibold">{fact.value}</dd>
+                  </div>
                 </div>
               ))}
             </dl>

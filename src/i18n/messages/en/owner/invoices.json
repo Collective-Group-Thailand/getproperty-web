@@ -70,7 +70,12 @@
     "vat": "VAT applies",
     "arrow": "→",
     "used": "used {units}",
-    "photoAlt": "Meter {meter} showing {register} on {date}"
+    "photoAlt": "Meter {meter} showing {register} on {date}",
+    "readings": "See readings",
+    "readingsTitle": "Meter {meter} readings",
+    "from": "Previous reading",
+    "to": "Latest reading",
+    "usedLabel": "Units used"
   },
   "actions": {
     "issue": "Issue",
