@@ -9,9 +9,10 @@ import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/errors";
 import type { Schemas } from "@/lib/api/types";
-import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
-import type { IconGlyph } from "@/ui/icons";
+import { Icon, type IconGlyph } from "@/ui/icons";
+import { IconChevronRight } from "@/ui/icons/glyphs/chevron-right";
+import { IconSpinner } from "@/ui/icons/glyphs/spinner";
 import { IconIdentify } from "@/ui/icons/glyphs/identify";
 
 const FINAL = new Set<Schemas["CommandStatus"]>(["done", "failed", "expired"]);
@@ -29,6 +30,7 @@ export function IdentifyButton({ gatewayId }: { gatewayId: string }) {
       type="identify"
       args={{ seconds: SECONDS }}
       label={t("action", { seconds: SECONDS })}
+      hint={t("hint")}
       icon={IconIdentify}
       testId="identify"
     />
@@ -41,6 +43,7 @@ export function CommandButton({
   type,
   args = {},
   label,
+  hint,
   icon,
   testId,
 }: {
@@ -48,6 +51,8 @@ export function CommandButton({
   type: Schemas["OperatorCommandType"];
   args?: Record<string, unknown>;
   label: string;
+  /** One muted line under the label: what it is for. */
+  hint?: string;
   icon: IconGlyph;
   testId: string;
 }) {
@@ -73,13 +78,12 @@ export function CommandButton({
   }, [command, gatewayId]);
 
   return (
-    <div className="flex flex-col gap-2" data-testid={testId}>
-      <Button
-        variant="secondary"
-        size="xl"
-        block
-        iconStart={icon}
-        loading={busy}
+    <div data-testid={testId}>
+      <button
+        type="button"
+        disabled={busy}
+        aria-busy={busy || undefined}
+        className="hover:bg-bg-subtle/60 duration-fast flex min-h-16 w-full items-center gap-3 px-4 py-3 text-start transition-colors disabled:opacity-70"
         onClick={async () => {
           setBusy(true);
           setError(null);
@@ -99,22 +103,33 @@ export function CommandButton({
           }
         }}
       >
-        {label}
-      </Button>
-      {command ? (
-        <p
-          className="flex items-center gap-2 text-sm"
-          role="status"
-          data-testid={`${testId}-status`}
-          data-status={command.status}
-        >
-          {t("status")} <StatusBadgeOf map={COMMAND_STATUS} value={command.status} size="sm" />
-        </p>
-      ) : null}
-      {error ? (
-        <Callout tone="danger">
-          <span role="alert">{error}</span>
-        </Callout>
+        <span className="rounded-control bg-primary-subtle text-primary-subtle-fg flex size-10 shrink-0 items-center justify-center text-xl">
+          <Icon icon={busy ? IconSpinner : icon} className={busy ? "animate-spin" : undefined} />
+        </span>
+        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+          <span className="font-medium">{label}</span>
+          {hint ? <span className="text-muted text-sm">{hint}</span> : null}
+        </span>
+        <Icon icon={IconChevronRight} size={22} className="text-subtle shrink-0 rtl:rotate-180" />
+      </button>
+      {command || error ? (
+        <div className="flex flex-col gap-2 px-4 ps-17 pb-3">
+          {command ? (
+            <p
+              className="flex items-center gap-2 text-sm"
+              role="status"
+              data-testid={`${testId}-status`}
+              data-status={command.status}
+            >
+              {t("status")} <StatusBadgeOf map={COMMAND_STATUS} value={command.status} size="sm" />
+            </p>
+          ) : null}
+          {error ? (
+            <Callout tone="danger">
+              <span role="alert">{error}</span>
+            </Callout>
+          ) : null}
+        </div>
       ) : null}
     </div>
   );

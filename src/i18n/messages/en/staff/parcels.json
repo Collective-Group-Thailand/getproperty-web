@@ -19,7 +19,8 @@
     "trackingNo": "Tracking no.",
     "submit": "Save and tell the resident",
     "saved": "Parcel for {unit} received; the resident was told",
-    "offline": "Not sent: no signal. Try again."
+    "offline": "Not sent: no signal. Try again.",
+    "carrierPlaceholder": "Kerry, Flash, Thailand Post…"
   },
   "pickUp": {
     "action": "Hand over",
@@ -32,5 +33,9 @@
     "returnSubmit": "Record the return",
     "cancel": "Cancel",
     "offline": "Not sent: no signal. Try again."
-  }
+  },
+  "lede": "Log what arrives at the desk; the resident is told with a pick-up PIN",
+  "tapHint": "Tap a parcel to hand it over",
+  "noneHint": "Parcels you receive show up here until they are picked up or returned",
+  "backToday": "Back to Today"
 }

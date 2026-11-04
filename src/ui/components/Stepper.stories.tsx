@@ -22,3 +22,5 @@ type Story = StoryObj<typeof Stepper>;
 export const Middle: Story = {};
 export const First: Story = { args: { current: 0, progressText: "ขั้นที่ 1 จาก 5" } };
 export const Last: Story = { args: { current: 4, progressText: "ขั้นที่ 5 จาก 5" } };
+/** The phone wizard of the staff app: named segments, the current step's name as the title. */
+export const Bar: Story = { args: { variant: "bar" }, parameters: { viewport: { defaultViewport: "mobile1" } } };

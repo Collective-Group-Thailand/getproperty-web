@@ -22,6 +22,7 @@ import { Stepper } from "@/ui/components/Stepper";
 import { IconBack } from "@/ui/icons/glyphs/back";
 import { IconForward } from "@/ui/icons/glyphs/forward";
 
+import { StaffActionBar } from "../shell/StaffList";
 import { useCameraLabels, useKeypadLabels, useScanLabels } from "../shared/labels";
 import { meterUnit } from "../shared/units";
 import { SelectField, TextField } from "./fields";
@@ -182,6 +183,24 @@ export function InstallWizard({
 
   const steps = STEPS.map((id) => ({ id, label: t(`steps.${id}`) }));
 
+  const failureNote = failure ? (
+    <Callout tone="danger" title={t("errorTitle")}>
+      {failure.detail}
+      {failure.fields?.length ? (
+        <ul className="mt-1 list-disc ps-5">
+          {failure.fields.map((field) => (
+            <li key={`${field.path}-${field.code}`}>{field.message}</li>
+          ))}
+        </ul>
+      ) : null}
+      {failure.requestId ? (
+        <span className="text-muted block font-mono text-xs">
+          {common("requestId")}: {failure.requestId}
+        </span>
+      ) : null}
+    </Callout>
+  ) : null;
+
   return (
     <section
       className="flex flex-col gap-5 py-6"
@@ -193,30 +212,13 @@ export function InstallWizard({
         {t("title")}
       </h1>
       <Stepper
+        variant="bar"
         steps={steps}
         current={index}
         label={t("stepsLabel")}
         progressText={t("stepOf", { step: index + 1, total: steps.length })}
       />
       <Suspense fallback={<p className="text-muted py-6 text-center">{t("loading")}</p>}>
-        {failure ? (
-          <Callout tone="danger" title={t("errorTitle")}>
-            {failure.detail}
-            {failure.fields?.length ? (
-              <ul className="mt-1 list-disc ps-5">
-                {failure.fields.map((field) => (
-                  <li key={`${field.path}-${field.code}`}>{field.message}</li>
-                ))}
-              </ul>
-            ) : null}
-            {failure.requestId ? (
-              <span className="text-muted block font-mono text-xs">
-                {common("requestId")}: {failure.requestId}
-              </span>
-            ) : null}
-          </Callout>
-        ) : null}
-
         {step === "device" ? (
           <div className="flex flex-col gap-4">
             <p className="text-muted">{t("deviceHint")}</p>
@@ -255,15 +257,14 @@ export function InstallWizard({
                   : []),
               ]}
             />
-            <Button
-              size="xl"
-              block
-              iconEnd={IconForward}
-              disabled={deviceErrors.length > 0}
-              onClick={() => go("point")}
-            >
-              {t("next")}
-            </Button>
+            <StaffActionBar problem={failureNote}>
+              <Button asChild variant="secondary" size="xl" className="px-4">
+                <Link href="/devices">{t("cancel")}</Link>
+              </Button>
+              <Button size="xl" iconEnd={IconForward} disabled={deviceErrors.length > 0} onClick={() => go("point")}>
+                {t("next")}
+              </Button>
+            </StaffActionBar>
           </div>
         ) : null}
 
@@ -303,12 +304,14 @@ export function InstallWizard({
                 ))}
               </fieldset>
             )}
-            <Button size="xl" block iconEnd={IconForward} disabled={!point} onClick={() => go("wiring")}>
-              {t("next")}
-            </Button>
-            <Button variant="ghost" size="lg" iconStart={IconBack} onClick={() => go("device")}>
-              {t("back")}
-            </Button>
+            <StaffActionBar problem={failureNote}>
+              <Button variant="secondary" size="xl" className="px-4" iconStart={IconBack} onClick={() => go("device")}>
+                {t("back")}
+              </Button>
+              <Button size="xl" iconEnd={IconForward} disabled={!point} onClick={() => go("wiring")}>
+                {t("next")}
+              </Button>
+            </StaffActionBar>
           </div>
         ) : null}
 
@@ -371,19 +374,20 @@ export function InstallWizard({
                 </ul>
               </Callout>
             ) : null}
-            <Button
-              size="xl"
-              block
-              iconEnd={IconForward}
-              disabled={wiringErrors.length > 0 || !gateway}
-              onClick={() => go("reading")}
-              data-testid="wiring-next"
-            >
-              {t("next")}
-            </Button>
-            <Button variant="ghost" size="lg" iconStart={IconBack} onClick={() => go("point")}>
-              {t("back")}
-            </Button>
+            <StaffActionBar problem={failureNote}>
+              <Button variant="secondary" size="xl" className="px-4" iconStart={IconBack} onClick={() => go("point")}>
+                {t("back")}
+              </Button>
+              <Button
+                size="xl"
+                iconEnd={IconForward}
+                disabled={wiringErrors.length > 0 || !gateway}
+                onClick={() => go("reading")}
+                data-testid="wiring-next"
+              >
+                {t("next")}
+              </Button>
+            </StaffActionBar>
           </div>
         ) : null}
 
@@ -426,19 +430,20 @@ export function InstallWizard({
                   : undefined
               }
             />
-            <Button
-              size="xl"
-              block
-              loading={busy}
-              disabled={!photo || !isCompleteDecimal(register)}
-              onClick={() => void install()}
-              data-testid="install-submit"
-            >
-              {t("submit")}
-            </Button>
-            <Button variant="ghost" size="lg" iconStart={IconBack} onClick={() => go("wiring")}>
-              {t("back")}
-            </Button>
+            <StaffActionBar problem={failureNote}>
+              <Button variant="secondary" size="xl" className="px-4" iconStart={IconBack} onClick={() => go("wiring")}>
+                {t("back")}
+              </Button>
+              <Button
+                size="xl"
+                loading={busy}
+                disabled={!photo || !isCompleteDecimal(register)}
+                onClick={() => void install()}
+                data-testid="install-submit"
+              >
+                {t("submit")}
+              </Button>
+            </StaffActionBar>
           </div>
         ) : null}
 

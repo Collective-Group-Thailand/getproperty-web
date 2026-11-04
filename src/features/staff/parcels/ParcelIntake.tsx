@@ -16,6 +16,7 @@ import { IconCamera } from "@/ui/icons/glyphs/camera";
 import { IconParcel } from "@/ui/icons/glyphs/parcel";
 import { lazyWarm } from "@/ui/lib/lazy";
 
+import { CaptureTile } from "../shared/CaptureTile";
 import { problemText } from "../shared/problem";
 import type { StaffUnitChoice } from "./server";
 
@@ -71,7 +72,11 @@ export function ParcelIntake({ buildingId, units }: { buildingId: string; units:
   };
 
   return (
-    <section aria-labelledby="intake" className="flex flex-col gap-3" data-testid="parcel-intake">
+    <section
+      aria-labelledby="intake"
+      className="rounded-card border-border bg-surface shadow-card flex flex-col gap-4 border p-4"
+      data-testid="parcel-intake"
+    >
       <h2 id="intake" className="text-lg font-semibold">
         {t("title")}
       </h2>
@@ -94,26 +99,23 @@ export function ParcelIntake({ buildingId, units }: { buildingId: string; units:
           />
         </Suspense>
       ) : (
-        <Button
-          variant={photo ? "secondary" : "primary"}
-          size="xl"
-          block
-          iconStart={IconCamera}
+        <CaptureTile
+          label={photo ? t("retake") : t("photo")}
+          icon={IconCamera}
           onClick={() => setCamera(true)}
-          data-testid="intake-photo"
+          testId="intake-photo"
         >
-          {photo ? t("retake") : t("photo")}
-        </Button>
+          {preview ? (
+            // eslint-disable-next-line @next/next/no-img-element -- a local preview of the photo just taken
+            <img
+              src={preview}
+              alt={t("previewAlt")}
+              className="absolute inset-0 size-full object-cover"
+              data-testid="intake-preview"
+            />
+          ) : null}
+        </CaptureTile>
       )}
-      {preview ? (
-        // eslint-disable-next-line @next/next/no-img-element -- a local preview of the photo just taken
-        <img
-          src={preview}
-          alt={t("previewAlt")}
-          className="rounded-card max-h-48 w-auto self-start"
-          data-testid="intake-preview"
-        />
-      ) : null}
       <Field label={t("unit")} required>
         <NativeSelect
           inputSize="lg"
@@ -127,19 +129,31 @@ export function ParcelIntake({ buildingId, units }: { buildingId: string; units:
           data-testid="intake-unit"
         />
       </Field>
-      <div className="grid grid-cols-2 gap-3">
-        <Field label={t("carrier")}>
-          <Input
-            inputSize="lg"
-            value={carrier}
-            onChange={(event) => setCarrier(event.target.value)}
-            data-testid="intake-carrier"
-          />
-        </Field>
-        <Field label={t("trackingNo")}>
-          <Input inputSize="lg" value={trackingNo} onChange={(event) => setTrackingNo(event.target.value)} />
-        </Field>
-      </div>
+      <Field label={t("carrier")}>
+        <Input
+          inputSize="lg"
+          value={carrier}
+          placeholder={t("carrierPlaceholder")}
+          onChange={(event) => setCarrier(event.target.value)}
+          data-testid="intake-carrier"
+        />
+      </Field>
+      <Field label={t("trackingNo")}>
+        <Input
+          inputSize="lg"
+          className="font-mono"
+          autoComplete="off"
+          value={trackingNo}
+          onChange={(event) => setTrackingNo(event.target.value)}
+        />
+      </Field>
+      {error ? (
+        <Callout tone="danger">
+          <span role="alert" data-testid="intake-problem">
+            {problemText(error, t("offline"))}
+          </span>
+        </Callout>
+      ) : null}
       <Button
         size="xl"
         block
@@ -151,13 +165,6 @@ export function ParcelIntake({ buildingId, units }: { buildingId: string; units:
       >
         {t("submit")}
       </Button>
-      {error ? (
-        <Callout tone="danger">
-          <span role="alert" data-testid="intake-problem">
-            {problemText(error, t("offline"))}
-          </span>
-        </Callout>
-      ) : null}
     </section>
   );
 }

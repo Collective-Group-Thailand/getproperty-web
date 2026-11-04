@@ -15,12 +15,15 @@ import { isApiError } from "@/lib/api/errors";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
+import { Input } from "@/ui/components/Input";
 import { ScanButton } from "@/ui/components/ScanButton";
 import { Stepper } from "@/ui/components/Stepper";
 import { IconCopy } from "@/ui/icons/glyphs/copy";
 import { IconExternal } from "@/ui/icons/glyphs/external";
 import { IconForward } from "@/ui/icons/glyphs/forward";
+import { IconGateway } from "@/ui/icons/glyphs/gateway";
 
+import { StaffList } from "../shell/StaffList";
 import { useScanLabels } from "../shared/labels";
 import { statusPageUrl } from "./statusPage";
 
@@ -150,6 +153,7 @@ export function ProvisionGateway({
         {t("title")}
       </h1>
       <Stepper
+        variant="bar"
         steps={steps}
         current={index}
         label={t("stepsLabel")}
@@ -183,29 +187,34 @@ export function ProvisionGateway({
           ) : null}
           <ScanButton label={t("scan")} labels={scanLabels} onScan={(value) => void provision(value)} disabled={busy} />
           {candidates.length > 0 ? (
-            <div className="flex flex-col gap-2">
-              <h2 className="font-semibold">{t("assigned")}</h2>
-              {candidates.map((gateway) => (
-                <Button
-                  key={gateway.id}
-                  variant="secondary"
-                  size="xl"
-                  block
-                  loading={busy}
-                  onClick={() => void provision(gateway.serial)}
-                  data-testid="provision-candidate"
-                >
-                  <span className="font-mono">{gateway.serial}</span>
-                </Button>
-              ))}
-            </div>
+            <section aria-labelledby="provision-assigned" className="flex flex-col gap-2">
+              <h2 id="provision-assigned" className="text-muted text-sm font-semibold">
+                {t("assigned")}
+              </h2>
+              <StaffList
+                label={t("assigned")}
+                groups={[
+                  {
+                    key: "candidates",
+                    rows: candidates.map((gateway) => ({
+                      key: gateway.id,
+                      icon: IconGateway,
+                      title: <span className="font-mono">{gateway.serial}</span>,
+                      meta: t("provisionSerial", { serial: gateway.serial }),
+                      onSelect: busy ? undefined : () => void provision(gateway.serial),
+                      actionTestId: "provision-candidate",
+                    })),
+                  },
+                ]}
+              />
+            </section>
           ) : null}
         </div>
       ) : null}
 
       {step === "code" && code ? (
         <div className="flex flex-col gap-4">
-          <div className="rounded-card border-border bg-surface flex flex-col items-center gap-2 border p-5 text-center">
+          <div className="rounded-card border-border bg-surface shadow-card flex flex-col items-center gap-2 border p-5 text-center">
             <span className="text-muted text-sm">{t("codeLabel")}</span>
             <span className="font-mono text-4xl font-semibold tracking-wider" data-testid="provision-code">
               {code.code}
@@ -223,23 +232,29 @@ export function ProvisionGateway({
               {copied ? t("copied") : t("copy")}
             </Button>
           </div>
-          <ol className="flex list-decimal flex-col gap-2 ps-6">
-            <li>{t("instructions.power")}</li>
-            <li>{t("instructions.page")}</li>
-            <li>{t("instructions.enter")}</li>
+          <ol className="rounded-card border-border bg-surface shadow-card divide-border flex flex-col divide-y border">
+            {(["power", "page", "enter"] as const).map((key, number) => (
+              <li key={key} className="flex gap-3 px-4 py-3">
+                <span className="bg-primary-subtle text-primary-subtle-fg flex size-7 shrink-0 items-center justify-center rounded-full text-sm font-semibold tabular-nums">
+                  {number + 1}
+                </span>
+                <span>{t(`instructions.${key}`)}</span>
+              </li>
+            ))}
           </ol>
-          <div className="flex flex-col gap-1">
-            <label htmlFor={ipId} className="text-muted text-sm font-medium">
+          <div className="flex flex-col gap-2">
+            <label htmlFor={ipId} className="text-sm font-medium">
               {t("ipLabel")}
             </label>
-            <input
+            <Input
               id={ipId}
               value={ip}
+              inputSize="lg"
               inputMode="decimal"
               autoComplete="off"
               placeholder={t("ipPlaceholder")}
               onChange={(event) => setIp(event.target.value)}
-              className="rounded-control border-border-strong bg-surface h-14 border px-4 font-mono text-lg"
+              className="font-mono"
             />
             {link ? (
               <Button asChild variant="secondary" size="xl" block iconEnd={IconExternal}>

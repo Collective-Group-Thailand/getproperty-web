@@ -1,10 +1,10 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Suspense, useState } from "react";
 
+import { PRIORITY_STATUS } from "@/domain/status/priority";
 import { WORK_ORDER_STATUS } from "@/domain/status/workOrder";
 import { ServiceThread } from "@/features/shared/console/ServiceThread";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
@@ -16,6 +16,8 @@ import { uploadFile } from "@/lib/pwa/queue";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
+import { Card } from "@/ui/components/Card";
+import { DescriptionList } from "@/ui/components/DescriptionList";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { NativeSelect } from "@/ui/components/NativeSelect";
@@ -26,6 +28,8 @@ import { IconParcel } from "@/ui/icons/glyphs/parcel";
 import { IconPlay } from "@/ui/icons/glyphs/play";
 import { lazyWarm } from "@/ui/lib/lazy";
 
+import { StaffActionBar } from "../shell/StaffList";
+import { CaptureTile } from "../shared/CaptureTile";
 import { PhotoThumb } from "../shared/PhotoThumb";
 import { DoorCodes } from "./DoorCodes";
 import { problemText } from "../shared/problem";
@@ -117,76 +121,142 @@ export function WorkOrderScreen({
     });
   };
 
-  const photoSection = (role: Role) => {
+  /** Photos are added while the job is on (assigned → in progress); after that they are evidence only. */
+  const canShoot = PHOTO_STEPS.has(workOrder.status) && workOrder.status !== "done";
+  const photoRow = (role: Role) => {
     const ids = role === "before" ? workOrder.beforePhotoIds : workOrder.afterPhotoIds;
     return (
-      <section aria-labelledby={`photos-${role}`} className="flex flex-col gap-3" data-testid={`photos-${role}`}>
-        <h2 id={`photos-${role}`} className="text-lg font-semibold">
-          {t(`photos.${role}`)} <span className="text-muted tabular-nums">{t("count", { count: ids.length })}</span>
-        </h2>
-        {ids.length ? (
-          <ul className="flex flex-wrap gap-2">
-            {ids.map((id, index) => (
-              <li key={id}>
-                <PhotoThumb fileId={id} alt={t(`photos.${role}Alt`, { index: index + 1 })} />
-              </li>
-            ))}
-          </ul>
-        ) : null}
-        {PHOTO_STEPS.has(workOrder.status) ? (
-          camera === role ? (
-            <Suspense fallback={null}>
-              <PhotoCapture
-                label={t(`photos.${role}Take`)}
-                fileBaseName={`work-order-${role}`}
-                onPhotos={(files) => addPhotos(role, files)}
-                onClose={() => setCamera(null)}
+      <section aria-labelledby={`photos-${role}`} className="flex flex-col gap-2" data-testid={`photos-${role}`}>
+        <h3 id={`photos-${role}`} className="text-muted text-sm font-semibold">
+          {t(`photos.${role}`)} <span className="font-normal tabular-nums">{ids.length}</span>
+        </h3>
+        {camera === role ? (
+          <Suspense fallback={null}>
+            <PhotoCapture
+              label={t(`photos.${role}Take`)}
+              fileBaseName={`work-order-${role}`}
+              onPhotos={(files) => addPhotos(role, files)}
+              onClose={() => setCamera(null)}
+            />
+          </Suspense>
+        ) : (
+          <div className="flex flex-wrap gap-2">
+            {ids.length ? (
+              <ul className="contents">
+                {ids.map((id, index) => (
+                  <li key={id}>
+                    <PhotoThumb fileId={id} alt={t(`photos.${role}Alt`, { index: index + 1 })} />
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {canShoot ? (
+              <CaptureTile
+                shape="square"
+                icon={IconCamera}
+                label={t(`photos.${role}Add`)}
+                loading={busy === `photos-${role}`}
+                onClick={() => setCamera(role)}
+                testId={`take-${role}`}
               />
-            </Suspense>
-          ) : (
-            <Button
-              variant={
-                role === "after" && workOrder.status === "in_progress" && ids.length === 0 ? "primary" : "secondary"
-              }
-              size="xl"
-              block
-              iconStart={IconCamera}
-              loading={busy === `photos-${role}`}
-              onClick={() => setCamera(role)}
-              data-testid={`take-${role}`}
-            >
-              {t(`photos.${role}Take`)}
-            </Button>
-          )
-        ) : null}
+            ) : ids.length === 0 ? (
+              <p className="text-muted text-sm">{t("photos.none")}</p>
+            ) : null}
+          </div>
+        )}
       </section>
     );
   };
 
+  /** The one filled action of the screen, in the bottom bar: whatever the work order is waiting for next. */
+  const lead = can("check-in")
+    ? {
+        name: "check-in",
+        label: t("checkIn"),
+        icon: IconPlay,
+        run: () =>
+          unwrap(browserApi().POST("/v1/staff/work-orders/{workOrderId}/actions/check-in", { params: { path } })),
+      }
+    : can("resume")
+      ? {
+          name: "resume",
+          label: t("resume"),
+          icon: IconPlay,
+          run: () =>
+            unwrap(browserApi().POST("/v1/staff/work-orders/{workOrderId}/actions/resume", { params: { path } })),
+        }
+      : can("complete")
+        ? {
+            name: "complete",
+            label: t("complete"),
+            icon: IconCheckCircle,
+            run: () =>
+              unwrap(
+                browserApi().POST("/v1/staff/work-orders/{workOrderId}/actions/complete", {
+                  params: { path },
+                  body: { note: note.trim() || null },
+                }),
+              ),
+          }
+        : null;
+
+  const problem = error ? (
+    <Callout tone="danger">
+      <span role="alert" data-testid="work-problem">
+        {problemText(error, t("offline"))}
+      </span>
+    </Callout>
+  ) : null;
+
   return (
-    <div className="flex flex-col gap-6 py-6" data-testid="staff-work-order" data-status={workOrder.status}>
+    <div className="flex flex-col gap-5 py-6" data-testid="staff-work-order" data-status={workOrder.status}>
       <header className="flex flex-col gap-2">
-        <Button asChild variant="ghost" size="lg" className="self-start">
-          <Link href="/work-orders">{t("back")}</Link>
-        </Button>
-        <h1 className="text-2xl font-semibold" data-testid="work-order-title">
+        <h1 className="text-2xl font-semibold text-balance" data-testid="work-order-title">
           {workOrder.title}
         </h1>
-        <p className="text-muted text-lg">
-          {workOrder.unitNo ? t("unit", { unit: workOrder.unitNo }) : t("commonArea")}
-          {workOrder.scheduledAt ? ` · ${t("visit", { at: formatDateTime(workOrder.scheduledAt, locale) })}` : ""}
-        </p>
-        <StatusBadgeOf map={WORK_ORDER_STATUS} value={workOrder.status} />
+        <p className="text-muted">{workOrder.unitNo ? t("unit", { unit: workOrder.unitNo }) : t("commonArea")}</p>
+        <span className="flex flex-wrap gap-2">
+          <StatusBadgeOf map={WORK_ORDER_STATUS} value={workOrder.status} />
+          {workOrder.priority === "high" || workOrder.priority === "urgent" ? (
+            <StatusBadgeOf map={PRIORITY_STATUS} value={workOrder.priority} />
+          ) : null}
+        </span>
       </header>
 
+      {workOrder.status === "done" ? (
+        <Callout tone="success" title={t("doneTitle")}>
+          {t("doneBody")}
+        </Callout>
+      ) : null}
+
+      <Card as="section" aria-label={t("facts")}>
+        <DescriptionList
+          className="grid-cols-2"
+          items={[
+            { id: "kind", term: t("kindLabel"), description: t(`kind.${workOrder.kind}`) },
+            {
+              id: "visit",
+              term: t("visitLabel"),
+              description: workOrder.scheduledAt ? formatDateTime(workOrder.scheduledAt, locale) : t("noVisit"),
+            },
+            { id: "assignee", term: t("assigneeLabel"), description: workOrder.assignee?.displayName ?? "—" },
+            {
+              id: "priority",
+              term: t("priorityLabel"),
+              description: <StatusBadgeOf map={PRIORITY_STATUS} value={workOrder.priority} size="sm" />,
+            },
+          ]}
+        />
+      </Card>
+
       {request || workOrder.description ? (
-        <section aria-labelledby="reported" className="flex flex-col gap-2">
+        <Card as="section" aria-labelledby="reported" className="flex flex-col gap-3">
           <h2 id="reported" className="text-lg font-semibold">
             {request ? t("reported", { ref: request.ref }) : t("details")}
           </h2>
           <p className="whitespace-pre-line">{request?.description ?? workOrder.description}</p>
           {request ? (
-            <p className="text-base" data-testid="work-order-visit-preference">
+            <p className="text-muted text-sm" data-testid="work-order-visit-preference">
               {visit("preferred")}:{" "}
               {request.preferredVisit ? visit(`preference.${request.preferredVisit}`) : visit("noPreference")}
               {request.visitConfirmedAt
@@ -205,57 +275,31 @@ export function WorkOrderScreen({
               ))}
             </ul>
           ) : null}
-        </section>
+        </Card>
       ) : null}
 
       {DOOR_CODE_STEPS.has(workOrder.status) ? <DoorCodes workOrderId={workOrder.id} /> : null}
 
-      <section aria-labelledby="steps" className="flex flex-col gap-3" data-testid="work-steps">
-        <h2 id="steps" className="sr-only">
-          {t("steps")}
+      <Card as="section" aria-labelledby="photos" className="flex flex-col gap-4" data-testid="work-steps">
+        <h2 id="photos" className="text-lg font-semibold">
+          {t("photos.title")}
         </h2>
-        {can("check-in") ? (
-          <Button
-            size="xl"
-            block
-            iconStart={IconPlay}
-            loading={busy === "check-in"}
-            onClick={() =>
-              void step("check-in", () =>
-                unwrap(browserApi().POST("/v1/staff/work-orders/{workOrderId}/actions/check-in", { params: { path } })),
-              )
-            }
-            data-testid="check-in"
-          >
-            {t("checkIn")}
-          </Button>
-        ) : null}
-        {can("resume") ? (
-          <Button
-            size="xl"
-            block
-            iconStart={IconPlay}
-            loading={busy === "resume"}
-            onClick={() =>
-              void step("resume", () =>
-                unwrap(browserApi().POST("/v1/staff/work-orders/{workOrderId}/actions/resume", { params: { path } })),
-              )
-            }
-            data-testid="resume"
-          >
-            {t("resume")}
-          </Button>
-        ) : null}
-      </section>
-
-      {photoSection("before")}
+        {canShoot || workOrder.beforePhotoIds.length || workOrder.afterPhotoIds.length ? (
+          <>
+            {photoRow("before")}
+            {photoRow("after")}
+          </>
+        ) : (
+          <p className="text-muted">{t("photos.noneYet")}</p>
+        )}
+      </Card>
 
       {can("wait-parts") ? (
-        <section aria-labelledby="parts" className="flex flex-col gap-3">
+        <Card as="section" aria-labelledby="parts" className="flex flex-col gap-3">
           <h2 id="parts" className="text-lg font-semibold">
             {t("waitParts")}
           </h2>
-          <Field label={t("partsNote")}>
+          <Field label={t("partsNote")} hint={t("partsHint")}>
             <Textarea
               className="text-lg"
               rows={2}
@@ -287,31 +331,29 @@ export function WorkOrderScreen({
           >
             {t("waitParts")}
           </Button>
-        </section>
+        </Card>
       ) : null}
 
-      {photoSection("after")}
-
       {COST_STEPS.has(workOrder.status) || workOrder.costLines.length ? (
-        <section aria-labelledby="costs" className="flex flex-col gap-3" data-testid="costs">
+        <Card as="section" aria-labelledby="costs" className="flex flex-col gap-3" data-testid="costs">
           <h2 id="costs" className="text-lg font-semibold">
             {t("costs.title")}
           </h2>
           {workOrder.costLines.length ? (
-            <ul className="flex flex-col gap-2">
+            <ul className="divide-border border-border divide-y border-y">
               {workOrder.costLines.map((line) => (
                 <li
                   key={line.id}
-                  className="border-border flex items-center justify-between gap-2 border-b py-2"
+                  className="flex min-h-14 items-center justify-between gap-2 py-2"
                   data-testid="cost-line"
                 >
-                  <span className="flex flex-col">
+                  <span className="flex min-w-0 flex-col">
                     <span>{line.description}</span>
-                    <span className="text-muted text-sm">
+                    <span className="text-muted text-sm tabular-nums">
                       {t(`costs.kinds.${line.kind}`)} · {line.quantity} × {formatTHB(line.unitPrice, locale)}
                     </span>
                   </span>
-                  <span className="flex items-center gap-2">
+                  <span className="flex shrink-0 items-center gap-1">
                     <span className="tabular-nums">{formatTHB(line.amount, locale)}</span>
                     {COST_STEPS.has(workOrder.status) ? (
                       <Button
@@ -336,11 +378,12 @@ export function WorkOrderScreen({
               ))}
             </ul>
           ) : null}
-          <p className="text-end font-semibold" data-testid="cost-total">
-            {t("costs.total", { total: formatTHB(workOrder.costTotal, locale) })}
+          <p className="flex items-baseline justify-between gap-3 font-semibold" data-testid="cost-total">
+            <span>{t("costs.totalLabel")}</span>
+            <span className="tabular-nums">{formatTHB(workOrder.costTotal, locale)}</span>
           </p>
-          {COST_STEPS.has(workOrder.status) ? (
-            <div className="flex flex-col gap-3">
+          {COST_STEPS.has(workOrder.status) && workOrder.status !== "done" ? (
+            <div className="border-border flex flex-col gap-3 border-t pt-4">
               <Field label={t("costs.description")}>
                 <Input
                   inputSize="lg"
@@ -362,6 +405,7 @@ export function WorkOrderScreen({
                   <Input
                     inputSize="lg"
                     inputMode="decimal"
+                    className="tabular-nums"
                     value={cost.quantity}
                     onChange={(event) => setCost({ ...cost, quantity: event.target.value })}
                     data-testid="cost-quantity"
@@ -372,6 +416,7 @@ export function WorkOrderScreen({
                 <Input
                   inputSize="lg"
                   inputMode="decimal"
+                  className="tabular-nums"
                   value={cost.unitPrice}
                   onChange={(event) => setCost({ ...cost, unitPrice: event.target.value })}
                   data-testid="cost-unit-price"
@@ -407,15 +452,17 @@ export function WorkOrderScreen({
               </Button>
             </div>
           ) : null}
-        </section>
+        </Card>
       ) : null}
 
       {can("complete") ? (
-        <section aria-labelledby="complete" className="flex flex-col gap-3">
+        <Card as="section" aria-labelledby="complete" className="flex flex-col gap-3">
           <h2 id="complete" className="text-lg font-semibold">
-            {t("complete")}
+            {t("completeTitle")}
           </h2>
-          {workOrder.afterPhotoIds.length === 0 ? <p className="text-muted">{t("completeNeedsPhoto")}</p> : null}
+          {workOrder.afterPhotoIds.length === 0 ? (
+            <p className="text-muted text-sm">{t("completeNeedsPhoto")}</p>
+          ) : null}
           <Field label={t("completionNote")}>
             <Textarea
               className="text-lg"
@@ -425,32 +472,7 @@ export function WorkOrderScreen({
               data-testid="completion-note"
             />
           </Field>
-          <Button
-            size="xl"
-            block
-            iconStart={IconCheckCircle}
-            loading={busy === "complete"}
-            onClick={() =>
-              void step("complete", () =>
-                unwrap(
-                  browserApi().POST("/v1/staff/work-orders/{workOrderId}/actions/complete", {
-                    params: { path },
-                    body: { note: note.trim() || null },
-                  }),
-                ),
-              )
-            }
-            data-testid="complete"
-          >
-            {t("complete")}
-          </Button>
-        </section>
-      ) : null}
-
-      {workOrder.status === "done" ? (
-        <Callout tone="success" title={t("doneTitle")}>
-          {t("doneBody")}
-        </Callout>
+        </Card>
       ) : null}
 
       <ServiceThread
@@ -464,13 +486,21 @@ export function WorkOrderScreen({
         touch
       />
 
-      {error ? (
-        <Callout tone="danger">
-          <span role="alert" data-testid="work-problem">
-            {problemText(error, t("offline"))}
-          </span>
-        </Callout>
-      ) : null}
+      {lead ? (
+        <StaffActionBar problem={problem}>
+          <Button
+            size="xl"
+            iconStart={lead.icon}
+            loading={busy === lead.name}
+            onClick={() => void step(lead.name, lead.run)}
+            data-testid={lead.name}
+          >
+            {lead.label}
+          </Button>
+        </StaffActionBar>
+      ) : (
+        problem
+      )}
     </div>
   );
 }

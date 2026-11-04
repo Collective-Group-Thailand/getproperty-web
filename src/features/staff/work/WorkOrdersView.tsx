@@ -1,4 +1,5 @@
 import { getLocale, getTranslations } from "next-intl/server";
+import Link from "next/link";
 
 import { PRIORITY_STATUS } from "@/domain/status/priority";
 import { SERVICE_REQUEST_STATUS } from "@/domain/status/serviceRequest";
@@ -7,17 +8,25 @@ import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { formatDateTime } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
 import { unwrap } from "@/lib/api/client";
-import { BigActionButton } from "@/ui/components/BigActionButton";
+import type { Schemas } from "@/lib/api/types";
+import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
-import { IconTicket } from "@/ui/icons/glyphs/ticket";
-import { IconWrench } from "@/ui/icons/glyphs/wrench";
+import { EmptyState } from "@/ui/components/EmptyState";
+import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
+import { IconInbox } from "@/ui/icons/glyphs/inbox";
 
-import { BuildingSelect } from "../shared/BuildingSelect";
+import { StaffList, StaffSection } from "../shell/StaffList";
 import type { StaffScope } from "../shared/server";
 
+/** Normal is the default: only a priority that changes the order of the day earns a badge. */
+const priorityBadge = (priority: Schemas["ServicePriority"]) =>
+  priority === "high" || priority === "urgent" ? (
+    <StatusBadgeOf map={PRIORITY_STATUS} value={priority} size="sm" />
+  ) : null;
+
 /**
- * Work orders (F4 4.4, D-072): my active work orders in the focused building, by visit time, and the open
- * service requests of the building — a request can be triaged or taken (a work order assigned to me).
+ * Jobs (F4 4.4, D-072; redesign G7): my active work orders in the focused building, by visit time, then the open
+ * service requests of the building — one card each, every row opens its screen (a request is triaged or taken there).
  */
 export async function WorkOrdersView({ scope }: { scope: StaffScope }) {
   const t = await getTranslations("staff.work");
@@ -36,74 +45,100 @@ export async function WorkOrdersView({ scope }: { scope: StaffScope }) {
       .catch(() => null),
   ]);
   return (
-    <div className="flex flex-col gap-6 py-6" data-testid="staff-work-orders">
-      <header className="flex flex-col gap-3">
+    <div className="flex flex-col gap-8 py-6" data-testid="staff-work-orders">
+      <header className="flex flex-col gap-1">
         <h1 className="text-2xl font-semibold">{t("title")}</h1>
-        <BuildingSelect buildings={scope.buildings} buildingId={scope.buildingId} />
+        <p className="text-muted">{t("lede")}</p>
       </header>
-      <section aria-labelledby="my-work" className="flex flex-col gap-3">
-        <h2 id="my-work" className="text-lg font-semibold">
-          {t("mine")}
-        </h2>
+
+      <StaffSection id="my-work" title={t("mine")} count={mine?.length}>
         {mine === null ? (
           <Callout tone="warning">{t("unavailable")}</Callout>
         ) : mine.length === 0 ? (
-          <p className="text-muted">{t("noneMine")}</p>
+          <EmptyState
+            variant="card"
+            icon={IconCheckCircle}
+            title={t("noneMine")}
+            description={t("noneMineHint")}
+            action={
+              <Button asChild variant="secondary" size="lg">
+                <Link href="/">{t("backToday")}</Link>
+              </Button>
+            }
+          />
         ) : (
-          <ul className="flex flex-col gap-3" data-testid="my-work-orders">
-            {mine.map((workOrder) => (
-              <li key={workOrder.id} className="flex flex-col gap-1">
-                <BigActionButton
-                  href={`/work-orders/${workOrder.id}`}
-                  icon={IconWrench}
-                  tone={workOrder.status === "in_progress" ? "primary" : "default"}
-                  title={
-                    workOrder.unitNo
-                      ? t("titleUnit", { title: workOrder.title, unit: workOrder.unitNo })
-                      : workOrder.title
-                  }
-                  description={
+          <StaffList
+            label={t("mine")}
+            testId="my-work-orders"
+            groups={[
+              {
+                key: "mine",
+                rows: mine.map((workOrder) => ({
+                  key: workOrder.id,
+                  href: `/work-orders/${workOrder.id}`,
+                  title: workOrder.title,
+                  meta: [
+                    workOrder.unitNo ? t("unit", { unit: workOrder.unitNo }) : t("commonArea"),
                     workOrder.scheduledAt
                       ? t("visit", { at: formatDateTime(workOrder.scheduledAt, locale) })
-                      : t("noVisit")
-                  }
-                />
-                <span className="flex flex-wrap gap-2">
-                  <StatusBadgeOf map={WORK_ORDER_STATUS} value={workOrder.status} size="sm" />
-                  <StatusBadgeOf map={PRIORITY_STATUS} value={workOrder.priority} size="sm" />
-                </span>
-              </li>
-            ))}
-          </ul>
+                      : t("noVisit"),
+                  ].join(" · "),
+                  status: (
+                    <>
+                      <StatusBadgeOf map={WORK_ORDER_STATUS} value={workOrder.status} size="sm" />
+                      {priorityBadge(workOrder.priority)}
+                    </>
+                  ),
+                })),
+              },
+            ]}
+          />
         )}
-      </section>
-      <section aria-labelledby="open-requests" className="flex flex-col gap-3">
-        <h2 id="open-requests" className="text-lg font-semibold">
-          {t("requests")}
-        </h2>
+      </StaffSection>
+
+      <StaffSection id="requests-title" title={t("requests")} count={requests?.length}>
         {requests === null ? (
           <Callout tone="warning">{t("unavailable")}</Callout>
         ) : requests.length === 0 ? (
-          <p className="text-muted">{t("noneRequests")}</p>
+          <EmptyState
+            variant="card"
+            icon={IconInbox}
+            title={t("noneRequests")}
+            description={t("noneRequestsHint")}
+            action={
+              <Button asChild variant="secondary" size="lg">
+                <Link href="/">{t("backToday")}</Link>
+              </Button>
+            }
+          />
         ) : (
-          <ul className="flex flex-col gap-3" data-testid="open-requests">
-            {requests.map((request) => (
-              <li key={request.id} className="flex flex-col gap-1">
-                <BigActionButton
-                  href={`/service-requests/${request.id}`}
-                  icon={IconTicket}
-                  title={`${request.ref} · ${request.unitNo ?? t("commonArea")}`}
-                  description={request.description}
-                />
-                <span className="flex flex-wrap gap-2">
-                  <StatusBadgeOf map={SERVICE_REQUEST_STATUS} value={request.status} size="sm" />
-                  <StatusBadgeOf map={PRIORITY_STATUS} value={request.priority} size="sm" />
-                </span>
-              </li>
-            ))}
-          </ul>
+          <StaffList
+            label={t("requests")}
+            testId="open-requests"
+            groups={[
+              {
+                key: "requests",
+                rows: requests.map((request) => ({
+                  key: request.id,
+                  href: `/service-requests/${request.id}`,
+                  lead: request.ref,
+                  title: <span className="line-clamp-2">{request.description}</span>,
+                  meta: [
+                    request.unitNo ? t("unit", { unit: request.unitNo }) : t("commonArea"),
+                    t("reportedAt", { at: formatDateTime(request.createdAt, locale) }),
+                  ].join(" · "),
+                  status: (
+                    <>
+                      <StatusBadgeOf map={SERVICE_REQUEST_STATUS} value={request.status} size="sm" />
+                      {priorityBadge(request.priority)}
+                    </>
+                  ),
+                })),
+              },
+            ]}
+          />
         )}
-      </section>
+      </StaffSection>
     </div>
   );
 }

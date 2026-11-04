@@ -11,11 +11,14 @@ import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
+import { Progress } from "@/ui/components/Progress";
 import { isCompleteDecimal } from "@/ui/lib/decimal";
 import { Textarea } from "@/ui/components/Input";
 import { Icon } from "@/ui/icons";
 import { IconCamera } from "@/ui/icons/glyphs/camera";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
+import { IconForward } from "@/ui/icons/glyphs/forward";
+import { IconSign } from "@/ui/icons/glyphs/sign";
 import { IconClose } from "@/ui/icons/glyphs/close";
 import { IconOffline } from "@/ui/icons/glyphs/offline";
 import { IconSyncPending } from "@/ui/icons/glyphs/sync-pending";
@@ -23,6 +26,8 @@ import { cn } from "@/ui/lib/cn";
 import { lazyWarm } from "@/ui/lib/lazy";
 
 import { useKeypadLabels } from "../shared/labels";
+import { StaffActionBar } from "../shell/StaffList";
+import { CaptureTile } from "../shared/CaptureTile";
 import { PhotoThumb } from "../shared/PhotoThumb";
 import { editItem, mergedItem, type DraftItem } from "./draft";
 import { useInspectionDraft, type SyncState } from "./useInspectionDraft";
@@ -57,18 +62,55 @@ export function InspectionChecklist({
   const editable = server.status === "scheduled" || server.status === "in_progress";
   const lines = server.items.map((item) => mergedItem(item, draft.items[item.itemKey]));
   const missing = lines.filter((line) => !line.condition).length;
+  const areaLabel = (area: string) => (t.has(`area.${area}`) ? t(`area.${area}`) : area);
+
+  const checked = lines.length - missing;
+  const current = editable ? (lines.find((line) => !line.condition)?.itemKey ?? null) : null;
+  /** The template's areas in their order; lines without an area stay in one unnamed group. */
+  const areas = lines.reduce<{ area: string | null; lines: { line: Line; number: number }[] }[]>(
+    (groups, line, index) => {
+      const area = line.area ?? null;
+      const last = groups.at(-1);
+      if (last && last.area === area) last.lines.push({ line, number: index + 1 });
+      else groups.push({ area, lines: [{ line, number: index + 1 }] });
+      return groups;
+    },
+    [],
+  );
+  const goToNext = () => {
+    const next = document.querySelector<HTMLElement>('[data-testid="inspection-item"][data-done="false"]');
+    next?.scrollIntoView({ behavior: "smooth", block: "start" });
+    next?.querySelector<HTMLInputElement>('input[type="radio"]')?.focus({ preventScroll: true });
+  };
 
   return (
-    <div className="flex flex-col gap-5 py-6" data-testid="inspection-checklist" data-sync={state}>
-      <header className="flex flex-col gap-2">
+    <div className="flex flex-col gap-6 py-6" data-testid="inspection-checklist" data-sync={state}>
+      <header className="flex flex-col gap-3">
         <h1 className="text-2xl font-semibold">{t("heading", { unit: server.unitNo, type: server.type })}</h1>
         <div className="flex flex-wrap items-center gap-2">
           <StatusBadgeOf map={INSPECTION_STATUS} value={server.status} />
           {server.reportNumber ? (
-            <span className="text-muted text-sm">{t("report", { number: server.reportNumber })}</span>
+            <span className="text-muted font-mono text-sm">{t("report", { number: server.reportNumber })}</span>
           ) : null}
         </div>
-        {editable ? <SyncLine state={state} missing={missing} /> : null}
+        {editable ? (
+          <div className="rounded-card border-border bg-surface shadow-card flex flex-col gap-3 border p-4">
+            <p className="flex items-baseline justify-between gap-3">
+              <span className="font-medium">{t("progress", { done: checked, total: lines.length })}</span>
+              <span className="text-muted text-sm tabular-nums">
+                {lines.length ? Math.round((checked / lines.length) * 100) : 0}%
+              </span>
+            </p>
+            <Progress
+              label={t("progressLabel")}
+              value={checked}
+              max={lines.length}
+              valueText={t("progress", { done: checked, total: lines.length })}
+              showCaption={false}
+            />
+            <SyncLine state={state} missing={missing} />
+          </div>
+        ) : null}
         {problem ? (
           <Callout tone="danger" title={t("sync.errorTitle")}>
             {problem.detail || problem.code}
@@ -83,70 +125,101 @@ export function InspectionChecklist({
         </Callout>
       ) : null}
 
-      <ol className="flex flex-col gap-4" data-testid="inspection-items">
-        {lines.map((line) => {
-          const before = moveIn?.items.find((item) => item.itemKey === line.itemKey) ?? null;
-          return (
-            <li key={line.id}>
-              <ItemCard
-                line={line}
-                before={before}
-                editable={editable}
-                shooting={shooting === line.itemKey}
-                onShoot={(open) => setShooting(open ? line.itemKey : null)}
-                onChange={(change) => void update((current) => editItem(current, line.itemKey, change))}
-              />
-              {shooting === line.itemKey ? (
-                <Suspense fallback={<p className="text-muted py-6 text-center">{t("cameraLoading")}</p>}>
-                  <PhotoShooter
-                    before={before}
-                    label={line.label}
-                    onClose={() => setShooting(null)}
-                    onPhotos={(files) => {
-                      setShooting(null);
-                      void update((current) =>
-                        editItem(current, line.itemKey, (item) => ({
-                          ...item,
-                          added: [...item.added, ...files.map((blob) => ({ localId: crypto.randomUUID(), blob }))],
-                        })),
-                      );
-                    }}
-                  />
-                </Suspense>
-              ) : null}
-            </li>
-          );
-        })}
-      </ol>
+      <div className="flex flex-col gap-6" data-testid="inspection-items">
+        {areas.map((group, groupIndex) => (
+          <section
+            key={`${group.area ?? "none"}-${groupIndex}`}
+            aria-label={group.area ? areaLabel(group.area) : undefined}
+            className="flex flex-col gap-3"
+          >
+            {group.area ? <h2 className="text-muted text-sm font-semibold">{areaLabel(group.area)}</h2> : null}
+            <ol className="flex flex-col gap-3">
+              {group.lines.map(({ line, number }) => {
+                const before = moveIn?.items.find((item) => item.itemKey === line.itemKey) ?? null;
+                return (
+                  <li key={line.id}>
+                    <ItemCard
+                      line={line}
+                      number={number}
+                      current={current === line.itemKey}
+                      before={before}
+                      editable={editable}
+                      shooting={shooting === line.itemKey}
+                      onShoot={(open) => setShooting(open ? line.itemKey : null)}
+                      onChange={(change) => void update((draftNow) => editItem(draftNow, line.itemKey, change))}
+                    />
+                    {shooting === line.itemKey ? (
+                      <Suspense fallback={<p className="text-muted py-6 text-center">{t("cameraLoading")}</p>}>
+                        <PhotoShooter
+                          before={before}
+                          label={line.label}
+                          onClose={() => setShooting(null)}
+                          onPhotos={(files) => {
+                            setShooting(null);
+                            void update((draftNow) =>
+                              editItem(draftNow, line.itemKey, (item) => ({
+                                ...item,
+                                added: [
+                                  ...item.added,
+                                  ...files.map((blob) => ({ localId: crypto.randomUUID(), blob })),
+                                ],
+                              })),
+                            );
+                          }}
+                        />
+                      </Suspense>
+                    ) : null}
+                  </li>
+                );
+              })}
+            </ol>
+          </section>
+        ))}
+      </div>
 
-      {editable ? (
-        <section aria-labelledby="inspection-complete" className="flex flex-col gap-3">
+      {editable && completing ? (
+        <section aria-labelledby="inspection-complete" className="flex flex-col gap-3" id="inspection-complete-panel">
           <h2 id="inspection-complete" className="text-lg font-semibold">
             {t("complete.title")}
           </h2>
-          {missing > 0 ? <p className="text-muted">{t("complete.missing", { count: missing })}</p> : null}
-          {completing ? (
-            <Suspense fallback={<p className="text-muted py-6 text-center">{t("cameraLoading")}</p>}>
-              <CompletePanel
-                inspection={server}
-                draft={draft}
-                patch={patch}
-                sync={sync}
-                onCancel={() => setCompleting(false)}
-              />
-            </Suspense>
+          <Suspense fallback={<p className="text-muted py-6 text-center">{t("cameraLoading")}</p>}>
+            <CompletePanel
+              inspection={server}
+              draft={draft}
+              patch={patch}
+              sync={sync}
+              onCancel={() => setCompleting(false)}
+            />
+          </Suspense>
+        </section>
+      ) : null}
+
+      {editable && !completing ? (
+        <StaffActionBar summary={missing > 0 ? t("complete.left", { count: missing }) : t("complete.ready")}>
+          {missing > 0 ? (
+            <Button size="xl" iconEnd={IconForward} onClick={goToNext} data-testid="next-line">
+              {t("complete.next")}
+            </Button>
           ) : (
             <Button
               size="xl"
-              block
-              disabled={missing > 0}
-              onClick={() => setCompleting(true)}
+              iconStart={IconSign}
+              onClick={() => {
+                setCompleting(true);
+                window.setTimeout(
+                  () =>
+                    document
+                      .getElementById("inspection-complete-panel")
+                      ?.scrollIntoView({ behavior: "smooth", block: "start" }),
+                  50,
+                );
+              }}
               data-testid="start-complete"
             >
               {t("complete.start")}
             </Button>
           )}
-        </section>
+        </StaffActionBar>
       ) : null}
     </div>
   );
@@ -178,6 +251,8 @@ type Line = ReturnType<typeof mergedItem>;
 
 function ItemCard({
   line,
+  number,
+  current,
   before,
   editable,
   shooting,
@@ -185,6 +260,10 @@ function ItemCard({
   onChange,
 }: {
   line: Line;
+  /** The line's number on the checklist. */
+  number: number;
+  /** The first line still without a condition: where the inspector is. */
+  current: boolean;
   before: Schemas["InspectionItemDto"] | null;
   editable: boolean;
   shooting: boolean;
@@ -204,16 +283,32 @@ function ItemCard({
 
   return (
     <article
-      className="rounded-card border-border bg-surface shadow-card flex flex-col gap-3 border p-4"
+      className={cn(
+        "rounded-card bg-surface shadow-card flex scroll-mt-20 flex-col gap-4 border p-4",
+        current ? "border-primary" : "border-border",
+      )}
       aria-labelledby={`${id}-label`}
       data-testid="inspection-item"
       data-item={line.itemKey}
+      data-done={Boolean(line.condition)}
     >
-      <div className="flex items-start justify-between gap-2">
-        <h2 id={`${id}-label`} className="text-lg font-semibold">
+      <div className="flex items-start justify-between gap-3">
+        <h3 id={`${id}-label`} className="text-lg leading-snug font-semibold">
+          <span className="text-muted me-1.5 tabular-nums">{number}.</span>
           {line.label}
-        </h2>
-        {line.area ? <Badge size="sm">{t.has(`area.${line.area}`) ? t(`area.${line.area}`) : line.area}</Badge> : null}
+        </h3>
+        {line.condition ? (
+          <Icon
+            icon={IconCheckCircle}
+            size={24}
+            label={t("lineDone")}
+            className="text-success-subtle-fg mt-0.5 shrink-0"
+          />
+        ) : current ? (
+          <Badge tone="primary" size="sm">
+            {t("current")}
+          </Badge>
+        ) : null}
       </div>
 
       {before ? (
@@ -239,30 +334,26 @@ function ItemCard({
       ) : null}
 
       <fieldset disabled={!editable} className="flex flex-col gap-2">
-        <legend className="text-muted mb-1 text-sm font-medium">{t("conditionLabel")}</legend>
-        <div className="grid grid-cols-2 gap-2 min-[420px]:grid-cols-3">
-          {CONDITIONS.map((condition) => (
-            <label key={condition} className="relative">
-              <input
-                type="radio"
-                name={`${id}-condition`}
-                value={condition}
-                checked={line.condition === condition}
-                onChange={() => onChange((item) => ({ ...item, condition }))}
-                className="peer sr-only"
-              />
-              <span
-                className={cn(
-                  "rounded-control flex min-h-12 cursor-pointer items-center justify-center border-2 px-2 text-center font-medium",
-                  "border-border-strong bg-surface peer-checked:border-primary peer-checked:bg-primary-subtle peer-checked:text-primary-subtle-fg",
-                  "peer-focus-visible:outline-focus-ring peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2",
-                )}
-              >
-                {t(`condition.${condition}`)}
-              </span>
-            </label>
+        <legend className="text-muted mb-2 text-sm font-medium">{t("conditionLabel")}</legend>
+        {/* One track: the four conditions side by side, "none in this room" quieter beneath (a rare answer). */}
+        <div className="rounded-control border-border grid grid-cols-4 gap-1 border p-1">
+          {CONDITIONS.slice(0, 4).map((condition) => (
+            <ConditionOption
+              key={condition}
+              name={`${id}-condition`}
+              condition={condition}
+              checked={line.condition === condition}
+              onSelect={() => onChange((item) => ({ ...item, condition }))}
+            />
           ))}
         </div>
+        <ConditionOption
+          name={`${id}-condition`}
+          condition="not_applicable"
+          checked={line.condition === "not_applicable"}
+          onSelect={() => onChange((item) => ({ ...item, condition: "not_applicable" }))}
+          quiet
+        />
       </fieldset>
 
       <div className="flex flex-col gap-1">
@@ -324,59 +415,98 @@ function ItemCard({
         )
       ) : null}
 
-      {line.photoDocumentIds.length + line.added.length > 0 ? (
-        <ul className="relative flex gap-2 overflow-x-auto pb-1" aria-label={t("photos")} data-testid="item-photos">
-          {line.photoDocumentIds.map((photoId, index) => (
-            <li key={photoId} className="relative shrink-0">
-              <PhotoThumb fileId={photoId} alt={t("photoAlt", { item: line.label, index: index + 1 })} />
-              {editable ? (
-                <RemoveButton
-                  label={t("removePhoto", { index: index + 1 })}
-                  onRemove={() => onChange((item) => ({ ...item, removed: [...item.removed, photoId] }))}
-                />
-              ) : null}
-            </li>
-          ))}
-          {line.added.map((photo, index) => (
-            <li key={photo.localId} className="relative shrink-0" data-uploaded={Boolean(photo.fileId)}>
-              {photo.blob ? (
-                <BlobThumb
-                  blob={photo.blob}
-                  alt={t("photoAlt", { item: line.label, index: line.photoDocumentIds.length + index + 1 })}
-                />
-              ) : photo.fileId ? (
-                <PhotoThumb fileId={photo.fileId} alt={t("photoAlt", { item: line.label, index: index + 1 })} />
-              ) : null}
-              {!photo.fileId ? (
-                <span className="bg-overlay text-fg-inverse rounded-b-control absolute inset-x-0 bottom-0 px-1 text-center text-xs">
-                  {t("photoWaiting")}
-                </span>
-              ) : null}
-              {editable ? (
-                <RemoveButton
-                  label={t("removePhoto", { index: line.photoDocumentIds.length + index + 1 })}
-                  onRemove={() =>
-                    onChange((item) => ({ ...item, added: item.added.filter((p) => p.localId !== photo.localId) }))
-                  }
-                />
-              ) : null}
-            </li>
-          ))}
-        </ul>
-      ) : null}
+      <div className="flex flex-wrap items-start gap-2">
+        {line.photoDocumentIds.length + line.added.length > 0 ? (
+          <ul className="relative flex flex-wrap gap-2" aria-label={t("photos")} data-testid="item-photos">
+            {line.photoDocumentIds.map((photoId, index) => (
+              <li key={photoId} className="relative shrink-0">
+                <PhotoThumb fileId={photoId} alt={t("photoAlt", { item: line.label, index: index + 1 })} />
+                {editable ? (
+                  <RemoveButton
+                    label={t("removePhoto", { index: index + 1 })}
+                    onRemove={() => onChange((item) => ({ ...item, removed: [...item.removed, photoId] }))}
+                  />
+                ) : null}
+              </li>
+            ))}
+            {line.added.map((photo, index) => (
+              <li key={photo.localId} className="relative shrink-0" data-uploaded={Boolean(photo.fileId)}>
+                {photo.blob ? (
+                  <BlobThumb
+                    blob={photo.blob}
+                    alt={t("photoAlt", { item: line.label, index: line.photoDocumentIds.length + index + 1 })}
+                  />
+                ) : photo.fileId ? (
+                  <PhotoThumb fileId={photo.fileId} alt={t("photoAlt", { item: line.label, index: index + 1 })} />
+                ) : null}
+                {!photo.fileId ? (
+                  <span className="bg-overlay text-fg-inverse rounded-b-control absolute inset-x-0 bottom-0 px-1 text-center text-xs">
+                    {t("photoWaiting")}
+                  </span>
+                ) : null}
+                {editable ? (
+                  <RemoveButton
+                    label={t("removePhoto", { index: line.photoDocumentIds.length + index + 1 })}
+                    onRemove={() =>
+                      onChange((item) => ({ ...item, added: item.added.filter((p) => p.localId !== photo.localId) }))
+                    }
+                  />
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        ) : null}
 
-      {editable && !shooting ? (
-        <Button
-          variant="secondary"
-          size="lg"
-          iconStart={IconCamera}
-          onClick={() => onShoot(true)}
-          data-testid="add-photos"
-        >
-          {t("addPhotos")}
-        </Button>
-      ) : null}
+        {editable && !shooting ? (
+          <CaptureTile
+            shape="square"
+            icon={IconCamera}
+            label={t("addPhoto")}
+            onClick={() => onShoot(true)}
+            testId="add-photos"
+          />
+        ) : null}
+      </div>
     </article>
+  );
+}
+
+function ConditionOption({
+  name,
+  condition,
+  checked,
+  onSelect,
+  quiet = false,
+}: {
+  name: string;
+  condition: Schemas["ItemCondition"];
+  checked: boolean;
+  onSelect: () => void;
+  quiet?: boolean;
+}) {
+  const t = useTranslations("staff.inspections");
+  return (
+    <label className={cn("relative", quiet && "self-start")}>
+      <input
+        type="radio"
+        name={name}
+        value={condition}
+        checked={checked}
+        onChange={onSelect}
+        className="peer sr-only"
+      />
+      <span
+        className={cn(
+          "rounded-thumb flex min-h-12 cursor-pointer items-center justify-center px-1 text-center font-medium transition-colors",
+          "peer-checked:bg-primary-subtle peer-checked:text-primary-subtle-fg peer-checked:ring-primary peer-checked:ring-1",
+          "peer-focus-visible:outline-focus-ring peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2",
+          "peer-disabled:cursor-default",
+          quiet ? "text-muted hover:text-fg px-3 text-sm" : "text-fg hover:bg-bg-subtle",
+        )}
+      >
+        {t(`condition.${condition}`)}
+      </span>
+    </label>
   );
 }
 

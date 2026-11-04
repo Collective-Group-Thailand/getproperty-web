@@ -5,12 +5,6 @@
   "noneOpen": "ไม่มีห้องที่ต้องตรวจ",
   "noneOpenHint": "ห้องที่ผู้เช่าแจ้งย้ายออกหรือสัญญาใหม่ที่ต้องตรวจรับจะขึ้นที่นี่",
   "heading": "{unit} · {type, select, move_in {ตรวจรับเข้า} move_out {ตรวจย้ายออก} other {ตรวจห้อง}}",
-  "statusWord": {
-    "scheduled": "รอตรวจ",
-    "in_progress": "กำลังตรวจ",
-    "completed": "ตรวจเสร็จ",
-    "signed": "ลงนามครบ"
-  },
   "report": "รายงานเลขที่ {number}",
   "doneTitle": "ตรวจเสร็จแล้ว",
   "doneBody": "ปิดรายงานเมื่อ {date} แก้ไขไม่ได้แล้ว",
@@ -26,7 +20,6 @@
   "cameraLoading": "กำลังเปิด…",
   "complete": {
     "title": "ปิดการตรวจ",
-    "missing": "ระบุสภาพให้ครบอีก {count} รายการก่อนปิดการตรวจ",
     "start": "เซ็นชื่อและปิดการตรวจ",
     "notes": "หมายเหตุของรายงาน",
     "staffSignature": "ลายเซ็นผู้ตรวจ",
@@ -37,7 +30,10 @@
     "errorTitle": "ปิดการตรวจไม่สำเร็จ",
     "submit": "ปิดการตรวจ",
     "submitSigned": "ปิดการตรวจ (เซ็นครบ)",
-    "cancel": "ยังไม่ปิด"
+    "cancel": "ยังไม่ปิด",
+    "left": "เหลือ {count} รายการ",
+    "ready": "ตรวจครบทุกรายการแล้ว",
+    "next": "ไปรายการถัดไป"
   },
   "area": {
     "room": "ในห้อง",
@@ -53,8 +49,8 @@
     "good": "ดี",
     "fair": "พอใช้",
     "damaged": "ชำรุด",
-    "missing": "สูญหาย",
-    "not_applicable": "ไม่มี"
+    "missing": "หาย",
+    "not_applicable": "ไม่มีในห้องนี้"
   },
   "notes": "หมายเหตุ",
   "register": "เลขมิเตอร์",
@@ -65,10 +61,18 @@
   "photoAlt": "รูป{item} รูปที่ {index}",
   "removePhoto": "ลบรูปที่ {index}",
   "photoWaiting": "รอส่ง",
-  "addPhotos": "ถ่ายรูป",
   "shoot": "ถ่ายรูป{item}",
   "sameAngle": "รูปตอนย้ายเข้า ถ่ายมุมเดียวกันเพื่อเทียบ",
   "closeCamera": "ปิดกล้อง",
   "downloadReport": "เปิดรายงาน (PDF)",
-  "reportUnavailable": "รายงานยังไม่พร้อม ลองใหม่อีกครั้ง"
+  "reportUnavailable": "รายงานยังไม่พร้อม ลองใหม่อีกครั้ง",
+  "lede": "ตรวจห้องก่อนย้ายเข้าและก่อนย้ายออกในอาคารของคุณ",
+  "backToday": "กลับไปหน้าวันนี้",
+  "scheduledFor": "นัด {at}",
+  "completedAt": "ตรวจเสร็จ {at}",
+  "progress": "ตรวจแล้ว {done} จาก {total} รายการ",
+  "progressLabel": "ความคืบหน้าการตรวจห้อง",
+  "lineDone": "ตรวจรายการนี้แล้ว",
+  "current": "กำลังตรวจ",
+  "addPhoto": "ถ่ายรูป"
 }
