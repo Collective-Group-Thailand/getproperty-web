@@ -2,27 +2,34 @@ import { getTranslations } from "next-intl/server";
 
 import { ETAX_STATUS, ETAX_VALUES } from "@/domain/status/etax";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
-import { formatDateTime, formatNumber, formatPeriodKey, formatTHB } from "@/i18n/format";
+import { formatDate, formatNumber, formatPeriodKey, formatTHB } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
-import { Card, CardHeader } from "@/ui/components/Card";
+import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { ListToolbar, ViewTabs } from "@/ui/components/ListToolbar";
 import { SimpleTable } from "@/ui/components/SimpleTable";
-import { Stat } from "@/ui/components/Stat";
+import { StatsRow } from "@/ui/components/StatsRow";
+import { StatusText } from "@/ui/components/StatusText";
+import { IconAlert } from "@/ui/icons/glyphs/alert";
+import { IconLock } from "@/ui/icons/glyphs/lock";
 import { IconReceipt } from "@/ui/icons/glyphs/receipt";
 
 import { FilterBar } from "@/features/shared/console/FilterBar";
 import { ListPagination } from "@/features/shared/console/ListPagination";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
+import { withQuery } from "@/features/shared/console/params";
 import { SectionError } from "@/features/shared/console/SectionError";
-import { ReportsNav } from "../reports/ReportsNav";
 import { ExportButton } from "../shared/ExportButton";
 import { ownerPath } from "../shared/links";
+import { billingPeriods, periodParam } from "../shared/periods";
 import { focusedBuilding, ownerCan, pageParam, param, section, type OwnerContext } from "../shared/server";
+import { viewCounts } from "../shared/views";
 
 type SearchParams = Record<string, string | string[] | undefined>;
-const PERIOD = /^\d{4}-(0[1-9]|1[0-2])$/;
 export const SUBJECT_TYPES: Schemas["EtaxSubjectType"][] = ["receipt", "tax_invoice", "credit_note", "debit_note"];
+const VIEWS = ["all", ...ETAX_VALUES] as const;
+type View = (typeof VIEWS)[number];
 
 /** This month in Bangkok as `YYYY-MM`. */
 export function bangkokMonth(now = Date.now()): string {
@@ -30,9 +37,10 @@ export function bangkokMonth(now = Date.now()): string {
 }
 
 /**
- * e-Tax (B6.2, D-050, D-215 — VAT-registered tenants): the month's summary for the accountant (documents per
- * status, the signed totals and per ETDA type, the register as the `etax_monthly_xlsx` export) and the list of
- * documents sent to the tenant's e-Tax service provider, with what it refused. Every figure is the API's.
+ * Reports › e-Tax (B6.2, D-050, D-215 — VAT-registered tenants; redesign G6): the month's documents per status as one
+ * figures row (the refused ones highlighted — they need fixing and sending again), the signed totals on a quiet line,
+ * then one toolbar — status views with the API's counts, the month, a search and the document type — over the list
+ * of documents; each row opens its record. Every figure is the API's.
  */
 export async function EtaxView({ context, searchParams }: { context: OwnerContext; searchParams: SearchParams }) {
   const t = await getTranslations("owner.etax");
@@ -40,19 +48,22 @@ export async function EtaxView({ context, searchParams }: { context: OwnerContex
   const { api, locale, me } = context;
   const tenant = await section(unwrap(api.GET("/v1/owner/tenant")));
   const vat = tenant.data?.vatRegistered ?? false;
-  const header = (
-    <>
-      <PageHeader title={t("title")} description={t("description")} />
-      <ReportsNav context={context} current="/reports/etax" vatRegistered={vat || !tenant.data} />
-    </>
-  );
+  const header = <PageHeader title={t("title")} description={t("description")} />;
   if (tenant.data && !vat) {
     return (
       <OwnerPage testId="etax">
         {header}
-        <Card>
-          <EmptyState icon={IconReceipt} title={t("notVat.title")} description={t("notVat.body")} />
-        </Card>
+        <EmptyState
+          variant="card"
+          icon={IconReceipt}
+          title={t("notVat.title")}
+          description={t("notVat.body")}
+          action={
+            <Button asChild variant="secondary">
+              <a href={ownerPath(locale, "/settings?section=general")}>{t("notVat.action")}</a>
+            </Button>
+          }
+        />
       </OwnerPage>
     );
   }
@@ -60,176 +71,226 @@ export async function EtaxView({ context, searchParams }: { context: OwnerContex
     return (
       <OwnerPage testId="etax">
         {header}
-        <Card>
-          <EmptyState title={t("noPermission")} />
-        </Card>
+        <EmptyState
+          variant="card"
+          icon={IconLock}
+          title={t("noPermission")}
+          action={
+            <Button asChild variant="secondary">
+              <a href={ownerPath(locale, "/reports")}>{t("backToReports")}</a>
+            </Button>
+          }
+        />
       </OwnerPage>
     );
   }
 
-  const monthParam = param(searchParams.month);
-  const month = monthParam && PERIOD.test(monthParam) ? monthParam : bangkokMonth();
+  const current = bangkokMonth();
+  const month = periodParam(param(searchParams.month)) ?? current;
   const statusParam = param(searchParams.status);
+  const status = ETAX_VALUES.includes(statusParam as Schemas["EtaxStatus"])
+    ? (statusParam as Schemas["EtaxStatus"])
+    : undefined;
   const typeParam = param(searchParams.subjectType);
-  const [summary, list] = await Promise.all([
-    section(unwrap(api.GET("/v1/owner/etax/summary", { params: { query: { month } } }))),
+  const subjectType = SUBJECT_TYPES.includes(typeParam as Schemas["EtaxSubjectType"])
+    ? (typeParam as Schemas["EtaxSubjectType"])
+    : undefined;
+  const q = param(searchParams.q);
+  const query = { month, subjectType, q };
+  const list = (view: View, extra: { page?: number; perPage: number }) =>
     unwrap(
       api.GET("/v1/owner/etax/submissions", {
-        params: {
-          query: {
-            month,
-            status: ETAX_VALUES.includes(statusParam as Schemas["EtaxStatus"])
-              ? (statusParam as Schemas["EtaxStatus"])
-              : undefined,
-            subjectType: SUBJECT_TYPES.includes(typeParam as Schemas["EtaxSubjectType"])
-              ? (typeParam as Schemas["EtaxSubjectType"])
-              : undefined,
-            q: param(searchParams.q),
-            page: pageParam(searchParams.page),
-            perPage: 25,
-          },
-        },
+        params: { query: { ...query, status: view === "all" ? undefined : view, ...extra } },
       }),
-    ),
+    );
+  const [summary, rows, counts, periods] = await Promise.all([
+    section(unwrap(api.GET("/v1/owner/etax/summary", { params: { query: { month } } }))),
+    list(status ?? "all", { page: pageParam(searchParams.page), perPage: 25 }),
+    viewCounts(VIEWS, (view) => list(view, { perPage: 1 })),
+    billingPeriods(context, month, current),
   ]);
   const building = focusedBuilding(context);
   const s = summary.data;
+  const base = ownerPath(locale, "/reports/etax");
+  const keep = { month: month === current ? undefined : month, subjectType, q };
+  const filtered = Boolean(status || subjectType || q);
+  const typeName = (code: string) => (t.has(`typeCode.${code}` as never) ? t(`typeCode.${code}` as never) : null);
 
   return (
     <OwnerPage testId="etax" wide>
-      {header}
-      <Card as="section" aria-labelledby="etax-summary" data-testid="etax-summary">
-        <CardHeader
-          title={<span id="etax-summary">{t("summary.title", { month: formatPeriodKey(month, locale) })}</span>}
-          description={
-            s ? (s.enabled ? t("summary.enabled", { provider: s.provider ?? "—" }) : t("summary.disabled")) : undefined
-          }
+      <PageHeader
+        title={t("title")}
+        description={t("description")}
+        actions={
+          ownerCan(me, "export.create") ? (
+            <ExportButton
+              kind="etax_monthly_xlsx"
+              params={{ period: month, ...(building ? { buildingId: building.id } : {}) }}
+              label={t("summary.register")}
+              testId="etax-register"
+            />
+          ) : null
+        }
+      />
+
+      {!s ? (
+        <SectionError error={summary.error} />
+      ) : (
+        <section aria-labelledby="etax-summary" className="flex flex-col gap-3" data-testid="etax-summary">
+          <h2 id="etax-summary" className="sr-only">
+            {t("summary.title", { month: formatPeriodKey(month, locale) })}
+          </h2>
+          <div data-testid="etax-counts">
+            <StatsRow
+              label={t("summary.title", { month: formatPeriodKey(month, locale) })}
+              highlight={s.counts.rejected > 0 ? "rejected" : s.counts.failed > 0 ? "failed" : undefined}
+              figures={ETAX_VALUES.map((value) => ({
+                key: value,
+                label: states(value),
+                value: (
+                  <span data-testid={`etax-count-${value}`} data-count={s.counts[value]}>
+                    {formatNumber(s.counts[value], locale)}
+                  </span>
+                ),
+                hint:
+                  (value === "rejected" || value === "failed") && s.counts[value] > 0
+                    ? t("summary.fixHint")
+                    : undefined,
+                href: withQuery(base, { ...keep, status: value }),
+              }))}
+            />
+          </div>
+          <div
+            className="text-muted flex flex-col gap-x-6 gap-y-1 px-1 text-sm sm:flex-row sm:flex-wrap sm:items-baseline"
+            data-testid="etax-signed"
+          >
+            <span>{t("summary.signedLine", { count: s.signed.documents })}</span>
+            <span className="tabular-nums">
+              {t("summary.subtotalShort")}{" "}
+              <span className="text-fg font-medium">{formatTHB(s.signed.subtotal, locale)}</span>
+            </span>
+            <span className="tabular-nums">
+              {t("summary.vat")} <span className="text-fg font-medium">{formatTHB(s.signed.vatAmount, locale)}</span>
+            </span>
+            <span className="tabular-nums">
+              {t("summary.total")} <span className="text-fg font-medium">{formatTHB(s.signed.total, locale)}</span>
+            </span>
+            <span>{s.enabled ? t("summary.enabled", { provider: s.provider ?? "—" }) : t("summary.disabled")}</span>
+          </div>
+          {s.byType.length ? (
+            <details className="px-1" data-testid="etax-by-type">
+              <summary className="text-primary cursor-pointer text-sm font-medium">{t("summary.byType")}</summary>
+              <ul className="text-muted mt-2 flex flex-col gap-1 text-sm">
+                {s.byType.map((row) => (
+                  <li key={row.typeCode} className="flex max-w-md justify-between gap-6 tabular-nums">
+                    <span>{typeName(row.typeCode) ?? t("typeOther")}</span>
+                    <span>
+                      {t("summary.documents", { count: row.documents })} ·{" "}
+                      <span className="text-fg">{formatTHB(row.total, locale)}</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ) : null}
+        </section>
+      )}
+
+      <ListToolbar
+        tabs={
+          <ViewTabs
+            label={t("filter.status")}
+            current={status ?? "all"}
+            tabs={VIEWS.map((view) => ({
+              key: view,
+              href: withQuery(base, { ...keep, status: view === "all" ? undefined : view }),
+              label: view === "all" ? t("filter.allStatuses") : states(view),
+              count: counts[view],
+              testId: `etax-view-${view}`,
+            }))}
+          />
+        }
+        filters={
+          <FilterBar
+            variant="toolbar"
+            fields={[
+              { name: "month", label: t("filter.month"), type: "period", periods, fallback: current },
+              { name: "q", label: t("filter.search"), type: "search", placeholder: t("filter.searchPlaceholder") },
+              {
+                name: "subjectType",
+                label: t("filter.type"),
+                type: "select",
+                placeholder: t("filter.allTypes"),
+                options: SUBJECT_TYPES.map((value) => ({ value, label: t(`subject.${value}`) })),
+              },
+            ]}
+          />
+        }
+      />
+
+      {rows.data.length === 0 ? (
+        <EmptyState
+          variant="card"
+          icon={IconReceipt}
+          title={filtered ? t("empty.filteredTitle") : t("empty.title")}
+          description={filtered ? t("empty.filteredBody") : t("empty.body")}
           action={
-            ownerCan(me, "export.create") ? (
-              <ExportButton
-                kind="etax_monthly_xlsx"
-                params={{ period: month, ...(building ? { buildingId: building.id } : {}) }}
-                label={t("summary.register")}
-                testId="etax-register"
-              />
-            ) : null
+            filtered ? (
+              <Button asChild variant="secondary">
+                <a href={withQuery(base, { month: keep.month })}>{t("empty.clear")}</a>
+              </Button>
+            ) : (
+              <Button asChild variant="secondary">
+                <a href={ownerPath(locale, "/payments")}>{t("empty.payments")}</a>
+              </Button>
+            )
           }
         />
-        {!s ? (
-          <SectionError error={summary.error} />
-        ) : (
-          <div className="flex flex-col gap-4">
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5" data-testid="etax-counts">
-              {ETAX_VALUES.map((status) => (
-                <div key={status} data-testid={`etax-count-${status}`} data-count={s.counts[status]}>
-                  <Stat label={states(status)} value={formatNumber(s.counts[status], locale)} />
-                </div>
-              ))}
-            </div>
-            <div className="grid gap-3 sm:grid-cols-3" data-testid="etax-signed">
-              <Stat
-                label={t("summary.subtotal")}
-                value={formatTHB(s.signed.subtotal, locale)}
-                hint={t("summary.documents", { count: s.signed.documents })}
-              />
-              <Stat label={t("summary.vat")} value={formatTHB(s.signed.vatAmount, locale)} />
-              <Stat label={t("summary.total")} value={formatTHB(s.signed.total, locale)} />
-            </div>
-            {s.byType.length ? (
-              <SimpleTable
-                caption={t("summary.byType")}
-                testId="etax-by-type"
-                minWidth="24rem"
-                columns={[
-                  { key: "type", header: t("col.type") },
-                  { key: "documents", header: t("col.documents"), align: "end" },
-                  { key: "total", header: t("col.total"), align: "end" },
-                ]}
-                rows={s.byType.map((row) => ({
-                  key: row.typeCode,
-                  cells: {
-                    type: t.has(`typeCode.${row.typeCode}` as never)
-                      ? t(`typeCode.${row.typeCode}` as never)
-                      : row.typeCode,
-                    documents: formatNumber(row.documents, locale),
-                    total: formatTHB(row.total, locale),
-                  },
-                }))}
-              />
-            ) : null}
-          </div>
-        )}
-      </Card>
-
-      <FilterBar
-        fields={[
-          { name: "month", label: t("filter.month"), type: "month" },
-          { name: "q", label: t("filter.search"), type: "search", placeholder: t("filter.searchPlaceholder") },
-          {
-            name: "status",
-            label: t("filter.status"),
-            type: "select",
-            placeholder: t("filter.allStatuses"),
-            options: ETAX_VALUES.map((value) => ({ value, label: states(value) })),
-          },
-          {
-            name: "subjectType",
-            label: t("filter.type"),
-            type: "select",
-            placeholder: t("filter.allTypes"),
-            options: SUBJECT_TYPES.map((value) => ({ value, label: t(`subject.${value}`) })),
-          },
-        ]}
-      />
-      {list.data.length === 0 ? (
-        <Card>
-          <EmptyState icon={IconReceipt} title={t("empty.title")} description={t("empty.body")} />
-        </Card>
       ) : (
         <SimpleTable
           caption={t("listCaption")}
           testId="etax-list"
-          minWidth="48rem"
+          minWidth="52rem"
+          stackOnPhones
           columns={[
-            { key: "number", header: t("col.number") },
-            { key: "type", header: t("col.type") },
-            { key: "issued", header: t("col.issued") },
-            { key: "total", header: t("col.total"), align: "end" },
-            { key: "status", header: t("col.status") },
+            { key: "number", header: t("col.number"), phone: "title" },
+            { key: "type", header: t("col.type"), phone: "meta" },
+            { key: "issued", header: t("col.issued"), className: "whitespace-nowrap", phone: "meta" },
+            { key: "total", header: t("col.total"), align: "end", phone: "figure" },
+            { key: "status", header: t("col.status"), className: "whitespace-nowrap", phone: "status" },
           ]}
-          rows={list.data.map((row) => ({
+          rows={rows.data.map((row) => ({
             key: row.id,
             testId: "etax-row",
-            tone: row.status === "rejected" || row.status === "failed" ? "warning" : "default",
+            href: ownerPath(locale, `/reports/etax/${row.id}`),
             data: { id: row.id, status: row.status },
             cells: {
               number: (
-                <a
-                  className="font-mono font-medium underline-offset-4 hover:underline"
-                  href={ownerPath(locale, `/reports/etax/${row.id}`)}
-                >
-                  {row.number}
-                </a>
-              ),
-              type: `${t(`subject.${row.subjectType}`)} · ${row.documentTypeCode}`,
-              issued: formatDateTime(row.issuedAt, locale),
-              total: formatTHB(row.total, locale),
-              status: (
-                <span className="flex flex-col gap-1">
-                  <StatusBadgeOf map={ETAX_STATUS} value={row.status} size="sm" />
-                  {row.error ? <span className="text-muted line-clamp-2 text-xs">{row.error}</span> : null}
+                <span className="flex flex-col gap-0.5">
+                  <span className="font-mono font-medium">{row.number}</span>
+                  {row.error ? (
+                    <StatusText tone="danger" icon={IconAlert} className="max-w-sm">
+                      <span className="line-clamp-2 font-normal">{row.error}</span>
+                    </StatusText>
+                  ) : null}
                 </span>
               ),
+              type: (
+                <span className="flex flex-col">
+                  <span>{t(`subject.${row.subjectType}`)}</span>
+                  {typeName(row.documentTypeCode) ? (
+                    <span className="text-muted text-sm">{typeName(row.documentTypeCode)}</span>
+                  ) : null}
+                </span>
+              ),
+              issued: formatDate(row.issuedAt, locale),
+              total: formatTHB(row.total, locale),
+              status: <StatusBadgeOf map={ETAX_STATUS} value={row.status} size="sm" />,
             },
           }))}
         />
       )}
-      <ListPagination
-        meta={list.meta}
-        path={ownerPath(locale, "/reports/etax")}
-        searchParams={searchParams}
-        locale={locale}
-      />
+      <ListPagination meta={rows.meta} path={base} searchParams={searchParams} locale={locale} />
     </OwnerPage>
   );
 }

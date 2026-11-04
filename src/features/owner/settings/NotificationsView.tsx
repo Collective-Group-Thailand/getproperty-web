@@ -1,24 +1,23 @@
 import { getTranslations } from "next-intl/server";
 
-import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { SectionError } from "@/features/shared/console/SectionError";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
-import { Badge } from "@/ui/components/Badge";
-import { Card } from "@/ui/components/Card";
+import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
-import { SimpleTable } from "@/ui/components/SimpleTable";
+import { IconBell } from "@/ui/icons/glyphs/bell";
 
+import { ownerPath } from "../shared/links";
 import { ownerCan, readOnly, section, type OwnerContext } from "../shared/server";
-import { RouteSwitch } from "./RouteSwitch";
-import { SettingsNav } from "./SettingsNav";
+import { NotificationMatrix, type MatrixRow } from "./NotificationMatrix";
+import { SettingsCard, SettingsFrame } from "./SettingsNav";
 
 const CHANNEL_ORDER: Schemas["NotificationChannel"][] = ["line", "sms", "email", "web_push", "in_app"];
 
 /**
- * Notification routing (F2 2.6, D-063): the resident-facing events × channels matrix — which channels
- * each event goes out on for this tenant (platform default or the tenant's override), urgent events
- * marked (they ignore quiet hours). Each switch saves at once.
+ * Settings › Notifications (F2 2.6, D-063; redesign G6): which channels each resident message goes out on — the
+ * message in words with one line of what it is (never its event code), urgent ones marked (they ignore quiet hours),
+ * a checkbox per channel, saved together from the sticky bar. Quiet hours live on the general page.
  */
 export async function NotificationsView({
   context,
@@ -32,80 +31,75 @@ export async function NotificationsView({
   const editable = ownerCan(me, "notification.route.manage") && !readOnly(me);
   const resident = (routes.data ?? []).filter((route) => route.audience === "resident");
   const channels = CHANNEL_ORDER.filter((channel) => resident.some((route) => route.channel === channel));
-  const events = [...new Set(resident.map((route) => route.eventType))];
-  const cell = (eventType: string, channel: Schemas["NotificationChannel"]) =>
-    resident.find((route) => route.eventType === eventType && route.channel === channel);
-  const eventLabel = (eventType: string) => {
-    const id = `event.${eventType.replaceAll(".", "_")}`;
-    return t.has(id) ? t(id) : eventType;
-  };
+  // A message this page has no name for is left out rather than shown as its event code.
+  const events = [...new Set(resident.map((route) => route.eventType))].filter((eventType) =>
+    t.has(`event.${eventType.replaceAll(".", "_")}`),
+  );
+  const rows: MatrixRow[] = events.map((eventType) => {
+    const id = eventType.replaceAll(".", "_");
+    const own = resident.filter((route) => route.eventType === eventType);
+    return {
+      eventType,
+      label: t(`event.${id}` as never),
+      description: t.has(`eventHint.${id}`) ? t(`eventHint.${id}` as never) : undefined,
+      urgent: own.some((route) => route.urgent),
+      overridden: own.some((route) => route.overridden),
+      routes: Object.fromEntries(own.map((route) => [route.channel, route])),
+    };
+  });
+  const general = ownerPath(locale, "/settings?section=general#settings-notifications-title");
   return (
-    <OwnerPage testId="notification-routes">
-      <PageHeader title={t("title")} description={t("description")} />
-      <SettingsNav me={me} current="/settings/notifications" locale={locale} />
+    <SettingsFrame
+      me={me}
+      locale={locale}
+      current="/settings/notifications"
+      title={t("title")}
+      description={t("description")}
+      testId="notification-routes"
+    >
       {!routes.data ? (
         <SectionError error={routes.error} />
-      ) : events.length === 0 ? (
-        <Card>
-          <EmptyState title={t("empty")} />
-        </Card>
-      ) : (
-        <SimpleTable
-          caption={t("title")}
-          testId="route-matrix"
-          minWidth="44rem"
-          columns={[
-            { key: "event", header: t("col.event") },
-            ...channels.map((channel) => ({ key: channel, header: t(`channel.${channel}`), align: "center" as const })),
-          ]}
-          rows={events.map((eventType) => {
-            const urgent = resident.some((route) => route.eventType === eventType && route.urgent);
-            const overridden = resident.some((route) => route.eventType === eventType && route.overridden);
-            return {
-              key: eventType,
-              testId: "route-row",
-              data: { event: eventType },
-              cells: {
-                event: (
-                  <span className="flex flex-col gap-1">
-                    <span className="font-medium">{eventLabel(eventType)}</span>
-                    <span className="text-muted font-mono text-xs">{eventType}</span>
-                    <span className="flex flex-wrap gap-1">
-                      {urgent ? (
-                        <Badge size="sm" tone="warning">
-                          {t("urgent")}
-                        </Badge>
-                      ) : null}
-                      {overridden ? <Badge size="sm">{t("overridden")}</Badge> : null}
-                    </span>
-                  </span>
-                ),
-                ...Object.fromEntries(
-                  channels.map((channel) => {
-                    const route = cell(eventType, channel);
-                    return [
-                      channel,
-                      route ? (
-                        <RouteSwitch
-                          route={route}
-                          disabled={!editable}
-                          label={t("switchLabel", { event: eventLabel(eventType), channel: t(`channel.${channel}`) })}
-                        />
-                      ) : (
-                        <span className="text-muted">
-                          <span aria-hidden="true">—</span>
-                          <span className="sr-only">{t("notAvailable")}</span>
-                        </span>
-                      ),
-                    ];
-                  }),
-                ),
-              },
-            };
-          })}
+      ) : rows.length === 0 ? (
+        <EmptyState
+          variant="card"
+          icon={IconBell}
+          title={t("empty")}
+          action={
+            <Button asChild variant="secondary">
+              <a href={general}>{t("quietHoursLink")}</a>
+            </Button>
+          }
         />
+      ) : (
+        <SettingsCard
+          id="notifications-matrix"
+          title={t("matrixTitle")}
+          description={t("matrixHint")}
+          flush
+          className="overflow-visible"
+        >
+          <NotificationMatrix
+            rows={rows}
+            channels={channels}
+            editable={editable}
+            channelLabels={Object.fromEntries(
+              channels.map((channel) => [
+                channel,
+                { label: t(`channel.${channel}`), note: channel === "sms" ? t("smsNote") : undefined },
+              ]),
+            )}
+          />
+        </SettingsCard>
       )}
-      <p className="text-muted text-sm">{t("quietHoursHint")}</p>
-    </OwnerPage>
+      <p className="text-muted text-sm">
+        {t.rich("quietHoursHint", {
+          link: (chunks) => (
+            <a className="text-primary font-medium underline-offset-4 hover:underline" href={general}>
+              {chunks}
+            </a>
+          ),
+        })}
+      </p>
+    </SettingsFrame>
   );
 }

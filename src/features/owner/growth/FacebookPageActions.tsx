@@ -32,6 +32,7 @@ export function ConnectFacebookPage({ replacing }: { replacing: boolean }) {
       label={replacing ? t("replace") : t("connect")}
       icon={IconLink}
       variant={replacing ? "secondary" : "primary"}
+      sheet
       testId="facebook-connect"
       title={t("connectTitle")}
       description={t("connectHint")}

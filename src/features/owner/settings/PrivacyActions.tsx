@@ -3,6 +3,8 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { IconXCircle } from "@/ui/icons/glyphs/x-circle";
+import { ActionMenu, type DialogControl } from "@/features/shared/console/ActionMenu";
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 import { ProblemNotice, useApiAction } from "@/features/shared/console/useApiAction";
 import { browserApi } from "@/lib/api/browser";
@@ -100,27 +102,48 @@ export function DsrActions({ dsr }: { dsr: Schemas["DsrDto"] }) {
       />
     </Field>
   );
+  const dialog = (action: (typeof DSR_ACTIONS)[number], control?: DialogControl) => (
+    <ConfirmAction
+      key={action}
+      label={t(`action.${action}`)}
+      size="sm"
+      variant="secondary"
+      tone={action === "reject" ? "destructive" : "primary"}
+      testId={`dsr-${action}-${dsr.id}`}
+      title={t(`confirm.${action}.title`)}
+      description={t(`confirm.${action}.body`, { kind: t(`kind.${dsr.kind}`) })}
+      confirmLabel={t(`action.${action}`)}
+      phrase={action === "fulfil" || action === "reject" ? dsr.id.slice(0, 8) : undefined}
+      ready={action !== "reject" || notes.trim().length > 0}
+      successMessage={t("done")}
+      onConfirm={() => run(action)}
+      {...control}
+    >
+      {notesField}
+    </ConfirmAction>
+  );
+  // The request's next step stays visible (outlined); refusing it is rare and sits in the "⋯".
+  const lead = offered.find((action) => action !== "reject");
+  const rejectable = offered.includes("reject");
   return (
-    <span className="flex flex-wrap gap-2" data-testid={`dsr-actions-${dsr.id}`}>
-      {offered.map((action) => (
-        <ConfirmAction
-          key={action}
-          label={t(`action.${action}`)}
-          size="sm"
-          variant={action === "reject" ? "destructive" : action === "fulfil" ? "primary" : "secondary"}
-          tone={action === "reject" ? "destructive" : "primary"}
-          testId={`dsr-${action}-${dsr.id}`}
-          title={t(`confirm.${action}.title`)}
-          description={t(`confirm.${action}.body`, { kind: t(`kind.${dsr.kind}`) })}
-          confirmLabel={t(`action.${action}`)}
-          phrase={action === "fulfil" || action === "reject" ? dsr.id.slice(0, 8) : undefined}
-          ready={action !== "reject" || notes.trim().length > 0}
-          successMessage={t("done")}
-          onConfirm={() => run(action)}
-        >
-          {notesField}
-        </ConfirmAction>
-      ))}
+    <span className="flex items-center justify-end gap-2" data-testid={`dsr-actions-${dsr.id}`}>
+      {lead ? dialog(lead) : null}
+      {rejectable ? (
+        <ActionMenu
+          label={t("menu")}
+          testId={`dsr-menu-${dsr.id}`}
+          actions={[
+            {
+              id: "reject",
+              label: t("action.reject"),
+              icon: IconXCircle,
+              destructive: true,
+              testId: `dsr-reject-${dsr.id}`,
+              dialog: (control) => dialog("reject", control),
+            },
+          ]}
+        />
+      ) : null}
     </span>
   );
 }

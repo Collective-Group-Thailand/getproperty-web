@@ -1,5 +1,6 @@
 export { AlertDialog, type AlertDialogProps } from "./AlertDialog";
 export { AppShell, BottomNav, SidebarNav, TopBar, type AppShellProps, type NavItem } from "./AppShell";
+export { Avatar, initialOf } from "./Avatar";
 export { Badge, badgeVariants, StatusBadge, type BadgeProps, type StatusBadgeProps } from "./Badge";
 export { Breadcrumbs, type Crumb } from "./Breadcrumbs";
 export { Button, buttonVariants, type ButtonProps } from "./Button";

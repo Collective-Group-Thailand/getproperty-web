@@ -21,7 +21,7 @@ import { Checkbox } from "@/ui/components/Checkbox";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { NativeSelect } from "@/ui/components/NativeSelect";
-import { LazyDialog } from "@/ui/components/overlays";
+import { LazySheet } from "@/ui/components/overlays";
 import { toast } from "@/ui/components/Toast";
 import { IconAdd } from "@/ui/icons/glyphs/add";
 import { IconCopy } from "@/ui/icons/glyphs/copy";
@@ -50,8 +50,11 @@ const ADDON_TERMS_REQUIRED = "messaging.addon_terms_required";
 export function ConnectLineOa({
   buildings,
   addon = null,
+  secondary = false,
 }: {
   buildings: { id: string; name: string }[];
+  /** Outlined: another OA joins those already connected. */
+  secondary?: boolean;
   /** The agency add-on's prices while it is on sale (D-287); null = connecting is free. */
   addon?: AddonTerms | null;
 }) {
@@ -73,6 +76,7 @@ export function ConnectLineOa({
     <>
       <Button
         iconStart={IconAdd}
+        variant={secondary ? "secondary" : "primary"}
         onClick={() => {
           action.reset();
           setAccepted(false);
@@ -83,13 +87,13 @@ export function ConnectLineOa({
       >
         {t("connect")}
       </Button>
-      <LazyDialog
+      <LazySheet
+        side="right"
         open={open}
         onOpenChange={(next) => (next ? setOpen(true) : close())}
         title={t("connectTitle")}
         description={t("connectHint")}
         closeLabel={common("close")}
-        size="md"
         footer={
           <>
             <Button variant="secondary" onClick={close} disabled={action.busy}>
@@ -201,7 +205,7 @@ export function ConnectLineOa({
           ) : null}
           <ProblemNotice error={termsError ? null : action.error} />
         </form>
-      </LazyDialog>
+      </LazySheet>
     </>
   );
 }

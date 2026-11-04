@@ -12,11 +12,18 @@
     "sign_in": "Ways to sign in",
     "line_oa": "LINE OA",
     "verification": "Identity",
-    "facebook_page": "Facebook Page"
+    "facebook_page": "Facebook Page",
+    "title": "Settings",
+    "lede": "Your organisation, the channels residents hear from you on, and data security",
+    "group": {
+      "organisation": "Organisation",
+      "channels": "Channels",
+      "security": "Security and data"
+    }
   },
   "general": {
     "title": "Settings",
-    "description": "Company data for documents and the rules your buildings run on. Each change takes effect from the time you choose and is kept with its reason."
+    "description": "The company details printed on documents and the rules every building follows. Each change takes effect when you choose and keeps its reason."
   },
   "col": {
     "setting": "Setting",
@@ -60,13 +67,26 @@
     "access_work_order_window_hours": "Door code for a work order",
     "access_resident_visitor_codes": "Residents create visitor codes",
     "access_resident_visitor_max_hours": "Longest resident visitor code",
-    "access_battery_low_pct": "Low lock battery"
+    "access_battery_low_pct": "Low lock battery",
+    "payments_duplicate_window_hours": "Duplicate payment window",
+    "etax_enabled": "Send to e-Tax automatically",
+    "etax_provider": "e-Tax service provider",
+    "etax_seller_branch": "Registered branch code",
+    "tm30_notify_within_hours": "TM30 notification deadline",
+    "analytics_csat_survey_interval_days": "Satisfaction survey interval",
+    "viewing_self_enabled": "Self-viewing with a door code",
+    "viewing_self_code_minutes": "Viewing code valid after the slot starts",
+    "viewing_self_code_early_minutes": "Viewing code valid before the slot starts",
+    "viewing_self_overstay_minutes": "Overstay alert after",
+    "compliance_tariff_cap_representative_units": "Usage a new rate is checked at"
   },
   "property": {
     "title": "Building settings",
     "description": "Billing cycle, cut-off and grace per property. A value set here overrides the tenant's for the buildings of this property.",
     "none": "Create a property first.",
-    "pick": "Property"
+    "pick": "Property",
+    "noneHint": "Building rules apply once you add your first property.",
+    "add": "Go to buildings"
   },
   "editor": {
     "title": "Change {name}",
@@ -86,7 +106,9 @@
     "quietStart": "Quiet from",
     "quietEnd": "Quiet until",
     "estimateAllow": "Allow estimates when a reading is missing",
-    "estimateBlock": "Wait for a real reading"
+    "estimateBlock": "Wait for a real reading",
+    "vatRate": "VAT rate",
+    "vatRateHint": "As a percentage, e.g. 7"
   },
   "history": {
     "open": "History",
@@ -98,7 +120,8 @@
     "until": "Until {date}",
     "openEnded": "No end date",
     "created": "saved {date}",
-    "reason": "Reason: {reason}"
+    "reason": "Reason: {reason}",
+    "openFor": "History of {name}"
   },
   "company": {
     "title": "Company data",
@@ -200,12 +223,15 @@
       "buildings": "Buildings",
       "state": "State",
       "actions": "Actions"
-    }
+    },
+    "listTitle": "Receiving accounts",
+    "listHint": "Residents pay into these accounts; bills carry their Thai QR",
+    "menu": "Actions for account {account}"
   },
   "members": {
     "title": "Members",
     "description": "The people who work for your tenant and what each may do. Staff can be limited to some buildings.",
-    "invite": "Invite",
+    "invite": "Invite a member",
     "inviteTitle": "Invite a person",
     "inviteHint": "They join with the role you choose once they accept.",
     "invited": "Invitation sent",
@@ -255,7 +281,15 @@
       "actions": "Actions",
       "to": "To",
       "expires": "Expires"
-    }
+    },
+    "team": "Team",
+    "teamHint": "People who can open this console; their role decides what each can do",
+    "menu": "Actions for {name}",
+    "editMenu": "Change role and buildings",
+    "removeMenu": "Remove from the team",
+    "invitationMenu": "Invitation actions",
+    "noInvitationsHint": "Invitations you send stay here until they are accepted or expire",
+    "sentVia": "Sent by {channel}"
   },
   "notifications": {
     "title": "Notifications to residents",
@@ -277,7 +311,7 @@
     "turnedOn": "Channel turned on",
     "turnedOff": "Channel turned off",
     "empty": "No resident message to route",
-    "quietHoursHint": "Quiet hours are set on the General page.",
+    "quietHoursHint": "Quiet hours are set on the <link>general page</link>.",
     "event": {
       "invoice_issued": "New invoice",
       "invoice_reminder": "Payment reminder",
@@ -290,6 +324,27 @@
       "announcement_published": "Announcement",
       "parcel_arrived": "Parcel arrived",
       "service_request_updated": "Repair request update"
+    },
+    "matrixTitle": "Messages to residents",
+    "matrixHint": "Choose the channels of each message. Urgent ones go out even in quiet hours.",
+    "smsNote": "Charged per message",
+    "saved": "Channels saved",
+    "noChanges": "No changes",
+    "changes": "{count, plural, one {# change} other {# changes}}",
+    "save": "Save",
+    "quietHoursLink": "Set quiet hours",
+    "eventHint": {
+      "invoice_issued": "When the month's bill is issued, with a pay link",
+      "invoice_reminder": "On the reminder days after the due date",
+      "invoice_overdue": "When a bill is past its due date",
+      "payment_confirmed": "When a payment is confirmed",
+      "receipt_issued": "The receipt after a payment",
+      "lease_sent_for_signature": "The link to sign the lease online",
+      "lease_signed": "When everyone has signed, with a copy",
+      "deposit_refunded": "When the deposit is refunded after move-out",
+      "announcement_published": "Building announcements",
+      "parcel_arrived": "When a parcel arrives at the front desk",
+      "service_request_updated": "Progress of a repair request"
     }
   },
   "privacy": {
@@ -312,7 +367,7 @@
       "empty": "No request",
       "late": "Overdue",
       "export": "Open the export",
-      "exportTitle": "Export of request {id}",
+      "exportTitle": "Data file of the {kind} request",
       "notes": "Notes",
       "notesHint": "Kept with the request; required to reject",
       "done": "Request updated",
@@ -363,10 +418,17 @@
           "title": "Reject the request?",
           "body": "Explain why in the notes — the person is told. ({kind})"
         }
-      }
+      },
+      "emptyFiltered": "No request in this state",
+      "emptyHint": "Residents' requests to see, fix or erase their data arrive here with their legal due date",
+      "clear": "Show every state",
+      "openAudit": "Open the audit log",
+      "menu": "More actions for this request"
     },
     "accepted": "Accepted",
-    "notAccepted": "Not accepted"
+    "notAccepted": "Not accepted",
+    "versionOnly": "Version {version}",
+    "readNotice": "Read the privacy notice"
   },
   "support": {
     "title": "Support access",
@@ -400,7 +462,20 @@
       "window": "Access window",
       "state": "State",
       "actions": "Actions"
-    }
+    },
+    "requestedAt": "Requested {date}",
+    "pendingHint": "Once approved, support can read your data for the time you set — never change it",
+    "timeLeft": "Time left",
+    "hoursMinutes": "{hours} h {minutes} min",
+    "hoursMinutesLeft": "{hours} hours {minutes} minutes left",
+    "windowLabel": "Access window",
+    "scopeLabel": "Access",
+    "scopeReadOnly": "Read only",
+    "approvedBy": "Approved",
+    "openAudit": "Open the audit log",
+    "openTitle": "Open requests",
+    "historyTitle": "Past requests",
+    "historyHint": "Requests that ended, were revoked or denied"
   },
   "audit": {
     "title": "Audit log",
@@ -408,8 +483,8 @@
     "search": "Search the audit log",
     "action": "Action",
     "actionPlaceholder": "e.g. invoice.*",
-    "from": "From (day)",
-    "to": "To (day)",
+    "from": "From",
+    "to": "To",
     "apply": "Search",
     "empty": "No entries",
     "underGrant": "Support grant",
@@ -427,7 +502,67 @@
       "success": "Done",
       "denied": "Denied",
       "failure": "Failed"
-    }
+    },
+    "area": {
+      "label": "Area",
+      "all": "All areas",
+      "invoice": "Bills",
+      "payment": "Payments",
+      "receipt": "Receipts",
+      "lease": "Leases",
+      "deposit": "Deposits",
+      "setting": "Settings",
+      "tenant": "Company",
+      "member": "Members",
+      "export": "Exports",
+      "support_grant": "Support access",
+      "dsr": "Personal data requests",
+      "utility_tariff": "Utility tariffs"
+    },
+    "actionInArea": "{area} activity",
+    "actionOther": "Other activity",
+    "actionName": {
+      "support_grant_used": "Support read your data",
+      "support_grant_requested": "Support asked for access",
+      "support_grant_approved": "Support access approved",
+      "support_grant_denied": "Support access denied",
+      "support_grant_revoked": "Support access ended",
+      "tenant_bank_account_changed": "Receiving account changed",
+      "tenant_updated": "Company details changed",
+      "utility_tariff_published": "Utility tariff published",
+      "dsr_verify": "Requester's identity checked",
+      "dsr_start": "Data request started",
+      "dsr_fulfil": "Data request fulfilled",
+      "dsr_reject": "Data request refused",
+      "invoice_issued": "Bill issued",
+      "invoice_voided": "Bill voided",
+      "payment_recorded": "Payment recorded",
+      "export_created": "Data exported",
+      "setting_changed": "Setting changed",
+      "member_invited": "Member invited",
+      "member_removed": "Member removed"
+    },
+    "actor": {
+      "operator": "A team member",
+      "platform": "getproperty support",
+      "system": "The system",
+      "resident": "A resident"
+    },
+    "subject": {
+      "core_tenant": "Company",
+      "core_tenant_bank_account": "Receiving account",
+      "core_support_grant": "Support access",
+      "core_dsr": "Personal data request",
+      "core_user_account": "User account",
+      "core_invoice": "Bill",
+      "core_payment": "Payment",
+      "core_lease": "Lease"
+    },
+    "emptyFiltered": "Nothing matches these filters",
+    "emptyFilteredHint": "Try another area or a wider date range",
+    "emptyHint": "Important changes and support reads are recorded here",
+    "clear": "Clear filters",
+    "backToSettings": "Back to settings"
   },
   "grants": {
     "title": "Access grants",
@@ -465,7 +600,7 @@
     "revokeReason": "Reason",
     "revoked": "Access revoked",
     "given": "Given to {tenant}",
-    "received": "Given to you",
+    "received": "Received from another customer",
     "unitScope": "one unit",
     "noEnd": "no end",
     "revokedOn": "Revoked {date}",
@@ -477,6 +612,27 @@
       "access": "Access",
       "valid": "Valid",
       "actions": "Actions"
+    },
+    "otherBuilding": "Another customer's building",
+    "listTitle": "Access given and received",
+    "listHint": "Who sees which building, how much they may do, and until when",
+    "givenTo": "Given to another customer",
+    "allModules": "Every part of the console",
+    "someModules": "Some parts of the console",
+    "active": "Active",
+    "menu": "Actions for this access",
+    "revokeMenu": "Revoke access",
+    "module": {
+      "readings": "Meters",
+      "invoices": "Bills",
+      "payments": "Payments",
+      "leases": "Leases",
+      "units": "Units",
+      "service_requests": "Repairs",
+      "parcels": "Parcels",
+      "announcements": "Announcements",
+      "deposits": "Deposits",
+      "access": "Doors and keys"
     }
   },
   "signIn": {
@@ -502,7 +658,9 @@
     "removeBody": "You will no longer sign in with {provider}; use one of the other ways. You can add it again any time.",
     "removed": "{provider} removed",
     "linked": "{provider} added — you can sign in with {provider} next time.",
-    "footnote": "getproperty never merges accounts by e-mail; an account that already belongs to someone else is not moved."
+    "footnote": "getproperty never merges accounts by e-mail; an account that already belongs to someone else is not moved.",
+    "listTitle": "Your ways to sign in",
+    "listHint": "They belong to your own account, not the company"
   },
   "lineOa": {
     "title": "Your LINE OA",
@@ -579,7 +737,10 @@
         "monthly": "Monthly {from} – {to}"
       },
       "lineCharges": "An unpaid fee never stops the system. LINE bills the messages sent through your OA to you directly."
-    }
+    },
+    "statusTitle": "Connection",
+    "notConnected": "Not connected",
+    "scopeOther": "Another building"
   },
   "verification": {
     "title": "Identity",
@@ -618,6 +779,63 @@
       "badge": "“Identity verified” shows on your listings, your owner page and in chats with people who enquire.",
       "trust": "Renters know they are talking to the real owner, not a scammer.",
       "privacy": "We keep only the outcome — never your ID number, card photo or date of birth."
-    }
+    },
+    "startBody": "Verify with your ID card and a selfie at a licensed e-KYC provider; once it passes, the \"identity verified\" mark shows on your listings",
+    "howTitle": "How it works"
+  },
+  "platformOnly": "Set by getproperty",
+  "groupHint": {
+    "billing": "Cut-off, grace period and how the monthly bills go out",
+    "collections": "Reminders, late fees and how residents may pay",
+    "notifications": "When non-urgent messages wait, and the satisfaction survey",
+    "readings": "Photos, reading rounds and the range a reading may fall in",
+    "deposits": "Refund deadline and the legal cap",
+    "access": "Door codes for repairs, visitors and viewings",
+    "compliance": "Tax, e-Tax and legal rules",
+    "other": "Other company settings"
+  },
+  "desc": {
+    "billing_cutoff": "When the billing period closes and charges are summed up",
+    "billing_default_due_day": "The day of the month rent is due",
+    "billing_reading_grace_hours": "How long readings taken after the cut-off are still accepted",
+    "billing_estimate_policy": "Estimate a unit without a reading, or wait for the real one",
+    "billing_auto_issue": "Send computed bills by themselves when nobody changes them",
+    "invoice_min_lead_days": "The fewest days between a bill and its due date",
+    "reminders_schedule": "The days after the due date a LINE reminder goes out",
+    "late_fee_enabled": "Charge a fee on overdue bills",
+    "late_fee_amount": "The fee per overdue bill",
+    "payments_allow_partial": "Residents may pay part of a bill",
+    "payments_allow_slip": "Residents may send a transfer slip to be checked",
+    "payments_duplicate_window_hours": "A payment matching a slip within this window is held for a check",
+    "notifications_quiet_hours": "Non-urgent messages wait until this window ends",
+    "analytics_csat_survey_interval_days": "How long after an answer the survey is offered again",
+    "readings_require_photo": "Readings typed by hand need a photo of the dial",
+    "readings_round_window_days": "The days staff have to read the meters each round",
+    "readings_plausibility_pct": "Readings further than this from usual wait for a check",
+    "deposit_refund_days": "Days after move-out to refund the deposit",
+    "deposit_max_months_short": "The most deposit and advance rent may add up to",
+    "access_work_order_window_hours": "How long a repair's door code works when no time was booked",
+    "access_resident_visitor_codes": "Residents create codes for their own guests in the app",
+    "access_resident_visitor_max_hours": "The longest a resident's visitor code may last",
+    "access_battery_low_pct": "Open a repair when a lock battery falls below this",
+    "viewing_self_enabled": "Prospects view a unit on their own with a time-boxed code",
+    "viewing_self_code_minutes": "The code still works after the slot starts",
+    "viewing_self_code_early_minutes": "The code starts working before the slot",
+    "viewing_self_overstay_minutes": "Tell the team when a viewer stays past the window",
+    "tax_vat": "The VAT rate on bills",
+    "etax_enabled": "Send receipts and tax invoices to the e-Tax provider",
+    "etax_provider": "The provider that signs and files the documents",
+    "etax_seller_branch": "As registered with the Revenue Department",
+    "tm30_notify_within_hours": "Notify Immigration within this time of a foreign resident's arrival",
+    "compliance_tariff_cap_severity": "When a price is above the legal cap: warn, or refuse it",
+    "compliance_tariff_cap_representative_units": "Used for the sample bill when a new price is set",
+    "tenant_subject_to_ocpb_2568": "Apply the Contract Committee's notification rules"
+  },
+  "unit": {
+    "hours": "hours",
+    "days": "days",
+    "minutes": "minutes",
+    "percent": "%",
+    "months": "months"
   }
 }

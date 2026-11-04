@@ -2,7 +2,6 @@ import { getTranslations } from "next-intl/server";
 
 import { MESSAGING_CHANNEL_STATUS } from "@/domain/status/messagingChannel";
 import { PLATFORM_INVOICE_STATUS } from "@/domain/status";
-import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { SectionError } from "@/features/shared/console/SectionError";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { vatPercent } from "@/features/shared/growth/sponsored";
@@ -13,13 +12,16 @@ import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
-import { EmptyState } from "@/ui/components/EmptyState";
+import { Avatar } from "@/ui/components/Avatar";
 import { Progress } from "@/ui/components/Progress";
+import { Icon } from "@/ui/icons";
+import { IconInfo } from "@/ui/icons/glyphs/info";
+import { IconLink } from "@/ui/icons/glyphs/link";
 
 import { ownerPath } from "../shared/links";
 import { ownerCan, readOnly, section, type OwnerContext } from "../shared/server";
 import { ConnectLineOa, CopyWebhookUrl, RevokeLineOa, VerifyLineOa, type AddonTerms } from "./LineOaActions";
-import { SettingsNav } from "./SettingsNav";
+import { SettingsCard, SettingsFrame } from "./SettingsNav";
 
 /**
  * The operator's own LINE Official Account (D-254): connected channels (for every building, or one), each with its
@@ -48,96 +50,141 @@ export async function LineOaView({ context }: { context: OwnerContext }) {
       : null;
   const manage = ownerCan(me, "tenant.settings.update") && !readOnly(me);
   const scope = (id: string | null) =>
-    id ? (buildings.find((building) => building.id === id)?.name ?? id.slice(0, 8)) : t("scopeAll");
+    id ? (buildings.find((building) => building.id === id)?.name ?? t("scopeOther")) : t("scopeAll");
+  const options = buildings.map((building) => ({ id: building.id, name: building.name }));
+  const connected = (channels.data ?? []).length > 0;
   return (
-    <OwnerPage testId="line-oa">
-      <PageHeader
-        title={t("title")}
-        description={t("description")}
-        actions={
-          manage ? (
-            <ConnectLineOa
-              buildings={buildings.map((building) => ({ id: building.id, name: building.name }))}
-              addon={terms}
-            />
-          ) : null
-        }
-      />
-      <SettingsNav me={me} current="/settings/line-oa" locale={locale} />
-      {addons.data?.offer ? <AddonCard addons={addons.data} locale={locale} t={t} /> : null}
-      {usage.data ? <UsageCard usage={usage.data} locale={locale} t={t} /> : null}
+    <SettingsFrame
+      me={me}
+      locale={locale}
+      current="/settings/line-oa"
+      title={t("title")}
+      description={t("description")}
+      testId="line-oa"
+    >
       {!channels.data ? (
         <SectionError error={channels.error} />
-      ) : channels.data.length === 0 ? (
-        <Card>
-          <EmptyState title={t("empty")} description={t("emptyHint")} />
-        </Card>
+      ) : !connected ? (
+        <section
+          aria-labelledby="line-oa-status"
+          className="rounded-card border-border bg-surface shadow-card flex flex-col gap-4 border p-5 md:flex-row md:items-center md:justify-between md:p-6"
+          data-testid="line-oa-status"
+        >
+          <div className="flex min-w-0 flex-col gap-2">
+            <span className="flex flex-wrap items-center gap-3">
+              <h2 id="line-oa-status" className="text-lg font-semibold">
+                {t("statusTitle")}
+              </h2>
+              <Badge tone="neutral" icon={IconLink}>
+                {t("notConnected")}
+              </Badge>
+            </span>
+            <p className="text-muted text-base">{t("emptyHint")}</p>
+          </div>
+          {manage ? (
+            <div className="shrink-0">
+              <ConnectLineOa buildings={options} addon={terms} />
+            </div>
+          ) : null}
+        </section>
       ) : (
         <ul className="m-0 flex list-none flex-col gap-4 p-0" aria-label={t("title")}>
           {channels.data.map((channel) => (
             <li key={channel.id}>
-              <Card className="flex flex-col gap-4" data-testid="line-oa-channel" data-state={channel.state}>
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="flex min-w-0 items-center gap-3">
-                    {channel.botPictureUrl ? (
-                      // A LINE profile image (any host): a plain <img>.
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={channel.botPictureUrl} alt="" className="size-10 shrink-0 rounded-full object-cover" />
-                    ) : null}
-                    <div className="flex min-w-0 flex-col">
-                      <span className="truncate font-semibold">{channel.botName ?? t("unnamed")}</span>
-                      <span className="text-muted text-sm">
-                        {scope(channel.buildingId)} · {t("channel", { id: channel.lineChannelId })}
-                      </span>
+              <article
+                className="rounded-card border-border bg-surface shadow-card flex flex-col border"
+                data-testid="line-oa-channel"
+                data-state={channel.state}
+              >
+                <div className="flex flex-col gap-5 p-5 md:p-6">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      {channel.botPictureUrl ? (
+                        // A LINE profile image (any host): a plain <img>.
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={channel.botPictureUrl}
+                          alt=""
+                          className="size-10 shrink-0 rounded-full object-cover"
+                        />
+                      ) : (
+                        <Avatar name={channel.botName ?? "LINE"} />
+                      )}
+                      <div className="flex min-w-0 flex-col">
+                        <span className="truncate text-lg font-semibold">{channel.botName ?? t("unnamed")}</span>
+                        <span className="text-muted text-sm">
+                          {scope(channel.buildingId)} ·{" "}
+                          <span className="tabular-nums">{t("channel", { id: channel.lineChannelId })}</span>
+                        </span>
+                      </div>
                     </div>
+                    <StatusBadgeOf map={MESSAGING_CHANNEL_STATUS} value={channel.state} />
                   </div>
-                  <StatusBadgeOf map={MESSAGING_CHANNEL_STATUS} value={channel.state} size="sm" />
-                </div>
-                {channel.state === "failing" && channel.lastError ? (
-                  <Callout tone="danger">{channel.lastError}</Callout>
-                ) : null}
-                <div className="flex flex-col gap-1">
-                  <span className="text-sm font-medium">{t("webhook")}</span>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <code
-                      className="bg-surface-subtle rounded-control min-w-0 flex-1 px-3 py-2 font-mono text-sm break-all"
-                      data-testid="line-oa-webhook"
-                    >
-                      {channel.webhookUrl}
-                    </code>
-                    <CopyWebhookUrl url={channel.webhookUrl} />
+                  {channel.state === "failing" && channel.lastError ? (
+                    <Callout tone="danger">{channel.lastError}</Callout>
+                  ) : null}
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-sm font-medium">{t("webhook")}</span>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <code
+                        className="bg-bg-subtle border-border rounded-control min-w-0 flex-1 border px-3 py-2 font-mono text-sm break-all"
+                        data-testid="line-oa-webhook"
+                      >
+                        {channel.webhookUrl}
+                      </code>
+                      <CopyWebhookUrl url={channel.webhookUrl} />
+                    </div>
+                    <span className="text-muted text-sm">{t("webhookHint")}</span>
                   </div>
-                  <span className="text-muted text-xs">{t("webhookHint")}</span>
-                </div>
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <span className="text-muted flex flex-wrap gap-x-4 gap-y-1 text-sm">
-                    <span data-testid="line-oa-linked">{t("linked", { count: channel.linkedUsers })}</span>
+                  <p className="text-muted flex flex-wrap gap-x-6 gap-y-1 text-sm">
+                    <span data-testid="line-oa-linked" className="text-fg">
+                      {t("linked", { count: channel.linkedUsers })}
+                    </span>
                     {channel.lastCheckedAt ? (
                       <span>{t("checkedAt", { date: formatDateTime(channel.lastCheckedAt, locale) })}</span>
                     ) : null}
-                  </span>
-                  {manage ? (
-                    <span className="flex flex-wrap gap-2">
-                      <VerifyLineOa channel={channel} />
-                      <RevokeLineOa channel={channel} />
-                    </span>
-                  ) : null}
+                  </p>
                 </div>
-              </Card>
+                {manage ? (
+                  <div className="border-border flex flex-wrap justify-end gap-2 border-t px-5 py-3 md:px-6">
+                    <VerifyLineOa channel={channel} />
+                    <RevokeLineOa channel={channel} />
+                  </div>
+                ) : null}
+              </article>
             </li>
           ))}
+          {manage ? (
+            <li className="flex justify-end">
+              <ConnectLineOa buildings={options} addon={terms} secondary />
+            </li>
+          ) : null}
         </ul>
       )}
-      <Card className="flex flex-col gap-3" data-testid="line-oa-how">
-        <h2 className="font-display text-lg font-semibold">{t("how.title")}</h2>
-        <ol className="m-0 flex list-decimal flex-col gap-2 pl-5">
-          {(["step1", "step2", "step3", "step4"] as const).map((step) => (
-            <li key={step}>{t(`how.${step}`)}</li>
+
+      {usage.data ? <UsageCard usage={usage.data} locale={locale} t={t} /> : null}
+      {addons.data?.offer ? <AddonCard addons={addons.data} locale={locale} t={t} /> : null}
+
+      <SettingsCard id="line-oa-how-title" testId="line-oa-how" title={t("how.title")}>
+        <ol className="m-0 flex list-none flex-col gap-4 p-0">
+          {(["step1", "step2", "step3", "step4"] as const).map((step, index) => (
+            <li key={step} className="flex gap-3">
+              <span
+                aria-hidden="true"
+                className="border-border-strong text-fg grid size-6 shrink-0 place-items-center rounded-full border text-xs font-semibold tabular-nums"
+              >
+                {index + 1}
+              </span>
+              <span className="text-base">{t(`how.${step}`)}</span>
+            </li>
           ))}
         </ol>
-        <p className="text-muted text-sm">{t("shared")}</p>
-      </Card>
-    </OwnerPage>
+        <div className="bg-info-subtle text-info-subtle-fg rounded-control mt-5 flex gap-2 px-4 py-3 text-sm">
+          <Icon icon={IconInfo} className="mt-0.5 shrink-0" />
+          <span>{t("shared")}</span>
+        </div>
+      </SettingsCard>
+    </SettingsFrame>
   );
 }
 
@@ -161,18 +208,34 @@ function UsageCard({
           ? "warning"
           : "primary";
   return (
-    <Card className="flex flex-col gap-4" data-testid="line-oa-usage">
+    <Card
+      as="section"
+      className="flex flex-col gap-4"
+      data-testid="line-oa-usage"
+      aria-labelledby="line-oa-usage-title"
+    >
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="font-display text-lg font-semibold">{t("usage.title")}</h2>
+        <h2 id="line-oa-usage-title" className="text-lg font-semibold">
+          {t("usage.title")}
+        </h2>
         <span className="text-muted text-sm">{t("usage.repliesFree")}</span>
       </div>
       <div className="flex flex-col gap-2">
-        <span className="text-sm font-medium">{t("usage.shared")}</span>
+        <span className="flex flex-wrap items-baseline justify-between gap-2">
+          <span className="text-sm font-medium">{t("usage.shared")}</span>
+          {shared.allowance !== null ? (
+            <span className="text-sm tabular-nums">
+              {t("usage.counted", { counted: shared.counted, allowance: shared.allowance })}
+            </span>
+          ) : null}
+        </span>
         {shared.allowance === null ? (
           <p data-testid="line-oa-usage-shared">{t("usage.notCharged", { counted: shared.counted })}</p>
         ) : (
           <>
             <Progress
+              size="sm"
+              showCaption={false}
               value={shared.counted}
               max={shared.allowance}
               tone={tone}
@@ -219,7 +282,7 @@ function AddonCard({
   return (
     <Card className="flex flex-col gap-4" data-testid="line-oa-addon" data-on-sale={offer.onSale}>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="font-display text-lg font-semibold">{name}</h2>
+        <h2 className="text-lg font-semibold">{name}</h2>
         {priced ? null : (
           <Badge tone="success" size="sm">
             {t("addon.freeBadge")}

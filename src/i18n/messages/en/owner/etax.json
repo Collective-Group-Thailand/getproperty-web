@@ -3,7 +3,8 @@
   "description": "Receipts and tax invoices sent to your e-Tax service provider, their signature, and what the provider refused.",
   "notVat": {
     "title": "e-Tax is for VAT-registered businesses",
-    "body": "Once your company is VAT-registered and signed up with an e-Tax service provider, its documents are sent and listed here."
+    "body": "Once your company is VAT-registered and signed up with an e-Tax service provider, its documents are sent and listed here.",
+    "action": "Open company details"
   },
   "noPermission": "Your role does not see payments and e-Tax.",
   "summary": {
@@ -15,7 +16,10 @@
     "vat": "VAT",
     "total": "Total",
     "documents": "{count, plural, one {# document} other {# documents}}",
-    "byType": "By ETDA document type"
+    "byType": "By ETDA document type",
+    "fixHint": "Fix and send again",
+    "signedLine": "{count, plural, one {# signed document} other {# signed documents}}",
+    "subtotalShort": "Before VAT"
   },
   "filter": {
     "month": "Month",
@@ -39,7 +43,11 @@
   },
   "empty": {
     "title": "No e-Tax documents this month",
-    "body": "Receipts you issue are sent to the provider and listed here."
+    "body": "Receipts you issue are sent to the provider and listed here.",
+    "filteredTitle": "No document matches these filters",
+    "filteredBody": "Try another status or type, or the whole month",
+    "clear": "Show the whole month",
+    "payments": "Go to payments"
   },
   "listCaption": "e-Tax documents",
   "col": {
@@ -65,12 +73,28 @@
     "sourcePdf": "Our PDF",
     "signedPdf": "Signed PDF",
     "signedXml": "Signed XML",
-    "noFiles": "No files yet"
+    "noFiles": "No files yet",
+    "next": "Next step",
+    "nextFix": "Fix what the provider refused, then send the document again",
+    "nextSigned": "The provider signed it; nothing more to do",
+    "nextWaiting": "Waiting for the provider; the system retries on its own",
+    "openReceipt": "Open the receipt",
+    "history": "Submission history",
+    "event": {
+      "issued": "Document issued",
+      "submitted": "Sent to the provider",
+      "signed": "Signed by the provider"
+    },
+    "issuedOn": "Issued {date}",
+    "errorHelp": "The message above comes from the e-Tax provider. Check what it refers to — the buyer's tax ID, for example — fix it, then send again.",
+    "amounts": "Amounts"
   },
   "retry": {
     "button": "Send again",
     "title": "Send {number} again?",
     "body": "Fix what the provider refused first (for example the buyer's tax id), then {number} is sent again at once.",
     "done": "Queued again"
-  }
+  },
+  "backToReports": "Back to reports",
+  "typeOther": "Other type"
 }

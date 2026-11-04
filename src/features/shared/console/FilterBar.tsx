@@ -6,6 +6,9 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
 import type { Locale } from "@/i18n/routing";
+
+import { useDateLabels } from "./labels";
+import { DatePicker } from "@/ui/components/DatePicker";
 import { Field } from "@/ui/components/Field";
 import { PeriodPicker } from "@/ui/components/PeriodPicker";
 import { Input } from "@/ui/components/Input";
@@ -35,7 +38,9 @@ export type FilterField =
       /** The month the page shows when the URL names none (the page's own default). */
       fallback?: string;
     }
-  | { name: string; label: string; type: "number"; min?: number; placeholder?: string };
+  | { name: string; label: string; type: "number"; min?: number; placeholder?: string }
+  /** A day (`YYYY-MM-DD` in the URL) on the console's Thai date picker; the label is its placeholder (G6). */
+  | { name: string; label: string; type: "date" };
 
 /**
  * The filters of an owner list as URL search parameters (F2): every change replaces the URL — the
@@ -56,6 +61,7 @@ export function FilterBar({
   variant?: "form" | "toolbar";
 }) {
   const t = useTranslations("console.period");
+  const dateLabels = useDateLabels();
   const locale = useLocale() as Locale;
   const router = useRouter();
   const pathname = usePathname();
@@ -101,6 +107,17 @@ export function FilterBar({
                 value={params.get(field.name) ?? field.fallback ?? ""}
                 onChange={(event) => apply(field.name, event.target.value)}
                 data-testid={`filter-${field.name}`}
+              />
+            </div>
+          ) : field.type === "date" ? (
+            <div key={field.name} className="w-40" data-testid={`filter-${field.name}`}>
+              <DatePicker
+                value={params.get(field.name)}
+                onChange={(value) => apply(field.name, value ?? "")}
+                locale={locale}
+                labels={dateLabels}
+                placeholder={field.label}
+                inputSize="sm"
               />
             </div>
           ) : field.type === "period" ? (
