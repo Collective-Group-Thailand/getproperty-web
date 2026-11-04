@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button, type ButtonProps } from "@/ui/components/Button";
 import { LazyAlertDialog } from "@/ui/components/overlays";
@@ -17,6 +17,8 @@ export interface ConfirmActionProps {
   variant?: ButtonProps["variant"];
   size?: ButtonProps["size"];
   disabled?: boolean;
+  /** Full width (an action panel's stacked buttons). */
+  block?: boolean;
   testId?: string;
   /** What is about to happen ("ออกบิลทั้งหมด"). */
   title: string;
@@ -48,6 +50,9 @@ export interface ConfirmActionProps {
   /** Toast after success. */
   successMessage?: string;
   onDone?: (result: unknown) => void;
+  /** Controlled from outside (a row's "⋯" menu): no trigger button is rendered. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 /** A button that runs an irreversible request only after a (typed) confirmation (design-system.md §4). */
@@ -57,6 +62,7 @@ export function ConfirmAction({
   variant = "primary",
   size = "md",
   disabled,
+  block,
   testId,
   title,
   description,
@@ -69,31 +75,50 @@ export function ConfirmAction({
   explain,
   successMessage,
   onDone,
+  open: controlled,
+  onOpenChange,
 }: ConfirmActionProps) {
   const t = useTranslations("console.confirm");
   const common = useTranslations("common");
-  const [open, setOpen] = useState(false);
+  const [inner, setInner] = useState(false);
+  const open = controlled ?? inner;
+  const setOpen = (next: boolean) => {
+    onOpenChange?.(next);
+    if (controlled === undefined) setInner(next);
+  };
   const idempotency = useIdempotencyKey();
   const action = useApiAction();
+  // Opened from outside: the same fresh start the trigger button gives (a new key unless the last attempt is pending).
+  const wasOpen = useRef(open);
+  useEffect(() => {
+    if (controlled !== undefined && open && !wasOpen.current) {
+      idempotency.renewUnless(action.unansweredAttempt());
+      action.reset();
+    }
+    wasOpen.current = open;
+  });
   const explained = action.error && explain ? explain(action.error) : null;
 
   return (
     <>
-      <Button
-        variant={variant}
-        size={size}
-        iconStart={icon}
-        disabled={disabled}
-        onClick={() => {
-          // Same pending action (last attempt unanswered) → same key; otherwise a fresh one (review L2).
-          idempotency.renewUnless(action.unansweredAttempt());
-          action.reset();
-          setOpen(true);
-        }}
-        data-testid={testId}
-      >
-        {label}
-      </Button>
+      {controlled !== undefined ? null : (
+        <Button
+          variant={variant}
+          size={size}
+          iconStart={icon}
+          disabled={disabled}
+          block={block}
+          onClick={() => {
+            // Same pending action (last attempt unanswered) → same key; otherwise a fresh one (review L2).
+            idempotency.renewUnless(action.unansweredAttempt());
+            action.reset();
+            setOpen(true);
+          }}
+          data-testid={testId}
+        >
+          {label}
+        </Button>
+      )}
       <LazyAlertDialog
         open={open}
         onOpenChange={(next) => {

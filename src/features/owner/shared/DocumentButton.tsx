@@ -23,6 +23,8 @@ export function DocumentButton({
   variant = "secondary",
   size = "sm",
   testId,
+  open: controlled,
+  onOpenChange,
 }: {
   document: DocumentRef;
   label: string;
@@ -31,14 +33,24 @@ export function DocumentButton({
   variant?: ButtonProps["variant"];
   size?: ButtonProps["size"];
   testId?: string;
+  /** Controlled from outside (a row's "⋯" menu): no trigger button is rendered. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
   const t = useTranslations("owner.common.document");
-  const [open, setOpen] = useState(false);
+  const [inner, setInner] = useState(false);
+  const open = controlled ?? inner;
+  const setOpen = (next: boolean) => {
+    onOpenChange?.(next);
+    if (controlled === undefined) setInner(next);
+  };
   return (
     <>
-      <Button variant={variant} size={size} iconStart={IconBill} onClick={() => setOpen(true)} data-testid={testId}>
-        {label}
-      </Button>
+      {controlled === undefined ? (
+        <Button variant={variant} size={size} iconStart={IconBill} onClick={() => setOpen(true)} data-testid={testId}>
+          {label}
+        </Button>
+      ) : null}
       <LazyDialog open={open} onOpenChange={setOpen} title={title} size="xl" closeLabel={t("close")}>
         {open ? (
           <Suspense fallback={null}>

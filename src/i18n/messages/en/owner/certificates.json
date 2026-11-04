@@ -30,8 +30,18 @@
     "declineTitle": "Decline the request for {unit}",
     "declineBody": "The tenant sees this reason in LINE.",
     "reason": "Reason",
-    "declined": "Request declined"
+    "declined": "Request declined",
+    "more": "Options for unit {unit}"
   },
   "note": "“{note}”",
-  "noneWaitingAction": "View documents"
+  "noneWaitingAction": "View documents",
+  "col": {
+    "unit": "Unit",
+    "purpose": "Purpose",
+    "period": "Period",
+    "requested": "Requested",
+    "total": "Total paid",
+    "status": "Status",
+    "actions": "Actions"
+  }
 }

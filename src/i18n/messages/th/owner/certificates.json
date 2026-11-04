@@ -30,8 +30,18 @@
     "declineTitle": "ปฏิเสธคำขอ ห้อง {unit}",
     "declineBody": "ผู้เช่าจะเห็นเหตุผลนี้ใน LINE",
     "reason": "เหตุผล",
-    "declined": "ปฏิเสธคำขอแล้ว"
+    "declined": "ปฏิเสธคำขอแล้ว",
+    "more": "ตัวเลือกของห้อง {unit}"
   },
   "note": "“{note}”",
-  "noneWaitingAction": "ดูเอกสาร"
+  "noneWaitingAction": "ดูเอกสาร",
+  "col": {
+    "unit": "ห้อง",
+    "purpose": "ใช้เพื่อ",
+    "period": "ช่วงเวลา",
+    "requested": "ขอเมื่อ",
+    "total": "ยอดชำระรวม",
+    "status": "สถานะ",
+    "actions": "การทำงาน"
+  }
 }

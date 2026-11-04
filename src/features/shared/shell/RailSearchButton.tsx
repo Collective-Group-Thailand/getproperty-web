@@ -15,6 +15,7 @@ export function RailSearchButton({
   collapsed = false,
   icon = IconSearch,
   testId,
+  variant = "rail",
 }: {
   /** Accessible name ("ค้นหา"). */
   label: string;
@@ -24,7 +25,10 @@ export function RailSearchButton({
   collapsed?: boolean;
   icon?: IconGlyph;
   testId?: string;
+  /** `field`: field-like at every width (the phone's "More" sheet). */
+  variant?: "rail" | "field";
 }) {
+  const field = variant === "field";
   return (
     <button
       type="button"
@@ -34,12 +38,22 @@ export function RailSearchButton({
       className={cn(
         "rounded-control text-muted focus-visible:ring-focus-ring duration-fast inline-flex size-11 shrink-0 items-center justify-center transition-colors focus-visible:ring-2 focus-visible:outline-none",
         "hover:bg-bg-subtle hover:text-fg",
-        !collapsed &&
-          "md:border-border md:bg-surface md:hover:border-border-strong md:hover:bg-surface md:h-10 md:w-full md:justify-start md:gap-2 md:border md:px-3",
+        field
+          ? "border-border bg-surface hover:border-border-strong hover:bg-surface h-12 w-full justify-start gap-3 border px-3"
+          : !collapsed &&
+              "md:border-border md:bg-surface md:hover:border-border-strong md:hover:bg-surface md:h-10 md:w-full md:justify-start md:gap-2 md:border md:px-3",
       )}
     >
       <Icon icon={icon} className="text-lg" />
-      <span className={cn("hidden min-w-0 truncate text-sm", !collapsed && "md:inline")}>{placeholder}</span>
+      <span
+        className={cn(
+          "hidden min-w-0 truncate",
+          field ? "inline text-base" : "text-sm",
+          !collapsed && !field && "md:inline",
+        )}
+      >
+        {placeholder}
+      </span>
     </button>
   );
 }

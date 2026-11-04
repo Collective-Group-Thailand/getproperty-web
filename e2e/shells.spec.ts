@@ -14,7 +14,7 @@ async function signInAdmin(page: Page) {
   await page.goto(`${HOSTS.admin}/login`);
   await page.getByLabel("อีเมล").fill("support@example.com");
   await page.getByRole("textbox", { name: "รหัสผ่าน", exact: true }).fill(PASSWORD);
-  await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
+  await page.getByRole("button", { name: "ดำเนินการต่อ" }).click();
   await page.getByLabel("รหัสจากแอปยืนยันตัวตน").fill(CODE);
   await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
   await expect(page).toHaveURL(`${HOSTS.admin}/`);

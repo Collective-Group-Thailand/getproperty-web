@@ -1,12 +1,16 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 import { NotificationCentre } from "@/features/shared/notifications/NotificationCentre";
 import type { ShellBrand } from "@/features/shared/shell/brand";
 import { ConsoleRail, RailWorkspace } from "@/features/shared/shell/ConsoleRail";
 import { LanguageSwitch } from "@/features/shared/shell/LanguageSwitch";
+import { RailSearchButton } from "@/features/shared/shell/RailSearchButton";
+import { signOut } from "@/lib/auth/actions";
+import { MenuRow } from "@/ui/components/MenuRow";
+import { IconLogOut } from "@/ui/icons/glyphs/log-out";
 import { ShellBreadcrumbs } from "@/features/shared/shell/ShellBreadcrumbs";
 import type { ShellNavGroup } from "@/features/shared/shell/types";
 import { UserMenu } from "@/features/shared/shell/UserMenu";
@@ -20,7 +24,7 @@ import { IconButton } from "@/ui/components/IconButton";
 import { IconInfo } from "@/ui/icons/glyphs/info";
 import { IconMenu } from "@/ui/icons/glyphs/menu";
 
-import { CommandPalette } from "./CommandPalette";
+import { CommandPalette, openCommandPalette } from "./CommandPalette";
 
 export interface AdminShellFrameProps {
   userName: string;
@@ -49,6 +53,7 @@ export function AdminShellFrame(props: AdminShellFrameProps) {
   const t = useTranslations();
   const [collapsed, toggleCollapsed] = useSidebarCollapsed("admin");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [signingOut, startSignOut] = useTransition();
   const items = props.groups.flatMap((group) => group.items);
   return (
     <AppShell
@@ -106,17 +111,62 @@ export function AdminShellFrame(props: AdminShellFrameProps) {
       <ShellBreadcrumbs items={items} home={undefined}>
         {props.children}
       </ShellBreadcrumbs>
+      {/* Phones (Stitch revision): a full-height menu from the start edge — who and which environment at the top, a
+          field-like jump-to, the grouped menu scrolling on its own, language and sign-out pinned at the foot. */}
       <LazySheet
         open={menuOpen}
         onOpenChange={setMenuOpen}
         title={t("shell.moreMenu")}
         closeLabel={t("common.close")}
-        side="bottom"
+        side="left"
+        footer={
+          <>
+            <LanguageSwitch zone="admin" variant="row" />
+            <MenuRow
+              icon={IconLogOut}
+              tone="danger"
+              disabled={signingOut}
+              onClick={() =>
+                startSignOut(async () => {
+                  await signOut();
+                  window.location.replace("/login");
+                })
+              }
+            >
+              {t("auth.signOut")}
+            </MenuRow>
+          </>
+        }
       >
-        <div className="mb-4 flex items-center gap-2 md:hidden">
-          <LanguageSwitch zone="admin" />
+        <div className="flex flex-col gap-5 pb-2">
+          <div className="border-border flex flex-col gap-2 border-b pb-4">
+            <span className="font-semibold">{props.userName}</span>
+            <span className="text-muted text-sm">{props.rolesLabel}</span>
+            {props.apiFakes || props.envBadge ? (
+              <div className="flex flex-wrap items-center gap-1">
+                <EnvBadge label={props.envBadge} />
+                {props.apiFakes ? (
+                  <Badge tone="info" size="sm" icon={IconInfo}>
+                    {props.fakesLabel}
+                  </Badge>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+          <RailSearchButton
+            label={t("shell.commandPalette.open")}
+            placeholder={t("shell.commandPalette.title")}
+            variant="field"
+            testId="command-palette-sheet"
+            onClick={() => {
+              setMenuOpen(false);
+              openCommandPalette();
+            }}
+          />
+          <div className="-mx-5">
+            <ZoneSidebar groups={props.groups} collapsed={false} size="touch" />
+          </div>
         </div>
-        <ZoneSidebar groups={props.groups} collapsed={false} size="touch" />
       </LazySheet>
     </AppShell>
   );

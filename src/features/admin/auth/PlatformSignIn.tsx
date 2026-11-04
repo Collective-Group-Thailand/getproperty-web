@@ -150,10 +150,15 @@ export function PlatformSignIn({ consoleHref }: { consoleHref: string }) {
             {...credentials.register("totpCode", { validate: isOptionalOtpCode })}
           />
         </Field>
-      ) : null}
+      ) : (
+        <p className="text-muted m-0 text-sm" data-testid="totp-next">
+          {t("signIn.totpNext")}
+        </p>
+      )}
       {errorBox}
+      {/* TOTP always follows the password (D-164): the first step continues, the code step signs in. */}
       <Button type="submit" size="lg" block loading={pending}>
-        {t("signIn.submit")}
+        {needsTotp ? t("signIn.submit") : t("signIn.continue")}
       </Button>
     </form>
   );

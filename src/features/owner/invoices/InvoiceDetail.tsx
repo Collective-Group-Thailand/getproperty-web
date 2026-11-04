@@ -14,6 +14,7 @@ import { Callout } from "@/ui/components/Callout";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
 import { Paper, PaperFoot, PaperHead, PaperParties, PaperSection, PaperTotals } from "@/ui/components/Paper";
+import { isZeroDecimal } from "@/ui/lib/decimal";
 import { Statement } from "@/ui/components/Statement";
 
 import { QrImage } from "@/features/shared/console/QrImage";
@@ -85,14 +86,34 @@ export async function InvoiceDetail({ context, invoiceId }: { context: OwnerCont
           <ActionPanel
             title={t("panelTitle")}
             testId="invoice-panel"
+            summary={
+              // One key figure on the pale tint (Stitch revision): what is still to be paid; the amount due shows
+              // beside it only when the two differ.
+              <div className="flex flex-col gap-1">
+                <span className="text-muted text-sm">{t("balance")}</span>
+                <span className="text-primary text-2xl font-semibold tabular-nums">
+                  {formatTHB(invoice.balance, locale)}
+                </span>
+              </div>
+            }
             facts={[
-              { key: "due", label: t("amountDue"), value: formatTHB(invoice.amountDue, locale) },
-              { key: "balance", label: t("balance"), value: formatTHB(invoice.balance, locale) },
+              ...(invoice.amountDue !== invoice.balance
+                ? [{ key: "due", label: t("amountDue"), value: formatTHB(invoice.amountDue, locale) }]
+                : []),
               ...(invoice.dueDate
                 ? [{ key: "dueDate", label: t("dueDate"), value: formatDate(invoice.dueDate, locale) }]
                 : []),
               ...(invoice.issuedAt
                 ? [{ key: "issued", label: t("issuedAt"), value: formatDate(invoice.issuedAt, locale) }]
+                : []),
+              ...(invoice.promptpayRef
+                ? [
+                    {
+                      key: "promptpay",
+                      label: t("promptpay"),
+                      value: <span className="font-mono text-xs">{invoice.promptpayRef}</span>,
+                    },
+                  ]
                 : []),
             ]}
             primary={<InvoiceActions invoice={invoice} layout="panel" />}
@@ -185,11 +206,43 @@ export async function InvoiceDetail({ context, invoiceId }: { context: OwnerCont
                   kind: "subtotal",
                   value: <span data-testid="invoice-total">{formatTHB(invoice.total, locale)}</span>,
                 },
-                { key: "prior", label: t("priorBalance"), value: formatTHB(invoice.priorBalance, locale) },
-                { key: "due", label: t("amountDue"), kind: "subtotal", value: formatTHB(invoice.amountDue, locale) },
-                { key: "paid", label: t("paid"), level: 1, value: formatTHB(invoice.paidTotal, locale) },
-                { key: "credited", label: t("credited"), level: 1, value: formatTHB(invoice.creditedTotal, locale) },
-                { key: "debited", label: t("debited"), level: 1, value: formatTHB(invoice.debitedTotal, locale) },
+                // The breakdown below the total only for what happened (Stitch revision): a zero line is left out.
+                ...(isZeroDecimal(invoice.priorBalance)
+                  ? []
+                  : [
+                      { key: "prior", label: t("priorBalance"), value: formatTHB(invoice.priorBalance, locale) },
+                      {
+                        key: "due",
+                        label: t("amountDue"),
+                        kind: "subtotal" as const,
+                        value: formatTHB(invoice.amountDue, locale),
+                      },
+                    ]),
+                ...(isZeroDecimal(invoice.paidTotal)
+                  ? []
+                  : [
+                      { key: "paid", label: t("paid"), level: 1 as const, value: formatTHB(invoice.paidTotal, locale) },
+                    ]),
+                ...(isZeroDecimal(invoice.creditedTotal)
+                  ? []
+                  : [
+                      {
+                        key: "credited",
+                        label: t("credited"),
+                        level: 1 as const,
+                        value: formatTHB(invoice.creditedTotal, locale),
+                      },
+                    ]),
+                ...(isZeroDecimal(invoice.debitedTotal)
+                  ? []
+                  : [
+                      {
+                        key: "debited",
+                        label: t("debited"),
+                        level: 1 as const,
+                        value: formatTHB(invoice.debitedTotal, locale),
+                      },
+                    ]),
                 {
                   key: "balance",
                   label: t("balance"),

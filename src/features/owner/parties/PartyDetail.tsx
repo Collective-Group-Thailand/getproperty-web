@@ -10,6 +10,7 @@ import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Card, CardHeader } from "@/ui/components/Card";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { IconChat } from "@/ui/icons/glyphs/chat";
 import { IconLease } from "@/ui/icons/glyphs/lease";
@@ -72,49 +73,35 @@ export async function PartyDetail({ context, partyId }: { context: OwnerContext;
             </Badge>
           )
         }
-        actions={
-          <Button asChild iconStart={IconLease}>
-            <a href={ownerPath(locale, `/leases/new?party=${party.id}`)} data-testid="party-new-lease">
-              {t("newLease")}
-            </a>
-          </Button>
-        }
       />
-      <div className="grid gap-4 lg:grid-cols-2">
-        <Card as="section" aria-labelledby="party-contact">
-          <CardHeader title={<span id="party-contact">{t("contact")}</span>} />
-          <DescriptionList
-            items={[
-              { id: "phone", term: t("phone"), description: party.phone ? formatPhone(party.phone) : null },
-              { id: "email", term: t("email"), description: party.email },
-              {
-                id: "language",
-                term: t("language"),
-                description: t(`languages.${party.language === "en" ? "en" : "th"}`),
-              },
-              { id: "nationality", term: t("nationality"), description: party.nationality },
-              ...(party.type === "company" ? [{ id: "tax", term: t("taxId"), description: party.taxId }] : []),
-              {
-                id: "id",
-                term: t("idNumber"),
-                description: party.idNumberOnFile ? t("sealed") : t("idMissing"),
-              },
-              {
-                id: "emergency",
-                term: t("emergency"),
-                description: party.emergencyContact
-                  ? `${party.emergencyContact.name} (${party.emergencyContact.relation})${party.emergencyContact.phoneOnFile ? ` · ${t("sealed")}` : ""}`
-                  : null,
-              },
+      {/* The record pattern (G3 revision): one column of sections — where they live first — and the next-steps panel. */}
+      <DetailLayout
+        panel={
+          <ActionPanel
+            title={t("panelTitle")}
+            testId="party-panel"
+            facts={[
+              { key: "type", label: t("factType"), value: t(`type.${party.type}`) },
+              { key: "line", label: t("factLine"), value: party.lineLinked ? t("lineLinked") : t("lineNotLinked") },
+              ...(leases.data ? [{ key: "leases", label: t("factLeases"), value: leases.data.meta.total }] : []),
             ]}
+            primary={
+              <Button asChild iconStart={IconLease}>
+                <a href={ownerPath(locale, `/leases/new?party=${party.id}`)} data-testid="party-new-lease">
+                  {t("newLease")}
+                </a>
+              </Button>
+            }
+            secondary={
+              <Button asChild variant="secondary">
+                <a href={ownerPath(locale, `/arrears/${party.id}`)} data-testid="party-account">
+                  {t("account")}
+                </a>
+              </Button>
+            }
           />
-          {privileged ? (
-            <div className="mt-4">
-              <RevealPii party={party} />
-            </div>
-          ) : null}
-        </Card>
-
+        }
+      >
         <Card as="section" aria-labelledby="party-occupancy" data-testid="party-occupancy">
           <CardHeader title={<span id="party-occupancy">{t("occupancy")}</span>} />
           {leases.data && leases.data.data.length > 0 ? (
@@ -157,6 +144,45 @@ export async function PartyDetail({ context, partyId }: { context: OwnerContext;
           )}
         </Card>
 
+        <Card as="section" aria-labelledby="party-contact">
+          <CardHeader title={<span id="party-contact">{t("contact")}</span>} />
+          <DescriptionList
+            items={[
+              { id: "phone", term: t("phone"), description: party.phone ? formatPhone(party.phone) : null },
+              { id: "email", term: t("email"), description: party.email },
+              {
+                id: "language",
+                term: t("language"),
+                description: t(`languages.${party.language === "en" ? "en" : "th"}`),
+              },
+              {
+                id: "nationality",
+                term: t("nationality"),
+                // The API's ISO country code as a country name, never the raw code ("TH" → ไทย).
+                description: party.nationality ? countryName(party.nationality, locale) : null,
+              },
+              ...(party.type === "company" ? [{ id: "tax", term: t("taxId"), description: party.taxId }] : []),
+              {
+                id: "id",
+                term: t("idNumber"),
+                description: party.idNumberOnFile ? t("sealed") : t("idMissing"),
+              },
+              {
+                id: "emergency",
+                term: t("emergency"),
+                description: party.emergencyContact
+                  ? `${party.emergencyContact.name} (${party.emergencyContact.relation})${party.emergencyContact.phoneOnFile ? ` · ${t("sealed")}` : ""}`
+                  : null,
+              },
+            ]}
+          />
+          {privileged ? (
+            <div className="mt-4">
+              <RevealPii party={party} />
+            </div>
+          ) : null}
+        </Card>
+
         <Card as="section" aria-labelledby="party-links" data-testid="party-links">
           <CardHeader title={<span id="party-links">{t("links")}</span>} description={t("linksHint")} />
           <PartyLinks partyId={party.id} links={links.data ?? []} canUnlink={role === "owner"} />
@@ -186,7 +212,15 @@ export async function PartyDetail({ context, partyId }: { context: OwnerContext;
             <IdDocuments partyId={party.id} documents={documents.data ?? []} />
           </Card>
         ) : null}
-      </div>
+      </DetailLayout>
     </OwnerPage>
   );
+}
+
+function countryName(code: string, locale: string): string {
+  try {
+    return new Intl.DisplayNames([locale], { type: "region" }).of(code.toUpperCase()) ?? code;
+  } catch {
+    return code;
+  }
 }

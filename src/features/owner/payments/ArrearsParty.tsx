@@ -7,7 +7,9 @@ import { formatDate, formatDateTime, formatTHB } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/errors";
 import type { Schemas } from "@/lib/api/types";
-import { Card, CardHeader } from "@/ui/components/Card";
+import { Button } from "@/ui/components/Button";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
+import { SimpleTable } from "@/ui/components/SimpleTable";
 
 import { ownerPath, withQuery } from "../shared/links";
 import { ListPagination } from "@/features/shared/console/ListPagination";
@@ -72,108 +74,139 @@ export async function ArrearsParty({
         testId="arrears-party-title"
         description={t("description")}
         crumbs={[{ label: party.displayName }]}
-        actions={
-          <a
-            className="text-sm underline-offset-4 hover:underline"
-            href={ownerPath(locale, withQuery("/payments/new", { party: partyId }))}
-          >
-            {t("recordPayment")}
-          </a>
-        }
       />
-      <Card as="section" aria-labelledby="open-invoices" data-testid="party-open-invoices">
-        <CardHeader
-          title={<span id="open-invoices">{t("openInvoices")}</span>}
-          description={credit ? t("credit", { amount: formatTHB(credit.balance, locale) }) : undefined}
-        />
-        {invoices.length ? (
-          <ul className="divide-border flex flex-col divide-y">
-            {invoices.map((invoice) => (
-              <li key={invoice.id} className="flex flex-wrap items-center gap-3 py-3" data-testid="party-invoice">
-                <a
-                  className="w-40 font-mono underline-offset-4 hover:underline"
-                  href={ownerPath(locale, `/invoices/${invoice.id}`)}
-                >
-                  {invoice.number ?? "—"}
-                </a>
-                <span className="w-16 font-mono">{invoice.unitNo ?? "—"}</span>
-                <span className="text-muted flex-1 text-sm">
-                  {invoice.dueDate ? t("due", { date: formatDate(invoice.dueDate, locale) }) : ""}
-                </span>
-                <StatusBadgeOf map={INVOICE_STATUS} value={invoice.status} size="sm" />
-                <span className="tabular-nums">{formatTHB(invoice.balance, locale)}</span>
-                <RemindButton
-                  invoiceId={invoice.id}
-                  label={invoice.number ?? invoice.unitNo ?? ""}
-                  balance={formatTHB(invoice.balance, locale)}
-                />
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-muted text-sm">{t("noOpen")}</p>
-        )}
-      </Card>
-      <Card as="section" aria-labelledby="ledger" data-testid="party-ledger">
-        <CardHeader title={<span id="ledger">{t("ledger")}</span>} description={t("ledgerHint")} />
-        <div className="relative overflow-x-auto">
-          <table className="w-full min-w-[36rem] text-sm">
-            <caption className="sr-only">{t("ledger")}</caption>
-            <thead>
-              <tr className="border-border text-muted border-b">
-                <th scope="col" className="py-2 text-start font-medium">
-                  {t("col.date")}
-                </th>
-                <th scope="col" className="py-2 text-start font-medium">
-                  {t("col.entry")}
-                </th>
-                <th scope="col" className="py-2 text-start font-medium">
-                  {t("col.unit")}
-                </th>
-                <th scope="col" className="py-2 text-end font-medium">
-                  {t("col.amount")}
-                </th>
-                <th scope="col" className="py-2 text-end font-medium">
-                  {t("col.balance")}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {entries.data.map((entry) => {
-                const link = href(entry.refType, entry.refId);
-                return (
-                  <tr
-                    key={entry.id}
-                    className="border-border border-b"
-                    data-testid="ledger-row"
-                    data-type={entry.entryType}
-                  >
-                    <td className="py-2">{formatDateTime(entry.occurredAt, locale)}</td>
-                    <th scope="row" className="py-2 text-start font-normal">
-                      {link ? (
-                        <a className="underline-offset-4 hover:underline" href={link}>
-                          {entryT(entry.entryType)}
-                        </a>
-                      ) : (
-                        entryT(entry.entryType)
-                      )}
-                    </th>
-                    <td className="py-2 font-mono">{entry.unitNo ?? "—"}</td>
-                    <td className="py-2 text-end tabular-nums">{formatTHB(entry.amount, locale)}</td>
-                    <td className="py-2 text-end tabular-nums">{formatTHB(entry.runningBalance, locale)}</td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-        <ListPagination
-          meta={entries.meta}
-          path={ownerPath(locale, `/arrears/${partyId}`)}
-          searchParams={searchParams}
-          locale={locale}
-        />
-      </Card>
+      {/* The record pattern (G3 revision): the open invoices and the account statement on the left, the next steps —
+          record a payment — in the panel. Payments read as accounting, in brackets; balances are the API's. */}
+      <DetailLayout
+        panel={
+          <ActionPanel
+            title={t("panelTitle")}
+            testId="arrears-party-panel"
+            facts={[
+              { key: "open", label: t("factOpen"), value: invoices.length },
+              ...(credit ? [{ key: "credit", label: t("factCredit"), value: formatTHB(credit.balance, locale) }] : []),
+            ]}
+            primary={
+              <Button asChild>
+                <a href={ownerPath(locale, withQuery("/payments/new", { party: partyId }))}>{t("recordPayment")}</a>
+              </Button>
+            }
+            secondary={
+              <Button asChild variant="secondary">
+                <a href={ownerPath(locale, `/parties/${partyId}`)}>{t("openParty")}</a>
+              </Button>
+            }
+          />
+        }
+      >
+        <section aria-labelledby="open-invoices" className="flex flex-col gap-3" data-testid="party-open-invoices">
+          <h2 id="open-invoices" className="text-lg font-semibold">
+            {t("openInvoices")}
+          </h2>
+          {invoices.length ? (
+            <SimpleTable
+              caption={t("openInvoices")}
+              stackOnPhones
+              minWidth="44rem"
+              columns={[
+                { key: "number", header: t("col.number"), phone: "title" },
+                { key: "unit", header: t("col.unit"), phone: "meta" },
+                { key: "due", header: t("col.due"), phone: "meta" },
+                { key: "status", header: t("col.status"), phone: "status" },
+                { key: "balance", header: t("col.owed"), align: "end", phone: "figure" },
+                {
+                  key: "action",
+                  header: <span className="sr-only">{t("col.action")}</span>,
+                  align: "end",
+                  phone: "hidden",
+                },
+              ]}
+              rows={invoices.map((invoice) => ({
+                key: invoice.id,
+                testId: "party-invoice",
+                cells: {
+                  number: (
+                    <a
+                      className="text-primary font-mono underline-offset-4 hover:underline"
+                      href={ownerPath(locale, `/invoices/${invoice.id}`)}
+                    >
+                      {invoice.number ?? "—"}
+                    </a>
+                  ),
+                  unit: <span className="font-mono">{invoice.unitNo ?? "—"}</span>,
+                  due: invoice.dueDate ? (
+                    <span className="text-muted text-sm">{formatDate(invoice.dueDate, locale)}</span>
+                  ) : null,
+                  status: <StatusBadgeOf map={INVOICE_STATUS} value={invoice.status} size="sm" />,
+                  balance: <span className="font-medium tabular-nums">{formatTHB(invoice.balance, locale)}</span>,
+                  action: (
+                    <RemindButton
+                      invoiceId={invoice.id}
+                      label={invoice.number ?? invoice.unitNo ?? ""}
+                      balance={formatTHB(invoice.balance, locale)}
+                    />
+                  ),
+                },
+              }))}
+            />
+          ) : (
+            <p className="text-muted text-sm">{t("noOpen")}</p>
+          )}
+        </section>
+        <section aria-labelledby="ledger" className="flex flex-col gap-3" data-testid="party-ledger">
+          <div className="flex flex-col gap-0.5">
+            <h2 id="ledger" className="text-lg font-semibold">
+              {t("ledger")}
+            </h2>
+            <p className="text-muted text-sm">{t("ledgerHint")}</p>
+          </div>
+          <SimpleTable
+            caption={t("ledger")}
+            minWidth="36rem"
+            columns={[
+              { key: "entry", header: t("col.entry") },
+              { key: "date", header: t("col.date") },
+              { key: "unit", header: t("col.unit") },
+              { key: "amount", header: t("col.amount"), align: "end" },
+              { key: "balance", header: t("col.balance"), align: "end" },
+            ]}
+            rows={entries.data.map((entry) => {
+              const link = href(entry.refType, entry.refId);
+              const negative = entry.amount.startsWith("-");
+              return {
+                key: entry.id,
+                testId: "ledger-row",
+                data: { type: entry.entryType },
+                cells: {
+                  entry: link ? (
+                    <a className="underline-offset-4 hover:underline" href={link}>
+                      {entryT(entry.entryType)}
+                    </a>
+                  ) : (
+                    entryT(entry.entryType)
+                  ),
+                  date: <span className="text-muted text-sm">{formatDateTime(entry.occurredAt, locale)}</span>,
+                  unit: <span className="font-mono">{entry.unitNo ?? "—"}</span>,
+                  amount: (
+                    <span className="tabular-nums">
+                      {negative
+                        ? t("negative", { amount: formatTHB(entry.amount.slice(1), locale) })
+                        : formatTHB(entry.amount, locale)}
+                    </span>
+                  ),
+                  balance: <span className="font-medium tabular-nums">{formatTHB(entry.runningBalance, locale)}</span>,
+                },
+              };
+            })}
+          />
+          <ListPagination
+            meta={entries.meta}
+            path={ownerPath(locale, `/arrears/${partyId}`)}
+            searchParams={searchParams}
+            locale={locale}
+          />
+        </section>
+      </DetailLayout>
     </OwnerPage>
   );
 }

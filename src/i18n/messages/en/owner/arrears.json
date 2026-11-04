@@ -29,7 +29,7 @@
     "party": "Resident",
     "unit": "Unit",
     "balance": "Balance",
-    "days": "Days overdue"
+    "days": "Overdue"
   },
   "empty": {
     "title": "Nothing overdue",
@@ -76,9 +76,28 @@
       "entry": "Entry",
       "unit": "Unit",
       "amount": "Amount",
-      "balance": "Balance"
-    }
+      "balance": "Balance",
+      "number": "Number",
+      "due": "Due",
+      "status": "Status",
+      "action": "Action",
+      "owed": "Owed"
+    },
+    "panelTitle": "Next steps",
+    "openParty": "Open the party",
+    "factOpen": "Open invoices",
+    "factCredit": "Credit held",
+    "negative": "({amount})"
   },
   "figuresLabel": "Overdue by age",
-  "daysValue": "{count} days"
+  "daysValue": "{count} days",
+  "view": {
+    "label": "Views",
+    "all": "All",
+    "overdue": "Overdue",
+    "notDue": "Not yet due"
+  },
+  "dueToday": "Due today",
+  "notDueYet": "Not yet due",
+  "grandTotal": "Total"
 }

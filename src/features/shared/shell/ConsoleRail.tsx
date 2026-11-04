@@ -28,6 +28,12 @@ export interface ConsoleRailProps {
   account: React.ReactNode;
   /** Phones only: a button that opens the whole menu in a sheet (zones without a bottom nav). */
   mobileMenu?: React.ReactNode;
+  /** The collapsed column's stand-in for `workspace`: the organisation's initial square, the building as an icon. */
+  collapsedWorkspace?: React.ReactNode;
+  /** `false`: the account lives in the phone's "More" sheet, not in the 56-px top bar (owner). Default `true`. */
+  accountOnPhone?: boolean;
+  /** The logo on phones: the full wordmark (owner — the building chip carries the scope) or the house alone. */
+  phoneBrand?: "full" | "compact";
   /** Accessible name of the menu landmark. */
   navLabel: string;
 }
@@ -52,14 +58,24 @@ export function ConsoleRail(props: ConsoleRailProps) {
       data-testid="console-rail"
       data-collapsed={collapsed ? "true" : undefined}
     >
-      <div className={cn("flex shrink-0 items-center gap-1 md:h-16 md:px-4", collapsed && "md:justify-center md:px-0")}>
+      {/* The logo and the collapse toggle stay at the top in both states (the toggle never moves): side by side in the
+          expanded column, stacked in the 64-px rail. */}
+      <div
+        className={cn(
+          "flex shrink-0 items-center gap-1 md:h-16 md:px-4",
+          collapsed && "md:h-auto md:flex-col md:gap-1 md:px-0 md:pt-3 md:pb-2",
+        )}
+      >
         {props.mobileMenu ? <span className="md:hidden">{props.mobileMenu}</span> : null}
         <Link
           href={props.homeHref}
           aria-label={t("home")}
-          className={cn("rounded-control inline-flex shrink-0 items-center px-1", collapsed && "md:hidden")}
+          className={cn(
+            "rounded-control inline-flex shrink-0 items-center px-1",
+            collapsed && "md:size-11 md:justify-center md:px-0",
+          )}
         >
-          <BrandSlot brand={props.brand} collapsed={collapsed} />
+          <BrandSlot brand={props.brand} collapsed={collapsed} phone={props.phoneBrand} />
         </Link>
         <IconButton
           icon={collapsed ? IconSidebarExpand : IconSidebarCollapse}
@@ -78,9 +94,14 @@ export function ConsoleRail(props: ConsoleRailProps) {
       ) : (
         <span className="flex-1 md:hidden" />
       )}
+      {collapsed && props.collapsedWorkspace ? (
+        <div className="border-border hidden flex-col items-center gap-1 border-t py-2 md:flex">
+          {props.collapsedWorkspace}
+        </div>
+      ) : null}
 
       {props.search ? (
-        <div className={cn("shrink-0 md:px-3 md:pb-2", collapsed && "md:flex md:justify-center md:px-0")}>
+        <div className={cn("shrink-0 md:px-3 md:pb-2", collapsed && "md:flex md:justify-center md:px-0 md:pb-1")}>
           {props.search}
         </div>
       ) : null}
@@ -102,7 +123,7 @@ export function ConsoleRail(props: ConsoleRailProps) {
         {props.tools ? (
           <div className={cn("flex items-center gap-1", collapsed && "md:flex-col")}>{props.tools}</div>
         ) : null}
-        {props.account}
+        {props.accountOnPhone === false ? <div className="hidden md:contents">{props.account}</div> : props.account}
       </div>
     </aside>
   );
@@ -116,31 +137,56 @@ export function RailWorkspace({
   extra,
   nameTestId,
   roleTestId,
+  phone,
 }: {
   name: React.ReactNode;
   role?: React.ReactNode;
   /** Replaces the name when the person can switch (several organisations). */
   switcher?: React.ReactNode;
-  /** A second line of context under the role: the building switcher. */
+  /** The building switcher: a compact chip at the end of the organisation row (from `md`). */
   extra?: React.ReactNode;
+  /** What the phone's top bar shows instead of the organisation's name (owner: the building chip). */
+  phone?: React.ReactNode;
   nameTestId?: string;
   roleTestId?: string;
 }) {
+  // The organisation and its role on the left, the building chip on the same row (one row shorter than stacking it —
+  // the money group then fits above the fold at 900 px).
   return (
     <>
-      <div className="flex min-w-0 flex-col px-1 md:px-0" data-testid="session-summary">
-        {switcher ?? (
-          <span className="truncate text-sm font-semibold md:text-base" data-testid={nameTestId}>
-            {name}
-          </span>
-        )}
-        {role && !switcher ? (
-          <span className="text-muted hidden truncate text-xs md:block" data-testid={roleTestId}>
-            {role}
-          </span>
-        ) : null}
+      <div
+        className={cn("flex min-w-0 items-center gap-2 px-1 md:px-0", phone && "hidden md:flex")}
+        data-testid="session-summary"
+      >
+        <div className="flex min-w-0 flex-1 flex-col">
+          {switcher ?? (
+            <span className="truncate text-sm font-semibold md:text-base" data-testid={nameTestId}>
+              {name}
+            </span>
+          )}
+          {role && !switcher ? (
+            <span className="text-muted hidden truncate text-xs md:block" data-testid={roleTestId}>
+              {role}
+            </span>
+          ) : null}
+        </div>
+        {extra ? <div className="hidden max-w-[50%] shrink-0 md:block">{extra}</div> : null}
       </div>
-      {extra ? <div className="hidden md:block">{extra}</div> : null}
+      {phone ? <div className="flex min-w-0 items-center md:hidden">{phone}</div> : null}
     </>
+  );
+}
+
+/** The organisation's initial in a pale square — the collapsed rail's stand-in for the workspace block. */
+export function RailInitial({ name, role }: { name: string; role?: string }) {
+  const label = role ? `${name} · ${role}` : name;
+  return (
+    <span
+      title={label}
+      className="bg-primary-subtle text-primary-subtle-fg rounded-control grid size-9 place-items-center text-sm font-semibold"
+    >
+      <span aria-hidden="true">{Array.from(name.trim())[0] ?? "?"}</span>
+      <span className="sr-only">{label}</span>
+    </span>
   );
 }

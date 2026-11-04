@@ -159,7 +159,13 @@
     "paperDeposit": "ใบรับเงินประกัน",
     "lessee": "ผู้เช่า",
     "unit": "ห้อง",
-    "lease": "สัญญาเช่า"
+    "lease": "สัญญาเช่า",
+    "netRefund": "ต้องคืนผู้เช่าสุทธิ",
+    "lessDeductions": "หัก รายการหัก",
+    "lessUtilities": "หัก ค่าน้ำไฟงวดสุดท้าย",
+    "residentVoice": "ข้อความจากผู้เช่า",
+    "negative": "({amount})",
+    "negativeRich": "(<v></v>)"
   },
   "views": {
     "label": "มุมมอง",

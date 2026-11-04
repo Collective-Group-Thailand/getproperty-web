@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import { isApiError, problemError, toFieldName } from "@/lib/api/errors";
 import { Button, type ButtonProps } from "@/ui/components/Button";
@@ -53,6 +53,12 @@ export interface FormDialogProps {
   disabled?: boolean;
   /** Opens on first render (a "new" link from another page, `?new=1`). */
   defaultOpen?: boolean;
+  /**
+   * Controlled from outside (a row's "⋯" menu opens the dialog): no trigger button is rendered; the owner of `open`
+   * shows the entry that sets it.
+   */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 /**
@@ -76,31 +82,49 @@ export function FormDialog({
   children,
   disabled,
   defaultOpen = false,
+  open: controlled,
+  onOpenChange,
 }: FormDialogProps) {
   const common = useTranslations("common");
   const formId = useId();
-  const [open, setOpen] = useState(defaultOpen);
+  const [inner, setInner] = useState(defaultOpen);
+  const open = controlled ?? inner;
+  const setOpen = (next: boolean) => {
+    onOpenChange?.(next);
+    if (controlled === undefined) setInner(next);
+  };
   const action = useApiAction();
   const idempotency = useIdempotencyKey();
+  // Opened from outside: the same fresh start the trigger button gives (a new key unless the last attempt is pending).
+  const wasOpen = useRef(open);
+  useEffect(() => {
+    if (controlled !== undefined && open && !wasOpen.current) {
+      idempotency.renewUnless(action.unansweredAttempt());
+      action.reset();
+    }
+    wasOpen.current = open;
+  });
   const errors = fieldErrors(action.error);
 
   return (
     <>
-      <Button
-        variant={variant}
-        size={size}
-        iconStart={icon}
-        disabled={disabled}
-        onClick={() => {
-          // Same pending action (last attempt unanswered) → same key; otherwise a fresh one (review L2).
-          idempotency.renewUnless(action.unansweredAttempt());
-          action.reset();
-          setOpen(true);
-        }}
-        data-testid={testId}
-      >
-        {label}
-      </Button>
+      {controlled !== undefined ? null : (
+        <Button
+          variant={variant}
+          size={size}
+          iconStart={icon}
+          disabled={disabled}
+          onClick={() => {
+            // Same pending action (last attempt unanswered) → same key; otherwise a fresh one (review L2).
+            idempotency.renewUnless(action.unansweredAttempt());
+            action.reset();
+            setOpen(true);
+          }}
+          data-testid={testId}
+        >
+          {label}
+        </Button>
+      )}
       <LazyDialog
         open={open}
         onOpenChange={(next) => !action.busy && setOpen(next)}

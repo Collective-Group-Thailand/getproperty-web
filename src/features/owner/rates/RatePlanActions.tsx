@@ -3,6 +3,9 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { IconButton } from "@/ui/components/IconButton";
+import { LazyDropdownMenu } from "@/ui/components/overlays";
+import { IconMore } from "@/ui/icons/glyphs/more";
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 import { FormDialog, text } from "@/features/shared/console/FormDialog";
 import { browserApi } from "@/lib/api/browser";
@@ -240,10 +243,20 @@ export function NewRateVersion({ plan, capHint }: { plan: Schemas["RatePlanDto"]
 }
 
 /** `PATCH /v1/owner/rate-plans/{id}` with the plan's current `ETag` (read just before) — rename or make default. */
-export function EditRatePlan({ plan }: { plan: Schemas["RatePlanDto"] }) {
+export function EditRatePlan({
+  plan,
+  open,
+  onOpenChange,
+}: {
+  plan: Schemas["RatePlanDto"];
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
   const t = useTranslations("owner.rates");
   return (
     <FormDialog
+      open={open}
+      onOpenChange={onOpenChange}
       label={t("rename")}
       icon={IconEdit}
       size="sm"
@@ -277,10 +290,20 @@ export function EditRatePlan({ plan }: { plan: Schemas["RatePlanDto"] }) {
 }
 
 /** `DELETE /v1/owner/rate-plans/{id}` — only a plan no lease or invoice uses; the API refuses otherwise. */
-export function DeleteRatePlan({ plan }: { plan: Schemas["RatePlanDto"] }) {
+export function DeleteRatePlan({
+  plan,
+  open,
+  onOpenChange,
+}: {
+  plan: Schemas["RatePlanDto"];
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
   const t = useTranslations("owner.rates");
   return (
     <ConfirmAction
+      open={open}
+      onOpenChange={onOpenChange}
       label={t("delete")}
       icon={IconDelete}
       size="sm"
@@ -296,5 +319,34 @@ export function DeleteRatePlan({ plan }: { plan: Schemas["RatePlanDto"] }) {
         unwrap(browserApi().DELETE("/v1/owner/rate-plans/{ratePlanId}", { params: { path: { ratePlanId: plan.id } } }))
       }
     />
+  );
+}
+
+/** A rate card's "⋯" (G3 revision): rename and delete (destructive, last) — the card keeps "new price" in view. */
+export function RatePlanMenu({ plan }: { plan: Schemas["RatePlanDto"] }) {
+  const t = useTranslations("owner.rates");
+  const [open, setOpen] = useState<"rename" | "delete" | null>(null);
+  return (
+    <>
+      <LazyDropdownMenu
+        label={t("planMenu", { name: plan.name })}
+        trigger={
+          <IconButton icon={IconMore} label={t("planMenu", { name: plan.name })} data-testid={`plan-menu-${plan.id}`} />
+        }
+        items={[
+          { id: "rename", label: t("rename"), icon: IconEdit, onSelect: () => setOpen("rename") },
+          {
+            id: "delete",
+            label: t("delete"),
+            icon: IconDelete,
+            destructive: true,
+            separatorBefore: true,
+            onSelect: () => setOpen("delete"),
+          },
+        ]}
+      />
+      <EditRatePlan plan={plan} open={open === "rename"} onOpenChange={(next) => setOpen(next ? "rename" : null)} />
+      <DeleteRatePlan plan={plan} open={open === "delete"} onOpenChange={(next) => setOpen(next ? "delete" : null)} />
+    </>
   );
 }

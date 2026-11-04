@@ -236,6 +236,17 @@
     "removeTitle": "Delete {name}?",
     "removeBody": "Units keep their rent; new leases no longer start from this type.",
     "removed": "Unit type deleted",
-    "noLines": "No lease lines"
+    "noLines": "No lease lines",
+    "col": {
+      "name": "Unit type",
+      "rent": "Default rent",
+      "deposit": "Deposit",
+      "advance": "In advance",
+      "lines": "Lease lines"
+    },
+    "monthsValue": "{months} mo",
+    "areaValue": "{area} m²",
+    "rowMenu": "Options for {name}",
+    "caption": "Unit types of the building"
   }
 }

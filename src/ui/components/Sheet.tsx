@@ -20,6 +20,8 @@ const sheetVariants = cva(
         bottom: "inset-x-0 bottom-0 max-h-[90dvh] rounded-t-panel border-t pb-[env(safe-area-inset-bottom)]",
         /** The owner's filters and detail panes on a desktop. */
         right: "inset-y-0 end-0 h-dvh w-[min(100vw,28rem)] border-s",
+        /** A zone menu on a phone (admin): full height from the start edge, 320 px. */
+        left: "inset-y-0 start-0 h-dvh w-[min(85vw,20rem)] border-e pb-[env(safe-area-inset-bottom)]",
       },
     },
     defaultVariants: { side: "bottom" },
@@ -61,7 +63,7 @@ export function Sheet({
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="z-overlay bg-overlay fixed inset-0" />
         <DialogPrimitive.Content {...returnFocus} className={cn(sheetVariants({ side }), className)}>
-          {side !== "right" ? (
+          {side !== "right" && side !== "left" ? (
             <div aria-hidden="true" className="bg-border-strong mx-auto mt-2 h-1 w-10 rounded-full" />
           ) : null}
           <div className="flex items-start justify-between gap-4 px-5 py-4">

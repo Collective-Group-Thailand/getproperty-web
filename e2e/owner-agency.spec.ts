@@ -55,10 +55,9 @@ test("an agency starts at its mandated units and accepts a landlord's invitation
 test("a landlord invites an agency (exclusive conflict refused) and revokes with the unit typed", async ({ page }) => {
   await signInWithOtp(page, HOSTS.owner, LANDLORD_PHONE);
   await hydrated(page);
-  await page
-    .locator('[data-testid="portfolio-unit"][data-unit-no="8/101"]')
-    .getByTestId("portfolio-invite-agency")
-    .click();
+  // G3 revision: the unit's rarer actions live in its "⋯" menu.
+  await page.locator('[data-testid="portfolio-unit"][data-unit-no="8/101"]').getByTestId("portfolio-unit-menu").click();
+  await page.getByTestId("portfolio-invite-agency").click();
   await hydrated(page);
   const dialog = page.getByRole("dialog");
   await expect(dialog.getByTestId("mandate-unit")).toHaveValue("7b2e1d4f-3c5a-4f6b-9c0d-1e2f3a4b5c02");

@@ -6,8 +6,9 @@ import { useEffect, useState } from "react";
 
 import { NotificationCentre } from "@/features/shared/notifications/NotificationCentre";
 import { LanguageSwitch } from "@/features/shared/shell/LanguageSwitch";
+import { RailSearchButton } from "@/features/shared/shell/RailSearchButton";
 import type { ShellBrand } from "@/features/shared/shell/brand";
-import { ConsoleRail, RailWorkspace } from "@/features/shared/shell/ConsoleRail";
+import { ConsoleRail, RailInitial, RailWorkspace } from "@/features/shared/shell/ConsoleRail";
 import { isActive } from "@/features/shared/shell/menu";
 import { ShellBreadcrumbs } from "@/features/shared/shell/ShellBreadcrumbs";
 import { TenantSwitcher } from "@/features/shared/shell/TenantSwitcher";
@@ -23,7 +24,8 @@ import { IconMore } from "@/ui/icons/glyphs/more";
 import { LazySheet } from "@/ui/components/overlays";
 
 import { BuildingSwitcher } from "./BuildingSwitcher";
-import { GlobalSearch } from "./GlobalSearch";
+import { GlobalSearch, openGlobalSearch } from "./GlobalSearch";
+import { MoreSheetBody } from "./MoreSheet";
 
 export interface OwnerShellFrameProps {
   tenants: Schemas["OperatorTenantDto"][];
@@ -46,8 +48,9 @@ export interface OwnerShellFrameProps {
 /**
  * The owner console frame (redesign G0): one navigation column (ConsoleRail) — logo, organisation and role, building
  * switcher, search, the menu from the entitlements, and notifications, language and the account pinned at the bottom;
- * a back link on record pages instead of breadcrumbs. On phones the column is the top bar and a bottom nav — Today,
- * Units, Invoices, Money, More (the whole menu in a sheet).
+ * a back link on record pages instead of breadcrumbs. On phones the column is the top bar — the wordmark, the building
+ * chip (the scope that filters every page), search and the bell — and a bottom nav: Today, Units, Invoices, Money, More
+ * (the "More" sheet: account, search, the menu as icon tiles per group, language, sign-out last).
  */
 export function OwnerShellFrame(props: OwnerShellFrameProps) {
   // Marks the document interactive (hydrated): the e2e suite waits for it instead of clicking
@@ -87,6 +90,19 @@ export function OwnerShellFrame(props: OwnerShellFrameProps) {
           collapsed={collapsed}
           onToggleCollapsed={toggleCollapsed}
           navLabel={t("shell.mainNav")}
+          phoneBrand="full"
+          accountOnPhone={false}
+          collapsedWorkspace={
+            <>
+              <RailInitial name={props.currentTenant.displayName} role={props.roleLabel} />
+              <BuildingSwitcher
+                buildings={props.buildings}
+                currentBuildingId={props.currentBuildingId}
+                variant="icon"
+                testId="building-switcher-rail"
+              />
+            </>
+          }
           workspace={
             <RailWorkspace
               name={props.currentTenant.displayName}
@@ -105,6 +121,15 @@ export function OwnerShellFrame(props: OwnerShellFrameProps) {
                 ) : undefined
               }
               extra={<BuildingSwitcher buildings={props.buildings} currentBuildingId={props.currentBuildingId} />}
+              phone={
+                props.buildings.length > 0 ? (
+                  <BuildingSwitcher
+                    buildings={props.buildings}
+                    currentBuildingId={props.currentBuildingId}
+                    testId="building-switcher-phone"
+                  />
+                ) : undefined
+              }
             />
           }
           search={
@@ -149,11 +174,26 @@ export function OwnerShellFrame(props: OwnerShellFrameProps) {
         closeLabel={t("common.close")}
         side="bottom"
       >
-        <div className="mb-4 flex flex-wrap items-center gap-2 md:hidden">
-          <BuildingSwitcher buildings={props.buildings} currentBuildingId={props.currentBuildingId} />
-          <LanguageSwitch zone="owner" />
-        </div>
-        <ZoneSidebar groups={props.groups} collapsed={false} size="touch" />
+        <MoreSheetBody
+          groups={props.groups}
+          userName={props.userName}
+          roleLabel={props.roleLabel}
+          tenantName={props.currentTenant.displayName}
+          switchTenantHref={props.tenants.length > 1 ? `${props.localePrefix}/select-tenant` : undefined}
+          loginHref={props.loginHref}
+          search={
+            <RailSearchButton
+              label={t("shell.search.open")}
+              placeholder={t("shell.search.placeholder")}
+              variant="field"
+              testId="global-search-sheet"
+              onClick={() => {
+                setMoreOpen(false);
+                openGlobalSearch();
+              }}
+            />
+          }
+        />
       </LazySheet>
     </AppShell>
   );

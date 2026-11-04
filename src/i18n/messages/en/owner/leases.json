@@ -189,7 +189,9 @@
     "summaryDeposit": "Deposit",
     "summaryAdvance": "Advance rent",
     "summaryRent": "Monthly rent",
-    "summaryNote": "Amounts are confirmed by the system when the lease is created."
+    "summaryNote": "Amounts are confirmed by the system when the lease is created.",
+    "nextTo": "Next: {step}",
+    "stepOf": "Step {current} of {total}"
   },
   "invite": {
     "button": "Invite to the app",
@@ -358,7 +360,18 @@
     "panelTitle": "This lease",
     "paperKind": "Residential lease",
     "paperDraft": "Draft",
-    "ends": "Ends"
+    "ends": "Ends",
+    "stateLine": {
+      "draft": "A draft — check it, then send it for signature.",
+      "pending_signature": "Waiting for signatures; the lease starts once everyone has signed.",
+      "active": "In force; monthly invoices follow the billing cycle.",
+      "notice_given": "Notice given — prepare the move-out inspection and the deposit.",
+      "ending": "Ending soon — offer a renewal or start finding the next resident.",
+      "ended": "This lease has ended.",
+      "terminated": "This lease was terminated early.",
+      "cancelled": "This lease was cancelled."
+    },
+    "starts": "Starts"
   },
   "preview": {
     "title": "Legal checks before the draft",

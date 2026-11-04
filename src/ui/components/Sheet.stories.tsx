@@ -41,3 +41,6 @@ export const Bottom: Story = { render: (args) => <Demo {...args} /> };
 export const Right: Story = {
   render: (args) => <Demo {...args} side="right" title="ตัวกรอง" description={undefined} />,
 };
+export const Left: Story = {
+  render: (args) => <Demo {...args} side="left" title="เมนูทั้งหมด" description={undefined} />,
+};

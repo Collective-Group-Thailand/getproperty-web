@@ -12,7 +12,20 @@ import { IconMail } from "@/ui/icons/glyphs/mail";
  * message, quiet hours and consent apply; a voided receipt is refused by the API. One Idempotency-Key per
  * confirmation.
  */
-export function ResendReceipt({ receiptId, number, payer }: { receiptId: string; number: string; payer: string }) {
+export function ResendReceipt({
+  receiptId,
+  number,
+  payer,
+  open,
+  onOpenChange,
+}: {
+  receiptId: string;
+  number: string;
+  payer: string;
+  /** Controlled from a row's "⋯" menu. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
   const t = useTranslations("owner.payments.resendReceipt");
   return (
     <ConfirmAction
@@ -21,6 +34,8 @@ export function ResendReceipt({ receiptId, number, payer }: { receiptId: string;
       variant="ghost"
       size="sm"
       testId="receipt-resend"
+      open={open}
+      onOpenChange={onOpenChange}
       title={t("title")}
       description={t("body", { number, payer })}
       confirmLabel={t("action")}

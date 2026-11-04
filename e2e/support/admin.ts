@@ -14,7 +14,7 @@ export async function signInPlatform(page: Page, persona: Exclude<PlatformPerson
   await page.goto(`${HOSTS.admin}/login`);
   await page.getByLabel(/อีเมล|Email/).fill(`${persona}@example.com`);
   await page.getByRole("textbox", { name: /^(รหัสผ่าน|Password)$/ }).fill(PASSWORD);
-  await page.getByRole("button", { name: /เข้าสู่ระบบ|Sign in/ }).click();
+  await page.getByRole("button", { name: /ดำเนินการต่อ|Continue/ }).click();
   await page.getByLabel(/รหัสจากแอปยืนยันตัวตน|Authenticator code/).fill(CODE);
   await page.getByRole("button", { name: /เข้าสู่ระบบ|Sign in/ }).click();
   await expect(page).toHaveURL(`${HOSTS.admin}/`);

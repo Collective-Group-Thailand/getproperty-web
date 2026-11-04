@@ -29,7 +29,8 @@
     "about": "About",
     "contactPage": "Contact",
     "security": "Security & PDPA",
-    "foreignRenters": "For foreign renters"
+    "foreignRenters": "For foreign renters",
+    "backHome": "Back to home"
   },
   "hero": {
     "eyebrow": "Free for apartments, dormitories and landlords",
@@ -693,7 +694,12 @@
       "reset": "Clear filters",
       "filters": "Filters",
       "count": "{count, plural, =0 {No homes found} one {# home} other {# homes}}",
-      "results": "Results"
+      "results": "Results",
+      "label": "Search homes for rent",
+      "rentRange": "Rent a month (THB)",
+      "from": "From",
+      "to": "To",
+      "apply": "Show results"
     },
     "empty": {
       "title": "Nothing matches your search yet",
@@ -751,7 +757,7 @@
       "verified": "Ownership verified",
       "notVerified": "Ownership not verified yet",
       "contact": "Ask or book a viewing in LINE",
-      "contactSignIn": "Sign in to contact the owner",
+      "contactSignIn": "Contact the owner in LINE",
       "contactNote": "Talk to the owner directly, no agent fee. Sign the lease and pay the deposit right here.",
       "report": "Report this listing",
       "similar": "More homes you may like",
@@ -759,7 +765,14 @@
       "notFound": "This listing was not found; it may have been closed.",
       "bathrooms": "Bathrooms",
       "identityVerified": "Identity verified",
-      "noPhotos": "The owner has not added photos yet"
+      "noPhotos": "The owner has not added photos yet",
+      "signInFirst": "You'll sign in first, then we take you to the owner.",
+      "term": {
+        "deposit": "Deposit",
+        "advance": "Paid in advance",
+        "minTerm": "Minimum lease"
+      },
+      "months": "{months, plural, one {# month} other {# months}}"
     },
     "area": {
       "metaTitle": {
@@ -1046,7 +1059,12 @@
       "cta": {
         "title": "No empty months, rent on time",
         "body": "Free listings, renewal reminders ahead of time, and rent collected through LINE automatically."
-      }
+      },
+      "example": "Example figures — type your own over them",
+      "clearExample": "Clear the example",
+      "exampleBadge": "Example",
+      "costsShare": "Costs and empty months",
+      "split": "Net income as a share of a full year's rent"
     },
     "open": "Open the tool",
     "faqHint": "How it is worked out, and what to know before you rely on it",
@@ -1318,6 +1336,20 @@
       "title": "Invitation not found",
       "body": "The link may be incomplete or out of date. Open it again from getbuild's buyer portal.",
       "action": "See renting out with getproperty"
+    }
+  },
+  "billMessage": {
+    "example": "Example: the bill message a resident gets on LINE",
+    "channel": "LINE · the building's official account",
+    "title": "Rent bill · {month}",
+    "room": "Room A-201",
+    "total": "Amount due",
+    "pay": "Pay by QR",
+    "lines": "Rent, electricity and water in one bill",
+    "points": {
+      "issue": "Bill the whole building in one morning",
+      "pay": "Residents pay by QR; the payment is checked for you",
+      "receipt": "Receipts issue themselves once the payment is confirmed"
     }
   }
 }

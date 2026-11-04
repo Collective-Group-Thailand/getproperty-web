@@ -13,6 +13,13 @@ const GlobalSearchDialog = lazyOverlay<GlobalSearchDialogProps>(() =>
   import("./GlobalSearchDialog").then((module) => module.GlobalSearchDialog),
 );
 
+const OPEN_EVENT = "gp:open-search";
+
+/** Opens the console's search from elsewhere (the phone's "More" sheet), without a second dialog. */
+export function openGlobalSearch(): void {
+  window.dispatchEvent(new Event(OPEN_EVENT));
+}
+
 /**
  * Global search (`/` opens it): menu entries match locally at once; entities come from
  * `GET /v1/owner/search` (buildings, units, parties, leases, devices, invoices); when it fails only the menu
@@ -42,8 +49,13 @@ export function GlobalSearch({
         setOpen(true);
       }
     };
+    const onOpen = () => setOpen(true);
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener(OPEN_EVENT, onOpen);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener(OPEN_EVENT, onOpen);
+    };
   }, []);
 
   return (

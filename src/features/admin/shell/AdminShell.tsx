@@ -12,7 +12,7 @@ import { inboundEdgeHeaders } from "@/lib/http/server";
 import { AdminShellFrame } from "./AdminShellFrame";
 import { ADMIN_MENU, ADMIN_MENU_GROUPS } from "./menu";
 
-async function systemInfo(): Promise<Schemas["SystemInfoDto"] | null> {
+export async function systemInfo(): Promise<Schemas["SystemInfoDto"] | null> {
   try {
     const edge = await inboundEdgeHeaders();
     return await unwrap(
@@ -21,6 +21,14 @@ async function systemInfo(): Promise<Schemas["SystemInfoDto"] | null> {
   } catch {
     return null;
   }
+}
+
+/** The environment badge (never in production) and the API's fakes flag — the column and the sign-in card show them. */
+export async function adminEnvironment(): Promise<{ info: Schemas["SystemInfoDto"] | null; envBadge?: string }> {
+  const info = await systemInfo();
+  const envBadge =
+    serverEnv().NEXT_PUBLIC_ENV_BADGE ?? (info && info.environment !== "production" ? info.environment : undefined);
+  return { info, envBadge };
 }
 
 /** Server half of the admin shell: menu from `/v1/admin/me`, the API's environment and fakes flag. */
@@ -32,9 +40,7 @@ export async function AdminShell({ me, children }: { me: Schemas["AdminMeDto"]; 
     ADMIN_MENU_GROUPS,
     Object.fromEntries(ADMIN_MENU_GROUPS.map((group) => [group, t(`admin.nav.group.${group}`)])),
   );
-  const info = await systemInfo();
-  const envBadge =
-    serverEnv().NEXT_PUBLIC_ENV_BADGE ?? (info && info.environment !== "production" ? info.environment : undefined);
+  const { info, envBadge } = await adminEnvironment();
   return (
     <RealtimeProvider zone="admin" tenantId={null}>
       <AdminShellFrame

@@ -10,6 +10,7 @@ import { Field } from "@/ui/components/Field";
 import { PeriodPicker } from "@/ui/components/PeriodPicker";
 import { Input } from "@/ui/components/Input";
 import { NativeSelect, type NativeSelectOption } from "@/ui/components/NativeSelect";
+import { FilterSheet } from "@/ui/components/FilterSheet";
 import { cn } from "@/ui/lib/cn";
 
 export type FilterField =
@@ -56,6 +57,7 @@ export function FilterBar({
   variant?: "form" | "toolbar";
 }) {
   const t = useTranslations("console.period");
+  const sheet = useTranslations("console.filterSheet");
   const locale = useLocale() as Locale;
   const router = useRouter();
   const pathname = usePathname();
@@ -71,69 +73,115 @@ export function FilterBar({
     startTransition(() => router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false }));
   };
 
-  if (variant === "toolbar")
+  if (variant === "toolbar") {
+    const control = (field: FilterField, inSheet: boolean) => {
+      const testId = inSheet ? `filter-${field.name}-sheet` : `filter-${field.name}`;
+      const size = inSheet ? "md" : "sm";
+      if (field.type === "select")
+        return (
+          <NativeSelect
+            name={field.name}
+            aria-label={inSheet ? undefined : field.label}
+            inputSize={size}
+            options={field.options}
+            placeholder={field.placeholder ?? (field.fallback ? undefined : "")}
+            value={params.get(field.name) ?? field.fallback ?? ""}
+            onChange={(event) => apply(field.name, event.target.value)}
+            data-testid={testId}
+          />
+        );
+      if (field.type === "period")
+        return (
+          <PeriodPicker
+            periods={field.periods}
+            value={params.get(field.name) ?? field.fallback ?? ""}
+            onChange={(value) => apply(field.name, value)}
+            locale={locale}
+            label={field.label}
+            previousLabel={t("previous")}
+            nextLabel={t("next")}
+            allLabel={field.allLabel}
+            testId={testId}
+          />
+        );
+      if (field.type === "search") return null;
+      return (
+        <Input
+          name={field.name}
+          aria-label={inSheet ? undefined : field.label}
+          inputSize={size}
+          type={field.type}
+          min={field.type === "number" ? field.min : undefined}
+          placeholder={field.type === "number" ? field.placeholder : undefined}
+          defaultValue={params.get(field.name) ?? ""}
+          onChange={(event) => apply(field.name, event.target.value)}
+          data-testid={testId}
+        />
+      );
+    };
+    const search = fields.filter((field) => field.type === "search");
+    const others = fields.filter((field) => field.type !== "search");
+    // Filters in use (not the page's own default), for the phone trigger's number.
+    const used = others.filter((field) => {
+      const value = params.get(field.name);
+      return Boolean(value) && value !== ("fallback" in field ? field.fallback : undefined);
+    }).length;
+    const clearQuery = new URLSearchParams(params.toString());
+    for (const field of others) clearQuery.delete(field.name);
+    clearQuery.delete("page");
+    const clearHref = clearQuery.toString() ? `${pathname}?${clearQuery.toString()}` : pathname;
     return (
       <div
-        className={cn("flex w-full min-w-0 flex-wrap items-center gap-2 xl:w-auto xl:flex-nowrap", className)}
+        className={cn("flex w-full min-w-0 items-center gap-2 md:flex-wrap xl:w-auto xl:flex-nowrap", className)}
         role="search"
         aria-busy={pending}
         data-testid="filter-bar"
       >
-        {fields.map((field) =>
-          field.type === "search" ? (
-            <div key={field.name} className="w-full min-w-0 sm:w-64">
-              <SearchInput
-                name={field.name}
-                label={field.label}
-                placeholder={field.placeholder}
-                initial={params.get(field.name) ?? ""}
-                onCommit={(value) => apply(field.name, value)}
-              />
-            </div>
-          ) : field.type === "select" ? (
-            <div key={field.name} className="min-w-36 flex-1 sm:flex-none">
-              <NativeSelect
-                name={field.name}
-                aria-label={field.label}
-                inputSize="sm"
-                options={field.options}
-                placeholder={field.placeholder ?? (field.fallback ? undefined : "")}
-                value={params.get(field.name) ?? field.fallback ?? ""}
-                onChange={(event) => apply(field.name, event.target.value)}
-                data-testid={`filter-${field.name}`}
-              />
-            </div>
-          ) : field.type === "period" ? (
-            <PeriodPicker
-              key={field.name}
-              periods={field.periods}
-              value={params.get(field.name) ?? field.fallback ?? ""}
-              onChange={(value) => apply(field.name, value)}
-              locale={locale}
+        {search.map((field) => (
+          <div key={field.name} className="min-w-0 flex-1 sm:w-64 sm:flex-none">
+            <SearchInput
+              name={field.name}
               label={field.label}
-              previousLabel={t("previous")}
-              nextLabel={t("next")}
-              allLabel={field.allLabel}
-              testId={`filter-${field.name}`}
+              placeholder={field.placeholder}
+              initial={params.get(field.name) ?? ""}
+              onCommit={(value) => apply(field.name, value)}
             />
-          ) : (
-            <div key={field.name} className="w-44">
-              <Input
-                name={field.name}
-                aria-label={field.label}
-                inputSize="sm"
-                type={field.type}
-                min={field.type === "number" ? field.min : undefined}
-                placeholder={field.type === "number" ? field.placeholder : undefined}
-                defaultValue={params.get(field.name) ?? ""}
-                onChange={(event) => apply(field.name, event.target.value)}
-                data-testid={`filter-${field.name}`}
-              />
-            </div>
-          ),
-        )}
+          </div>
+        ))}
+        {/* From md the filters sit in the toolbar; on phones they wait behind one trigger in a bottom sheet. */}
+        {others.map((field) => (
+          <div
+            key={field.name}
+            className={cn(
+              "hidden md:block",
+              field.type === "select" ? "min-w-36" : field.type === "period" ? "" : "w-44",
+            )}
+          >
+            {control(field, false)}
+          </div>
+        ))}
+        {others.length > 0 ? (
+          <div className={cn("md:hidden", search.length === 0 && "ms-auto")}>
+            <FilterSheet
+              label={sheet("label")}
+              count={used}
+              closeLabel={sheet("close")}
+              applyLabel={sheet("apply")}
+              clear={used > 0 ? { href: clearHref, label: sheet("clear") } : undefined}
+              trigger={search.length > 0 ? "icon" : "button"}
+              testId="filter-sheet"
+            >
+              {others.map((field) => (
+                <Field key={field.name} label={field.label}>
+                  {control(field, true)}
+                </Field>
+              ))}
+            </FilterSheet>
+          </div>
+        ) : null}
       </div>
     );
+  }
 
   return (
     <div

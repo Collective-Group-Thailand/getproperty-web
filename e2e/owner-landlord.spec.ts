@@ -117,7 +117,7 @@ test("a landlord lists a vacant house: draft, photos, publish (F6.2)", async ({ 
   await expect(page.getByTestId("listing-details")).toContainText("บันทึกแล้ว");
 
   await page.getByTestId("listing-submit").click();
-  await expect(page.getByTestId("listing-state-hint")).toContainText("เผยแพร่อยู่บนหน้า /rent");
+  await expect(page.getByTestId("listing-state-hint")).toContainText("เผยแพร่อยู่บนหน้าหาห้องเช่า");
   await expect(page.getByTestId("listing-view")).toBeVisible();
   await expectAxeClean(page);
 
@@ -253,7 +253,9 @@ test("a landlord opens the documents of one unit from the portfolio (B7.5)", asy
   await expect(page).toHaveURL(`${HOSTS.owner}/portfolio`);
   await hydrated(page);
   const leased = page.locator('[data-testid="portfolio-unit"][data-unit-no="12/345"]');
-  await leased.getByTestId("portfolio-documents").click();
+  // G3 revision: the unit's rarer actions live in its "⋯" menu.
+  await leased.getByTestId("portfolio-unit-menu").click();
+  await page.getByTestId("portfolio-documents").click();
   await expect(page).toHaveURL(/\/documents\?unit=/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("เอกสารของห้องนี้");
   const rows = page.getByTestId("document-row");

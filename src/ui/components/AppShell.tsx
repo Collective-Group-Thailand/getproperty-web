@@ -48,7 +48,7 @@ export function AppShell({
 }: AppShellProps) {
   if (rail) {
     return (
-      <div className={cn("bg-bg min-h-dvh md:flex", className)}>
+      <div className={cn("group/shell bg-bg min-h-dvh md:flex", className)}>
         <a href="#main" className="skip-link">
           {skipLabel}
         </a>
@@ -58,14 +58,19 @@ export function AppShell({
           <main
             id="main"
             tabIndex={-1}
-            className={cn("min-w-0 flex-1", bottomNav && "pb-(--bottom-nav-h) md:pb-0 print:pb-0")}
+            className={cn(
+              "min-w-0 flex-1",
+              bottomNav && "pb-(--bottom-nav-h) md:pb-0 print:pb-0",
+              "max-md:group-has-[[data-record-bar]:not(:empty)]/shell:pb-28",
+            )}
           >
             {children}
           </main>
           {footer}
         </div>
         {bottomNav ? (
-          <div className="border-border bg-surface z-sticky fixed inset-x-0 bottom-0 border-t pb-[env(safe-area-inset-bottom)] md:hidden print:hidden">
+          // A record page's sticky action bar (ActionPanel, `data-record-bar`) takes the bottom nav's place on phones.
+          <div className="border-border bg-surface z-sticky fixed inset-x-0 bottom-0 border-t pb-[env(safe-area-inset-bottom)] group-has-[[data-record-bar]:not(:empty)]/shell:hidden md:hidden print:hidden">
             {bottomNav}
           </div>
         ) : null}

@@ -129,5 +129,6 @@
       "amount": "จำนวนเงิน"
     }
   },
-  "emptyAction": "ดูบิล"
+  "emptyAction": "ดูบิล",
+  "planMenu": "ตัวเลือกของ {name}"
 }

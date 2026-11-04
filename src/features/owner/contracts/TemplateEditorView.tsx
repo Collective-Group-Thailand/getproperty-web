@@ -8,7 +8,6 @@ import { formatDate } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/errors";
 import type { Schemas } from "@/lib/api/types";
-import { Callout } from "@/ui/components/Callout";
 
 import { ownerPath } from "../shared/links";
 import { ownerCan, readOnly, section, type OwnerContext } from "../shared/server";
@@ -55,7 +54,29 @@ export async function TemplateEditorView({ context, templateId }: { context: Own
             <StatusBadgeOf map={LEGAL_REVIEW_STATUS} value={current.legalReviewState} />
           </span>
         }
-        actions={
+      />
+      <ContractDisclaimer disclaimer={detail.disclaimer} locale={locale} />
+      <TemplateEditor
+        key={current.id}
+        detail={detail}
+        diff={diff.data ?? null}
+        canEdit={canEdit}
+        note={
+          <span className="flex flex-col gap-2">
+            {detail.platform ? (
+              <span>{t("editor.platformBody")}</span>
+            ) : base ? (
+              <span data-testid="template-base">
+                {t("editor.copiedFrom", {
+                  version: t("versionLabel", { language: t(`language.${base.language}`), version: base.version }),
+                  date: base.publishedAt ? formatDate(base.publishedAt, locale) : "—",
+                })}
+              </span>
+            ) : null}
+            {current.legalRef ? <span>{current.legalRef}</span> : null}
+          </span>
+        }
+        copy={
           detail.platform && mayManage && published.length ? (
             <CopyTemplate
               name={detail.name}
@@ -64,24 +85,9 @@ export async function TemplateEditorView({ context, templateId }: { context: Own
                 label: t("versionLabel", { language: t(`language.${version.language}`), version: version.version }),
               }))}
             />
-          ) : null
+          ) : undefined
         }
       />
-      <ContractDisclaimer disclaimer={detail.disclaimer} locale={locale} />
-      {detail.platform ? (
-        <Callout tone="info" title={t("editor.platformTitle")}>
-          {t("editor.platformBody")}
-        </Callout>
-      ) : base ? (
-        <p className="text-muted text-sm" data-testid="template-base">
-          {t("editor.copiedFrom", {
-            version: t("versionLabel", { language: t(`language.${base.language}`), version: base.version }),
-            date: base.publishedAt ? formatDate(base.publishedAt, locale) : "—",
-          })}
-        </p>
-      ) : null}
-      <p className="text-muted text-sm">{current.legalRef}</p>
-      <TemplateEditor key={current.id} detail={detail} diff={diff.data ?? null} canEdit={canEdit} />
     </OwnerPage>
   );
 }

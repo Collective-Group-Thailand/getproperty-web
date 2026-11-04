@@ -8,6 +8,8 @@ import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { ListToolbar, ViewTabs } from "@/ui/components/ListToolbar";
+import { StatusText } from "@/ui/components/StatusText";
+import { IconClock } from "@/ui/icons/glyphs/clock";
 import { SimpleTable } from "@/ui/components/SimpleTable";
 import { StatsRow } from "@/ui/components/StatsRow";
 import { IconBill } from "@/ui/icons/glyphs/bill";
@@ -182,7 +184,7 @@ export async function InvoicesView({ context, searchParams }: { context: OwnerCo
             cells: {
               number: (
                 <span className="flex flex-col">
-                  <span className="font-mono text-sm">{invoice.number ?? t("draftNumber")}</span>
+                  <span className="text-primary font-mono text-sm">{invoice.number ?? t("draftNumber")}</span>
                   <span className="text-muted text-sm font-normal">
                     {t("period", {
                       start: formatDate(invoice.periodStart, locale),
@@ -201,15 +203,26 @@ export async function InvoicesView({ context, searchParams }: { context: OwnerCo
                   <InvoiceFlags invoice={invoice} />
                 </span>
               ),
-              due: (
-                <span className="text-muted whitespace-nowrap">
-                  {invoice.dueDate ? t("due", { date: formatDate(invoice.dueDate, locale) }) : t("notIssued")}
-                </span>
-              ),
+              due:
+                invoice.status === "overdue" && invoice.dueDate ? (
+                  // The due date carries the state's colour (with the clock icon) only when it has passed.
+                  <StatusText tone="danger" icon={IconClock} className="whitespace-nowrap">
+                    {t("due", { date: formatDate(invoice.dueDate, locale) })}
+                  </StatusText>
+                ) : (
+                  <span className="text-muted whitespace-nowrap">
+                    {invoice.dueDate ? t("due", { date: formatDate(invoice.dueDate, locale) }) : t("notIssued")}
+                  </span>
+                ),
               status: <StatusBadgeOf map={INVOICE_STATUS} value={invoice.status} size="sm" />,
               total: <span className="font-medium whitespace-nowrap">{formatTHB(invoice.total, locale)}</span>,
+              // On phones the remaining amount shows only when it differs from the bill (the API's two strings compared).
               balance: (
-                <span className="whitespace-nowrap">
+                <span
+                  className={
+                    invoice.balance === invoice.total ? "whitespace-nowrap max-md:hidden" : "whitespace-nowrap"
+                  }
+                >
                   <span className="text-muted md:hidden">{t("column.balance")} </span>
                   {formatTHB(invoice.balance, locale)}
                 </span>

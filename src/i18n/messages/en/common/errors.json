@@ -6,7 +6,11 @@
   "notFound": {
     "title": "Page not found",
     "body": "The link may be wrong, or the page has moved.",
-    "home": "Back to the start"
+    "home": "Back to the start",
+    "popular": "Pages people look for",
+    "findRoom": "Find a room",
+    "goTo": "Go to {page}",
+    "code": "404"
   },
   "compliance": {
     "refused": "Not allowed by law",
@@ -18,5 +22,12 @@
   "offline": {
     "title": "No connection",
     "body": "Nothing was sent. Check the connection and try again."
+  },
+  "forbidden": {
+    "title": "You can't open this page",
+    "body": "Your role in this organisation doesn't include this. Ask an owner or a manager to grant it, then open the page again.",
+    "home": "Back to the start",
+    "sectionTitle": "You can't see this part",
+    "sectionBody": "Your role in this organisation doesn't include this. Ask an owner or a manager to grant it."
   }
 }

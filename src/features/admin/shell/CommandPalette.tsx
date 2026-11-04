@@ -14,6 +14,13 @@ import { LazyDialog } from "@/ui/components/overlays";
  * The admin command palette (also on Ctrl/⌘ K for keyboard users; not advertised in the UI): jump to any entitled back-office page by name. Arrow keys
  * move, Enter opens. Entries are the admin menu entitlements only — what the user may open.
  */
+const OPEN_EVENT = "gp:open-command-palette";
+
+/** Opens the jump-to dialog from elsewhere (the phone's menu sheet), without a second dialog. */
+export function openCommandPalette(): void {
+  window.dispatchEvent(new Event(OPEN_EVENT));
+}
+
 export function CommandPalette({ items, collapsed = false }: { items: ShellNavItem[]; collapsed?: boolean }) {
   const t = useTranslations("shell.commandPalette");
   const common = useTranslations("common");
@@ -28,8 +35,13 @@ export function CommandPalette({ items, collapsed = false }: { items: ShellNavIt
         setOpen((current) => !current);
       }
     };
+    const onOpen = () => setOpen(true);
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    window.addEventListener(OPEN_EVENT, onOpen);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener(OPEN_EVENT, onOpen);
+    };
   }, []);
 
   const matches = useMemo(() => {
