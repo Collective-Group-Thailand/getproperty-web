@@ -2,23 +2,23 @@ import { getTranslations } from "next-intl/server";
 
 import { INVITATION_STATUS } from "@/domain/status/invitation";
 import { MEMBERSHIP_STATUS } from "@/domain/status/membership";
-import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { SectionError } from "@/features/shared/console/SectionError";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
-import { formatDateTime, formatPhone } from "@/i18n/format";
+import { formatDate, formatDateTime, formatPhone } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
-import { Card, CardHeader } from "@/ui/components/Card";
+import { Avatar } from "@/ui/components/Avatar";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { SimpleTable } from "@/ui/components/SimpleTable";
+import { IconMail } from "@/ui/icons/glyphs/mail";
 
 import { ownerCan, readOnly, section, type OwnerContext } from "../shared/server";
-import { EditMember, InviteMember, RemoveMember, RevokeInvitation } from "./MemberActions";
-import { SettingsNav } from "./SettingsNav";
+import { InvitationMenu, InviteMember, MemberMenu } from "./MemberActions";
+import { SettingsCard, SettingsFrame } from "./SettingsNav";
 
 /**
- * Members & roles (F2 2.6, D-090): the people working for the tenant with their role (owner, manager,
- * accountant, staff), the buildings they are limited to and their status; pending invitations with
- * revoke; invite, change and remove for those who may.
+ * Settings › Members (F2 2.6, D-090; redesign G6): the people working for the tenant — initial, name and contact, role,
+ * the buildings they are limited to, when they joined and their status — with one "⋯" per row (change role and
+ * buildings · remove); the invitations under it. "เชิญสมาชิก" is the section's one filled action.
  */
 export async function MembersView({
   context,
@@ -39,82 +39,114 @@ export async function MembersView({
   const options = buildings.map((building) => ({ id: building.id, name: building.name }));
   const buildingNames = (ids: unknown) =>
     Array.isArray(ids) && ids.length
-      ? ids.map((id) => buildings.find((b) => b.id === id)?.name ?? String(id).slice(0, 8)).join(", ")
+      ? ids
+          .map((id) => buildings.find((b) => b.id === id)?.name)
+          .filter(Boolean)
+          .join(", ") || t("allBuildings")
       : t("allBuildings");
   return (
-    <OwnerPage testId="members">
-      <PageHeader
-        title={t("title")}
-        description={t("description")}
-        actions={invite ? <InviteMember buildings={options} /> : null}
-      />
-      <SettingsNav me={me} current="/settings/members" locale={locale} />
-      {!members.data ? (
-        <SectionError error={members.error} />
-      ) : (
-        <SimpleTable
-          caption={t("title")}
-          testId="member-table"
-          minWidth="56rem"
-          columns={[
-            { key: "name", header: t("col.name") },
-            { key: "role", header: t("col.role") },
-            { key: "buildings", header: t("col.buildings") },
-            { key: "joined", header: t("col.joined") },
-            { key: "status", header: t("col.status") },
-            { key: "actions", header: <span className="sr-only">{t("col.actions")}</span> },
-          ]}
-          rows={members.data
-            .filter((member) => member.status !== "removed")
-            .map((member) => ({
-              key: member.id,
-              testId: "member-row",
-              data: { role: member.role, status: member.status },
-              cells: {
-                name: (
-                  <span className="flex flex-col">
-                    <span className="font-semibold">{member.displayName}</span>
-                    <span className="text-muted text-xs">
-                      {[member.phone ? formatPhone(member.phone) : null, member.email].filter(Boolean).join(" · ") ||
-                        "—"}
-                    </span>
-                  </span>
-                ),
-                role: roles(member.role),
-                buildings: buildingNames(member.buildingIds),
-                joined: member.joinedAt ? formatDateTime(member.joinedAt, locale) : "—",
-                status: <StatusBadgeOf map={MEMBERSHIP_STATUS} value={member.status} size="sm" />,
-                actions:
-                  manage && member.userId !== me.user.id ? (
-                    <span className="flex flex-wrap gap-2">
-                      <EditMember member={member} buildings={options} />
-                      <RemoveMember member={member} />
-                    </span>
-                  ) : null,
+    <SettingsFrame
+      me={me}
+      locale={locale}
+      current="/settings/members"
+      title={t("title")}
+      description={t("description")}
+      actions={invite ? <InviteMember buildings={options} /> : null}
+      testId="members"
+    >
+      <SettingsCard number={1} id="members-team" title={t("team")} description={t("teamHint")} flush>
+        {!members.data ? (
+          <div className="p-5 md:p-6">
+            <SectionError error={members.error} />
+          </div>
+        ) : (
+          <SimpleTable
+            caption={t("team")}
+            testId="member-table"
+            minWidth="48rem"
+            stackOnPhones
+            className="rounded-none border-0 shadow-none"
+            columns={[
+              { key: "name", header: t("col.name"), phone: "title" },
+              { key: "role", header: t("col.role"), phone: "meta" },
+              { key: "buildings", header: t("col.buildings"), phone: "meta" },
+              { key: "joined", header: t("col.joined"), className: "whitespace-nowrap", phone: "hidden" },
+              { key: "status", header: t("col.status"), className: "whitespace-nowrap", phone: "status" },
+              {
+                key: "actions",
+                header: <span className="sr-only">{t("col.actions")}</span>,
+                align: "end",
+                phone: "figure",
               },
-            }))}
-        />
-      )}
-      <Card as="section" aria-labelledby="members-invitations">
-        <CardHeader
-          title={<span id="members-invitations">{t("invitations")}</span>}
-          description={t("invitationsHint")}
-        />
+            ]}
+            rows={members.data
+              .filter((member) => member.status !== "removed")
+              .map((member) => ({
+                key: member.id,
+                testId: "member-row",
+                data: { role: member.role, status: member.status },
+                cells: {
+                  name: (
+                    <span className="flex min-w-0 items-center gap-3">
+                      <Avatar name={member.displayName} />
+                      <span className="flex min-w-0 flex-col">
+                        <span className="truncate font-semibold">{member.displayName}</span>
+                        <span className="text-muted truncate text-sm tabular-nums">
+                          {[member.phone ? formatPhone(member.phone) : null, member.email]
+                            .filter(Boolean)
+                            .join(" · ") || "—"}
+                        </span>
+                      </span>
+                    </span>
+                  ),
+                  role: roles(member.role),
+                  buildings: buildingNames(member.buildingIds),
+                  joined: member.joinedAt ? formatDate(member.joinedAt, locale) : "—",
+                  status: <StatusBadgeOf map={MEMBERSHIP_STATUS} value={member.status} size="sm" />,
+                  actions:
+                    manage && member.userId !== me.user.id ? <MemberMenu member={member} buildings={options} /> : "",
+                },
+              }))}
+          />
+        )}
+      </SettingsCard>
+
+      <SettingsCard
+        number={2}
+        id="members-invitations"
+        title={t("invitations")}
+        description={t("invitationsHint")}
+        flush
+      >
         {!invitations.data ? (
-          <SectionError error={invitations.error} />
+          <div className="p-5 md:p-6">
+            <SectionError error={invitations.error} />
+          </div>
         ) : invitations.data.length === 0 ? (
-          <EmptyState title={t("noInvitations")} />
+          <EmptyState
+            icon={IconMail}
+            title={t("noInvitations")}
+            description={t("noInvitationsHint")}
+            action={invite ? <InviteMember buildings={options} testId="invite-member-empty" secondary /> : null}
+          />
         ) : (
           <SimpleTable
             caption={t("invitations")}
             testId="invitation-table"
-            minWidth="48rem"
+            minWidth="44rem"
+            stackOnPhones
+            className="rounded-none border-0 shadow-none"
             columns={[
-              { key: "to", header: t("col.to") },
-              { key: "role", header: t("col.role") },
-              { key: "expires", header: t("col.expires") },
-              { key: "state", header: t("col.status") },
-              { key: "actions", header: <span className="sr-only">{t("col.actions")}</span> },
+              { key: "to", header: t("col.to"), phone: "title" },
+              { key: "role", header: t("col.role"), phone: "meta" },
+              { key: "expires", header: t("col.expires"), className: "whitespace-nowrap", phone: "meta" },
+              { key: "state", header: t("col.status"), className: "whitespace-nowrap", phone: "status" },
+              {
+                key: "actions",
+                header: <span className="sr-only">{t("col.actions")}</span>,
+                align: "end",
+                phone: "figure",
+              },
             ]}
             rows={invitations.data.map((invitation) => ({
               key: invitation.id,
@@ -123,8 +155,12 @@ export async function MembersView({
               cells: {
                 to: (
                   <span className="flex flex-col">
-                    <span>{invitation.phoneMasked ?? invitation.email ?? "—"}</span>
-                    <span className="text-muted text-xs">{t(`channelName.${invitation.channel}`)}</span>
+                    <span className="font-medium tabular-nums">
+                      {invitation.phoneMasked ?? invitation.email ?? t(`channelName.${invitation.channel}`)}
+                    </span>
+                    <span className="text-muted text-sm">
+                      {t("sentVia", { channel: t(`channelName.${invitation.channel}`) })}
+                    </span>
                   </span>
                 ),
                 role: roles(invitation.role),
@@ -132,13 +168,15 @@ export async function MembersView({
                 state: <StatusBadgeOf map={INVITATION_STATUS} value={invitation.state} size="sm" />,
                 actions:
                   invitation.nextActions.includes("revoke") && writable ? (
-                    <RevokeInvitation invitation={invitation} />
-                  ) : null,
+                    <InvitationMenu invitation={invitation} />
+                  ) : (
+                    ""
+                  ),
               },
             }))}
           />
         )}
-      </Card>
-    </OwnerPage>
+      </SettingsCard>
+    </SettingsFrame>
   );
 }

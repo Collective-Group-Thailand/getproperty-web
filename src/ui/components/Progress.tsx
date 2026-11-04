@@ -13,6 +13,8 @@ export interface ProgressProps {
   showCaption?: boolean;
   /** Fill colour: `warning` (near a limit) and `danger` (at or over it) — the caption must say it too. */
   tone?: "primary" | "warning" | "danger";
+  /** `sm`: a 6-px meter beside other figures (a quota, a time window); `md` (default) 12 px. */
+  size?: "sm" | "md";
   className?: string;
 }
 
@@ -30,6 +32,7 @@ export function Progress({
   valueText,
   showCaption = true,
   tone = "primary",
+  size = "md",
   className,
 }: ProgressProps) {
   const clamped = Math.max(0, Math.min(value, max));
@@ -43,7 +46,7 @@ export function Progress({
         aria-valuemax={max}
         aria-valuenow={clamped}
         aria-valuetext={valueText}
-        className="bg-bg-subtle h-3 w-full overflow-hidden rounded-full"
+        className={cn("bg-bg-subtle w-full overflow-hidden rounded-full", size === "sm" ? "h-1.5" : "h-3")}
       >
         <div
           className={cn("duration-slow ease-standard h-full rounded-full transition-[width]", FILL[tone])}

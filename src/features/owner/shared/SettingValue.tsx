@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 
+import { vatPercent } from "@/features/shared/growth/sponsored";
 import { formatDateTime, formatTHB } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
 import type { Schemas } from "@/lib/api/types";
@@ -13,11 +14,14 @@ export function SettingValue({
   setting,
   locale,
   testId,
+  withSource = true,
 }: {
   setting: Pick<Schemas["SettingDto"], "key" | "value" | "valueType" | "scope" | "effectiveFrom">;
   locale: Locale;
   /** Defaults to `setting-<key>` (the value in force); a history row passes its own. */
   testId?: string;
+  /** The muted "where it comes from · since" line under the value; a settings row shows it on its own. */
+  withSource?: boolean;
 }) {
   const t = useTranslations("owner.common.setting");
   const value = setting.value as unknown;
@@ -34,6 +38,27 @@ export function SettingValue({
         break;
       case "billing.estimate_policy":
         return value === "allow" ? t("estimateAllow") : t("estimateBlock");
+      case "notifications.quiet_hours":
+        if (record?.start && record.end)
+          return t("quietHours", { start: String(record.start), end: String(record.end) });
+        break;
+      case "tax.vat":
+        if (record && typeof record.rate === "string") return vatPercent(record.rate, locale);
+        break;
+      case "compliance.tariff_cap.representative_units":
+        if (record) return t("representativeUnits", { electric: String(record.electric), water: String(record.water) });
+        break;
+      case "compliance.tariff_cap.severity":
+        if (value === "warn" || value === "block") return t(`severity.${value}`);
+        break;
+      case "readings.plausibility_pct":
+        return t("plusMinusPercent", { value: String(value) });
+      case "deposit.max_months_short":
+        return t("months", { count: Number(value) });
+      case "viewing.self.code_minutes":
+      case "viewing.self.code_early_minutes":
+      case "viewing.self.overstay_minutes":
+        return t("minutes", { count: Number(value) });
       case "billing.reading_grace_hours":
       case "payments.duplicate_window_hours":
       case "tm30.notify_within_hours":
@@ -55,14 +80,32 @@ export function SettingValue({
     if (setting.valueType === "bool") return value ? t("on") : t("off");
     if (setting.valueType === "money" && typeof value === "string") return formatTHB(value, locale);
     if (typeof value === "string" || typeof value === "number") return String(value);
-    return JSON.stringify(value);
+    // Never raw JSON on screen: a shape this page does not know yet reads as "set" (its history shows the versions).
+    return t("structured");
   })();
+  if (!withSource) return <span data-testid={testId ?? `setting-${setting.key}`}>{shown}</span>;
   return (
     <span className="flex flex-col">
       <span data-testid={testId ?? `setting-${setting.key}`}>{shown}</span>
-      <span className="text-muted text-xs">
-        {t(`scope.${setting.scope}`)} · {t("since", { date: formatDateTime(setting.effectiveFrom, locale) })}
-      </span>
+      <SettingSource setting={setting} locale={locale} />
+    </span>
+  );
+}
+
+/** Where a setting's value comes from and since when: "ค่าเริ่มต้นของระบบ · ตั้งแต่ 5 ส.ค. 2569 20:04". */
+export function SettingSource({
+  setting,
+  locale,
+  className,
+}: {
+  setting: Pick<Schemas["SettingDto"], "scope" | "effectiveFrom">;
+  locale: Locale;
+  className?: string;
+}) {
+  const t = useTranslations("owner.common.setting");
+  return (
+    <span className={className ?? "text-muted text-xs"}>
+      {t(`scope.${setting.scope}`)} · {t("since", { date: formatDateTime(setting.effectiveFrom, locale) })}
     </span>
   );
 }

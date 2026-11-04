@@ -156,6 +156,9 @@
     "groupsTitle": "Facebook groups and Marketplace stay manual",
     "groupsBody": "Facebook does not allow automatic posts in groups or on Marketplace. Use a listing's share kit to copy the caption and download the photos.",
     "groupsLink": "Go to my listings",
-    "tokenSafety": "The token is encrypted with your company's key, never shown again and never written to logs or the audit trail."
+    "tokenSafety": "The token is encrypted with your company's key, never shown again and never written to logs or the audit trail.",
+    "statusTitle": "Connection",
+    "autoPostOnShort": "On",
+    "autoPostOffShort": "Off"
   }
 }

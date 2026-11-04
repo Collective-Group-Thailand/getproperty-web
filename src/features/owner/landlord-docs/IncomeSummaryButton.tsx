@@ -18,7 +18,7 @@ export function IncomeSummaryButton({ year, unitId, unitNo }: { year: number; un
   const idempotency = useIdempotencyKey();
   const [made, setMade] = useState<{ documentId: string; number: string } | null>(null);
   return (
-    <div className="flex flex-col items-start gap-2">
+    <div className="flex flex-col items-start gap-2 md:items-end">
       {made ? (
         <DocumentButton
           document={{ kind: "file", id: made.documentId }}

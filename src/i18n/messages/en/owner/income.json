@@ -10,7 +10,8 @@
   "noteBody": "Only receipts issued through the platform count; deposits returned are left out. Deducting actual expenses needs the evidence.",
   "empty": {
     "title": "No income in this year yet",
-    "body": "Receipts of the selected year appear here per unit."
+    "body": "Receipts of the selected year appear here per unit.",
+    "documents": "Go to documents"
   },
   "unit": "Unit {unit}",
   "retained": "Deposits kept",
@@ -22,5 +23,20 @@
   "charges": "Utilities and service charges {amount}, shown apart and not counted as 40(5) income",
   "expenses": "Repairs borne by the owner",
   "expensesHint": "From the receipts on repair requests (owner's share)",
-  "netActual": "After the recorded actual expenses (estimate)"
+  "netActual": "After the recorded actual expenses (estimate)",
+  "actualHeading": "With actual expenses instead",
+  "statementKicker": "Summary for your tax return",
+  "statementTitle": "Rental income {year}",
+  "howTitle": "How to use these figures",
+  "how": {
+    "one": "Enter the assessable income in PND 90 or 94 under section 40(5)",
+    "two": "Deduct either the flat rate or actual expenses; actual expenses need receipts",
+    "three": "Make each unit's PDF to attach or send to your accountant"
+  },
+  "unitsTitle": "By unit",
+  "col": {
+    "unit": "Unit",
+    "pdf": "PDF summary"
+  },
+  "chargesShort": "Utilities and services {amount}, not counted as income"
 }

@@ -159,7 +159,22 @@ export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
       { key: "documents", href: "/documents", label: "owner.common.money.tab.documents" },
     ],
   },
-  reports: { href: "/reports", icon: IconChart, group: "money" },
+  // Reports (G6): exports, the operating insights and e-Tax — one section instead of a row of tabs.
+  reports: {
+    href: "/reports",
+    icon: IconChart,
+    group: "money",
+    children: [
+      { key: "exports", href: "/reports", label: "owner.reports.nav.exports", testId: "reports-tab-exports" },
+      {
+        key: "insights",
+        href: "/reports/insights",
+        label: "owner.reports.nav.insights",
+        testId: "reports-tab-insights",
+      },
+      { key: "etax", href: "/reports/etax", label: "owner.reports.nav.etax", testId: "reports-tab-etax" },
+    ],
+  },
   members: { href: "/settings/members", icon: IconResidents, group: "settings" },
   bank_accounts: { href: "/settings/bank-accounts", icon: IconBank, group: "settings" },
   settings: { href: "/settings", icon: IconSettings, group: "settings" },
@@ -177,6 +192,20 @@ export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
 };
 
 export const OWNER_MENU_GROUPS = ["operations", "money", "settings"] as const;
+
+/**
+ * Menu keys that are sections of the settings frame (G6): its own section list carries them, so the rail shows one
+ * "ตั้งค่า" entry for all of them whenever the member is entitled to `settings`.
+ */
+export const SETTINGS_SECTION_KEYS: ReadonlySet<string> = new Set([
+  "members",
+  "bank_accounts",
+  "notifications",
+  "privacy",
+  "access_grants",
+  "support_access",
+  "audit_log",
+]);
 
 /**
  * The phone bottom nav (F1 1.3): Today, Units, Invoices, Money, More — each shown only when entitled. Landlords
