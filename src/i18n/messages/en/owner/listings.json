@@ -1,6 +1,6 @@
 {
   "title": "Listings",
-  "description": "List your units on the /rent pages for free. People who are interested reach you on LINE.",
+  "description": "List your units for free on getproperty's homes-for-rent pages. People who are interested reach you on LINE.",
   "new": "New listing",
   "empty": {
     "title": "No listings yet",
@@ -56,7 +56,7 @@
     "resume": "Resume",
     "close": "Close listing",
     "closeTitle": "Close this listing?",
-    "closeBody": "It disappears from the /rent pages and cannot be reopened. To list again, create a new listing.",
+    "closeBody": "It disappears from the homes-for-rent pages and cannot be reopened. To list again, create a new listing.",
     "submitted": "Submitted",
     "paused": "Listing paused",
     "resumed": "Listing resumed",
@@ -64,7 +64,7 @@
     "state": {
       "draft": "Nobody sees this listing yet. Check the photos and details, then publish.",
       "pending_review": "Our team is reviewing it, usually within one working day. You can still edit.",
-      "published": "Your listing is live on the /rent pages.",
+      "published": "Your listing is live on the homes-for-rent pages.",
       "paused": "Paused: nobody sees it until you resume.",
       "closed": "This listing is closed.",
       "rejected": "The listing did not pass review. Fix it as explained and publish again."

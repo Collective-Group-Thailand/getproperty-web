@@ -159,7 +159,13 @@
     "paperDeposit": "Deposit receipt",
     "lessee": "Lessee",
     "unit": "Unit",
-    "lease": "Lease"
+    "lease": "Lease",
+    "netRefund": "Net refund to the resident",
+    "lessDeductions": "Less deductions",
+    "lessUtilities": "Less final utilities",
+    "residentVoice": "From the resident",
+    "negative": "({amount})",
+    "negativeRich": "(<v></v>)"
   },
   "views": {
     "label": "Views",

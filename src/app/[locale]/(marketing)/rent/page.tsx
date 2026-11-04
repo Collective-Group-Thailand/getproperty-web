@@ -2,7 +2,8 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { parseListingQuery } from "@/features/owner/marketing/listings/contract";
 import { ListingCard } from "@/features/owner/marketing/listings/ListingCard";
-import { ListingSearch } from "@/features/owner/marketing/listings/ListingSearch";
+import { ListingResultsControls } from "@/features/owner/marketing/listings/ListingResultsControls";
+import { ListingKindChips, ListingSearch } from "@/features/owner/marketing/listings/ListingSearch";
 import { publicListingAreas, publicListings } from "@/features/owner/marketing/publicApi";
 import { JsonLdScript } from "@/features/owner/marketing/JsonLdScript";
 import { CtaPanel, PageHead, WRAP } from "@/features/owner/marketing/Layout";
@@ -59,19 +60,25 @@ export default async function Rent({ params, searchParams }: Props) {
             : []),
         ]}
       />
-      <PageHead title={t("search.title")} lede={t("search.body")} className="pb-6 md:pb-8" />
-      <div className={`${WRAP} flex flex-col gap-4 pb-10 md:pb-12`}>
+      <PageHead
+        title={t("search.title")}
+        lede={t("search.body")}
+        size="search"
+        className="pt-6 pb-4 md:pt-12 md:pb-8"
+      />
+      <div className={`${WRAP} flex flex-col gap-3 pb-4 md:gap-4 md:pb-10`}>
         <ListingSearch query={query} action={action} />
+        <ListingKindChips query={query} action={action} />
         {popular.length > 0 ? (
-          <nav aria-labelledby="popular-areas" className="flex flex-wrap items-center gap-x-1 gap-y-1">
-            <h2 id="popular-areas" className="text-muted m-0 me-3 text-sm font-medium">
+          <nav aria-labelledby="popular-areas" className="hidden flex-wrap items-center gap-2 md:flex">
+            <h2 id="popular-areas" className="text-muted m-0 me-1 text-sm font-medium">
               {t("area.popular")}
             </h2>
             {popular.map((area) => (
               <a
                 key={area.slug}
                 href={getPathname({ href: `/rent/area/${area.slug}`, locale })}
-                className="text-fg hover:text-primary rounded-control decoration-border-strong inline-flex min-h-11 items-center px-2 text-sm underline underline-offset-4"
+                className="border-border bg-surface text-fg hover:border-border-strong rounded-control inline-flex h-9 items-center border px-3 text-sm"
               >
                 {locale === "en" ? area.nameEn : area.name}
               </a>
@@ -86,11 +93,14 @@ export default async function Rent({ params, searchParams }: Props) {
         </h2>
         {page && page.data.length > 0 ? (
           <>
-            <p className="text-muted border-border m-0 mb-8 border-t pt-5 text-sm" data-testid="listings-count">
-              {t("search.count", { count: page.total })}
-            </p>
+            <div className="border-border mb-6 flex items-center justify-between gap-4 md:mb-8 md:border-t md:pt-5">
+              <p className="text-muted m-0 text-sm" data-testid="listings-count">
+                {t("search.count", { count: page.total })}
+              </p>
+              <ListingResultsControls sort={query.sort} pets={query.pets} />
+            </div>
             <ul
-              className="m-0 grid list-none gap-x-6 gap-y-12 p-0 sm:grid-cols-2 lg:grid-cols-3"
+              className="m-0 grid list-none gap-x-6 gap-y-10 p-0 sm:grid-cols-2 lg:grid-cols-3"
               data-testid="listings"
             >
               {page.data.map((listing) => (
@@ -143,6 +153,7 @@ export default async function Rent({ params, searchParams }: Props) {
 
       <CtaPanel
         id="owner-cta"
+        variant="band"
         className="pt-0 md:pt-0"
         title={t("ownerCta.title")}
         body={t("ownerCta.body")}

@@ -15,7 +15,9 @@ import { Card, CardHeader } from "@/ui/components/Card";
 import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
 import { Paper, PaperFoot, PaperHead, PaperParties, PaperSection, PaperTotals } from "@/ui/components/Paper";
 import { Statement } from "@/ui/components/Statement";
+import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 import { IconClock } from "@/ui/icons/glyphs/clock";
+import { IconWarning } from "@/ui/icons/glyphs/warning";
 
 import { DocumentButton } from "../shared/DocumentButton";
 import { ownerPath } from "../shared/links";
@@ -107,36 +109,6 @@ export async function DepositDetail({ context, depositId }: { context: OwnerCont
           {t("lateBody", { date: formatDate(settlement.deadlineAt, locale) })}
         </Callout>
       ) : null}
-      {settlement?.residentResponse === "accepted" && settlement.residentNote ? (
-        <Callout tone="info" title={t("acceptedNoteTitle")}>
-          <span data-testid="resident-accept-note">{settlement.residentNote}</span>
-        </Callout>
-      ) : null}
-      {settlement?.residentResponse === "disputed" ? (
-        <Callout tone="warning" title={t("disputedTitle")}>
-          <span data-testid="dispute-reason">{settlement.disputeReason ?? "—"}</span>
-          {settlement.disputeDocumentIds.length > 0 ? (
-            <ul className="mt-2 flex flex-wrap gap-2" aria-label={t("disputePhotos")} data-testid="dispute-photos">
-              {settlement.disputeDocumentIds.map((documentId, index) => (
-                <li key={documentId}>
-                  <PhotoThumb
-                    fileId={documentId}
-                    alt={t("disputePhoto", { number: index + 1 })}
-                    purpose="deposit_settlement"
-                    size="sm"
-                  />
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </Callout>
-      ) : null}
-      {settlement?.residentResponse === "accepted" ? (
-        <Callout tone="success" title={t("acceptedTitle")}>
-          {t("acceptedBody")}
-        </Callout>
-      ) : null}
-
       <DetailLayout
         panel={
           <ActionPanel
@@ -154,13 +126,24 @@ export async function DepositDetail({ context, depositId }: { context: OwnerCont
                 </span>
               ) : undefined
             }
-            facts={[
-              { key: "security", label: t("security"), value: formatTHB(deposit.amountSecurity, locale) },
-              { key: "advance", label: t("advance"), value: formatTHB(deposit.amountAdvanceRent, locale) },
-              ...(settlement
+            summary={
+              settlement && (settlement.agreedRefund ?? settlement.proposedRefund) ? (
+                <div className="flex flex-col gap-1">
+                  <span className="text-muted text-sm">{t("netRefund")}</span>
+                  <span className="text-primary text-2xl font-semibold tabular-nums">
+                    {formatTHB((settlement.agreedRefund ?? settlement.proposedRefund)!, locale)}
+                  </span>
+                </div>
+              ) : undefined
+            }
+            facts={
+              settlement
                 ? [{ key: "deadline", label: t("deadline"), value: formatDateTime(settlement.deadlineAt, locale) }]
-                : []),
-            ]}
+                : [
+                    { key: "security", label: t("security"), value: formatTHB(deposit.amountSecurity, locale) },
+                    { key: "advance", label: t("advance"), value: formatTHB(deposit.amountAdvanceRent, locale) },
+                  ]
+            }
             primary={<SettlementActions deposit={deposit} unitId={unitId} layout="panel" />}
             secondary={
               <div className="flex flex-col gap-2 [&>*]:w-full">
@@ -291,17 +274,22 @@ export async function DepositDetail({ context, depositId }: { context: OwnerCont
                         label: t("advanceUnused"),
                         value: formatTHB(settlement.advanceRentUnused, locale),
                       },
+                      // Deductions read as accounting: "หัก …" and the amount in brackets, never a bare positive line.
                       {
                         key: "deductions",
-                        label: t("deductionsTotal"),
-                        value: (
-                          <span data-testid="deductions-total">{formatTHB(settlement.deductionsTotal, locale)}</span>
-                        ),
+                        label: t("lessDeductions"),
+                        level: 1 as const,
+                        value: t.rich("negativeRich", {
+                          v: () => (
+                            <span data-testid="deductions-total">{formatTHB(settlement.deductionsTotal, locale)}</span>
+                          ),
+                        }),
                       },
                       {
                         key: "utilities",
-                        label: t("utilitiesFinal"),
-                        value: formatTHB(settlement.utilitiesFinal, locale),
+                        label: t("lessUtilities"),
+                        level: 1 as const,
+                        value: t("negative", { amount: formatTHB(settlement.utilitiesFinal, locale) }),
                       },
                       {
                         key: "proposed",
@@ -344,6 +332,45 @@ export async function DepositDetail({ context, depositId }: { context: OwnerCont
             </PaperFoot>
           ) : null}
         </Paper>
+        {settlement?.residentNote || settlement?.residentResponse === "disputed" ? (
+          <Card as="section" aria-labelledby="resident-voice" className="mt-4" data-testid="resident-voice">
+            <CardHeader
+              title={<span id="resident-voice">{t("residentVoice")}</span>}
+              action={
+                settlement.residentResponse === "disputed" ? (
+                  <Badge tone="warning" icon={IconWarning}>
+                    {t("disputedTitle")}
+                  </Badge>
+                ) : (
+                  <Badge tone="success" icon={IconCheckCircle}>
+                    {t("acceptedNoteTitle")}
+                  </Badge>
+                )
+              }
+            />
+            <blockquote className="m-0 text-base">
+              {settlement.residentResponse === "disputed" ? (
+                <span data-testid="dispute-reason">{settlement.disputeReason ?? "—"}</span>
+              ) : (
+                <span data-testid="resident-accept-note">{settlement.residentNote}</span>
+              )}
+            </blockquote>
+            {settlement.residentResponse === "disputed" && settlement.disputeDocumentIds.length > 0 ? (
+              <ul className="mt-3 flex flex-wrap gap-2" aria-label={t("disputePhotos")} data-testid="dispute-photos">
+                {settlement.disputeDocumentIds.map((documentId, index) => (
+                  <li key={documentId}>
+                    <PhotoThumb
+                      fileId={documentId}
+                      alt={t("disputePhoto", { number: index + 1 })}
+                      purpose="deposit_settlement"
+                      size="sm"
+                    />
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </Card>
+        ) : null}
 
         {settlement ? (
           <Card as="section" aria-labelledby="deposit-comparison" data-testid="inspection-comparison">

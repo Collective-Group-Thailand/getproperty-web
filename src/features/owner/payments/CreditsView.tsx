@@ -3,12 +3,12 @@ import { getTranslations } from "next-intl/server";
 import { formatDateTime, formatTHB } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import { Button } from "@/ui/components/Button";
-import { Card, CardHeader } from "@/ui/components/Card";
+import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { SimpleTable } from "@/ui/components/SimpleTable";
 import { IconWallet } from "@/ui/icons/glyphs/wallet";
 
-import { ResendReceipt } from "./ResendReceipt";
-import { DocumentButton } from "../shared/DocumentButton";
+import { ReceiptRowMenu } from "./ReceiptRowMenu";
 import { ownerPath } from "../shared/links";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { section, type OwnerContext } from "../shared/server";
@@ -28,72 +28,124 @@ export async function CreditsView({ context }: { context: OwnerContext }) {
   return (
     <OwnerPage testId="credits">
       <PageHeader title={t("title")} description={t("description")} />
-      <Card as="section" aria-labelledby="credit-list">
-        <CardHeader title={<span id="credit-list">{t("credits")}</span>} description={t("creditsHint")} />
+      {/* The list pattern (G3 revision): credits to settle, then the latest receipts — tables with one action each. */}
+      <section aria-labelledby="credit-list" className="flex flex-col gap-3">
+        <div className="flex flex-col gap-0.5">
+          <h2 id="credit-list" className="text-lg font-semibold">
+            {t("credits")}
+          </h2>
+          <p className="text-muted text-sm">{t("creditsHint")}</p>
+        </div>
         {credits.length ? (
-          <ul className="divide-border flex flex-col divide-y" data-testid="credit-list">
-            {credits.map((credit) => (
-              <li
-                key={`${credit.partyId}-${credit.unitId ?? ""}`}
-                className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3"
-                data-testid="credit-row"
-              >
-                <span className="w-16 font-mono font-semibold">{credit.unitNo ?? "—"}</span>
-                <a
-                  className="flex-1 underline-offset-4 hover:underline"
-                  href={ownerPath(locale, `/parties/${credit.partyId}`)}
-                >
-                  {credit.partyName}
-                </a>
-                <span className="ms-auto font-semibold tabular-nums" data-testid="credit-balance">
-                  {formatTHB(credit.balance, locale)}
-                </span>
-                <RefundButton credit={credit} />
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <EmptyState
-            icon={IconWallet}
-            title={t("empty")}
-            action={
-              <Button asChild variant="secondary">
-                <a href={ownerPath(locale, "/payments")}>{t("emptyAction")}</a>
-              </Button>
-            }
+          <SimpleTable
+            caption={t("credits")}
+            testId="credit-list"
+            stackOnPhones
+            minWidth="40rem"
+            columns={[
+              { key: "unit", header: t("col.unit"), phone: "meta" },
+              { key: "party", header: t("col.party"), phone: "title" },
+              { key: "balance", header: t("col.balance"), align: "end", phone: "figure" },
+              {
+                key: "action",
+                header: <span className="sr-only">{t("col.actions")}</span>,
+                align: "end",
+                phone: "status",
+              },
+            ]}
+            rows={credits.map((credit) => ({
+              key: `${credit.partyId}-${credit.unitId ?? ""}`,
+              testId: "credit-row",
+              cells: {
+                unit: <span className="font-mono">{credit.unitNo ?? "—"}</span>,
+                party: (
+                  <a
+                    className="underline-offset-4 hover:underline"
+                    href={ownerPath(locale, `/parties/${credit.partyId}`)}
+                  >
+                    {credit.partyName}
+                  </a>
+                ),
+                balance: (
+                  <span className="font-semibold tabular-nums" data-testid="credit-balance">
+                    {formatTHB(credit.balance, locale)}
+                  </span>
+                ),
+                action: <RefundButton credit={credit} />,
+              },
+            }))}
           />
+        ) : (
+          <Card>
+            <EmptyState
+              icon={IconWallet}
+              title={t("empty")}
+              action={
+                <Button asChild variant="secondary">
+                  <a href={ownerPath(locale, "/payments")}>{t("emptyAction")}</a>
+                </Button>
+              }
+            />
+          </Card>
         )}
-      </Card>
-      <Card as="section" aria-labelledby="receipt-list">
-        <CardHeader title={<span id="receipt-list">{t("receipts")}</span>} description={t("receiptsHint")} />
+      </section>
+      <section aria-labelledby="receipt-list" className="flex flex-col gap-3">
+        <div className="flex flex-col gap-0.5">
+          <h2 id="receipt-list" className="text-lg font-semibold">
+            {t("receipts")}
+          </h2>
+          <p className="text-muted text-sm">{t("receiptsHint")}</p>
+        </div>
         {receipts.data && receipts.data.data.length ? (
-          <ul className="divide-border flex flex-col divide-y text-sm" data-testid="receipt-list">
-            {receipts.data.data.map((receipt) => (
-              <li key={receipt.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 py-2.5">
-                <span className="w-40 font-mono">{receipt.number}</span>
-                <span className="w-16 font-mono">{receipt.unitNo ?? "—"}</span>
-                <span className="min-w-0 flex-1">{receipt.payerName}</span>
-                <span className="text-muted">{formatDateTime(receipt.issuedAt, locale)}</span>
-                <span className="w-28 text-end font-medium tabular-nums">{formatTHB(receipt.amount, locale)}</span>
-                {receipt.voidedAt ? <span className="text-muted">{t("voided")}</span> : null}
-                {receipt.hasDocument ? (
-                  <DocumentButton
-                    document={{ kind: "receipt", id: receipt.id }}
-                    label={t("pdf")}
-                    title={receipt.number}
-                    variant="ghost"
+          <SimpleTable
+            caption={t("receipts")}
+            testId="receipt-list"
+            stackOnPhones
+            minWidth="52rem"
+            columns={[
+              { key: "number", header: t("col.number"), phone: "title" },
+              { key: "unit", header: t("col.unit"), phone: "meta" },
+              { key: "payer", header: t("col.party"), phone: "meta" },
+              { key: "issued", header: t("col.issued"), phone: "hidden" },
+              { key: "amount", header: t("col.amount"), align: "end", phone: "figure" },
+              {
+                key: "menu",
+                header: <span className="sr-only">{t("col.actions")}</span>,
+                align: "end",
+                phone: "status",
+              },
+            ]}
+            rows={receipts.data.data.map((receipt) => ({
+              key: receipt.id,
+              cells: {
+                number: (
+                  <span className="flex flex-col">
+                    <span className="font-mono">{receipt.number}</span>
+                    {receipt.voidedAt ? <span className="text-muted text-sm">{t("voided")}</span> : null}
+                  </span>
+                ),
+                unit: <span className="font-mono">{receipt.unitNo ?? "—"}</span>,
+                payer: receipt.payerName,
+                issued: <span className="text-muted text-sm">{formatDateTime(receipt.issuedAt, locale)}</span>,
+                amount: <span className="font-medium tabular-nums">{formatTHB(receipt.amount, locale)}</span>,
+                menu: (
+                  <ReceiptRowMenu
+                    receipt={{
+                      id: receipt.id,
+                      number: receipt.number,
+                      payerName: receipt.payerName,
+                      hasDocument: receipt.hasDocument,
+                      voided: Boolean(receipt.voidedAt),
+                    }}
                   />
-                ) : null}
-                {receipt.voidedAt ? null : (
-                  <ResendReceipt receiptId={receipt.id} number={receipt.number} payer={receipt.payerName} />
-                )}
-              </li>
-            ))}
-          </ul>
+                ),
+              },
+            }))}
+          />
         ) : (
           <p className="text-muted text-sm">{t("noReceipts")}</p>
         )}
-      </Card>
+      </section>
     </OwnerPage>
   );
 }

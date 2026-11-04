@@ -2,12 +2,16 @@
 
 import { useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 import { NotificationCentre } from "@/features/shared/notifications/NotificationCentre";
 import type { ShellBrand } from "@/features/shared/shell/brand";
 import { ConsoleRail, RailWorkspace } from "@/features/shared/shell/ConsoleRail";
 import { LanguageSwitch } from "@/features/shared/shell/LanguageSwitch";
+import { RailSearchButton } from "@/features/shared/shell/RailSearchButton";
+import { signOut } from "@/lib/auth/actions";
+import { MenuRow } from "@/ui/components/MenuRow";
+import { IconLogOut } from "@/ui/icons/glyphs/log-out";
 import { ShellBreadcrumbs } from "@/features/shared/shell/ShellBreadcrumbs";
 import type { ShellNavGroup } from "@/features/shared/shell/types";
 import { UserMenu } from "@/features/shared/shell/UserMenu";
@@ -22,7 +26,7 @@ import { IconInfo } from "@/ui/icons/glyphs/info";
 import { IconMenu } from "@/ui/icons/glyphs/menu";
 
 import type { TenantTab } from "../tenants/sections";
-import { CommandPalette } from "./CommandPalette";
+import { CommandPalette, openCommandPalette } from "./CommandPalette";
 import { RecordNav, tenantRecordOf } from "./RecordNav";
 
 export interface AdminShellFrameProps {
@@ -46,7 +50,7 @@ export interface AdminShellFrameProps {
 /**
  * The admin console frame (redesign G0): the one navigation column (ConsoleRail) from `/v1/admin/me` entitlements —
  * who is signed in, environment, jump-to, the menu, notifications and the account; on phones the column is the top
- * bar and the menu opens in a sheet.
+ * bar titled with the zone label, and the menu opens in a sheet from the start edge.
  */
 export function AdminShellFrame(props: AdminShellFrameProps) {
   // Marks the document interactive (hydrated): the e2e suite waits for it instead of clicking
@@ -57,6 +61,7 @@ export function AdminShellFrame(props: AdminShellFrameProps) {
   const t = useTranslations();
   const [collapsed, toggleCollapsed] = useSidebarCollapsed("admin");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [signingOut, startSignOut] = useTransition();
   const items = props.groups.flatMap((group) => group.items);
   // On a tenant's pages the column becomes the record: the way back, its name, its sections (redesign G8).
   const record = tenantRecordOf(usePathname());
@@ -130,28 +135,62 @@ export function AdminShellFrame(props: AdminShellFrameProps) {
       <ShellBreadcrumbs items={items} home={undefined}>
         {props.children}
       </ShellBreadcrumbs>
+      {/* Phones (Stitch revision): a full-height menu from the start edge — who and which environment at the top, a
+          field-like jump-to, the tenant record's sections on a tenant's pages (G8), the grouped menu scrolling on its
+          own, language and sign-out pinned at the foot. */}
       <LazySheet
         open={menuOpen}
         onOpenChange={setMenuOpen}
         title={t("shell.moreMenu")}
         closeLabel={t("common.close")}
         side="left"
+        footer={
+          <>
+            <LanguageSwitch zone="admin" variant="row" />
+            <MenuRow
+              icon={IconLogOut}
+              tone="danger"
+              disabled={signingOut}
+              onClick={() =>
+                startSignOut(async () => {
+                  await signOut();
+                  window.location.replace("/login");
+                })
+              }
+            >
+              {t("auth.signOut")}
+            </MenuRow>
+          </>
+        }
       >
-        <div className="flex flex-col gap-5">
-          {props.apiFakes || props.envBadge ? (
-            <div className="flex flex-wrap items-center gap-1">
-              <EnvBadge label={props.envBadge} />
-              {props.apiFakes ? (
-                <Badge tone="info" size="sm" icon={IconInfo}>
-                  {props.fakesLabel}
-                </Badge>
-              ) : null}
-            </div>
-          ) : null}
+        <div className="flex flex-col gap-5 pb-2">
+          <div className="border-border flex flex-col gap-2 border-b pb-4">
+            <span className="font-semibold">{props.userName}</span>
+            <span className="text-muted text-sm">{props.rolesLabel}</span>
+            {props.apiFakes || props.envBadge ? (
+              <div className="flex flex-wrap items-center gap-1">
+                <EnvBadge label={props.envBadge} />
+                {props.apiFakes ? (
+                  <Badge tone="info" size="sm" icon={IconInfo}>
+                    {props.fakesLabel}
+                  </Badge>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+          <RailSearchButton
+            label={t("shell.commandPalette.open")}
+            placeholder={t("shell.commandPalette.title")}
+            variant="field"
+            testId="command-palette-sheet"
+            onClick={() => {
+              setMenuOpen(false);
+              openCommandPalette();
+            }}
+          />
           {record ? <div className="border-border border-b pb-4">{recordNav("touch")}</div> : null}
-          <ZoneSidebar groups={props.groups} collapsed={false} size="touch" />
-          <div className="border-border border-t pt-4">
-            <LanguageSwitch zone="admin" />
+          <div className="-mx-5">
+            <ZoneSidebar groups={props.groups} collapsed={false} size="touch" />
           </div>
         </div>
       </LazySheet>

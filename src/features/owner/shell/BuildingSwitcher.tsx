@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
+import { IconButton } from "@/ui/components/IconButton";
 import { LazyDropdownMenu } from "@/ui/components/overlays";
 import { IconBuilding } from "@/ui/icons/glyphs/building";
 import { IconChevronDown } from "@/ui/icons/glyphs/chevron-down";
@@ -18,16 +19,26 @@ import { writeBuildingCookie } from "@/features/shared/shell/building";
 export function BuildingSwitcher({
   buildings,
   currentBuildingId,
+  variant = "chip",
+  testId = "building-switcher",
 }: {
   buildings: Schemas["BuildingDto"][];
   currentBuildingId: string | null;
+  /** `chip` (column row, phone top bar); `icon` in the collapsed rail — the building named in its label. */
+  variant?: "chip" | "icon";
+  /** The column's switcher keeps `building-switcher`; the phone bar and the rail get their own (all are in the DOM). */
+  testId?: string;
 }) {
   const t = useTranslations("shell.buildingSwitcher");
   const router = useRouter();
   if (buildings.length === 0) return null;
   if (buildings.length === 1) {
+    if (variant === "icon") return null;
     return (
-      <span className="text-muted hidden truncate text-sm md:inline" data-testid="building-name">
+      <span
+        className="text-muted block truncate text-sm"
+        data-testid={testId === "building-switcher" ? "building-name" : undefined}
+      >
         {buildings[0]!.name}
       </span>
     );
@@ -42,15 +53,19 @@ export function BuildingSwitcher({
       label={t("label")}
       align="start"
       trigger={
-        <Button
-          variant="ghost"
-          size="sm"
-          iconStart={IconBuilding}
-          iconEnd={IconChevronDown}
-          data-testid="building-switcher"
-        >
-          <span className="max-w-40 truncate">{current?.name ?? t("all")}</span>
-        </Button>
+        variant === "icon" ? (
+          <IconButton icon={IconBuilding} label={`${t("label")}: ${current?.name ?? t("all")}`} data-testid={testId} />
+        ) : (
+          <Button
+            variant="secondary"
+            size="sm"
+            iconEnd={IconChevronDown}
+            data-testid={testId}
+            className="max-w-full px-2.5"
+          >
+            <span className="min-w-0 truncate">{current?.name ?? t("all")}</span>
+          </Button>
+        )
       }
       items={[
         { id: "all", label: t("all"), selected: !current, onSelect: () => choose(null) },

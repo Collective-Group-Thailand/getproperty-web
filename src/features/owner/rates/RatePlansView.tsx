@@ -17,7 +17,7 @@ import { SimpleTable } from "@/ui/components/SimpleTable";
 
 import { ownerCan, param, readOnly, section, type OwnerContext } from "../shared/server";
 import { PLAN_KINDS } from "./constants";
-import { CreateRatePlan, DeleteRatePlan, EditRatePlan, NewRateVersion } from "./RatePlanActions";
+import { CreateRatePlan, NewRateVersion, RatePlanMenu } from "./RatePlanActions";
 import { describeTiers } from "./tiers";
 import { IconTag } from "@/ui/icons/glyphs/tag";
 import { ownerPath } from "../shared/links";
@@ -149,294 +149,304 @@ export async function RatePlansView({
         }
       />
 
-      <Card as="section" aria-labelledby="rates-cap" data-testid="tariff-cap">
-        <CardHeader title={<span id="rates-cap">{t("cap.title")}</span>} description={t("cap.description")} />
-        {caps.length === 0 ? (
-          <p className="text-muted">{t("cap.noAccounts")}</p>
-        ) : (
-          <ul className="grid gap-4 lg:grid-cols-2">
-            {caps.map(({ ref, result }) => (
-              <li
-                key={`${ref.utility}-${ref.provider}`}
-                className="border-border rounded-card border p-4"
-                data-testid="cap-ref"
-                data-utility={ref.utility}
-                data-provider={ref.provider}
-              >
-                <p className="font-semibold">
-                  {t(`utility.${ref.utility}`)} · {t(`provider.${ref.provider}`)}
-                </p>
-                {!result.data ? (
-                  isApiError(result.error) && result.error.code === "tariff.not_found" ? (
-                    <p className="text-muted text-sm">{t("cap.notPublished")}</p>
+      {/* The owner's own rates are the subject (G3 revision): they lead; the utility's reference rates and the sample
+          calculator sit in the right rail as reference. */}
+      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
+        <div className="flex min-w-0 flex-col gap-6">
+          {!plans.data ? (
+            <SectionError error={plans.error} />
+          ) : plans.data.length === 0 ? (
+            <Card>
+              <EmptyState
+                icon={IconTag}
+                title={t("empty")}
+                description={t("emptyHint")}
+                action={
+                  manage ? (
+                    <CreateRatePlan
+                      buildings={buildings.map((building) => ({ id: building.id, name: building.name }))}
+                    />
                   ) : (
-                    <SectionError error={result.error} />
+                    <Button asChild variant="secondary">
+                      <a href={ownerPath(locale, "/invoices")}>{t("emptyAction")}</a>
+                    </Button>
                   )
-                ) : (
-                  result.data.map((tariff) => (
-                    <div key={tariff.versionId} className="mt-2 flex flex-col gap-1 text-sm">
-                      <span>
-                        {tariff.nameTh} · {t("cap.since", { date: formatDate(tariff.effectiveFrom, locale) })}
-                      </span>
-                      {tariff.charge?.effectiveAverageRate ? (
-                        <span data-testid="cap-rate">
-                          {t("cap.average", {
-                            rate: formatDecimal(tariff.charge.effectiveAverageRate, locale, 4),
+                }
+              />
+            </Card>
+          ) : (
+            PLAN_KINDS.filter((kind) => plans.data!.some((plan) => plan.kind === kind)).map((kind) => (
+              <section
+                key={kind}
+                aria-labelledby={`rates-${kind}`}
+                className="flex flex-col gap-3"
+                data-testid={`rates-${kind}`}
+              >
+                <h2 id={`rates-${kind}`} className="text-lg font-semibold">
+                  {t(`kindName.${kind}`)}
+                </h2>
+                {plans
+                  .data!.filter((plan) => plan.kind === kind)
+                  .map((plan) => {
+                    const versions = [...plan.versions].sort((a, b) => b.effectiveFrom.localeCompare(a.effectiveFrom));
+                    const above = versions.some((version) => version.inForce && version.aboveCap);
+                    return (
+                      <Card
+                        key={plan.id}
+                        as="article"
+                        aria-labelledby={`plan-${plan.id}`}
+                        data-testid="rate-plan"
+                        data-plan={plan.name}
+                      >
+                        <CardHeader
+                          title={
+                            <span id={`plan-${plan.id}`} className="flex flex-wrap items-center gap-2">
+                              {plan.name}
+                              {plan.isDefault ? (
+                                <Badge size="sm" tone="primary">
+                                  {t("default")}
+                                </Badge>
+                              ) : null}
+                            </span>
+                          }
+                          description={buildingName(plan.buildingId)}
+                          action={
+                            manage ? (
+                              <span className="flex flex-wrap gap-2">
+                                <NewRateVersion plan={plan} capHint={capHintFor(plan.kind)} />
+                                <RatePlanMenu plan={plan} />
+                              </span>
+                            ) : undefined
+                          }
+                        />
+                        {above ? (
+                          <Callout tone="warning" className="mb-3" title={t("aboveCapTitle")}>
+                            {t("aboveCapBody")}
+                          </Callout>
+                        ) : null}
+                        {versions.length === 0 ? (
+                          <p className="text-muted text-sm">{t("noVersions")}</p>
+                        ) : (
+                          <SimpleTable
+                            caption={plan.name}
+                            testId="rate-versions"
+                            minWidth="48rem"
+                            columns={[
+                              { key: "from", header: t("col.from") },
+                              { key: "prices", header: t("col.prices") },
+                              { key: "cap", header: t("col.cap") },
+                              { key: "state", header: t("col.state") },
+                            ]}
+                            rows={versions.map((version) => {
+                              const check = version.capCheck as Record<string, string | boolean | null> | null;
+                              return {
+                                key: version.id,
+                                testId: "rate-version",
+                                data: { "in-force": version.inForce, "above-cap": version.aboveCap },
+                                tone: version.aboveCap ? "warning" : "default",
+                                cells: {
+                                  from: `${formatDate(version.effectiveFrom, locale)}${version.effectiveTo ? ` – ${formatDate(version.effectiveTo, locale)}` : ""}`,
+                                  prices: (
+                                    <span className="flex flex-col text-xs">
+                                      {describeTiers(version.tiers).map((line) => (
+                                        <span key={line.label}>
+                                          {line.label === "flat"
+                                            ? t("flat")
+                                            : line.label === "fixed" || line.label === "budget"
+                                              ? t("fixed")
+                                              : line.label}
+                                          : <span className="font-mono">{line.price}</span>
+                                        </span>
+                                      ))}
+                                      {version.minimumCharge ? (
+                                        <span>
+                                          {t("minimum", { amount: formatTHB(version.minimumCharge, locale) })}
+                                        </span>
+                                      ) : null}
+                                      <span className="text-muted">{t(`basisName.${version.basis}`)}</span>
+                                    </span>
+                                  ),
+                                  cap: check ? (
+                                    <span className="flex flex-col text-xs" data-testid="cap-check">
+                                      <span>
+                                        {t("capCompared", {
+                                          tenant: String(check.tenantRate ?? "—"),
+                                          utility: String(check.effectiveAverageRate ?? "—"),
+                                          units: String(check.representativeUnits ?? "—"),
+                                        })}
+                                      </span>
+                                      {version.aboveCap ? (
+                                        <Badge size="sm" tone="warning">
+                                          {version.complianceAcknowledgementId
+                                            ? t("aboveCapAcknowledged")
+                                            : t("aboveCap")}
+                                        </Badge>
+                                      ) : (
+                                        <Badge size="sm" tone="success">
+                                          {t("withinCap")}
+                                        </Badge>
+                                      )}
+                                    </span>
+                                  ) : (
+                                    "—"
+                                  ),
+                                  state: version.inForce ? (
+                                    <Badge size="sm" tone="success">
+                                      {t("inForce")}
+                                    </Badge>
+                                  ) : new Date(version.effectiveFrom) > new Date() ? (
+                                    t("scheduled")
+                                  ) : (
+                                    t("past")
+                                  ),
+                                },
+                              };
+                            })}
+                          />
+                        )}
+                      </Card>
+                    );
+                  })}
+              </section>
+            ))
+          )}
+        </div>
+        <Card as="section" aria-labelledby="rates-cap" data-testid="tariff-cap" className="xl:sticky xl:top-6">
+          <CardHeader title={<span id="rates-cap">{t("cap.title")}</span>} description={t("cap.description")} />
+          {caps.length === 0 ? (
+            <p className="text-muted">{t("cap.noAccounts")}</p>
+          ) : (
+            <ul className="grid gap-4">
+              {caps.map(({ ref, result }) => (
+                <li
+                  key={`${ref.utility}-${ref.provider}`}
+                  className="border-border rounded-card border p-4"
+                  data-testid="cap-ref"
+                  data-utility={ref.utility}
+                  data-provider={ref.provider}
+                >
+                  <p className="font-semibold">
+                    {t(`utility.${ref.utility}`)} · {t(`provider.${ref.provider}`)}
+                  </p>
+                  {!result.data ? (
+                    isApiError(result.error) && result.error.code === "tariff.not_found" ? (
+                      <p className="text-muted text-sm">{t("cap.notPublished")}</p>
+                    ) : (
+                      <SectionError error={result.error} />
+                    )
+                  ) : (
+                    result.data.map((tariff) => (
+                      <div key={tariff.versionId} className="mt-2 flex flex-col gap-1 text-sm">
+                        <span>
+                          {tariff.nameTh} · {t("cap.since", { date: formatDate(tariff.effectiveFrom, locale) })}
+                        </span>
+                        {tariff.charge?.effectiveAverageRate ? (
+                          <span data-testid="cap-rate">
+                            {t("cap.average", {
+                              rate: formatDecimal(tariff.charge.effectiveAverageRate, locale, 4),
+                              unit: unitShort(ref.utility),
+                              units: tariff.charge.units,
+                            })}
+                          </span>
+                        ) : null}
+                        <span className="text-muted">
+                          {t("cap.ceiling", {
+                            rate: formatDecimal(tariff.ceilingPerUnit, locale, 4),
                             unit: unitShort(ref.utility),
-                            units: tariff.charge.units,
                           })}
                         </span>
-                      ) : null}
-                      <span className="text-muted">
-                        {t("cap.ceiling", {
-                          rate: formatDecimal(tariff.ceilingPerUnit, locale, 4),
-                          unit: unitShort(ref.utility),
-                        })}
-                      </span>
+                        <a
+                          href={tariff.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary text-xs underline-offset-4 hover:underline"
+                        >
+                          {t("cap.source")}
+                        </a>
+                      </div>
+                    ))
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+          {sampleRef ? (
+            <div className="mt-6 flex flex-col gap-3" data-testid="sample-bill">
+              <h3 className="font-semibold">{t("sample.title")}</h3>
+              <p className="text-muted text-sm">{t("sample.description")}</p>
+              <form method="get" className="flex flex-wrap items-end gap-3">
+                <div className="flex flex-col gap-1 text-sm">
+                  <span>{t("sample.tariff")}</span>
+                  <span className="flex flex-wrap gap-2">
+                    {refs.map((ref) => (
                       <a
-                        href={tariff.sourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary text-xs underline-offset-4 hover:underline"
+                        key={`${ref.utility}:${ref.provider}`}
+                        href={`?sampleUtility=${ref.utility}&sampleProvider=${ref.provider}${units ? `&units=${units}` : ""}`}
+                        aria-current={
+                          ref.utility === sampleRef.utility && ref.provider === sampleRef.provider ? "true" : undefined
+                        }
+                        className="border-border rounded-control aria-[current=true]:border-primary aria-[current=true]:bg-primary-subtle border px-2 py-1"
                       >
-                        {t("cap.source")}
+                        {t(`utility.${ref.utility}`)} · {t(`provider.${ref.provider}`)}
                       </a>
-                    </div>
-                  ))
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
-        {sampleRef ? (
-          <div className="mt-6 flex flex-col gap-3" data-testid="sample-bill">
-            <h3 className="font-semibold">{t("sample.title")}</h3>
-            <p className="text-muted text-sm">{t("sample.description")}</p>
-            <form method="get" className="flex flex-wrap items-end gap-3">
-              <div className="flex flex-col gap-1 text-sm">
-                <span>{t("sample.tariff")}</span>
-                <span className="flex flex-wrap gap-2">
-                  {refs.map((ref) => (
-                    <a
-                      key={`${ref.utility}:${ref.provider}`}
-                      href={`?sampleUtility=${ref.utility}&sampleProvider=${ref.provider}${units ? `&units=${units}` : ""}`}
-                      aria-current={
-                        ref.utility === sampleRef.utility && ref.provider === sampleRef.provider ? "true" : undefined
-                      }
-                      className="border-border rounded-control aria-[current=true]:border-primary aria-[current=true]:bg-primary-subtle border px-2 py-1"
-                    >
-                      {t(`utility.${ref.utility}`)} · {t(`provider.${ref.provider}`)}
-                    </a>
-                  ))}
-                </span>
-              </div>
-              <input type="hidden" name="sampleUtility" value={sampleRef.utility} />
-              <input type="hidden" name="sampleProvider" value={sampleRef.provider} />
-              <label className="flex flex-col gap-1 text-sm">
-                {t("sample.units", { unit: unitShort(sampleRef.utility) })}
-                <Input
-                  name="units"
-                  inputMode="decimal"
-                  inputSize="sm"
-                  defaultValue={units ?? ""}
-                  className="w-32"
-                  data-testid="sample-units"
-                />
-              </label>
-              <Button type="submit" size="sm" variant="secondary">
-                {t("sample.run")}
-              </Button>
-            </form>
-            {sample ? (
-              sample.data?.[0]?.charge ? (
-                <div className="flex flex-col gap-2" data-testid="sample-result">
-                  <SimpleTable
-                    caption={t("sample.title")}
-                    minWidth="28rem"
-                    columns={[
-                      { key: "label", header: t("sample.col.line") },
-                      { key: "units", header: t("sample.col.units"), align: "end" },
-                      { key: "price", header: t("sample.col.price"), align: "end" },
-                      { key: "amount", header: t("sample.col.amount"), align: "end" },
-                    ]}
-                    rows={sample.data[0].charge.lines.map((line, index) => ({
-                      key: `${line.label}-${index}`,
-                      cells: {
-                        label: line.label,
-                        units: line.units ? formatDecimal(line.units, locale, 2) : "—",
-                        price: line.pricePerUnit ? formatDecimal(line.pricePerUnit, locale, 4) : "—",
-                        amount: formatTHB(line.amount, locale),
-                      },
-                    }))}
-                  />
-                  <p className="text-sm">
-                    {t("sample.total")}:{" "}
-                    <strong data-testid="sample-total">{formatTHB(sample.data[0].charge.totalExVat, locale)}</strong>
-                    {sample.data[0].charge.effectiveAverageRate
-                      ? ` · ${t("sample.average", { rate: formatDecimal(sample.data[0].charge.effectiveAverageRate, locale, 4), unit: unitShort(sampleRef.utility) })}`
-                      : ""}
-                  </p>
+                    ))}
+                  </span>
                 </div>
-              ) : (
-                <SectionError error={sample.error} />
-              )
-            ) : null}
-          </div>
-        ) : null}
-      </Card>
-
-      {!plans.data ? (
-        <SectionError error={plans.error} />
-      ) : plans.data.length === 0 ? (
-        <Card>
-          <EmptyState
-            icon={IconTag}
-            title={t("empty")}
-            description={t("emptyHint")}
-            action={
-              manage ? (
-                <CreateRatePlan buildings={buildings.map((building) => ({ id: building.id, name: building.name }))} />
-              ) : (
-                <Button asChild variant="secondary">
-                  <a href={ownerPath(locale, "/invoices")}>{t("emptyAction")}</a>
+                <input type="hidden" name="sampleUtility" value={sampleRef.utility} />
+                <input type="hidden" name="sampleProvider" value={sampleRef.provider} />
+                <label className="flex flex-col gap-1 text-sm">
+                  {t("sample.units", { unit: unitShort(sampleRef.utility) })}
+                  <Input
+                    name="units"
+                    inputMode="decimal"
+                    inputSize="sm"
+                    defaultValue={units ?? ""}
+                    className="w-32"
+                    data-testid="sample-units"
+                  />
+                </label>
+                <Button type="submit" size="sm" variant="secondary">
+                  {t("sample.run")}
                 </Button>
-              )
-            }
-          />
-        </Card>
-      ) : (
-        PLAN_KINDS.filter((kind) => plans.data!.some((plan) => plan.kind === kind)).map((kind) => (
-          <section
-            key={kind}
-            aria-labelledby={`rates-${kind}`}
-            className="flex flex-col gap-3"
-            data-testid={`rates-${kind}`}
-          >
-            <h2 id={`rates-${kind}`} className="text-lg font-semibold">
-              {t(`kindName.${kind}`)}
-            </h2>
-            {plans
-              .data!.filter((plan) => plan.kind === kind)
-              .map((plan) => {
-                const versions = [...plan.versions].sort((a, b) => b.effectiveFrom.localeCompare(a.effectiveFrom));
-                const above = versions.some((version) => version.inForce && version.aboveCap);
-                return (
-                  <Card
-                    key={plan.id}
-                    as="article"
-                    aria-labelledby={`plan-${plan.id}`}
-                    data-testid="rate-plan"
-                    data-plan={plan.name}
-                  >
-                    <CardHeader
-                      title={
-                        <span id={`plan-${plan.id}`} className="flex flex-wrap items-center gap-2">
-                          {plan.name}
-                          {plan.isDefault ? (
-                            <Badge size="sm" tone="primary">
-                              {t("default")}
-                            </Badge>
-                          ) : null}
-                        </span>
-                      }
-                      description={buildingName(plan.buildingId)}
-                      action={
-                        manage ? (
-                          <span className="flex flex-wrap gap-2">
-                            <NewRateVersion plan={plan} capHint={capHintFor(plan.kind)} />
-                            <EditRatePlan plan={plan} />
-                            <DeleteRatePlan plan={plan} />
-                          </span>
-                        ) : undefined
-                      }
+              </form>
+              {sample ? (
+                sample.data?.[0]?.charge ? (
+                  <div className="flex flex-col gap-2" data-testid="sample-result">
+                    <SimpleTable
+                      caption={t("sample.title")}
+                      minWidth="28rem"
+                      columns={[
+                        { key: "label", header: t("sample.col.line") },
+                        { key: "units", header: t("sample.col.units"), align: "end" },
+                        { key: "price", header: t("sample.col.price"), align: "end" },
+                        { key: "amount", header: t("sample.col.amount"), align: "end" },
+                      ]}
+                      rows={sample.data[0].charge.lines.map((line, index) => ({
+                        key: `${line.label}-${index}`,
+                        cells: {
+                          label: line.label,
+                          units: line.units ? formatDecimal(line.units, locale, 2) : "—",
+                          price: line.pricePerUnit ? formatDecimal(line.pricePerUnit, locale, 4) : "—",
+                          amount: formatTHB(line.amount, locale),
+                        },
+                      }))}
                     />
-                    {above ? (
-                      <Callout tone="warning" className="mb-3" title={t("aboveCapTitle")}>
-                        {t("aboveCapBody")}
-                      </Callout>
-                    ) : null}
-                    {versions.length === 0 ? (
-                      <p className="text-muted text-sm">{t("noVersions")}</p>
-                    ) : (
-                      <SimpleTable
-                        caption={plan.name}
-                        testId="rate-versions"
-                        minWidth="48rem"
-                        columns={[
-                          { key: "from", header: t("col.from") },
-                          { key: "prices", header: t("col.prices") },
-                          { key: "cap", header: t("col.cap") },
-                          { key: "state", header: t("col.state") },
-                        ]}
-                        rows={versions.map((version) => {
-                          const check = version.capCheck as Record<string, string | boolean | null> | null;
-                          return {
-                            key: version.id,
-                            testId: "rate-version",
-                            data: { "in-force": version.inForce, "above-cap": version.aboveCap },
-                            tone: version.aboveCap ? "warning" : "default",
-                            cells: {
-                              from: `${formatDate(version.effectiveFrom, locale)}${version.effectiveTo ? ` – ${formatDate(version.effectiveTo, locale)}` : ""}`,
-                              prices: (
-                                <span className="flex flex-col text-xs">
-                                  {describeTiers(version.tiers).map((line) => (
-                                    <span key={line.label}>
-                                      {line.label === "flat"
-                                        ? t("flat")
-                                        : line.label === "fixed" || line.label === "budget"
-                                          ? t("fixed")
-                                          : line.label}
-                                      : <span className="font-mono">{line.price}</span>
-                                    </span>
-                                  ))}
-                                  {version.minimumCharge ? (
-                                    <span>{t("minimum", { amount: formatTHB(version.minimumCharge, locale) })}</span>
-                                  ) : null}
-                                  <span className="text-muted">{t(`basisName.${version.basis}`)}</span>
-                                </span>
-                              ),
-                              cap: check ? (
-                                <span className="flex flex-col text-xs" data-testid="cap-check">
-                                  <span>
-                                    {t("capCompared", {
-                                      tenant: String(check.tenantRate ?? "—"),
-                                      utility: String(check.effectiveAverageRate ?? "—"),
-                                      units: String(check.representativeUnits ?? "—"),
-                                    })}
-                                  </span>
-                                  {version.aboveCap ? (
-                                    <Badge size="sm" tone="warning">
-                                      {version.complianceAcknowledgementId ? t("aboveCapAcknowledged") : t("aboveCap")}
-                                    </Badge>
-                                  ) : (
-                                    <Badge size="sm" tone="success">
-                                      {t("withinCap")}
-                                    </Badge>
-                                  )}
-                                </span>
-                              ) : (
-                                "—"
-                              ),
-                              state: version.inForce ? (
-                                <Badge size="sm" tone="success">
-                                  {t("inForce")}
-                                </Badge>
-                              ) : new Date(version.effectiveFrom) > new Date() ? (
-                                t("scheduled")
-                              ) : (
-                                t("past")
-                              ),
-                            },
-                          };
-                        })}
-                      />
-                    )}
-                  </Card>
-                );
-              })}
-          </section>
-        ))
-      )}
+                    <p className="text-sm">
+                      {t("sample.total")}:{" "}
+                      <strong data-testid="sample-total">{formatTHB(sample.data[0].charge.totalExVat, locale)}</strong>
+                      {sample.data[0].charge.effectiveAverageRate
+                        ? ` · ${t("sample.average", { rate: formatDecimal(sample.data[0].charge.effectiveAverageRate, locale, 4), unit: unitShort(sampleRef.utility) })}`
+                        : ""}
+                    </p>
+                  </div>
+                ) : (
+                  <SectionError error={sample.error} />
+                )
+              ) : null}
+            </div>
+          ) : null}
+        </Card>
+      </div>
     </OwnerPage>
   );
 }

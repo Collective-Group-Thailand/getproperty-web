@@ -73,7 +73,8 @@ export async function MarketingNav({ locale }: { locale: Locale }) {
           <a href={signIn} className="text-muted hover:text-fg hidden px-2 text-sm font-medium lg:inline">
             {t("nav.signIn")}
           </a>
-          <Button asChild size="sm">
+          {/* Outlined: the page's own task holds its one filled button (search, the hero's start, the 404's way home). */}
+          <Button asChild size="sm" variant="secondary">
             <a href={ownerHref("/signup", locale)}>{listing ? t("nav.list") : t("nav.start")}</a>
           </Button>
 

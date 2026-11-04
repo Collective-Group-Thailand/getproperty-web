@@ -14,11 +14,13 @@ import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { NativeSelect } from "@/ui/components/NativeSelect";
+import { SimpleTable } from "@/ui/components/SimpleTable";
 import { IconAdd } from "@/ui/icons/glyphs/add";
 import { IconDelete } from "@/ui/icons/glyphs/delete";
 import { IconEdit } from "@/ui/icons/glyphs/edit";
 import { IconTag } from "@/ui/icons/glyphs/tag";
 
+import { ActionMenu } from "@/features/shared/console/ActionMenu";
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 import { FormDialog, text } from "@/features/shared/console/FormDialog";
 import { ownerPath } from "../shared/links";
@@ -128,50 +130,108 @@ function ProfileFields({ profile, errors }: { profile?: Schemas["UnitProfileDto"
   );
 }
 
-/**
- * Unit types of a building (F2 2.1 "unit type editor", `unit_profile`): the default rent, deposit and
- * advance-rent months and the lease lines a new lease of such a unit starts from. Utilities are never
- * fixed lines (D-022) — they come from meters and rate plans.
- */
-export function UnitProfiles({ buildingId, profiles }: { buildingId: string; profiles: Schemas["UnitProfileDto"][] }) {
-  const t = useTranslations("owner.buildings.profiles");
-  const kinds = useTranslations("owner.common.lineKind");
-  const locale = useLocale() as Locale;
-
-  const body = (data: FormData) => ({
+function profileBody(data: FormData) {
+  return {
     name: text(data, "name") ?? "",
     defaultRent: text(data, "defaultRent") ?? "",
     areaSqm: text(data, "areaSqm") ?? null,
     defaultDepositMonths: text(data, "defaultDepositMonths"),
     defaultAdvanceRentMonths: text(data, "defaultAdvanceRentMonths"),
     defaultLeaseLines: readLines(data),
-  });
+  };
+}
 
+/** "เพิ่มประเภทห้อง" — the page head's one filled action. */
+export function NewProfileButton({ buildingId }: { buildingId: string }) {
+  const t = useTranslations("owner.buildings.profiles");
   return (
-    <div className="flex flex-col gap-4" data-testid="unit-profiles">
-      <div className="flex justify-end">
-        <FormDialog
-          label={t("new")}
-          icon={IconAdd}
-          variant="primary"
-          size_="lg"
-          testId="new-profile"
-          title={t("newTitle")}
-          submitLabel={t("create")}
-          successMessage={t("created")}
-          onSubmit={(data) =>
-            unwrap(
-              browserApi().POST("/v1/owner/buildings/{buildingId}/unit-profiles", {
-                params: { path: { buildingId } },
-                body: body(data),
-              }),
-            )
-          }
-        >
-          {(errors) => <ProfileFields errors={errors} />}
-        </FormDialog>
-      </div>
-      {profiles.length === 0 ? (
+    <FormDialog
+      label={t("new")}
+      icon={IconAdd}
+      variant="primary"
+      size_="lg"
+      testId="new-profile"
+      title={t("newTitle")}
+      submitLabel={t("create")}
+      successMessage={t("created")}
+      onSubmit={(data) =>
+        unwrap(
+          browserApi().POST("/v1/owner/buildings/{buildingId}/unit-profiles", {
+            params: { path: { buildingId } },
+            body: profileBody(data),
+          }),
+        )
+      }
+    >
+      {(errors) => <ProfileFields errors={errors} />}
+    </FormDialog>
+  );
+}
+
+/** A row's "⋯": edit and remove (destructive, last), each opening its dialog. */
+function ProfileMenu({ profile }: { profile: Schemas["UnitProfileDto"] }) {
+  const t = useTranslations("owner.buildings.profiles");
+  return (
+    <ActionMenu label={t("rowMenu", { name: profile.name })} testId="profile-menu">
+      <FormDialog
+        label={t("edit")}
+        icon={IconEdit}
+        size_="lg"
+        testId="edit-profile"
+        title={t("editTitle", { name: profile.name })}
+        submitLabel={t("save")}
+        successMessage={t("saved")}
+        onSubmit={async (data) => {
+          // The list carries no ETag: read the profile with its ETag, then send it as If-Match
+          // (a change someone made meanwhile answers 412 instead of being overwritten).
+          const { etag } = await unwrapWithETag(
+            browserApi().GET("/v1/owner/unit-profiles/{unitProfileId}", {
+              params: { path: { unitProfileId: profile.id } },
+            }),
+          );
+          return unwrap(
+            browserApi().PATCH("/v1/owner/unit-profiles/{unitProfileId}", {
+              params: { path: { unitProfileId: profile.id }, header: { "If-Match": etag ?? "*" } },
+              body: profileBody(data),
+            }),
+          );
+        }}
+      >
+        {(errors) => <ProfileFields profile={profile} errors={errors} />}
+      </FormDialog>
+      <ConfirmAction
+        label={t("remove")}
+        icon={IconDelete}
+        tone="destructive"
+        title={t("removeTitle", { name: profile.name })}
+        description={t("removeBody")}
+        confirmLabel={t("remove")}
+        successMessage={t("removed")}
+        onConfirm={() =>
+          unwrap(
+            browserApi().DELETE("/v1/owner/unit-profiles/{unitProfileId}", {
+              params: { path: { unitProfileId: profile.id } },
+            }),
+          )
+        }
+      />
+    </ActionMenu>
+  );
+}
+
+/**
+ * Unit types of a building (F2 2.1 "unit type editor", `unit_profile`; G3 revision: the list pattern): one row per
+ * type — default rent, deposit and advance months, the fixed lease lines — with edit and remove in one "⋯" menu; the
+ * page head carries "add". Utilities are never fixed lines (D-022) — they come from meters and rate plans.
+ */
+export function UnitProfiles({ buildingId, profiles }: { buildingId: string; profiles: Schemas["UnitProfileDto"][] }) {
+  const t = useTranslations("owner.buildings.profiles");
+  const kinds = useTranslations("owner.common.lineKind");
+  const locale = useLocale() as Locale;
+
+  if (profiles.length === 0)
+    return (
+      <div data-testid="unit-profiles">
         <Card>
           <EmptyState
             icon={IconTag}
@@ -184,90 +244,58 @@ export function UnitProfiles({ buildingId, profiles }: { buildingId: string; pro
             }
           />
         </Card>
-      ) : (
-        <ul className="grid gap-3 md:grid-cols-2">
-          {profiles.map((profile) => (
-            <li key={profile.id}>
-              <Card className="flex flex-col gap-3" data-testid="profile-card">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <h2 className="font-semibold">{profile.name}</h2>
-                    <p className="text-muted text-sm">
-                      {t("summary", {
-                        rent: formatTHB(profile.defaultRent, locale),
-                        deposit: formatDecimal(profile.defaultDepositMonths, locale),
-                        advance: formatDecimal(profile.defaultAdvanceRentMonths, locale),
-                      })}
-                    </p>
-                  </div>
-                  <div className="flex gap-1">
-                    <FormDialog
-                      label={t("edit")}
-                      icon={IconEdit}
-                      variant="ghost"
-                      size="sm"
-                      size_="lg"
-                      testId="edit-profile"
-                      title={t("editTitle", { name: profile.name })}
-                      submitLabel={t("save")}
-                      successMessage={t("saved")}
-                      onSubmit={async (data) => {
-                        // The list carries no ETag: read the profile with its ETag, then send it as If-Match
-                        // (a change someone made meanwhile answers 412 instead of being overwritten).
-                        const { etag } = await unwrapWithETag(
-                          browserApi().GET("/v1/owner/unit-profiles/{unitProfileId}", {
-                            params: { path: { unitProfileId: profile.id } },
-                          }),
-                        );
-                        return unwrap(
-                          browserApi().PATCH("/v1/owner/unit-profiles/{unitProfileId}", {
-                            params: { path: { unitProfileId: profile.id }, header: { "If-Match": etag ?? "*" } },
-                            body: body(data),
-                          }),
-                        );
-                      }}
-                    >
-                      {(errors) => <ProfileFields profile={profile} errors={errors} />}
-                    </FormDialog>
-                    <ConfirmAction
-                      label={t("remove")}
-                      icon={IconDelete}
-                      variant="ghost"
-                      size="sm"
-                      tone="destructive"
-                      title={t("removeTitle", { name: profile.name })}
-                      description={t("removeBody")}
-                      confirmLabel={t("remove")}
-                      successMessage={t("removed")}
-                      onConfirm={() =>
-                        unwrap(
-                          browserApi().DELETE("/v1/owner/unit-profiles/{unitProfileId}", {
-                            params: { path: { unitProfileId: profile.id } },
-                          }),
-                        )
-                      }
-                    />
-                  </div>
-                </div>
-                {profile.defaultLeaseLines.length ? (
-                  <ul className="text-sm">
-                    {profile.defaultLeaseLines.map((line, index) => (
-                      <li key={index} className="flex justify-between gap-2">
-                        <span>
-                          {kinds(line.kind)} · {line.description}
-                        </span>
-                        <span className="tabular-nums">{formatTHB(line.amount, locale)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-muted text-sm">{t("noLines")}</p>
-                )}
-              </Card>
-            </li>
-          ))}
-        </ul>
-      )}
+      </div>
+    );
+
+  return (
+    <div data-testid="unit-profiles">
+      <SimpleTable
+        caption={t("caption")}
+        stackOnPhones
+        minWidth="52rem"
+        columns={[
+          { key: "name", header: t("col.name"), phone: "title" },
+          { key: "rent", header: t("col.rent"), align: "end", phone: "figure" },
+          { key: "deposit", header: t("col.deposit"), align: "end", phone: "meta" },
+          { key: "advance", header: t("col.advance"), align: "end", phone: "meta" },
+          { key: "lines", header: t("col.lines"), phone: "meta" },
+          { key: "menu", header: <span className="sr-only">{t("col.name")}</span>, align: "end", phone: "status" },
+        ]}
+        rows={profiles.map((profile) => ({
+          key: profile.id,
+          testId: "profile-card",
+          cells: {
+            name: (
+              <span className="flex flex-col">
+                <span className="font-medium">{profile.name}</span>
+                {profile.areaSqm ? (
+                  <span className="text-muted text-sm">
+                    {t("areaValue", { area: formatDecimal(profile.areaSqm, locale) })}
+                  </span>
+                ) : null}
+              </span>
+            ),
+            rent: <span className="font-medium tabular-nums">{formatTHB(profile.defaultRent, locale)}</span>,
+            deposit: t("monthsValue", { months: formatDecimal(profile.defaultDepositMonths, locale) }),
+            advance: t("monthsValue", { months: formatDecimal(profile.defaultAdvanceRentMonths, locale) }),
+            lines: profile.defaultLeaseLines.length ? (
+              <ul className="m-0 flex list-none flex-col gap-0.5 p-0 text-sm">
+                {profile.defaultLeaseLines.map((line, index) => (
+                  <li key={index} className="flex justify-between gap-4">
+                    <span className="text-muted">
+                      {kinds(line.kind)} · {line.description}
+                    </span>
+                    <span className="tabular-nums">{formatTHB(line.amount, locale)}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <span className="text-muted text-sm">{t("noLines")}</span>
+            ),
+            menu: <ProfileMenu profile={profile} />,
+          },
+        }))}
+      />
     </div>
   );
 }

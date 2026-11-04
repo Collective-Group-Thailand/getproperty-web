@@ -46,9 +46,15 @@ export function SlipImage({ src, alt }: { src: string; alt: string }) {
 export function SlipDecision({
   slip,
   detectedLabel,
+  approveLabel,
+  layout = "row",
 }: {
   slip: Pick<Schemas["SlipReviewDto"], "id" | "nextActions" | "unitNo" | "amountDetected" | "invoiceNumber">;
   detectedLabel: string;
+  /** The approve button names the amount it records ("อนุมัติ ฿3,000.00"); the dialog's confirm stays "อนุมัติ". */
+  approveLabel?: string;
+  /** `panel`: stacked full-width buttons in the decision panel. */
+  layout?: "row" | "panel";
 }) {
   const t = useTranslations("owner.payments.slips.decide");
   const [amount, setAmount] = useState(slip.amountDetected ?? "");
@@ -62,9 +68,10 @@ export function SlipDecision({
       }),
     );
   return (
-    <div className="flex flex-wrap gap-2" data-testid="slip-decision">
+    <div className={layout === "panel" ? "flex flex-col gap-2" : "flex flex-wrap gap-2"} data-testid="slip-decision">
       <ConfirmAction
-        label={t("approve")}
+        label={approveLabel ?? t("approve")}
+        block={layout === "panel"}
         icon={IconCheck}
         testId="slip-approve"
         title={t("approveTitle")}
@@ -90,6 +97,7 @@ export function SlipDecision({
       </ConfirmAction>
       <ConfirmAction
         label={t("reject")}
+        block={layout === "panel"}
         icon={IconXCircle}
         variant="secondary"
         tone="destructive"

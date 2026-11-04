@@ -15,7 +15,8 @@ import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
-import { Stat } from "@/ui/components/Stat";
+import { StatsRow } from "@/ui/components/StatsRow";
+import { isZeroDecimal } from "@/ui/lib/decimal";
 import { Icon, type IconGlyph } from "@/ui/icons";
 import { IconAdd } from "@/ui/icons/glyphs/add";
 import { IconBuilding } from "@/ui/icons/glyphs/building";
@@ -27,6 +28,7 @@ import { IconSign } from "@/ui/icons/glyphs/sign";
 import { IconMegaphone } from "@/ui/icons/glyphs/megaphone";
 import { IconWrench } from "@/ui/icons/glyphs/wrench";
 
+import { LinkMenu } from "@/features/shared/console/LinkMenu";
 import { ownerPath } from "../shared/links";
 import { ownerCan, section, type OwnerContext } from "../shared/server";
 
@@ -85,38 +87,7 @@ export async function PortfolioView({ context, welcome }: { context: OwnerContex
       ) : (
         <>
           <MonthSummary totals={portfolio.data.totals} units={portfolio.data.units} locale={locale} />
-          <nav
-            aria-label={t("paperwork.title")}
-            className="grid gap-3 sm:grid-cols-2"
-            data-testid="portfolio-paperwork"
-          >
-            <a
-              href={ownerPath(locale, "/certificates")}
-              className="border-border bg-surface rounded-card flex min-h-12 items-center justify-between gap-3 border p-4"
-              data-testid="portfolio-certificates"
-            >
-              <span className="flex flex-col">
-                <span className="font-medium">{t("paperwork.certificates")}</span>
-                <span className="text-muted text-sm">{t("paperwork.certificatesHint")}</span>
-              </span>
-              {requests.data?.length ? (
-                <Badge tone="warning" size="sm">
-                  {t("paperwork.waiting", { count: requests.data.length })}
-                </Badge>
-              ) : null}
-            </a>
-            <a
-              href={ownerPath(locale, "/income")}
-              className="border-border bg-surface rounded-card flex min-h-12 items-center justify-between gap-3 border p-4"
-              data-testid="portfolio-income"
-            >
-              <span className="flex flex-col">
-                <span className="font-medium">{t("paperwork.income")}</span>
-                <span className="text-muted text-sm">{t("paperwork.incomeHint")}</span>
-              </span>
-            </a>
-          </nav>
-          <Vacancy units={portfolio.data.units} locale={locale} />
+          <Tasks units={portfolio.data.units} waiting={requests.data?.length ?? 0} locale={locale} />
           <section aria-labelledby="portfolio-units" className="flex flex-col gap-4">
             <h2 id="portfolio-units" className="text-lg font-semibold">
               {t("units.title", { count: portfolio.data.units.length })}
@@ -132,6 +103,21 @@ export async function PortfolioView({ context, welcome }: { context: OwnerContex
               ))}
             </ul>
           </section>
+          {/* The year's income summary: a quiet download card, not a tile that looks like a task. */}
+          <a
+            href={ownerPath(locale, "/income")}
+            className="border-border bg-surface rounded-card hover:border-border-strong flex items-center justify-between gap-4 border px-5 py-4 sm:max-w-md"
+            data-testid="portfolio-income"
+          >
+            <span className="flex min-w-0 items-center gap-3">
+              <Icon icon={IconBill} className="text-muted shrink-0 text-xl" />
+              <span className="flex min-w-0 flex-col">
+                <span className="font-medium">{t("paperwork.income")}</span>
+                <span className="text-muted text-sm">{t("paperwork.incomeHint")}</span>
+              </span>
+            </span>
+            <span className="text-primary shrink-0 text-sm font-medium">{t("paperwork.download")}</span>
+          </a>
         </>
       )}
     </OwnerPage>
@@ -139,21 +125,22 @@ export async function PortfolioView({ context, welcome }: { context: OwnerContex
 }
 
 /**
- * No empty months (D-261): the units that are empty or whose end is decided, each with its listing and enquiries —
- * so the next tenancy starts before the last one ends. Which leases are "ending" is the API's: notice given.
+ * "Needs you" (Stitch revision): one list of what to do next — the units that are empty or whose end is decided, each
+ * with its listing and enquiries (no empty months, D-261), and the rent certificates tenants asked for — every row
+ * with one outlined action, never a filled button inside the list. Which leases are "ending" is the API's.
  */
-async function Vacancy({ units, locale }: { units: Unit[]; locale: Locale }) {
+async function Tasks({ units, waiting, locale }: { units: Unit[]; waiting: number; locale: Locale }) {
   const t = await getTranslations("owner.portfolio.vacancy");
+  const p = await getTranslations("owner.portfolio");
   const rows = units.filter((unit) => unit.state === "vacant" || unit.state === "notice_given");
-  if (!rows.length) return null;
+  if (!rows.length && !waiting) return null;
+  const action =
+    "text-primary border-border hover:border-border-strong rounded-control inline-flex h-9 items-center gap-1.5 border px-3 text-sm font-medium";
   return (
-    <section aria-labelledby="portfolio-vacancy" className="flex flex-col gap-3" data-testid="portfolio-vacancy">
-      <div className="flex flex-col gap-1">
-        <h2 id="portfolio-vacancy" className="text-lg font-semibold">
-          {t("title", { count: rows.length })}
-        </h2>
-        <p className="text-muted text-sm">{t("description")}</p>
-      </div>
+    <section aria-labelledby="portfolio-tasks" className="flex flex-col gap-3" data-testid="portfolio-vacancy">
+      <h2 id="portfolio-tasks" className="text-lg font-semibold">
+        {p("tasks.title")}
+      </h2>
       <Card padding="none">
         <ul className="divide-border m-0 flex list-none flex-col divide-y p-0">
           {rows.map((unit) => {
@@ -163,7 +150,7 @@ async function Vacancy({ units, locale }: { units: Unit[]; locale: Locale }) {
             return (
               <li
                 key={unit.unitId}
-                className="flex flex-wrap items-center justify-between gap-3 px-4 py-3"
+                className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5"
                 data-testid="vacancy-row"
                 data-unit-no={unit.unitNo}
               >
@@ -175,36 +162,54 @@ async function Vacancy({ units, locale }: { units: Unit[]; locale: Locale }) {
                         ? t("vacantSince", { date: formatDate(unit.vacantSince, locale) })
                         : t("vacant")
                       : t("endsOn", { date: unit.leaseEndDate ? formatDate(unit.leaseEndDate, locale) : "-" })}
+                    {live ? (
+                      <>
+                        {" · "}
+                        <span data-testid="vacancy-leads">{t("openLeads", { count: listing.openLeads })}</span>
+                      </>
+                    ) : null}
                   </span>
                 </span>
-                <span className="flex flex-wrap items-center gap-2">
+                <span className="flex flex-wrap items-center gap-3">
                   {live ? (
                     <>
                       <StatusBadgeOf map={LISTING_STATUS} value={listing.state} size="sm" />
-                      <span className="text-muted text-sm" data-testid="vacancy-leads">
-                        {t("openLeads", { count: listing.openLeads })}
-                      </span>
-                      <Button asChild size="sm" variant="secondary">
-                        <a href={ownerPath(locale, `/listings/${listing.id}`)}>{t("openListing")}</a>
-                      </Button>
+                      <a className={action} href={ownerPath(locale, `/listings/${listing.id}`)}>
+                        {t("openListing")}
+                      </a>
                     </>
                   ) : listing ? (
-                    <Button asChild size="sm" variant="secondary" iconStart={IconMegaphone}>
-                      <a href={ownerPath(locale, `/listings/${listing.id}`)} data-testid="vacancy-relist">
-                        {t("relist")}
-                      </a>
-                    </Button>
+                    <a
+                      className={action}
+                      href={ownerPath(locale, `/listings/${listing.id}`)}
+                      data-testid="vacancy-relist"
+                    >
+                      {t("relist")}
+                    </a>
                   ) : (
-                    <Button asChild size="sm" iconStart={IconMegaphone}>
-                      <a href={ownerPath(locale, `/listings/new?unit=${unit.unitId}`)} data-testid="vacancy-list">
-                        {unit.state === "vacant" ? t("list") : t("listEarly")}
-                      </a>
-                    </Button>
+                    <a
+                      className={action}
+                      href={ownerPath(locale, `/listings/new?unit=${unit.unitId}`)}
+                      data-testid="vacancy-list"
+                    >
+                      {unit.state === "vacant" ? t("list") : t("listEarly")}
+                    </a>
                   )}
                 </span>
               </li>
             );
           })}
+          {waiting ? (
+            <li className="flex flex-wrap items-center justify-between gap-3 px-5 py-3.5">
+              <span className="flex min-w-0 flex-col">
+                <span className="font-medium">{p("paperwork.certificates")}</span>
+                <span className="text-muted text-sm">{p("tasks.certificatesBody")}</span>
+              </span>
+              <a className={action} href={ownerPath(locale, "/certificates")} data-testid="portfolio-certificates">
+                {p("tasks.issue", { waiting: p("paperwork.waiting", { count: waiting }) })}
+              </a>
+            </li>
+          ) : null}
         </ul>
       </Card>
     </section>
@@ -224,22 +229,29 @@ async function MonthSummary({
   const leased = units.filter((unit) => unit.state !== "vacant").length;
   const month = formatPeriodKey(totals.month, locale);
   return (
-    <section
-      aria-label={t("label", { month })}
-      className="grid grid-cols-2 gap-3 lg:grid-cols-4"
-      data-testid="portfolio-summary"
-    >
-      <Stat label={t("expected", { month })} value={formatTHB(totals.expected, locale)} />
-      <Stat
-        label={t("collected")}
-        value={<span data-testid="portfolio-collected">{formatTHB(totals.collected, locale)}</span>}
+    <div data-testid="portfolio-summary">
+      <StatsRow
+        label={t("label", { month })}
+        highlight={isZeroDecimal(totals.overdue) ? undefined : "overdue"}
+        figures={[
+          { key: "expected", label: t("expected", { month }), value: formatTHB(totals.expected, locale) },
+          {
+            key: "collected",
+            label: t("collected"),
+            value: <span data-testid="portfolio-collected">{formatTHB(totals.collected, locale)}</span>,
+          },
+          { key: "overdue", label: t("overdue"), value: formatTHB(totals.overdue, locale), hint: t("overdueHint") },
+          {
+            key: "occupancy",
+            label: t("occupancy"),
+            value: t("occupancyValue", {
+              leased: formatNumber(leased, locale),
+              total: formatNumber(units.length, locale),
+            }),
+          },
+        ]}
       />
-      <Stat label={t("overdue")} value={formatTHB(totals.overdue, locale)} hint={t("overdueHint")} />
-      <Stat
-        label={t("occupancy")}
-        value={t("occupancyValue", { leased: formatNumber(leased, locale), total: formatNumber(units.length, locale) })}
-      />
-    </section>
+    </div>
   );
 }
 
@@ -324,26 +336,41 @@ async function UnitCard({ unit, locale, canInvite }: { unit: Unit; locale: Local
       </dl>
 
       {unit.building.external ? <p className="text-muted text-xs">{t("external")}</p> : null}
-      <div className="flex flex-wrap gap-2">
+      {/* One contextual action on the card (list an empty unit); the rest in one "⋯" menu. */}
+      <div className="flex items-center justify-between gap-2">
         {unit.state === "vacant" ? (
           <Button asChild size="sm" variant="secondary" iconStart={IconMegaphone}>
             <a href={ownerPath(locale, `/listings/new?unit=${unit.unitId}`)} data-testid="portfolio-list-unit">
               {t("listIt")}
             </a>
           </Button>
-        ) : null}
-        {canInvite ? (
-          <Button asChild size="sm" variant="ghost" iconStart={IconSign}>
-            <a href={ownerPath(locale, `/mandates?invite=${unit.unitId}`)} data-testid="portfolio-invite-agency">
-              {t("inviteAgency")}
-            </a>
-          </Button>
-        ) : null}
-        <Button asChild size="sm" variant="ghost" iconStart={IconBill}>
-          <a href={ownerPath(locale, `/documents?unit=${unit.unitId}`)} data-testid="portfolio-documents">
-            {t("documents")}
-          </a>
-        </Button>
+        ) : (
+          <span />
+        )}
+        <LinkMenu
+          label={t("more", { name: title })}
+          testId="portfolio-unit-menu"
+          items={[
+            ...(canInvite
+              ? [
+                  {
+                    id: "invite",
+                    label: t("inviteAgency"),
+                    icon: IconSign,
+                    href: ownerPath(locale, `/mandates?invite=${unit.unitId}`),
+                    testId: "portfolio-invite-agency",
+                  },
+                ]
+              : []),
+            {
+              id: "documents",
+              label: t("documents"),
+              icon: IconBill,
+              href: ownerPath(locale, `/documents?unit=${unit.unitId}`),
+              testId: "portfolio-documents",
+            },
+          ]}
+        />
       </div>
     </Card>
   );

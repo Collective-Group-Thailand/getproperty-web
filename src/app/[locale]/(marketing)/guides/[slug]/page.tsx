@@ -90,8 +90,8 @@ export default async function GuidePage({ params }: Params) {
           <h1 className="text-display m-0 text-balance">{guide.title}</h1>
         </header>
 
-        <div className="mt-10 grid gap-10 md:mt-14 lg:grid-cols-12 lg:gap-8">
-          <nav aria-label={t("contents")} className="lg:col-span-3">
+        <div className="mt-10 grid gap-10 md:mt-14 lg:grid-cols-[13rem_minmax(0,1fr)] lg:gap-10 xl:grid-cols-[13rem_minmax(0,42rem)_17rem] xl:justify-between">
+          <nav aria-label={t("contents")}>
             <div className="lg:sticky lg:top-24">
               <p className="text-muted m-0 mb-3 text-sm font-semibold">{t("contents")}</p>
               <ol className="border-border m-0 flex list-none flex-col border-t p-0 text-sm">
@@ -113,18 +113,14 @@ export default async function GuidePage({ params }: Params) {
             </div>
           </nav>
 
-          <div className="flex min-w-0 flex-col gap-12 lg:col-span-8 lg:col-start-5">
-            <section
-              aria-labelledby="answer"
-              className="bg-surface border-border rounded-card shadow-card flex flex-col gap-2 border p-6 md:p-8"
-            >
-              <h2 id="answer" className="text-primary m-0 text-sm font-semibold">
+          <div className="flex min-w-0 flex-col gap-12">
+            <section aria-labelledby="answer" className="bg-primary-subtle rounded-card flex flex-col gap-2 p-6 md:p-8">
+              <h2 id="answer" className="text-primary-subtle-fg m-0 text-sm font-semibold">
                 {t("answer")}
               </h2>
               <p className="m-0 text-xl text-pretty">{guide.answer}</p>
             </section>
 
-            {guide.general ? <p className="text-muted m-0 text-sm">{t("general")}</p> : null}
             {hasAffiliateLinks(article) ? <p className="text-muted m-0 text-sm">{t("affiliate.disclosure")}</p> : null}
 
             {guide.sections.map((section) => (
@@ -135,6 +131,11 @@ export default async function GuidePage({ params }: Params) {
                 <GuideBlocks blocks={section.blocks} noteLabels={noteLabels} affiliateLabels={affiliateLabels} />
               </section>
             ))}
+
+            {/* The general-information note after the reader has read the steps, in a hairline box (Stitch revision). */}
+            {guide.general ? (
+              <p className="border-border text-muted rounded-card m-0 border px-5 py-4 text-sm">{t("general")}</p>
+            ) : null}
 
             {guide.faq.length > 0 ? (
               <section id="faq" aria-labelledby="faq-h" className="scroll-mt-24">
@@ -167,28 +168,27 @@ export default async function GuidePage({ params }: Params) {
                 </ul>
               </section>
             ) : null}
+          </div>
 
-            <section
-              aria-labelledby="cta-h"
-              className="bg-primary-subtle border-primary/20 rounded-panel flex flex-col gap-4 border p-6 md:p-8 print:hidden"
-            >
-              <h2 id="cta-h" className="m-0 text-2xl">
+          {/* The invitation stays out of the text (Stitch revision): a small card in the right rail with one outlined
+              button — the reader came to read. */}
+          <aside aria-labelledby="cta-h" className="lg:col-start-2 xl:col-start-auto print:hidden">
+            <div className="bg-surface border-border rounded-card flex flex-col gap-3 border p-5 xl:sticky xl:top-24">
+              <h2 id="cta-h" className="m-0 text-lg text-balance">
                 {t(`cta.${cta}.title`)}
               </h2>
-              <p className="text-muted m-0 max-w-xl">{t(`cta.${cta}.body`)}</p>
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-                <Button asChild size="lg">
-                  <a href={ownerHref(cta === "landlord" ? "/signup" : "/login", locale)}>{t(`cta.${cta}.button`)}</a>
-                </Button>
-                <a
-                  href={href(cta === "landlord" ? "/landlords" : "/")}
-                  className="inline-flex min-h-11 items-center font-semibold underline decoration-1 underline-offset-[6px]"
-                >
-                  {t("cta.more")}
-                </a>
-              </div>
-            </section>
-          </div>
+              <p className="text-muted m-0 text-sm">{t(`cta.${cta}.body`)}</p>
+              <Button asChild variant="secondary" className="self-start">
+                <a href={ownerHref(cta === "landlord" ? "/signup" : "/login", locale)}>{t(`cta.${cta}.button`)}</a>
+              </Button>
+              <a
+                href={href(cta === "landlord" ? "/landlords" : "/")}
+                className="text-muted hover:text-fg inline-flex min-h-11 items-center text-sm underline underline-offset-4"
+              >
+                {t("cta.more")}
+              </a>
+            </div>
+          </aside>
         </div>
 
         {related.length > 0 ? (

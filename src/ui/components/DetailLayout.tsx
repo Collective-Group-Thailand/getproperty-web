@@ -89,7 +89,19 @@ export function ActionPanel({
       ) : null}
       {primary || secondary || destructive ? (
         <div className="border-border flex flex-col gap-2 border-t p-5 [&>*]:w-full">
-          {primary}
+          {/* Phones (Stitch revision): the lead action leaves the scroll and becomes the record's sticky bottom bar — the
+              same element, so nothing is rendered twice; the shell hides its bottom nav while a bar is on the page. */}
+          {primary ? (
+            <div
+              data-record-bar=""
+              className={cn(
+                "flex flex-col gap-2 empty:hidden [&>*]:w-full",
+                "max-md:border-border max-md:bg-surface max-md:z-sticky max-md:shadow-overlay max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:border-t max-md:px-4 max-md:pt-3 max-md:pb-[calc(0.75rem+env(safe-area-inset-bottom))] print:hidden",
+              )}
+            >
+              {primary}
+            </div>
+          ) : null}
           {secondary}
           {destructive ? <div className="border-border mt-2 border-t pt-3 [&>*]:w-full">{destructive}</div> : null}
         </div>

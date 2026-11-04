@@ -8,10 +8,13 @@ import { Button } from "@/ui/components/Button";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { EmptyState } from "@/ui/components/EmptyState";
-import { ListToolbar } from "@/ui/components/ListToolbar";
+import { Badge } from "@/ui/components/Badge";
+import { ListToolbar, ViewTabs } from "@/ui/components/ListToolbar";
 import { SimpleTable } from "@/ui/components/SimpleTable";
 import { StatsRow } from "@/ui/components/StatsRow";
+import { decimalShare, isZeroDecimal } from "@/ui/lib/decimal";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
+import { IconClock } from "@/ui/icons/glyphs/clock";
 
 import { ExportButton } from "../shared/ExportButton";
 import { FilterBar } from "@/features/shared/console/FilterBar";
@@ -38,7 +41,18 @@ export async function ArrearsView({ context, searchParams }: { context: OwnerCon
   const bucket = param(searchParams.bucket);
   const sortBy = param(searchParams.sort);
   const minDays = Number(param(searchParams.minDays));
-  const [list, settings] = await Promise.all([
+  // Views (Stitch revision): every row · overdue (1+ day) · not yet due (the "current" bucket). Counts are the API's
+  // `meta.total` of the same query with perPage=1.
+  const view = minDays >= 1 ? "overdue" : bucket === "current" ? "notDue" : "all";
+  const countOf = (query: { bucket?: Schemas["AgingBucket"]; minDaysOverdue?: number }) =>
+    unwrap(
+      api.GET("/v1/owner/receivables", {
+        params: { query: { perPage: 1, q: param(searchParams.q), buildingId: building?.id, ...query } },
+      }),
+    )
+      .then((page) => page.meta.total)
+      .catch(() => undefined);
+  const [list, settings, countAll, countOverdue, countNotDue] = await Promise.all([
     unwrap(
       api.GET("/v1/owner/receivables", {
         params: {
@@ -57,7 +71,12 @@ export async function ArrearsView({ context, searchParams }: { context: OwnerCon
       }),
     ),
     section(unwrap(api.GET("/v1/owner/settings", { params: { query: { propertyId: building?.propertyId } } }))),
+    countOf({}),
+    countOf({ minDaysOverdue: 1 }),
+    countOf({ bucket: "current" }),
   ]);
+  const money = (value: string) =>
+    isZeroDecimal(value) ? <span className="text-muted">—</span> : formatTHB(value, locale);
   const filtered = Boolean(param(searchParams.q) || bucket || (Number.isInteger(minDays) && minDays > 0));
   const policy = (settings.data ?? []).filter((setting) => POLICY_KEYS.includes(setting.key));
 
@@ -75,9 +94,11 @@ export async function ArrearsView({ context, searchParams }: { context: OwnerCon
           />
         }
       />
+      {/* The aging strip: the total as the key cell, each bucket with a thin share bar (amber where money is overdue);
+          zero buckets read "—". The bars are drawn from the API's figures, never printed as numbers of their own. */}
       <StatsRow
         label={t("figuresLabel")}
-        highlight={Number(list.totals.aging.d90p) > 0 ? "d90p" : undefined}
+        highlight="total"
         figures={[
           {
             key: "total",
@@ -88,25 +109,49 @@ export async function ArrearsView({ context, searchParams }: { context: OwnerCon
           ...BUCKETS.map((key) => ({
             key,
             label: t(`bucket.${key}`),
-            value: <span data-testid={`aging-${key}`}>{formatTHB(list.totals.aging[key], locale)}</span>,
+            value: <span data-testid={`aging-${key}`}>{money(list.totals.aging[key])}</span>,
             href: ownerPath(locale, withQuery("/arrears", { bucket: key })),
+            share: decimalShare(list.totals.aging[key], list.totals.balance),
+            shareTone:
+              key !== "current" && !isZeroDecimal(list.totals.aging[key]) ? ("warning" as const) : ("neutral" as const),
           })),
         ]}
       />
       <ListToolbar
+        tabs={
+          <ViewTabs
+            label={t("view.label")}
+            current={view}
+            tabs={[
+              {
+                key: "all",
+                href: ownerPath(locale, withQuery("/arrears", { q: param(searchParams.q), sort: sortBy })),
+                label: t("view.all"),
+                count: countAll,
+              },
+              {
+                key: "overdue",
+                href: ownerPath(locale, withQuery("/arrears", { q: param(searchParams.q), sort: sortBy, minDays: 1 })),
+                label: t("view.overdue"),
+                count: countOverdue,
+              },
+              {
+                key: "notDue",
+                href: ownerPath(
+                  locale,
+                  withQuery("/arrears", { q: param(searchParams.q), sort: sortBy, bucket: "current" }),
+                ),
+                label: t("view.notDue"),
+                count: countNotDue,
+              },
+            ]}
+          />
+        }
         filters={
           <FilterBar
             variant="toolbar"
             fields={[
               { name: "q", label: t("filter.search"), type: "search", placeholder: t("filter.searchPlaceholder") },
-              {
-                name: "bucket",
-                label: t("filter.bucket"),
-                type: "select",
-                placeholder: t("filter.allBuckets"),
-                options: BUCKETS.map((value) => ({ value, label: t(`bucket.${value}`) })),
-              },
-              { name: "minDays", label: t("filter.minDays"), type: "number", min: 0, placeholder: t("filter.minDays") },
               {
                 name: "sort",
                 label: t("filter.sort"),
@@ -145,6 +190,11 @@ export async function ArrearsView({ context, searchParams }: { context: OwnerCon
           testId="arrears-table"
           stackOnPhones
           minWidth="60rem"
+          footer={{
+            party: t("grandTotal"),
+            ...Object.fromEntries(BUCKETS.map((key) => [key, money(list.totals.aging[key])])),
+            balance: formatTHB(list.totals.balance, locale),
+          }}
           columns={[
             { key: "party", header: t("col.party"), phone: "title" },
             { key: "unit", header: t("col.unit"), phone: "meta" },
@@ -154,7 +204,6 @@ export async function ArrearsView({ context, searchParams }: { context: OwnerCon
               header: t(`bucket.${key}`),
               align: "end" as const,
               phone: "hidden" as const,
-              className: "text-muted",
             })),
             { key: "balance", header: t("col.balance"), align: "end", phone: "figure" },
           ]}
@@ -179,14 +228,24 @@ export async function ArrearsView({ context, searchParams }: { context: OwnerCon
                 </span>
               ),
               days: (
-                <span className="flex flex-col whitespace-nowrap">
-                  <span>{t("daysValue", { count: formatNumber(row.daysOverdue, locale) })}</span>
+                <span className="flex flex-col items-end gap-0.5 whitespace-nowrap">
+                  {row.daysOverdue > 0 ? (
+                    <Badge tone="danger" size="sm" icon={IconClock}>
+                      {t("daysValue", { count: formatNumber(row.daysOverdue, locale) })}
+                    </Badge>
+                  ) : row.daysOverdue === 0 && row.oldestDueDate ? (
+                    <Badge tone="warning" size="sm" icon={IconClock}>
+                      {t("dueToday")}
+                    </Badge>
+                  ) : (
+                    <span className="text-muted text-sm">{t("notDueYet")}</span>
+                  )}
                   {row.oldestDueDate ? (
                     <span className="text-muted text-sm max-md:hidden">{formatDate(row.oldestDueDate, locale)}</span>
                   ) : null}
                 </span>
               ),
-              ...Object.fromEntries(BUCKETS.map((key) => [key, formatTHB(row.aging[key], locale)])),
+              ...Object.fromEntries(BUCKETS.map((key) => [key, money(row.aging[key])])),
               balance: <span className="font-semibold whitespace-nowrap">{formatTHB(row.balance, locale)}</span>,
             },
           }))}

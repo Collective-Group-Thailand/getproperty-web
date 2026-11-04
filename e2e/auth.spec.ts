@@ -45,7 +45,7 @@ test.describe("owner sign-in", () => {
 
   test("email + password + TOTP", async ({ page }) => {
     await page.goto(`${HOSTS.owner}/login`);
-    await page.getByRole("radio", { name: "อีเมลและรหัสผ่าน" }).click();
+    await page.getByRole("button", { name: "ใช้อีเมลและรหัสผ่านแทน" }).click();
     await page.getByLabel("อีเมล").fill("totp@example.com");
     await page.getByRole("textbox", { name: "รหัสผ่าน", exact: true }).fill(PASSWORD);
     await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
@@ -204,7 +204,7 @@ test.describe("admin sign-in", () => {
     await page.goto(`${HOSTS.admin}/login`);
     await page.getByLabel("อีเมล").fill("admin@example.com");
     await page.getByRole("textbox", { name: "รหัสผ่าน", exact: true }).fill(PASSWORD);
-    await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
+    await page.getByRole("button", { name: "ดำเนินการต่อ" }).click();
     await expect(page.getByTestId("totp-enrolment")).toBeVisible();
     await expect(page.getByRole("img", { name: "คิวอาร์โค้ดสำหรับแอปยืนยันตัวตน" })).toBeVisible();
     await expect(page.getByTestId("totp-secret")).not.toBeEmpty();
@@ -219,7 +219,7 @@ test.describe("admin sign-in", () => {
     await page.goto(`${HOSTS.admin}/login`);
     await page.getByLabel("อีเมล").fill("support@example.com");
     await page.getByRole("textbox", { name: "รหัสผ่าน", exact: true }).fill(PASSWORD);
-    await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
+    await page.getByRole("button", { name: "ดำเนินการต่อ" }).click();
     await page.getByLabel("รหัสจากแอปยืนยันตัวตน").fill(CODE);
     await page.getByRole("button", { name: "เข้าสู่ระบบ" }).click();
     await expect(page).toHaveURL(`${HOSTS.admin}/`);
@@ -255,7 +255,7 @@ test.describe("no open redirect after sign-in (review H3)", () => {
     await page.goto(`${HOSTS.admin}/login?next=/%09/evil.example/login`);
     await page.getByLabel(/อีเมล|Email/).fill("support@example.com");
     await page.getByRole("textbox", { name: /^(รหัสผ่าน|Password)$/ }).fill(PASSWORD);
-    await page.getByRole("button", { name: /เข้าสู่ระบบ|Sign in/ }).click();
+    await page.getByRole("button", { name: /ดำเนินการต่อ|Continue/ }).click();
     await page.getByLabel(/รหัสจากแอปยืนยันตัวตน|Authenticator code/).fill(CODE);
     await page.getByRole("button", { name: /เข้าสู่ระบบ|Sign in/ }).click();
     await expect(page).toHaveURL(`${HOSTS.admin}/`);

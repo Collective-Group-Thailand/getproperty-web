@@ -49,3 +49,19 @@ export function isCompleteDecimal(value: string, limits: DecimalLimits = {}): bo
     maxDec > 0 ? new RegExp(`^\\d{1,${maxInt}}(\\.\\d{1,${maxDec}})?$`) : new RegExp(`^\\d{1,${maxInt}}$`);
   return pattern.test(value);
 }
+
+/** Whether an API decimal string is zero ("0", "0.00", "-0.00") — to show "—" instead of ฿0.00. */
+export function isZeroDecimal(value: string): boolean {
+  return /^-?0*(\.0*)?$/.test(value.trim()) && value.trim() !== "";
+}
+
+/**
+ * A part's share of a whole, 0–100, from two API decimal strings — for drawing a proportion bar only, never printed as
+ * a figure or used in money (the UI does not compute money, CLAUDE.md).
+ */
+export function decimalShare(part: string, whole: string): number {
+  const p = Number.parseFloat(part);
+  const w = Number.parseFloat(whole);
+  if (!Number.isFinite(p) || !Number.isFinite(w) || w <= 0 || p <= 0) return 0;
+  return Math.min(100, Math.round((p / w) * 100));
+}

@@ -18,3 +18,19 @@ const meta: Meta<typeof StatsRow> = {
 };
 export default meta;
 export const Default: StoryObj<typeof StatsRow> = {};
+
+/** Aging (arrears): the total as the key cell, each bucket with its share as a thin bar, overdue money in amber. */
+export const WithShares: StoryObj<typeof StatsRow> = {
+  args: {
+    label: "อายุหนี้",
+    highlight: "total",
+    figures: [
+      { key: "total", label: "ยอดค้างรวม", value: "฿12,694.00", hint: "2 ราย" },
+      { key: "current", label: "ยังไม่ถึงกำหนด", value: "฿5,512.00", share: 43 },
+      { key: "d1_30", label: "1–30 วัน", value: "—", share: 0 },
+      { key: "d31_60", label: "31–60 วัน", value: "฿7,182.00", share: 57, shareTone: "warning" },
+      { key: "d61_90", label: "61–90 วัน", value: "—", share: 0 },
+      { key: "d90p", label: "เกิน 90 วัน", value: "—", share: 0 },
+    ],
+  },
+};

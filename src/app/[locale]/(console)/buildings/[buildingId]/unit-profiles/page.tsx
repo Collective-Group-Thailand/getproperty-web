@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
-import { UnitProfiles } from "@/features/owner/buildings/UnitProfiles";
+import { NewProfileButton, UnitProfiles } from "@/features/owner/buildings/UnitProfiles";
 import { ownerPath } from "@/features/owner/shared/links";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { ownerContext } from "@/features/owner/shared/server";
@@ -30,6 +30,7 @@ export default async function Profiles({ params }: { params: Promise<{ locale: L
         title={t("title")}
         description={t("description", { building: building.name })}
         crumbs={[{ label: building.name, href: ownerPath(locale, `/buildings/${building.id}`) }, { label: t("title") }]}
+        actions={building.access === "grant" ? undefined : <NewProfileButton buildingId={building.id} />}
       />
       <UnitProfiles buildingId={building.id} profiles={profiles} />
     </OwnerPage>

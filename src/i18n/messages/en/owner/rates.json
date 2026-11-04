@@ -129,5 +129,6 @@
       "amount": "Amount"
     }
   },
-  "emptyAction": "View invoices"
+  "emptyAction": "View invoices",
+  "planMenu": "Options for {name}"
 }

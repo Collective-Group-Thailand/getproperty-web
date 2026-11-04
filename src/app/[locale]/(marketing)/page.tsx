@@ -12,6 +12,7 @@ import {
   TextLink,
   WRAP,
 } from "@/features/owner/marketing/Layout";
+import { BillMessage } from "@/features/owner/marketing/BillMessage";
 import { Photo } from "@/features/owner/marketing/Photo";
 import { PHOTOS } from "@/features/owner/marketing/photos";
 import { lineOaHref, marketingMetadata, marketingOrigin, ownerHref } from "@/features/owner/marketing/seo";
@@ -108,13 +109,18 @@ export default async function Landing({ params }: Params) {
             ))}
           </ul>
         </div>
-        <div className="lg:col-span-6">
+        {/* The photograph with one small, clearly illustrative product moment over it: the bill a resident gets in LINE
+            (labelled as an example) — the outcome, not a dashboard of made-up figures. */}
+        <div className="relative lg:col-span-6">
           <Photo
             photo={PHOTOS.living}
             priority
             className="rounded-panel aspect-[4/3] lg:aspect-[5/6]"
             sizes="(min-width: 1024px) 45vw, 100vw"
           />
+          <div className="relative -mt-16 flex justify-center px-4 sm:absolute sm:start-6 sm:bottom-6 sm:mt-0 sm:block sm:px-0 lg:-start-10">
+            <BillMessage locale={locale} />
+          </div>
         </div>
       </section>
 
@@ -158,27 +164,34 @@ export default async function Landing({ params }: Params) {
       {/* The month end, before and after */}
       <Section labelledBy="compare-h">
         <SectionHead id="compare-h" eyebrow={t("compare.eyebrow")} title={t("compare.title")} />
-        <div className="mt-12 grid gap-10 md:grid-cols-2 md:gap-16">
-          <div>
-            <h3 className="text-muted border-border m-0 border-b pb-3 text-sm font-semibold">{t("compare.before")}</h3>
+        {/* Before and after in one card split by a hairline: the new column's head in brand blue with numbered dots. */}
+        <div className="bg-surface border-border rounded-panel shadow-card mt-12 grid border md:grid-cols-2">
+          <div className="border-border p-6 md:border-e md:p-8">
+            <h3 className="text-muted border-border m-0 border-b pb-4 text-base font-semibold">
+              {t("compare.before")}
+            </h3>
             <ol className="m-0 list-none p-0">
               {LIST_KEYS.map((key) => (
-                <li key={key} className="border-border text-muted flex gap-4 border-b py-4">
-                  <span className="font-mono text-sm tabular-nums">{key}</span>
-                  <span>{t(`compare.beforeItems.${key}`)}</span>
+                <li key={key} className="text-muted flex items-start gap-4 pt-4">
+                  <span className="border-border text-muted grid size-7 shrink-0 place-items-center rounded-full border text-sm tabular-nums">
+                    {key}
+                  </span>
+                  <span className="pt-0.5">{t(`compare.beforeItems.${key}`)}</span>
                 </li>
               ))}
             </ol>
           </div>
-          <div>
-            <h3 className="text-primary border-primary m-0 border-b pb-3 text-sm font-semibold">
+          <div className="border-border border-t p-6 md:border-t-0 md:p-8">
+            <h3 className="text-primary border-border m-0 border-b pb-4 text-base font-semibold">
               {t("compare.after")}
             </h3>
             <ol className="m-0 list-none p-0">
               {LIST_KEYS.map((key) => (
-                <li key={key} className="border-border flex gap-4 border-b py-4">
-                  <span className="text-primary font-mono text-sm tabular-nums">{key}</span>
-                  <span className="font-medium">{t(`compare.afterItems.${key}`)}</span>
+                <li key={key} className="flex items-start gap-4 pt-4">
+                  <span className="bg-primary text-primary-fg grid size-7 shrink-0 place-items-center rounded-full text-sm font-semibold tabular-nums">
+                    {key}
+                  </span>
+                  <span className="pt-0.5 font-medium">{t(`compare.afterItems.${key}`)}</span>
                 </li>
               ))}
             </ol>

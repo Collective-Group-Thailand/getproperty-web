@@ -18,9 +18,6 @@ import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
 import { OTPInput } from "@/ui/components/OTPInput";
 import { PhoneInput } from "@/ui/components/PhoneInput";
-import { SegmentedControl } from "@/ui/components/SegmentedControl";
-import { IconKey } from "@/ui/icons/glyphs/key";
-import { IconPhone } from "@/ui/icons/glyphs/phone";
 
 import { authProblemMessage } from "./problemMessage";
 
@@ -58,25 +55,27 @@ export function OperatorSignIn({
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       {invitationCode ? <Callout tone="info">{t("signIn.invitation")}</Callout> : null}
-      {allowPassword ? (
-        <SegmentedControl
-          label={t("signIn.method.label")}
-          value={method}
-          onValueChange={(value) => setMethod(value as Method)}
-          options={[
-            { value: "otp", label: t("signIn.method.otp"), icon: IconPhone },
-            { value: "password", label: t("signIn.method.password"), icon: IconKey },
-          ]}
-          fullWidth
-        />
-      ) : null}
       {method === "otp" ? (
         <OtpSignIn zone={zone} invitationCode={invitationCode} onDone={done} />
       ) : (
         <PasswordSignIn zone={zone} onDone={done} />
       )}
+      {/* The phone is the way in for most people (Stitch revision): the other method is one quiet link under the form,
+          not a segmented control above the field. */}
+      {allowPassword ? (
+        <Button
+          type="button"
+          variant="link"
+          size="sm"
+          className="self-center"
+          onClick={() => setMethod(method === "otp" ? "password" : "otp")}
+          data-testid="sign-in-method"
+        >
+          {method === "otp" ? t("signIn.method.usePassword") : t("signIn.method.useOtp")}
+        </Button>
+      ) : null}
     </div>
   );
 }

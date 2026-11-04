@@ -11,8 +11,10 @@ import { IconLock } from "@/ui/icons/glyphs/lock";
 /**
  * A section of a server-rendered console page whose API read failed (`section()`): the API's own
  * localised title and detail with the request id — or "no connection" — while the rest of the page
- * still renders. A refusal for the person's role (403) is not an error: a calm "not open to your role" card with the
- * way home, no request id. Server-only markup; the error object never crosses into a client component.
+ * still renders. A refusal for the person's role (403) is not an error (redesign G0 revision, G8): the same calm
+ * card with a lock as `ZoneForbidden` — what happened, who can change it, the way home — never a red error. The
+ * API's localised detail, when it sends one, replaces the generic sentence; the request id stays available for
+ * support. Server-only markup; the error object never crosses into a client component.
  */
 export async function SectionError({ error, className }: { error: unknown; className?: string }) {
   const t = await getTranslations("errors");
@@ -25,8 +27,17 @@ export async function SectionError({ error, className }: { error: unknown; class
         <EmptyState
           variant="card"
           icon={IconLock}
-          title={t("forbidden.title")}
-          description={t("forbidden.body")}
+          title={t("forbidden.sectionTitle")}
+          description={
+            <>
+              {api.detail || t("forbidden.sectionBody")}
+              {api.requestId ? (
+                <span className="text-muted mt-2 block font-mono text-xs">
+                  {common("requestId")}: {api.requestId}
+                </span>
+              ) : null}
+            </>
+          }
           action={
             <Button asChild variant="secondary">
               <Link href="/">{t("forbidden.home")}</Link>
@@ -38,7 +49,7 @@ export async function SectionError({ error, className }: { error: unknown; class
   return (
     <div role="alert" data-testid="section-error" data-code={api?.code ?? "unexpected"} className={className}>
       <Callout
-        tone={api?.status === 403 || api?.status === 404 ? "warning" : "danger"}
+        tone={api?.status === 404 ? "warning" : "danger"}
         title={api?.title || (offline ? t("offline.title") : t("unexpected.title"))}
         legalRef={api?.legalRef}
       >

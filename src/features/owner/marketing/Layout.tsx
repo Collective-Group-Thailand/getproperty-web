@@ -70,7 +70,8 @@ export function PageHead({
   titleTestId?: string;
   className?: string;
   /** `section`: a tool or record page whose task follows at once — a smaller h1. */
-  size?: "display" | "section";
+  /** `search`: a list people came to use (`/rent`) — the display h1 from `md`, a compact one on phones. */
+  size?: "display" | "section" | "search";
 }) {
   return (
     <header className={cn(WRAP, "pt-8 pb-10 md:pt-12 md:pb-14", className)}>
@@ -82,7 +83,10 @@ export function PageHead({
         >
           {eyebrow ? <p className="text-muted m-0 text-sm font-medium">{eyebrow}</p> : null}
           <h1
-            className={cn("m-0 text-balance", size === "display" ? "text-display" : "text-4xl")}
+            className={cn(
+              "m-0 text-balance",
+              size === "display" ? "text-display" : size === "search" ? "md:text-display text-3xl" : "text-4xl",
+            )}
             data-testid={titleTestId}
           >
             {title}
@@ -330,6 +334,7 @@ export function CtaPanel({
   primary,
   secondary,
   className,
+  variant = "panel",
 }: {
   id: string;
   title: string;
@@ -337,8 +342,31 @@ export function CtaPanel({
   primary: { href: string; label: string; external?: boolean; icon?: IconGlyph; testId?: string };
   secondary?: { href: string; label: string; external?: boolean };
   className?: string;
+  /**
+   * `band`: a slim strip with one outlined button — for pages whose filled action is elsewhere (the renter's search,
+   * a free tool), so the owner invitation never competes with the page's own task.
+   */
+  variant?: "panel" | "band";
 }) {
   const external = (on?: boolean) => (on ? { rel: "noopener noreferrer", target: "_blank" } : {});
+  if (variant === "band")
+    return (
+      <section aria-labelledby={id} className={cn(WRAP, "py-12 md:py-16 print:hidden", className)}>
+        <div className="bg-surface border-border rounded-card flex flex-col gap-4 border px-6 py-5 md:flex-row md:items-center md:justify-between md:px-8">
+          <div className="flex min-w-0 flex-col gap-1">
+            <h2 id={id} className="m-0 text-xl text-balance">
+              {title}
+            </h2>
+            {body ? <p className="text-muted m-0 max-w-2xl text-pretty">{body}</p> : null}
+          </div>
+          <Button asChild variant="secondary" iconStart={primary.icon} className="shrink-0 self-start md:self-auto">
+            <a href={primary.href} data-testid={primary.testId} {...external(primary.external)}>
+              {primary.label}
+            </a>
+          </Button>
+        </div>
+      </section>
+    );
   return (
     <section aria-labelledby={id} className={cn(WRAP, "py-16 md:py-24 print:hidden", className)}>
       <div className="bg-surface border-border rounded-panel shadow-card grid gap-8 border p-8 md:grid-cols-12 md:items-center md:p-12">

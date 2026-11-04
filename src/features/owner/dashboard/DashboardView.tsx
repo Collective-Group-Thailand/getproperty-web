@@ -271,7 +271,8 @@ export async function DashboardView({ context }: { context: OwnerContext }) {
         actions={
           <>
             {canPay ? (
-              <Button asChild variant="secondary" iconStart={IconPayment}>
+              // The everyday task leads (Stitch revision): one filled "record a payment", the others outlined.
+              <Button asChild iconStart={IconPayment}>
                 <a href={href("/payments/new")}>{t("quick.recordPayment")}</a>
               </Button>
             ) : null}

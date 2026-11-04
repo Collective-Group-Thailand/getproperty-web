@@ -10,6 +10,13 @@ export interface Figure {
   /** A figure that opens the rows it counts. */
   href?: string;
   testId?: string;
+  /**
+   * A thin proportion bar under the figure, 0–100 (an aging bucket's share of the total) — the caller derives it from
+   * the API's own figures for drawing only; the bar never prints a number of its own.
+   */
+  share?: number;
+  /** The bar's colour: `warning` (amber) for a share that needs attention (overdue money), else neutral. */
+  shareTone?: "neutral" | "warning";
 }
 
 export interface StatsRowProps {
@@ -52,6 +59,17 @@ export function StatsRow({ figures, highlight, label, className }: StatsRowProps
               {figure.value}
             </span>
             {figure.hint ? <span className="text-muted text-sm">{figure.hint}</span> : null}
+            {figure.share !== undefined ? (
+              <span aria-hidden="true" className="bg-bg-subtle rounded-thumb mt-1.5 block h-1.5 overflow-hidden">
+                <span
+                  className={cn(
+                    "rounded-thumb block h-full",
+                    figure.shareTone === "warning" ? "bg-warning" : "bg-border-strong",
+                  )}
+                  style={{ width: `${Math.max(0, Math.min(100, figure.share))}%` }}
+                />
+              </span>
+            ) : null}
           </>
         );
         const cell = cn(

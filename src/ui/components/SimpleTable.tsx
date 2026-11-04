@@ -57,6 +57,7 @@ export function SimpleTable({
   minWidth = "40rem",
   pinFirstColumn,
   stackOnPhones = false,
+  footer,
   className,
 }: {
   caption: string;
@@ -71,6 +72,8 @@ export function SimpleTable({
   pinFirstColumn?: boolean;
   /** Rows instead of a sideways-scrolling table on phones (see `SimpleColumn.phone`). */
   stackOnPhones?: boolean;
+  /** A totals row ("รวมทั้งสิ้น") under the rows, cells by column key — API figures only, never summed here. */
+  footer?: Record<string, React.ReactNode>;
   className?: string;
 }) {
   const pinned = pinFirstColumn ?? !rows.some((row) => row.href);
@@ -168,6 +171,34 @@ export function SimpleTable({
             </tr>
           ))}
         </tbody>
+        {footer ? (
+          <tfoot className={cn(stackOnPhones && "max-md:hidden")}>
+            <tr className="border-fg border-t">
+              {columns.map((column, index) =>
+                index === 0 ? (
+                  <th
+                    key={column.key}
+                    scope="row"
+                    className={cn("px-4 py-3 text-start font-semibold", pin(index), column.className)}
+                  >
+                    {footer[column.key] ?? null}
+                  </th>
+                ) : (
+                  <td
+                    key={column.key}
+                    className={cn(
+                      "px-4 py-3 font-semibold tabular-nums",
+                      ALIGN[column.align ?? "start"],
+                      column.className,
+                    )}
+                  >
+                    {footer[column.key] ?? null}
+                  </td>
+                ),
+              )}
+            </tr>
+          </tfoot>
+        ) : null}
       </table>
     </div>
   );

@@ -92,9 +92,9 @@ export async function SlipQueue({ context, searchParams }: { context: OwnerConte
           }
         />
       ) : (
-        <div className="grid gap-4 lg:grid-cols-[22rem_1fr]">
+        <div className="grid items-start gap-4 lg:grid-cols-[18rem_minmax(0,1fr)] xl:grid-cols-[18rem_minmax(0,1fr)_20rem]">
           <ul
-            className="divide-border border-border bg-surface rounded-card shadow-card divide-y self-start overflow-hidden border"
+            className="divide-border border-border bg-surface rounded-card shadow-card divide-y overflow-hidden border lg:row-span-2 xl:row-span-1"
             data-testid="slip-list"
             aria-label={t("title")}
           >
@@ -124,49 +124,43 @@ export async function SlipQueue({ context, searchParams }: { context: OwnerConte
             ))}
           </ul>
           {selected ? (
-            <Card as="section" aria-labelledby="slip-title" data-testid="slip-detail">
-              <CardHeader
-                title={
-                  <span id="slip-title">
-                    {t("detailTitle", { unit: selected.unitNo ?? "—", invoice: selected.invoiceNumber ?? "—" })}
-                  </span>
-                }
-                action={
-                  <SlipDecision
-                    slip={selected}
-                    detectedLabel={selected.amountDetected ? formatTHB(selected.amountDetected, locale) : "—"}
-                  />
-                }
-              />
-              {selected.duplicateOfId ? (
-                <div className="mb-4" data-testid="slip-duplicate">
-                  <Callout tone="danger" title={t("duplicateTitle")}>
-                    {t("duplicateBody")}{" "}
-                    <a className="underline" href={href(selected.duplicateOfId)}>
-                      {t("duplicateOpen")}
-                    </a>
-                  </Callout>
-                </div>
-              ) : null}
-              {selected.reasons.length ? (
-                <div className="mb-4 flex flex-wrap gap-1" data-testid="slip-reasons">
-                  {selected.reasons.map((reason) => (
-                    <span key={reason} data-reason={reason}>
-                      <Badge tone="warning" size="sm">
-                        {t.has(`reason.${reason}` as never) ? t(`reason.${reason}` as never) : reason}
-                      </Badge>
+            <>
+              <Card as="section" aria-labelledby="slip-title" data-testid="slip-detail" className="min-w-0">
+                <CardHeader
+                  title={
+                    <span id="slip-title">
+                      {t("detailTitle", { unit: selected.unitNo ?? "—", invoice: selected.invoiceNumber ?? "—" })}
                     </span>
-                  ))}
-                </div>
-              ) : null}
-              {selected.reasons.includes("possible_qr_duplicate") ? (
-                <div className="mb-4" data-testid="slip-qr-duplicate">
-                  <Callout tone="warning" title={t("qrDuplicateTitle")}>
-                    {t("qrDuplicateBody")}
-                  </Callout>
-                </div>
-              ) : null}
-              <div className="grid gap-4 xl:grid-cols-[1fr_18rem]">
+                  }
+                />
+                {selected.duplicateOfId ? (
+                  <div className="mb-4" data-testid="slip-duplicate">
+                    <Callout tone="danger" title={t("duplicateTitle")}>
+                      {t("duplicateBody")}{" "}
+                      <a className="underline" href={href(selected.duplicateOfId)}>
+                        {t("duplicateOpen")}
+                      </a>
+                    </Callout>
+                  </div>
+                ) : null}
+                {selected.reasons.length ? (
+                  <div className="mb-4 flex flex-wrap gap-1" data-testid="slip-reasons">
+                    {selected.reasons.map((reason) => (
+                      <span key={reason} data-reason={reason}>
+                        <Badge tone="warning" size="sm">
+                          {t.has(`reason.${reason}` as never) ? t(`reason.${reason}` as never) : reason}
+                        </Badge>
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+                {selected.reasons.includes("possible_qr_duplicate") ? (
+                  <div className="mb-4" data-testid="slip-qr-duplicate">
+                    <Callout tone="warning" title={t("qrDuplicateTitle")}>
+                      {t("qrDuplicateBody")}
+                    </Callout>
+                  </div>
+                ) : null}
                 {selected.imageUrl ? (
                   <SlipImage
                     src={selected.imageUrl}
@@ -175,75 +169,110 @@ export async function SlipQueue({ context, searchParams }: { context: OwnerConte
                 ) : (
                   <p className="text-muted text-sm">{t("noImage")}</p>
                 )}
-                <DescriptionList
-                  columns={1}
-                  items={[
-                    {
-                      id: "detected",
-                      term: t("amountDetected"),
-                      description: selected.amountDetected ? (
-                        <span data-testid="slip-detected">{formatTHB(selected.amountDetected, locale)}</span>
-                      ) : null,
-                    },
-                    {
-                      id: "balance",
-                      term: t("invoiceBalance"),
-                      description: formatTHB(selected.invoiceBalance, locale),
-                    },
-                    { id: "sender", term: t("sender"), description: selected.senderName },
-                    {
-                      id: "receiver",
-                      term: t("receiver"),
-                      description: selected.receiverAccountMasked ? (
-                        <span className="font-mono">{selected.receiverAccountMasked}</span>
-                      ) : null,
-                    },
-                    {
-                      id: "time",
-                      term: t("slipTime"),
-                      description: selected.slipDatetime ? formatDateTime(selected.slipDatetime, locale) : null,
-                    },
-                    {
-                      id: "ref",
-                      term: t("transRef"),
-                      description: selected.transRef ? <span className="font-mono">{selected.transRef}</span> : null,
-                    },
-                    {
-                      id: "invoice",
-                      term: t("invoice"),
-                      description: (
-                        <a
-                          className="underline-offset-4 hover:underline"
-                          href={ownerPath(locale, `/invoices/${selected.invoiceId}`)}
-                        >
-                          {selected.invoiceNumber ?? "—"}
-                        </a>
-                      ),
-                    },
-                    ...(selected.rejectReason
-                      ? [{ id: "rejected", term: t("rejectReason"), description: selected.rejectReason }]
-                      : []),
-                    ...(selected.paymentId
-                      ? [
-                          {
-                            id: "payment",
-                            term: t("payment"),
-                            description: (
-                              <a
-                                className="underline-offset-4 hover:underline"
-                                href={ownerPath(locale, `/payments/${selected.paymentId}`)}
-                                data-testid="slip-payment"
-                              >
-                                {t("openPayment")}
-                              </a>
-                            ),
-                          },
-                        ]
-                      : []),
-                  ]}
-                />
-              </div>
-            </Card>
+              </Card>
+
+              {/* The decision panel: what was read against what the invoice still owes, the consequence in one line,
+                  approve (naming the amount) and reject, then the facts read from the slip. The difference is shown
+                  only when the API sends it (needs API) — never subtracted here. */}
+              <aside
+                aria-label={t("decision")}
+                className="flex flex-col gap-4 lg:col-start-2 xl:sticky xl:top-6 xl:col-start-auto"
+              >
+                <Card>
+                  <div className="bg-primary-subtle rounded-control flex flex-col gap-1 px-4 py-3">
+                    <span className="text-primary-subtle-fg text-sm">{t("amountDetected")}</span>
+                    <span className="text-primary text-2xl font-semibold tabular-nums" data-testid="slip-detected">
+                      {selected.amountDetected ? formatTHB(selected.amountDetected, locale) : "—"}
+                    </span>
+                  </div>
+                  <dl className="m-0 mt-3 flex flex-col gap-2 px-1 text-sm">
+                    <div className="flex items-baseline justify-between gap-4">
+                      <dt className="text-muted">{t("invoiceBalance")}</dt>
+                      <dd className="m-0 font-medium tabular-nums">{formatTHB(selected.invoiceBalance, locale)}</dd>
+                    </div>
+                  </dl>
+                  {selected.nextActions.includes("decide") ? (
+                    <p className="text-muted border-border mt-3 border-t px-1 pt-3 text-sm">
+                      {selected.reasons.includes("amount_below_due")
+                        ? t("consequence.below")
+                        : selected.reasons.includes("amount_above_due")
+                          ? t("consequence.above")
+                          : t("consequence.even")}
+                    </p>
+                  ) : null}
+                  <div className="mt-4">
+                    <SlipDecision
+                      slip={selected}
+                      layout="panel"
+                      approveLabel={
+                        selected.amountDetected
+                          ? t("approveAmount", { amount: formatTHB(selected.amountDetected, locale) })
+                          : undefined
+                      }
+                      detectedLabel={selected.amountDetected ? formatTHB(selected.amountDetected, locale) : "—"}
+                    />
+                  </div>
+                </Card>
+                <Card as="section" aria-labelledby="slip-facts">
+                  <CardHeader title={<span id="slip-facts">{t("facts")}</span>} />
+                  <DescriptionList
+                    columns={1}
+                    items={[
+                      { id: "sender", term: t("sender"), description: selected.senderName },
+                      {
+                        id: "receiver",
+                        term: t("receiver"),
+                        description: selected.receiverAccountMasked ? (
+                          <span className="font-mono">{selected.receiverAccountMasked}</span>
+                        ) : null,
+                      },
+                      {
+                        id: "time",
+                        term: t("slipTime"),
+                        description: selected.slipDatetime ? formatDateTime(selected.slipDatetime, locale) : null,
+                      },
+                      {
+                        id: "ref",
+                        term: t("transRef"),
+                        description: selected.transRef ? <span className="font-mono">{selected.transRef}</span> : null,
+                      },
+                      {
+                        id: "invoice",
+                        term: t("invoice"),
+                        description: (
+                          <a
+                            className="text-primary underline-offset-4 hover:underline"
+                            href={ownerPath(locale, `/invoices/${selected.invoiceId}`)}
+                          >
+                            {selected.invoiceNumber ?? "—"}
+                          </a>
+                        ),
+                      },
+                      ...(selected.rejectReason
+                        ? [{ id: "rejected", term: t("rejectReason"), description: selected.rejectReason }]
+                        : []),
+                      ...(selected.paymentId
+                        ? [
+                            {
+                              id: "payment",
+                              term: t("payment"),
+                              description: (
+                                <a
+                                  className="text-primary underline-offset-4 hover:underline"
+                                  href={ownerPath(locale, `/payments/${selected.paymentId}`)}
+                                  data-testid="slip-payment"
+                                >
+                                  {t("openPayment")}
+                                </a>
+                              ),
+                            },
+                          ]
+                        : []),
+                    ]}
+                  />
+                </Card>
+              </aside>
+            </>
           ) : null}
         </div>
       )}

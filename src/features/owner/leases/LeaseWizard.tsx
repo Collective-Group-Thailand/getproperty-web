@@ -20,12 +20,10 @@ import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { NativeSelect } from "@/ui/components/NativeSelect";
 import { SegmentedControl } from "@/ui/components/SegmentedControl";
-import { FormColumns, FormSummary } from "@/ui/components/FormLayout";
+import { FormColumns, FormSummary, MobileActionBar } from "@/ui/components/FormLayout";
 import { WizardSections, type WizardStep } from "@/ui/components/WizardSections";
 import { IconAdd } from "@/ui/icons/glyphs/add";
-import { IconBack } from "@/ui/icons/glyphs/back";
 import { IconDelete } from "@/ui/icons/glyphs/delete";
-import { IconForward } from "@/ui/icons/glyphs/forward";
 import { IconSign } from "@/ui/icons/glyphs/sign";
 
 import { DocumentButton } from "../shared/DocumentButton";
@@ -334,6 +332,125 @@ export function LeaseWizard({
     ) : undefined,
   }));
 
+  // One place for the way on (Stitch revision): the summary panel owns "next" / "save draft" / "send", the phone a
+  // bottom action bar — never a button row inside each section. The section shows only its fields.
+  const goLines = () => {
+    if (form.lines.length === 0 && profile?.defaultLeaseLines.length)
+      update({
+        lines: profile.defaultLeaseLines.map((line) => ({
+          kind: line.kind,
+          description: line.description,
+          amount: line.amount,
+        })),
+      });
+    setStep("lines");
+  };
+  const sendForSignature = () => {
+    if (!lease) return;
+    void action.run(
+      () =>
+        unwrap(
+          browserApi().POST("/v1/owner/leases/{leaseId}/actions/send-for-signature", {
+            params: { path: { leaseId: lease.data.id }, header: { "Idempotency-Key": sendKey.key } },
+          }),
+        ),
+      (result) => {
+        setLease({ data: result as Schemas["LeaseDto"], etag: null });
+        writeDraft(null);
+        setStep("sent");
+      },
+    );
+  };
+  const nextLabel = (target: Step) => t("nextTo", { step: t(`step.${target}`) });
+  const navigation: {
+    back?: { label: string; onClick: () => void };
+    primary?: {
+      label: string;
+      onClick: () => void;
+      disabled?: boolean;
+      loading?: boolean;
+      testId: string;
+      icon?: typeof IconSign;
+    };
+  } =
+    step === "unit"
+      ? {
+          primary: {
+            label: nextLabel("parties"),
+            onClick: () => setStep("parties"),
+            disabled: !form.unit,
+            testId: "wizard-next",
+          },
+        }
+      : step === "parties"
+        ? {
+            back: { label: t("back"), onClick: () => setStep("unit") },
+            primary: {
+              label: nextLabel("terms"),
+              onClick: () => setStep("terms"),
+              disabled: !form.lessee,
+              testId: "wizard-next",
+            },
+          }
+        : step === "terms"
+          ? {
+              back: { label: t("back"), onClick: () => setStep("parties") },
+              primary: { label: nextLabel("lines"), onClick: goLines, disabled: !termsValid, testId: "wizard-next" },
+            }
+          : step === "lines"
+            ? {
+                back: { label: t("back"), onClick: () => setStep("terms") },
+                primary: {
+                  label: nextLabel("review"),
+                  onClick: () => setStep("review"),
+                  disabled: !linesValid,
+                  testId: "wizard-next",
+                },
+              }
+            : step === "review"
+              ? {
+                  back: { label: t("back"), onClick: () => setStep("lines") },
+                  primary: {
+                    label: lease ? t("saveDraft") : t("createDraft"),
+                    onClick: () => void createOrUpdate(),
+                    loading: action.busy,
+                    testId: "lease-create",
+                  },
+                }
+              : step === "contract" && lease
+                ? {
+                    back: { label: t("edit"), onClick: () => setStep("review") },
+                    primary: {
+                      label: t("send"),
+                      onClick: sendForSignature,
+                      loading: action.busy,
+                      testId: "send-for-signature",
+                      icon: IconSign,
+                    },
+                  }
+                : {};
+  const navButtons = () => (
+    <>
+      {navigation.primary ? (
+        <Button
+          iconStart={navigation.primary.icon}
+          disabled={navigation.primary.disabled}
+          loading={navigation.primary.loading}
+          onClick={navigation.primary.onClick}
+          data-testid={navigation.primary.testId}
+        >
+          {navigation.primary.label}
+        </Button>
+      ) : null}
+      {navigation.back ? (
+        <Button variant="ghost" onClick={navigation.back.onClick}>
+          {navigation.back.label}
+        </Button>
+      ) : null}
+    </>
+  );
+  const progress = index >= 0 && index < STEPS.length ? t("stepOf", { current: index + 1, total: STEPS.length }) : null;
+
   return (
     <FormColumns
       summary={
@@ -353,6 +470,14 @@ export function LeaseWizard({
           ]}
           total={{ label: t("summaryRent"), value: money(form.rent) }}
           note={t("summaryNote")}
+          action={
+            navigation.primary ? (
+              <div className="flex flex-col gap-2">
+                {progress ? <p className="text-muted m-0 text-sm">{progress}</p> : null}
+                {navButtons()}
+              </div>
+            ) : undefined
+          }
         />
       }
     >
@@ -443,16 +568,6 @@ export function LeaseWizard({
                   </div>
                 )
               ) : null}
-              <div className="flex justify-end">
-                <Button
-                  iconEnd={IconForward}
-                  disabled={!form.unit}
-                  onClick={() => setStep("parties")}
-                  data-testid="wizard-next"
-                >
-                  {t("next")}
-                </Button>
-              </div>
             </section>
           ) : null}
 
@@ -560,19 +675,6 @@ export function LeaseWizard({
                   ))}
                 </ul>
               ) : null}
-              <div className="flex justify-between">
-                <Button variant="secondary" iconStart={IconBack} onClick={() => setStep("unit")}>
-                  {t("back")}
-                </Button>
-                <Button
-                  iconEnd={IconForward}
-                  disabled={!form.lessee}
-                  onClick={() => setStep("terms")}
-                  data-testid="wizard-next"
-                >
-                  {t("next")}
-                </Button>
-              </div>
             </section>
           ) : null}
 
@@ -727,29 +829,6 @@ export function LeaseWizard({
                   {t(form.utilityBillingMode === "metered" ? "meteredHint" : "includedHint")}
                 </p>
               </div>
-              <div className="flex justify-between">
-                <Button variant="secondary" iconStart={IconBack} onClick={() => setStep("parties")}>
-                  {t("back")}
-                </Button>
-                <Button
-                  iconEnd={IconForward}
-                  disabled={!termsValid}
-                  onClick={() => {
-                    if (form.lines.length === 0 && profile?.defaultLeaseLines.length)
-                      update({
-                        lines: profile.defaultLeaseLines.map((line) => ({
-                          kind: line.kind,
-                          description: line.description,
-                          amount: line.amount,
-                        })),
-                      });
-                    setStep("lines");
-                  }}
-                  data-testid="wizard-next"
-                >
-                  {t("next")}
-                </Button>
-              </div>
             </section>
           ) : null}
 
@@ -898,19 +977,6 @@ export function LeaseWizard({
                   {t("addClause")}
                 </Button>
               ) : null}
-              <div className="flex justify-between">
-                <Button variant="secondary" iconStart={IconBack} onClick={() => setStep("terms")}>
-                  {t("back")}
-                </Button>
-                <Button
-                  iconEnd={IconForward}
-                  disabled={!linesValid}
-                  onClick={() => setStep("review")}
-                  data-testid="wizard-next"
-                >
-                  {t("next")}
-                </Button>
-              </div>
             </section>
           ) : null}
 
@@ -999,14 +1065,6 @@ export function LeaseWizard({
                 acknowledging={action.acknowledging}
               />
               {action.error ? <p className="text-muted text-sm">{t("fixHint")}</p> : null}
-              <div className="flex justify-between">
-                <Button variant="secondary" iconStart={IconBack} onClick={() => setStep("lines")}>
-                  {t("back")}
-                </Button>
-                <Button loading={action.busy} onClick={() => void createOrUpdate()} data-testid="lease-create">
-                  {lease ? t("saveDraft") : t("createDraft")}
-                </Button>
-              </div>
             </section>
           ) : null}
 
@@ -1030,33 +1088,6 @@ export function LeaseWizard({
                 onAcknowledge={action.acknowledge}
                 acknowledging={action.acknowledging}
               />
-              <div className="flex justify-between">
-                <Button variant="secondary" iconStart={IconBack} onClick={() => setStep("review")}>
-                  {t("edit")}
-                </Button>
-                <Button
-                  iconStart={IconSign}
-                  loading={action.busy}
-                  onClick={() =>
-                    void action.run(
-                      () =>
-                        unwrap(
-                          browserApi().POST("/v1/owner/leases/{leaseId}/actions/send-for-signature", {
-                            params: { path: { leaseId: lease.data.id }, header: { "Idempotency-Key": sendKey.key } },
-                          }),
-                        ),
-                      (result) => {
-                        setLease({ data: result as Schemas["LeaseDto"], etag: null });
-                        writeDraft(null);
-                        setStep("sent");
-                      },
-                    )
-                  }
-                  data-testid="send-for-signature"
-                >
-                  {t("send")}
-                </Button>
-              </div>
             </section>
           ) : null}
 
@@ -1084,6 +1115,24 @@ export function LeaseWizard({
             </section>
           ) : null}
         </WizardSections>
+        {navigation.primary ? (
+          <MobileActionBar summary={progress ?? undefined}>
+            {navigation.back ? (
+              <Button variant="secondary" onClick={navigation.back.onClick}>
+                {navigation.back.label}
+              </Button>
+            ) : null}
+            <Button
+              iconStart={navigation.primary.icon}
+              disabled={navigation.primary.disabled}
+              loading={navigation.primary.loading}
+              onClick={navigation.primary.onClick}
+              data-testid={`${navigation.primary.testId}-phone`}
+            >
+              {navigation.primary.label}
+            </Button>
+          </MobileActionBar>
+        ) : null}
       </div>
     </FormColumns>
   );

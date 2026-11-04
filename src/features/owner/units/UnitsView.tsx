@@ -5,7 +5,10 @@ import { Button } from "@/ui/components/Button";
 import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { ListToolbar, ViewTabs } from "@/ui/components/ListToolbar";
-import { Icon } from "@/ui/icons";
+import { StatsRow } from "@/ui/components/StatsRow";
+import { formatNumber, formatPercent } from "@/i18n/format";
+import type { Locale } from "@/i18n/routing";
+import type { Schemas } from "@/lib/api/types";
 import { IconAdd } from "@/ui/icons/glyphs/add";
 import { IconBuilding } from "@/ui/icons/glyphs/building";
 import { IconDownload } from "@/ui/icons/glyphs/download";
@@ -36,10 +39,23 @@ export async function UnitsView({ context, searchParams }: { context: OwnerConte
   const building = context.buildings.find((candidate) => candidate.id === requested) ?? focusedBuilding(context);
   const view = param(searchParams.view) === "list" ? "list" : "board";
 
+  // "All buildings" on a tenant with several: one section per building — its figures and the way to its board — rather
+  // than a bare picker (Stitch revision). One building, or the one focused in the column, opens straight on the board.
   if (!building) {
+    const boards = await Promise.all(
+      context.buildings.map(async (candidate) => ({
+        building: candidate,
+        board: await unwrap(
+          api.GET("/v1/owner/buildings/{buildingId}/board", { params: { path: { buildingId: candidate.id } } }),
+        ).catch(() => null),
+      })),
+    );
     return (
       <OwnerPage testId="units">
-        <PageHeader title={t("title")} description={t("chooseBuilding")} />
+        <PageHeader
+          title={context.buildings.length === 0 ? t("title") : t("allBuildings")}
+          description={context.buildings.length === 0 ? undefined : t("allBuildingsLede")}
+        />
         {context.buildings.length === 0 ? (
           <Card>
             <EmptyState
@@ -54,22 +70,24 @@ export async function UnitsView({ context, searchParams }: { context: OwnerConte
             />
           </Card>
         ) : (
-          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="choose-building">
-            {context.buildings.map((candidate) => (
-              <li key={candidate.id}>
-                <a
-                  href={ownerPath(locale, withQuery("/units", { building: candidate.id }))}
-                  className="rounded-card border-border bg-surface shadow-card hover:shadow-raised flex items-center gap-3 border p-4"
-                >
-                  <Icon icon={IconBuilding} size={22} className="text-primary" />
-                  <span className="flex flex-col">
-                    <span className="font-semibold">{candidate.name}</span>
-                    <span className="text-muted text-sm">{t("unitCount", { count: candidate.unitCount })}</span>
-                  </span>
-                </a>
-              </li>
+          <div className="flex flex-col gap-8" data-testid="choose-building">
+            {boards.map(({ building: candidate, board }) => (
+              <section key={candidate.id} aria-labelledby={`units-${candidate.id}`} className="flex flex-col gap-3">
+                <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                  <h2 id={`units-${candidate.id}`} className="m-0 text-lg font-semibold">
+                    {candidate.name}
+                    <span className="text-muted ms-2 text-sm font-normal">
+                      {t("unitCount", { count: candidate.unitCount })}
+                    </span>
+                  </h2>
+                  <Button asChild variant="secondary" size="sm">
+                    <a href={ownerPath(locale, withQuery("/units", { building: candidate.id }))}>{t("openBoard")}</a>
+                  </Button>
+                </div>
+                {board ? <BoardFigures summary={board.summary} buildingId={candidate.id} locale={locale} /> : null}
+              </section>
             ))}
-          </ul>
+          </div>
         )}
       </OwnerPage>
     );
@@ -119,6 +137,7 @@ export async function UnitsView({ context, searchParams }: { context: OwnerConte
     return (
       <OwnerPage testId="units" wide>
         {header}
+        <BoardFigures summary={board.summary} buildingId={building.id} locale={locale} />
         <ListToolbar tabs={viewTabs} />
         <UnitBoard board={board} links={{ prefix }} />
       </OwnerPage>
@@ -183,5 +202,35 @@ export async function UnitsView({ context, searchParams }: { context: OwnerConte
       <UnitList rows={list.data} prefix={prefix} />
       <ListPagination meta={list.meta} path={ownerPath(locale, "/units")} searchParams={searchParams} locale={locale} />
     </OwnerPage>
+  );
+}
+
+/** The building's units by status (the API's board summary): vacant — the figure that needs a next step — highlighted. */
+async function BoardFigures({
+  summary,
+  buildingId,
+  locale,
+}: {
+  summary: Schemas["BoardSummaryDto"];
+  buildingId: string;
+  locale: Locale;
+}) {
+  const t = await getTranslations("owner.units");
+  const statuses = await getTranslations("status.unit");
+  return (
+    <StatsRow
+      label={t("figures")}
+      highlight="vacant"
+      figures={[
+        { key: "total", label: t("figureTotal"), value: formatNumber(summary.total, locale) },
+        ...(["vacant", "occupied", "reserved", "maintenance"] as const).map((status) => ({
+          key: status,
+          label: statuses(status),
+          value: formatNumber(summary[status], locale),
+          href: ownerPath(locale, withQuery("/units", { building: buildingId, view: "list", status })),
+        })),
+        { key: "occupancy", label: t("figureOccupancy"), value: formatPercent(summary.occupancyPct, locale, 1) },
+      ]}
+    />
   );
 }

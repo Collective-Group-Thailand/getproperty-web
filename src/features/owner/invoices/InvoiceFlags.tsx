@@ -1,7 +1,8 @@
 import { useTranslations } from "next-intl";
 
 import type { Schemas } from "@/lib/api/types";
-import { Badge } from "@/ui/components/Badge";
+import { StatusText } from "@/ui/components/StatusText";
+import { IconWarning } from "@/ui/icons/glyphs/warning";
 
 const TONE: Record<string, "neutral" | "warning" | "danger" | "info"> = {
   missing_reading: "danger",
@@ -30,15 +31,20 @@ export function InvoiceFlags({
   if (invoice.hasEstimate) codes.add("estimated");
   if (invoice.hasAboveCapLine) codes.add("above_cap");
   if (codes.size === 0) return null;
+  // One muted line with one icon (Stitch revision) instead of a stack of two or three badges beside the status badge;
+  // the strongest flag sets the tone. Each label keeps its `data-flag` for the e2e suite.
+  const list = [...codes];
+  const danger = list.some((code) => TONE[code] === "danger");
   return (
-    <span className="flex flex-wrap gap-1" data-testid="invoice-flags">
-      {[...codes].map((code) => (
-        <span key={code} data-flag={code}>
-          <Badge tone={TONE[code] ?? "neutral"} size="sm">
+    <span data-testid="invoice-flags">
+      <StatusText tone={danger ? "danger" : "warning"} icon={IconWarning}>
+        {list.map((code, index) => (
+          <span key={code} data-flag={code}>
+            {index > 0 ? " · " : null}
             {t.has(code as never) ? t(code as never) : code}
-          </Badge>
-        </span>
-      ))}
+          </span>
+        ))}
+      </StatusText>
     </span>
   );
 }

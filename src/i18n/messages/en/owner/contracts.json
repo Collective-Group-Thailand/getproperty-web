@@ -125,7 +125,9 @@
     "diffNone": "(no such clause)",
     "checkHint": "Checks the last saved draft against the OCPB announcement on forbidden clauses.",
     "checkReadOnly": "Clause checks are available on your own templates.",
-    "checkNote": "The check points out clauses to fix; it is not legal approval."
+    "checkNote": "The check points out clauses to fix; it is not legal approval.",
+    "panelTitle": "Next steps",
+    "source": "View the source (HTML)"
   },
   "compliance": {
     "inScopeTitle": "Within the OCPB announcement (3 or more units let)",

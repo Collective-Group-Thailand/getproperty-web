@@ -119,7 +119,15 @@
       "rejected": "Slip rejected"
     },
     "qrDuplicateTitle": "A QR payment of the same amount is already booked",
-    "qrDuplicateBody": "This invoice was already paid by QR for the same amount. Approve only if the resident really paid twice; otherwise reject it with a reason."
+    "qrDuplicateBody": "This invoice was already paid by QR for the same amount. Approve only if the resident really paid twice; otherwise reject it with a reason.",
+    "approveAmount": "Approve {amount}",
+    "consequence": {
+      "below": "Recorded as a part payment; the rest stays due on the same invoice.",
+      "above": "The extra is handled under your credit policy.",
+      "even": "The payment is recorded and the resident gets a receipt."
+    },
+    "facts": "Read from the slip",
+    "decision": "Decision"
   },
   "manual": {
     "title": "Record a payment",
@@ -188,7 +196,17 @@
       "tooLarge": "The file is larger than 10 MB",
       "done": "Refund recorded"
     },
-    "emptyAction": "View payments"
+    "emptyAction": "View payments",
+    "rowMenu": "Options for receipt {number}",
+    "col": {
+      "unit": "Unit",
+      "party": "Payer",
+      "balance": "Credit",
+      "number": "Number",
+      "issued": "Issued",
+      "amount": "Amount",
+      "actions": "Actions"
+    }
   },
   "resendReceipt": {
     "action": "Resend receipt",

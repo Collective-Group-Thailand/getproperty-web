@@ -18,6 +18,8 @@ export interface ConfirmActionProps {
   variant?: ButtonProps["variant"];
   size?: ButtonProps["size"];
   disabled?: boolean;
+  /** Full width (an action panel's stacked buttons). */
+  block?: boolean;
   testId?: string;
   /** What is about to happen ("ออกบิลทั้งหมด"). */
   title: string;
@@ -60,6 +62,7 @@ export function ConfirmAction({
   variant = "primary",
   size = "md",
   disabled,
+  block,
   testId,
   title,
   description,
@@ -102,7 +105,15 @@ export function ConfirmAction({
   return (
     <>
       {inMenu ? null : (
-        <Button variant={variant} size={size} iconStart={icon} disabled={disabled} onClick={start} data-testid={testId}>
+        <Button
+          variant={variant}
+          size={size}
+          iconStart={icon}
+          disabled={disabled}
+          block={block}
+          onClick={start}
+          data-testid={testId}
+        >
           {label}
         </Button>
       )}

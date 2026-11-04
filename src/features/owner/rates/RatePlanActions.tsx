@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
+import { ActionMenu } from "@/features/shared/console/ActionMenu";
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 import { FormDialog, text } from "@/features/shared/console/FormDialog";
 import { browserApi } from "@/lib/api/browser";
@@ -296,5 +297,16 @@ export function DeleteRatePlan({ plan }: { plan: Schemas["RatePlanDto"] }) {
         unwrap(browserApi().DELETE("/v1/owner/rate-plans/{ratePlanId}", { params: { path: { ratePlanId: plan.id } } }))
       }
     />
+  );
+}
+
+/** A rate card's "⋯" (G3 revision): rename and delete (destructive, last) — the card keeps "new price" in view. */
+export function RatePlanMenu({ plan }: { plan: Schemas["RatePlanDto"] }) {
+  const t = useTranslations("owner.rates");
+  return (
+    <ActionMenu label={t("planMenu", { name: plan.name })} testId={`plan-menu-${plan.id}`}>
+      <EditRatePlan plan={plan} />
+      <DeleteRatePlan plan={plan} />
+    </ActionMenu>
   );
 }

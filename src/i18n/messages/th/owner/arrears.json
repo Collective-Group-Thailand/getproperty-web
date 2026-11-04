@@ -29,7 +29,7 @@
     "party": "ผู้เช่า",
     "unit": "ห้อง",
     "balance": "ยอดค้าง",
-    "days": "เลยกำหนด (วัน)"
+    "days": "เลยกำหนด"
   },
   "empty": {
     "title": "ไม่มียอดค้าง",
@@ -76,9 +76,28 @@
       "entry": "รายการ",
       "unit": "ห้อง",
       "amount": "จำนวนเงิน",
-      "balance": "คงเหลือ"
-    }
+      "balance": "คงเหลือ",
+      "number": "เลขที่",
+      "due": "ครบกำหนด",
+      "status": "สถานะ",
+      "action": "การทำงาน",
+      "owed": "คงค้าง"
+    },
+    "panelTitle": "ขั้นถัดไป",
+    "openParty": "ดูข้อมูลผู้เช่า",
+    "factOpen": "บิลที่ค้าง",
+    "factCredit": "เครดิตคงเหลือ",
+    "negative": "({amount})"
   },
   "figuresLabel": "ยอดค้างตามอายุหนี้",
-  "daysValue": "{count} วัน"
+  "daysValue": "{count} วัน",
+  "view": {
+    "label": "มุมมอง",
+    "all": "ทั้งหมด",
+    "overdue": "เลยกำหนด",
+    "notDue": "ยังไม่ถึงกำหนด"
+  },
+  "dueToday": "ครบกำหนดวันนี้",
+  "notDueYet": "ยังไม่ถึงกำหนด",
+  "grandTotal": "รวมทั้งสิ้น"
 }

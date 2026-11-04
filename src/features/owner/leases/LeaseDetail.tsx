@@ -158,16 +158,42 @@ export async function LeaseDetail({ context, leaseId }: { context: OwnerContext;
 
       <DetailLayout
         panel={
-          <ActionPanel
-            title={t("panelTitle")}
-            testId="lease-panel"
-            facts={[
-              { key: "rent", label: wizard("rent"), value: formatTHB(lease.rent, locale) },
-              { key: "deposit", label: wizard("deposit"), value: formatTHB(lease.depositAmount, locale) },
-              { key: "end", label: t("ends"), value: formatDate(lease.endDate, locale) },
-            ]}
-            primary={<LeaseActions lease={lease} layout="panel" />}
-          />
+          // The panel says where the lease stands in one sentence and carries its actions; rent and deposit are on
+          // the paper already (G3 revision). Who did what and when sits under it.
+          <div className="flex flex-col gap-4">
+            <ActionPanel
+              title={t("panelTitle")}
+              testId="lease-panel"
+              description={t(`stateLine.${lease.status}`)}
+              facts={[
+                { key: "start", label: t("starts"), value: formatDate(lease.startDate, locale) },
+                { key: "end", label: t("ends"), value: formatDate(lease.endDate, locale) },
+              ]}
+              primary={<LeaseActions lease={lease} layout="panel" />}
+            />
+            <Card as="section" aria-labelledby="lease-timeline" data-testid="lease-timeline">
+              <CardHeader title={<span id="lease-timeline">{t("timeline")}</span>} />
+              {eventList.length ? (
+                <Timeline
+                  events={[...eventList]
+                    .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))
+                    .map((event) => ({
+                      id: event.id,
+                      title: EVENT_TYPES.has(event.type) ? events(event.type) : event.type,
+                      time: formatDateTime(event.occurredAt, locale),
+                      timeTitle: event.occurredAt,
+                      actor: t(
+                        `actor.${event.actorType === "resident" || event.actorType === "system" ? event.actorType : "user"}`,
+                      ),
+                      tone: EVENT_TONE[event.type] ?? "neutral",
+                      icon: EVENT_ICON[event.type] ?? IconLease,
+                    }))}
+                />
+              ) : (
+                <p className="text-muted text-sm">{t("noEvents")}</p>
+              )}
+            </Card>
+          </div>
         }
       >
         <Paper label={t("title", { unit: lease.unitNo })} testId="lease-paper">
@@ -349,7 +375,7 @@ export async function LeaseDetail({ context, leaseId }: { context: OwnerContext;
             </div>
           </PaperSection>
         </Paper>
-        <div className="grid gap-4 xl:grid-cols-2">
+        <div className="flex flex-col gap-4">
           <Card as="section" aria-labelledby="lease-contract" data-testid="lease-contract">
             <CardHeader
               title={<span id="lease-contract">{t("contract")}</span>}
@@ -423,29 +449,6 @@ export async function LeaseDetail({ context, leaseId }: { context: OwnerContext;
             locale={locale}
             canManage={!readOnly(context.me) && ownerCan(context.me, "lease.manage")}
           />
-
-          <Card as="section" aria-labelledby="lease-timeline" data-testid="lease-timeline">
-            <CardHeader title={<span id="lease-timeline">{t("timeline")}</span>} />
-            {eventList.length ? (
-              <Timeline
-                events={[...eventList]
-                  .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))
-                  .map((event) => ({
-                    id: event.id,
-                    title: EVENT_TYPES.has(event.type) ? events(event.type) : event.type,
-                    time: formatDateTime(event.occurredAt, locale),
-                    timeTitle: event.occurredAt,
-                    actor: t(
-                      `actor.${event.actorType === "resident" || event.actorType === "system" ? event.actorType : "user"}`,
-                    ),
-                    tone: EVENT_TONE[event.type] ?? "neutral",
-                    icon: EVENT_ICON[event.type] ?? IconLease,
-                  }))}
-              />
-            ) : (
-              <p className="text-muted text-sm">{t("noEvents")}</p>
-            )}
-          </Card>
 
           <Card as="section" aria-labelledby="lease-related" data-testid="lease-related">
             <CardHeader title={<span id="lease-related">{t("related")}</span>} />

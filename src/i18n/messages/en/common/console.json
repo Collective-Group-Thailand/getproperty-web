@@ -189,5 +189,11 @@
     "previous": "Previous month",
     "next": "Next month",
     "all": "All months"
+  },
+  "filterSheet": {
+    "label": "Filters",
+    "close": "Close",
+    "apply": "Show results",
+    "clear": "Clear filters"
   }
 }

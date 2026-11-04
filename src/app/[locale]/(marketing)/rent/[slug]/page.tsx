@@ -254,17 +254,28 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
             {listing.verifiedVacant ? (
               <VerifiedVacantBadge since={listing.vacantSince} locale={locale} testId="listing-vacant-aside" />
             ) : null}
-            <ul className="text-muted m-0 flex list-none flex-col gap-1 p-0 text-sm">
-              <li>{t("detail.deposit", { months: listing.depositMonths })}</li>
-              <li>{t("detail.advance", { months: listing.advanceMonths })}</li>
-              <li>{t("detail.minTerm", { months: listing.minTermMonths })}</li>
-            </ul>
+            {/* The terms as a definition list. The cash due before moving in is the renter's real question, but the API
+                sends months, not amounts — it is shown only once the API computes it (never added up here). */}
+            <dl className="border-border m-0 flex flex-col gap-2 border-t pt-4 text-sm">
+              {(
+                [
+                  ["deposit", listing.depositMonths],
+                  ["advance", listing.advanceMonths],
+                  ["minTerm", listing.minTermMonths],
+                ] as const
+              ).map(([key, months]) => (
+                <div key={key} className="flex items-baseline justify-between gap-4">
+                  <dt className="text-muted">{t(`detail.term.${key}`)}</dt>
+                  <dd className="m-0 font-medium tabular-nums">{t("detail.months", { months })}</dd>
+                </div>
+              ))}
+            </dl>
             <Button asChild size="lg" block iconStart={contact ? IconChat : undefined}>
               <ChannelLink href={contactHref} {...(contact ? { rel: "noopener noreferrer", target: "_blank" } : {})}>
                 {contact ? t("detail.contact") : t("detail.contactSignIn")}
               </ChannelLink>
             </Button>
-            <p className="text-muted text-xs">{t("detail.contactNote")}</p>
+            <p className="text-muted -mt-2 text-xs">{contact ? t("detail.contactNote") : t("detail.signInFirst")}</p>
             <div className="border-border flex items-center gap-3 border-t pt-4">
               <div className="min-w-0 flex-1">
                 <p className="text-muted text-xs">{t("detail.owner")}</p>
@@ -345,20 +356,22 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
   );
 }
 
-/** The photo mosaic, sized to the photos there are — never an empty cell (G1 redesign 2026-11-03). */
+/**
+ * The photo mosaic (Stitch revision): one large photo over two thirds of the width and a 2 × 2 block beside it, one
+ * outer radius and 4-px seams, equal total height — sized to the photos there are, never an empty cell.
+ */
 function galleryGrid(count: number) {
   if (count === 1) return "grid";
-  if (count === 2) return "grid gap-2 md:grid-cols-2";
-  return "grid gap-2 md:h-[30rem] md:grid-cols-4 md:grid-rows-2";
+  if (count === 2) return "grid gap-1 overflow-hidden rounded-panel md:grid-cols-2";
+  return "grid gap-1 overflow-hidden rounded-panel md:h-[26rem] md:grid-cols-[2fr_1fr_1fr] md:grid-rows-2";
 }
 
 function galleryTile(count: number, index: number) {
-  const photo = "rounded-card md:rounded-panel";
-  if (count === 1) return cn(photo, "aspect-[4/3] md:aspect-[21/9]");
-  if (count === 2) return cn(photo, "aspect-[4/3]", index > 0 && "max-md:hidden");
-  if (index === 0) return cn(photo, "aspect-[4/3] md:col-span-2 md:row-span-2 md:aspect-auto md:h-full");
-  const small = cn(photo, "max-md:hidden md:h-full");
-  // three photos: two stacked on the right; four: two on top, one wide below; five: a 2 × 2 block
+  if (count === 1) return "rounded-panel aspect-[4/3] md:aspect-[21/9]";
+  if (count === 2) return cn("aspect-[4/3]", index > 0 && "max-md:hidden");
+  if (index === 0) return "aspect-[4/3] md:row-span-2 md:aspect-auto md:h-full";
+  const small = "max-md:hidden md:h-full";
+  // three photos: two stacked, each two cells wide; four: two on top, one wide below; five: the 2 × 2 block
   if (count === 3) return cn(small, "md:col-span-2");
   if (count === 4 && index === 3) return cn(small, "md:col-span-2");
   return small;

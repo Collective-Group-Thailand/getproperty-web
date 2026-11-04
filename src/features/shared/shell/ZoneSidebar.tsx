@@ -37,9 +37,14 @@ export function ZoneSidebar({
     root.current?.querySelector('[aria-current="page"]')?.scrollIntoView({ block: "nearest" });
   }, [pathname]);
   return (
-    <div className="flex flex-col gap-5" data-testid="zone-sidebar" ref={root}>
+    <div className={cn("flex flex-col", collapsed ? "gap-2" : "gap-5")} data-testid="zone-sidebar" ref={root}>
       {groups.map((group) => (
-        <section key={group.key} aria-labelledby={`nav-group-${group.key}`}>
+        <section
+          key={group.key}
+          aria-labelledby={`nav-group-${group.key}`}
+          // Collapsed: the groups (daily · money · organisation) are told apart by a hairline instead of their titles.
+          className={cn(collapsed && "border-border border-t pt-2 first:border-t-0 first:pt-0")}
+        >
           <h2
             id={`nav-group-${group.key}`}
             className={cn("text-muted px-5 pb-1.5 text-xs font-medium", collapsed && "sr-only")}

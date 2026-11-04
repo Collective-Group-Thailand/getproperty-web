@@ -81,6 +81,7 @@ export async function ToolFrame({
 
       <CtaPanel
         id="tool-cta"
+        variant="band"
         title={t("cta.title")}
         body={t("cta.body")}
         primary={{ href: ownerHref(tool === "yield" ? "/signup" : "/login", locale), label: shared("start") }}

@@ -10,7 +10,7 @@ import { IconMail } from "@/ui/icons/glyphs/mail";
 /**
  * Sends a receipt to its payer again (`POST /v1/owner/receipts/{id}/actions/resend`, D-208): the same LINE
  * message, quiet hours and consent apply; a voided receipt is refused by the API. One Idempotency-Key per
- * confirmation.
+ * confirmation. Inside an `ActionMenu` (a receipt row's "⋯") it is a menu item that opens the same confirmation.
  */
 export function ResendReceipt({ receiptId, number, payer }: { receiptId: string; number: string; payer: string }) {
   const t = useTranslations("owner.payments.resendReceipt");

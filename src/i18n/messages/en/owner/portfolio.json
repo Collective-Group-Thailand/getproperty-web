@@ -50,7 +50,8 @@
     "external": "This condo's juristic person is not on getproperty yet. Your unit's data is visible to you only.",
     "listIt": "List it for rent",
     "documents": "Documents",
-    "inviteAgency": "Invite an agency"
+    "inviteAgency": "Invite an agency",
+    "more": "Options for {name}"
   },
   "form": {
     "title": "Add a unit",
@@ -124,7 +125,8 @@
     "certificatesHint": "Tenants ask in LINE; issue in one click",
     "waiting": "{count} waiting",
     "income": "Annual income",
-    "incomeHint": "For your income tax (40(5))"
+    "incomeHint": "For your income tax (40(5))",
+    "download": "Open"
   },
   "vacancy": {
     "title": "Empty and soon empty ({count})",
@@ -137,5 +139,10 @@
     "relist": "List it again",
     "list": "List it",
     "listEarly": "List it early"
+  },
+  "tasks": {
+    "title": "Needs you",
+    "certificatesBody": "Tenants asked in LINE; issue in one click",
+    "issue": "Issue · {waiting}"
   }
 }

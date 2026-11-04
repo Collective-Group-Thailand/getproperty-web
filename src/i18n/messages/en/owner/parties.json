@@ -76,7 +76,12 @@
     "documents": "ID documents",
     "documentsHint": "Each opening is recorded with its purpose.",
     "linkRequests": "Link requests waiting",
-    "linkRequestsHint": "A login that signed in with this party's phone sees its data only after the Owner confirms."
+    "linkRequestsHint": "A login that signed in with this party's phone sees its data only after the Owner confirms.",
+    "panelTitle": "Next steps",
+    "account": "Account and balance",
+    "factType": "Type",
+    "factLine": "LINE",
+    "factLeases": "Leases"
   },
   "privacy": {
     "reveal": "Show sealed data",
