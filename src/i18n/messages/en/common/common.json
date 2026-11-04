@@ -11,5 +11,9 @@
   "optional": "optional",
   "search": "Search",
   "noResults": "Nothing found",
-  "requestId": "Request id"
+  "requestId": "Request id",
+  "moreActions": "More actions",
+  "copy": "Copy",
+  "copied": "Copied",
+  "copyLabel": "Copy {label}"
 }

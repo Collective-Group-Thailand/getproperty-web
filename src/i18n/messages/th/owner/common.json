@@ -47,7 +47,17 @@
       "property": "เฉพาะโครงการนี้"
     },
     "since": "ตั้งแต่ {date}",
-    "percent": "{value}%"
+    "percent": "{value}%",
+    "quietHours": "{start}–{end} น.",
+    "representativeUnits": "ไฟ {electric} หน่วย · น้ำ {water} หน่วย",
+    "severity": {
+      "warn": "เตือนแล้วบันทึกได้",
+      "block": "ไม่ให้บันทึก"
+    },
+    "plusMinusPercent": "±{value}%",
+    "months": "{count} เดือน",
+    "minutes": "{count} นาที",
+    "structured": "ตั้งค่าแล้ว"
   },
   "lineKind": {
     "internet": "อินเทอร์เน็ต",

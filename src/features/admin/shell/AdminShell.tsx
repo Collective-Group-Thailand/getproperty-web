@@ -9,8 +9,12 @@ import type { Schemas } from "@/lib/api/types";
 import { serverEnv } from "@/lib/env/server";
 import { inboundEdgeHeaders } from "@/lib/http/server";
 
+import { tenantSections } from "../tenants/sections";
 import { AdminShellFrame } from "./AdminShellFrame";
-import { ADMIN_MENU, ADMIN_MENU_GROUPS } from "./menu";
+import { ADMIN_HOME, ADMIN_MENU, ADMIN_MENU_GROUPS, childAllowed } from "./menu";
+
+/** The column's order is the registry's (customers → platform → operations, the queue order of the work). */
+const ORDER = Object.keys(ADMIN_MENU);
 
 export async function systemInfo(): Promise<Schemas["SystemInfoDto"] | null> {
   try {
@@ -34,7 +38,23 @@ export async function adminEnvironment(): Promise<{ info: Schemas["SystemInfoDto
 /** Server half of the admin shell: menu from `/v1/admin/me`, the API's environment and fakes flag. */
 export async function AdminShell({ me, children }: { me: Schemas["AdminMeDto"]; children: React.ReactNode }) {
   const t = await getTranslations();
-  const items = entitledMenu(me.menu, ADMIN_MENU).map((item) => ({ ...item, label: t(`admin.nav.${item.key}`) }));
+  const items = [
+    { key: "home", ...ADMIN_HOME },
+    ...entitledMenu(me.menu, ADMIN_MENU).sort((a, b) => ORDER.indexOf(a.key) - ORDER.indexOf(b.key)),
+  ].map((item) => ({
+    ...item,
+    label: t(`admin.nav.${item.key}` as Parameters<typeof t>[0]),
+    // A section's own pages (subscriptions, listings) in the column instead of a row of tabs (redesign G8).
+    children: item.children
+      ?.filter((child) => childAllowed(me, child.key))
+      .map((child) => ({
+        key: child.key,
+        href: child.href,
+        label: t(child.label as Parameters<typeof t>[0]),
+        testId: child.testId,
+      })),
+  }));
+  const sections = tenantSections(me).map((key) => ({ key, label: t(`admin.tenants.tab.${key}`) }));
   const groups = groupItems(
     items,
     ADMIN_MENU_GROUPS,
@@ -45,12 +65,15 @@ export async function AdminShell({ me, children }: { me: Schemas["AdminMeDto"]; 
     <RealtimeProvider zone="admin" tenantId={null}>
       <AdminShellFrame
         userName={me.user.displayName}
+        zoneLabel={t("admin.shell.zone")}
         rolesLabel={me.roles.map((role) => t(`glossary.platformRole.${role}`)).join(", ")}
         groups={groups}
         envBadge={envBadge}
         apiFakes={info?.fakes ?? false}
         fakesLabel={t("admin.shell.fakes")}
         brand={shellBrand()}
+        tenantSections={sections}
+        recordLabels={{ back: t("admin.nav.tenants"), nav: t("admin.tenants.tabsLabel") }}
       >
         {children}
       </AdminShellFrame>

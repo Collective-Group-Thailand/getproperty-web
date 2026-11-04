@@ -49,12 +49,13 @@ export async function AiUsageView({
       <SimpleTable
         caption={t("title")}
         testId="ai-table"
+        stackOnPhones
         minWidth="56rem"
         columns={[
-          { key: "tenant", header: t("col.tenant") },
-          { key: "month", header: t("col.month") },
-          { key: "features", header: t("col.features") },
-          { key: "cost", header: t("col.cost") },
+          { key: "tenant", header: t("col.tenant"), phone: "title" },
+          { key: "month", header: t("col.month"), phone: "meta", phoneLabel: true },
+          { key: "features", header: t("col.features"), phone: "meta" },
+          { key: "cost", header: t("col.cost"), align: "end", phone: "figure" },
         ]}
         rows={usage.map(({ tenant, usage: result }) => {
           const rows = result.data ? latest(result.data.months) : [];
@@ -62,15 +63,16 @@ export async function AiUsageView({
           return {
             key: tenant.id,
             testId: "ai-row",
+            href: `/tenants/${tenant.id}/ai-usage`,
             data: { slug: tenant.slug, overage: over },
-            tone: over ? "warning" : "default",
             cells: {
               tenant: (
-                <a href={`/tenants/${tenant.id}/ai-usage`} className="font-semibold hover:underline">
-                  {tenant.displayName}
-                </a>
+                <span className="flex flex-col">
+                  <span className="font-semibold">{tenant.displayName}</span>
+                  <span className="text-muted font-mono text-xs font-normal">{tenant.slug}</span>
+                </span>
               ),
-              month: rows[0] ? formatPeriodKey(rows[0].month, locale) : "—",
+              month: rows[0] ? formatPeriodKey(rows[0].month.slice(0, 7), locale) : "—",
               features: !result.data ? (
                 <SectionError error={result.error} />
               ) : rows.length === 0 ? (
@@ -78,7 +80,7 @@ export async function AiUsageView({
               ) : (
                 <ul className="flex flex-col gap-1">
                   {rows.map((row) => (
-                    <li key={row.feature} className="flex flex-wrap items-center gap-2 text-xs">
+                    <li key={row.feature} className="flex flex-wrap items-center gap-2 text-sm">
                       <span className="font-medium">{features(row.feature)}</span>
                       <span>
                         {t("units", {
@@ -96,9 +98,11 @@ export async function AiUsageView({
                 </ul>
               ),
               cost: rows.length ? (
-                <ul className="flex flex-col gap-1 text-xs">
+                <ul className="flex flex-col gap-1 text-sm">
                   {rows.map((row) => (
-                    <li key={row.feature}>{formatTHB(row.costThb, locale)}</li>
+                    <li key={row.feature} className="whitespace-nowrap">
+                      {formatTHB(row.costThb, locale)}
+                    </li>
                   ))}
                 </ul>
               ) : (

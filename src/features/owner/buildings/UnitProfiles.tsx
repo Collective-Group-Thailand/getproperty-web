@@ -13,16 +13,14 @@ import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Field } from "@/ui/components/Field";
 import { Input } from "@/ui/components/Input";
-import { IconButton } from "@/ui/components/IconButton";
 import { NativeSelect } from "@/ui/components/NativeSelect";
-import { LazyDropdownMenu } from "@/ui/components/overlays";
 import { SimpleTable } from "@/ui/components/SimpleTable";
-import { IconMore } from "@/ui/icons/glyphs/more";
 import { IconAdd } from "@/ui/icons/glyphs/add";
 import { IconDelete } from "@/ui/icons/glyphs/delete";
 import { IconEdit } from "@/ui/icons/glyphs/edit";
 import { IconTag } from "@/ui/icons/glyphs/tag";
 
+import { ActionMenu } from "@/features/shared/console/ActionMenu";
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 import { FormDialog, text } from "@/features/shared/console/FormDialog";
 import { ownerPath } from "../shared/links";
@@ -173,28 +171,11 @@ export function NewProfileButton({ buildingId }: { buildingId: string }) {
 /** A row's "⋯": edit and remove (destructive, last), each opening its dialog. */
 function ProfileMenu({ profile }: { profile: Schemas["UnitProfileDto"] }) {
   const t = useTranslations("owner.buildings.profiles");
-  const [dialog, setDialog] = useState<"edit" | "remove" | null>(null);
   return (
-    <>
-      <LazyDropdownMenu
-        label={t("rowMenu", { name: profile.name })}
-        trigger={<IconButton icon={IconMore} label={t("rowMenu", { name: profile.name })} data-testid="profile-menu" />}
-        items={[
-          { id: "edit", label: t("edit"), icon: IconEdit, onSelect: () => setDialog("edit") },
-          {
-            id: "remove",
-            label: t("remove"),
-            icon: IconDelete,
-            destructive: true,
-            separatorBefore: true,
-            onSelect: () => setDialog("remove"),
-          },
-        ]}
-      />
+    <ActionMenu label={t("rowMenu", { name: profile.name })} testId="profile-menu">
       <FormDialog
         label={t("edit")}
-        open={dialog === "edit"}
-        onOpenChange={(open) => setDialog(open ? "edit" : null)}
+        icon={IconEdit}
         size_="lg"
         testId="edit-profile"
         title={t("editTitle", { name: profile.name })}
@@ -220,8 +201,7 @@ function ProfileMenu({ profile }: { profile: Schemas["UnitProfileDto"] }) {
       </FormDialog>
       <ConfirmAction
         label={t("remove")}
-        open={dialog === "remove"}
-        onOpenChange={(open) => setDialog(open ? "remove" : null)}
+        icon={IconDelete}
         tone="destructive"
         title={t("removeTitle", { name: profile.name })}
         description={t("removeBody")}
@@ -235,7 +215,7 @@ function ProfileMenu({ profile }: { profile: Schemas["UnitProfileDto"] }) {
           )
         }
       />
-    </>
+    </ActionMenu>
   );
 }
 

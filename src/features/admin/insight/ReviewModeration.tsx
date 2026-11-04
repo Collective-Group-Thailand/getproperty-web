@@ -39,7 +39,6 @@ function ReasonAction({ review, action }: { review: Review; action: Action }) {
     <ConfirmAction
       label={t(action)}
       icon={action === "reject" ? IconXCircle : IconHide}
-      size="sm"
       variant="secondary"
       tone="destructive"
       testId={`review-${action}`}
@@ -85,13 +84,13 @@ export function ReviewModeration({ review }: { review: Review }) {
   const t = useTranslations("admin.insight.reviews.actions");
   const path = { reviewId: review.id };
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap items-center justify-end gap-2">
       {review.state === "pending_moderation" ? (
         <>
+          <ReasonAction review={review} action="reject" />
           <ConfirmAction
             label={t("approve")}
             icon={IconCheckCircle}
-            size="sm"
             testId="review-approve"
             title={t("approveTitle", { building: review.buildingName })}
             description={t("approveBody")}
@@ -106,7 +105,6 @@ export function ReviewModeration({ review }: { review: Review }) {
               )
             }
           />
-          <ReasonAction review={review} action="reject" />
         </>
       ) : null}
       {review.state === "published" ? <ReasonAction review={review} action="hide" /> : null}
@@ -114,7 +112,6 @@ export function ReviewModeration({ review }: { review: Review }) {
         <ConfirmAction
           label={t("restore")}
           icon={IconUndo}
-          size="sm"
           variant="secondary"
           testId="review-restore"
           title={t("restoreTitle", { building: review.buildingName })}
@@ -134,7 +131,6 @@ export function ReviewModeration({ review }: { review: Review }) {
       {review.reportedAt ? (
         <ConfirmAction
           label={t("dismiss")}
-          size="sm"
           variant="ghost"
           testId="review-dismiss-report"
           title={t("dismissTitle")}

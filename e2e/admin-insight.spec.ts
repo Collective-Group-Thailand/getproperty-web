@@ -28,7 +28,8 @@ test("reviews: approve and reject pending ones, dismiss a report, restore a hidd
   await expect(rows).toHaveCount(2);
   await expectAxeClean(page);
 
-  await rows.first().getByTestId("review-approve").click();
+  const preview = page.getByTestId("admin-review-preview");
+  await preview.getByTestId("review-approve").click();
   await page
     .getByRole("alertdialog")
     .getByRole("button", { name: /อนุมัติ|Approve/ })
@@ -37,7 +38,7 @@ test("reviews: approve and reject pending ones, dismiss a report, restore a hidd
   const [approve] = await platformReceived("admin.reviews.approve");
   expect(approve?.idempotencyKey).toBeTruthy();
 
-  await rows.first().getByTestId("review-reject").click();
+  await preview.getByTestId("review-reject").click();
   await page.getByTestId("review-reject-reason").fill("มีข้อมูลส่วนบุคคลของผู้อื่น");
   await page
     .getByRole("alertdialog")
@@ -46,9 +47,9 @@ test("reviews: approve and reject pending ones, dismiss a report, restore a hidd
   await expect(page.getByTestId("admin-review-row")).toHaveCount(0);
 
   await page.getByTestId("reviews-tab-reported").click();
-  const reported = page.locator('[data-testid="admin-review-row"][data-reported="true"]');
+  const reported = page.locator('[data-testid="admin-review-row"]:has([data-reported="true"])');
   await expect(reported).toHaveCount(1);
-  await reported.getByTestId("review-dismiss-report").click();
+  await page.getByTestId("admin-review-preview").getByTestId("review-dismiss-report").click();
   await page
     .getByRole("alertdialog")
     .getByRole("button", { name: /ปิดรายงาน|Dismiss/ })
@@ -56,7 +57,7 @@ test("reviews: approve and reject pending ones, dismiss a report, restore a hidd
   await expect(reported).toHaveCount(0);
 
   await page.getByTestId("reviews-tab-hidden").click();
-  await page.getByTestId("admin-review-row").first().getByTestId("review-restore").click();
+  await page.getByTestId("admin-review-preview").getByTestId("review-restore").click();
   await page
     .getByRole("alertdialog")
     .getByRole("button", { name: /แสดงอีกครั้ง|Restore/ })
@@ -72,7 +73,11 @@ test("getbuild handoffs: delivery facts and a resend", async ({ page }) => {
   await expect(page.getByTestId("admin-handoff-error")).toContainText("503");
   await expectAxeClean(page);
 
-  await rows.filter({ hasText: "B-0507" }).getByTestId("handoff-resend").click();
+  await rows
+    .filter({ hasText: "B-0507" })
+    .getByRole("button", { name: /More actions|การทำงานเพิ่มเติม/ })
+    .click();
+  await page.getByTestId("handoff-resend").click();
   await page
     .getByRole("alertdialog")
     .getByRole("button", { name: /ส่งใหม่|Resend/ })

@@ -9,11 +9,13 @@ import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { formatDate, formatTHB } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
-import { Card } from "@/ui/components/Card";
+import { Button } from "@/ui/components/Button";
+import { ListToolbar } from "@/ui/components/ListToolbar";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { IconGateway } from "@/ui/icons/glyphs/gateway";
 
-import { can, enumParam, pageParam, param, section, type AdminContext } from "../shared/server";
+import { StateTabs } from "../shared/lists";
+import { can, enumParam, pageParam, param, section, tenantNames, withQuery, type AdminContext } from "../shared/server";
 import { HaasAssetActions, RegisterHaasAsset } from "./HardwareActions";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -41,7 +43,7 @@ export async function HardwareTable({
   const kinds = await getTranslations("admin.fleet.kind");
   const { api, locale, me } = context;
   const manage = can(me, "admin.device.manage") || can(me, "admin.subscription.manage");
-  const [list, devices, tenants] = await Promise.all([
+  const [list, devices, tenants, names] = await Promise.all([
     section(
       unwrap(
         api.GET("/v1/admin/haas-assets", {
@@ -63,6 +65,7 @@ export async function HardwareTable({
     manage && !tenantId
       ? section(unwrap(api.GET("/v1/admin/tenants", { params: { query: { perPage: 100 } } })))
       : { data: null, error: null },
+    tenantNames(),
   ]);
   const registered = new Set(
     (list.data?.data ?? []).filter((asset) => LIVE.includes(asset.state)).map((asset) => asset.deviceId),
@@ -73,74 +76,94 @@ export async function HardwareTable({
     )
     .map((device) => ({ id: device.id, label: `${device.serial} · ${kinds(device.kind)}` }));
 
+  const q = param(searchParams.q);
+  const state = enumParam(searchParams.state, HAAS_VALUES);
+  const filtered = Boolean(q || state);
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <FilterBar
-          fields={[
-            { name: "q", label: t("search"), type: "search", placeholder: t("searchPlaceholder") },
-            {
-              name: "state",
-              label: t("state"),
-              type: "select",
-              placeholder: t("allStates"),
-              options: HAAS_VALUES.map((value) => ({ value, label: status(value) })),
-            },
-          ]}
-        />
-        {manage && devices.data ? (
-          <RegisterHaasAsset
-            tenantId={tenantId}
-            devices={candidates}
-            tenants={tenants.data?.data.map((tenant) => ({ id: tenant.id, name: tenant.displayName }))}
+      <ListToolbar
+        tabs={
+          <StateTabs
+            states={HAAS_VALUES}
+            current={state}
+            total={(one) =>
+              unwrap(api.GET("/v1/admin/haas-assets", { params: { query: { perPage: 1, q, tenantId, state: one } } }))
+            }
+            href={(one) => withQuery(path, { q, state: one })}
+            label={(one) => status(one)}
+            allLabel={t("allStates")}
+            navLabel={t("views")}
           />
-        ) : null}
-      </div>
+        }
+        filters={
+          <FilterBar
+            variant="toolbar"
+            fields={[{ name: "q", label: t("search"), type: "search", placeholder: t("searchPlaceholder") }]}
+          />
+        }
+        actions={
+          manage && devices.data ? (
+            <RegisterHaasAsset
+              tenantId={tenantId}
+              devices={candidates}
+              tenants={tenants.data?.data.map((tenant) => ({ id: tenant.id, name: tenant.displayName }))}
+            />
+          ) : null
+        }
+      />
       {!list.data ? (
         <SectionError error={list.error} />
       ) : list.data.data.length === 0 ? (
-        <Card>
-          <EmptyState icon={IconGateway} title={t("empty")} description={t("emptyHint")} />
-        </Card>
+        <EmptyState
+          variant="card"
+          icon={IconGateway}
+          title={filtered ? t("emptyFiltered") : t("empty")}
+          description={filtered ? undefined : t("emptyHint")}
+          action={
+            <Button asChild variant="secondary">
+              <a href={filtered ? path : "/devices"}>{filtered ? t("clear") : t("openDevices")}</a>
+            </Button>
+          }
+        />
       ) : (
         <>
           <SimpleTable
             caption={t("title")}
             testId="haas-table"
-            minWidth="60rem"
+            stackOnPhones
+            minWidth="64rem"
             columns={[
-              { key: "serial", header: t("col.serial") },
-              { key: "state", header: t("col.state") },
-              { key: "term", header: t("col.term") },
-              { key: "cost", header: t("col.cost"), align: "end" },
-              { key: "monthly", header: t("col.monthly"), align: "end" },
-              { key: "book", header: t("col.book"), align: "end" },
-              { key: "actions", header: <span className="sr-only">{t("col.actions")}</span> },
+              { key: "serial", header: t("col.serial"), phone: "title" },
+              { key: "state", header: t("col.state"), phone: "status" },
+              { key: "term", header: t("col.term"), phone: "meta" },
+              { key: "cost", header: t("col.cost"), align: "end", phone: "hidden" },
+              { key: "monthly", header: t("col.monthly"), align: "end", phone: "hidden" },
+              { key: "book", header: t("col.book"), align: "end", phone: "figure" },
+              {
+                key: "actions",
+                header: <span className="sr-only">{t("col.actions")}</span>,
+                phone: "hidden",
+                className: "w-14",
+              },
             ]}
             rows={list.data.data.map((asset) => ({
               key: asset.id,
+              href: `/devices/${asset.deviceId}`,
               testId: "haas-row",
               data: { serial: asset.serial, state: asset.state },
               cells: {
                 serial: (
                   <span className="flex flex-col">
-                    <a href={`/devices/${asset.deviceId}`} className="font-mono font-semibold hover:underline">
-                      {asset.serial}
-                    </a>
-                    <span className="text-muted text-xs">
+                    <span className="font-mono font-semibold">{asset.serial}</span>
+                    <span className="text-muted text-sm font-normal">
                       {kinds.has(asset.kind) ? kinds(asset.kind) : asset.kind}
-                      {tenantId ? "" : ` · `}
-                      {tenantId ? null : (
-                        <a href={`/tenants/${asset.tenantId}/hardware`} className="hover:underline">
-                          {t("tenantLink")}
-                        </a>
-                      )}
+                      {tenantId ? null : ` · ${names.get(asset.tenantId) ?? t("tenantLink")}`}
                     </span>
                   </span>
                 ),
                 state: <StatusBadgeOf map={HAAS_STATUS} value={asset.state} size="sm" />,
                 term: (
-                  <span className="flex flex-col text-xs">
+                  <span className="flex flex-col text-sm">
                     <span>{t("termValue", { months: asset.termMonths })}</span>
                     <span className="text-muted">
                       {asset.installedOn
@@ -150,15 +173,21 @@ export async function HardwareTable({
                     </span>
                   </span>
                 ),
-                cost: formatTHB(asset.acquisitionCost, locale),
-                monthly: formatTHB(asset.monthlyValue, locale),
-                book: <span data-testid="haas-book-value">{formatTHB(asset.bookValue, locale)}</span>,
+                cost: <span className="whitespace-nowrap">{formatTHB(asset.acquisitionCost, locale)}</span>,
+                monthly: <span className="whitespace-nowrap">{formatTHB(asset.monthlyValue, locale)}</span>,
+                book: (
+                  <span className="whitespace-nowrap" data-testid="haas-book-value">
+                    {formatTHB(asset.bookValue, locale)}
+                  </span>
+                ),
                 actions:
                   manage && asset.nextActions.length > 0 ? (
-                    <HaasAssetActions
-                      asset={asset}
-                      replacements={candidates.filter((candidate) => candidate.id !== asset.deviceId)}
-                    />
+                    <span className="relative z-2 flex justify-end">
+                      <HaasAssetActions
+                        asset={asset}
+                        replacements={candidates.filter((candidate) => candidate.id !== asset.deviceId)}
+                      />
+                    </span>
                   ) : null,
               },
             }))}

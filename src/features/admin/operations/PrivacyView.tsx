@@ -10,7 +10,10 @@ import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
 import { Callout } from "@/ui/components/Callout";
-import { Card } from "@/ui/components/Card";
+import { Button } from "@/ui/components/Button";
+import { ListToolbar } from "@/ui/components/ListToolbar";
+import { IconShield } from "@/ui/icons/glyphs/shield";
+import { IconWarning } from "@/ui/icons/glyphs/warning";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { SimpleTable } from "@/ui/components/SimpleTable";
 
@@ -54,41 +57,55 @@ export async function PrivacyView({
   return (
     <ConsolePage testId="privacy">
       <PageHeader title={t("title")} description={t("description")} />
-      <FilterBar
-        fields={[
-          {
-            name: "state",
-            label: t("state"),
-            type: "select",
-            placeholder: t("allStates"),
-            options: DSR_VALUES.map((value) => ({ value, label: t(`stateName.${value}`) })),
-          },
-        ]}
+      <ListToolbar
+        filters={
+          <FilterBar
+            variant="toolbar"
+            fields={[
+              {
+                name: "state",
+                label: t("state"),
+                type: "select",
+                placeholder: t("allStates"),
+                options: DSR_VALUES.map((value) => ({ value, label: t(`stateName.${value}`) })),
+              },
+            ]}
+          />
+        }
       />
       {overdue > 0 ? (
-        <Callout tone="danger" title={t("overdueTitle", { count: overdue })}>
+        <Callout tone="warning" title={t("overdueTitle", { count: overdue })}>
           <span data-testid="dsr-overdue">{t("overdueBody")}</span>
         </Callout>
       ) : null}
       {!dsrs.data ? (
         <SectionError error={dsrs.error} />
       ) : rows.length === 0 ? (
-        <Card>
-          <EmptyState title={t("empty")} description={t("emptyHint")} />
-        </Card>
+        <EmptyState
+          variant="card"
+          icon={IconShield}
+          title={t("empty")}
+          description={t("emptyHint")}
+          action={
+            <Button asChild variant="secondary">
+              <a href={state ? "/privacy" : "/audit"}>{state ? t("clear") : t("openAudit")}</a>
+            </Button>
+          }
+        />
       ) : (
         <SimpleTable
           caption={t("title")}
           testId="dsr-table"
-          minWidth="56rem"
+          stackOnPhones
+          minWidth="60rem"
           columns={[
-            { key: "received", header: t("col.received") },
-            { key: "tenant", header: t("col.tenant") },
-            { key: "kind", header: t("col.kind") },
-            { key: "state", header: t("col.state") },
-            { key: "due", header: t("col.due") },
-            { key: "notes", header: t("col.notes") },
-            { key: "actions", header: <span className="sr-only">{t("col.actions")}</span> },
+            { key: "kind", header: t("col.kind"), phone: "title" },
+            { key: "tenant", header: t("col.tenant"), phone: "meta" },
+            { key: "received", header: t("col.received"), phone: "hidden" },
+            { key: "due", header: t("col.due"), phone: "meta", phoneLabel: true },
+            { key: "state", header: t("col.state"), phone: "status" },
+            { key: "notes", header: t("col.notes"), phone: "hidden" },
+            { key: "actions", header: <span className="sr-only">{t("col.actions")}</span>, phone: "meta" },
           ]}
           rows={rows.map((dsr) => {
             const late = isOverdue(dsr);
@@ -96,17 +113,16 @@ export async function PrivacyView({
               key: dsr.id,
               testId: "dsr-row",
               data: { state: dsr.state, overdue: late },
-              tone: late ? "danger" : "default",
               cells: {
-                received: formatDateTime(dsr.receivedAt, locale),
+                received: <span className="whitespace-nowrap">{formatDateTime(dsr.receivedAt, locale)}</span>,
                 tenant: tenantLabel(names, dsr.tenantId, t("platformController")),
-                kind: t(`kind.${dsr.kind}`),
+                kind: <span className="font-medium">{t(`kind.${dsr.kind}`)}</span>,
                 state: <StatusBadgeOf map={DSR_STATUS} value={dsr.state} size="sm" />,
                 due: (
                   <span className="flex flex-col gap-1">
-                    <span>{formatDate(dsr.dueAt, locale)}</span>
+                    <span className="whitespace-nowrap">{formatDate(dsr.dueAt, locale)}</span>
                     {late ? (
-                      <Badge size="sm" tone="danger">
+                      <Badge size="sm" tone="danger" icon={IconWarning}>
                         {t("late")}
                       </Badge>
                     ) : dsr.fulfilledAt ? (
@@ -116,7 +132,7 @@ export async function PrivacyView({
                     ) : null}
                   </span>
                 ),
-                notes: dsr.notes ?? "—",
+                notes: dsr.notes ? <span className="text-muted line-clamp-2 text-sm">{dsr.notes}</span> : "—",
                 actions:
                   dsr.tenantId === null ? (
                     <span className="flex flex-col items-start gap-2">

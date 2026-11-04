@@ -1,6 +1,6 @@
 {
-  "title": "Tenants",
-  "description": "The SaaS customer organisations: type, plan, subscription and status.",
+  "title": "Customers",
+  "description": "Organisations using getproperty — open one for its subscription, invoices, devices and support.",
   "search": "Search",
   "searchPlaceholder": "Name or slug",
   "noPlan": "No plan",
@@ -8,15 +8,21 @@
   "vatRegistered": "VAT registered",
   "tabsLabel": "Tenant pages",
   "empty": {
-    "title": "No tenant found",
-    "body": "Change the search, or onboard a new tenant."
+    "title": "No customers yet",
+    "body": "Add the first customer with “Add customer”; check the price plans it can start on first.",
+    "filteredTitle": "No customer matches",
+    "filteredBody": "Try another name or the slug.",
+    "clear": "Clear search",
+    "plans": "Check price plans"
   },
   "col": {
     "name": "Tenant",
     "type": "Type",
     "plan": "Plan",
     "subscription": "Subscription",
-    "status": "Status"
+    "status": "Account",
+    "since": "Customer since",
+    "more": "More"
   },
   "tab": {
     "overview": "Overview",
@@ -65,7 +71,7 @@
     "subscription": "Subscription",
     "noSubscription": "Not subscribed",
     "units": "Units counted today",
-    "unitsHint": "Units whose status is not inactive (D-082)",
+    "unitsHint": "Retired units not counted",
     "buildings": "Buildings",
     "lastCycle": "Last billing cycle: {period} ({status})",
     "noCycle": "No billing cycle yet",
@@ -76,7 +82,7 @@
     "overdue": "Overdue to the platform",
     "trialEnds": "Trial ends",
     "company": "Company data",
-    "companyHint": "As used on the tenant's documents. The Owner changes it in the owner console.",
+    "companyHint": "As printed on the customer’s documents; the owner edits it in their console.",
     "legalName": "Legal name",
     "legalForm": "Legal form",
     "form": {
@@ -111,6 +117,23 @@
         "title": "Gateways offline",
         "body": "At least one gateway has not reported in the last 15 minutes."
       }
+    },
+    "lastCycleLabel": "Last billing cycle",
+    "openInvoicesHint": "{count, plural, =0 {No open invoice} other {# open invoices}}",
+    "trialEndsLine": "Trial until {date}",
+    "manage": "Manage",
+    "manageNoSubscription": "No subscription yet — start one from the subscription page.",
+    "viewAsCustomer": "View as the customer",
+    "activity": "Latest activity",
+    "activityAll": "All activity",
+    "signalAction": {
+      "invoices": "Open invoices",
+      "subscription": "Open subscription",
+      "hardware": "Open devices"
+    },
+    "languageName": {
+      "th": "Thai",
+      "en": "English"
     }
   },
   "subscription": {
@@ -137,7 +160,7 @@
     "suspendedAt": "Suspended",
     "cancelEffective": "Cancellation effective",
     "readOnlyTitle": "This tenant is read-only",
-    "readOnlyBody": "Suspended or cancelled: owners and staff can read and export, residents can pay issued bills, nothing is deleted (D-082).",
+    "readOnlyBody": "Suspended or cancelled: owners and staff can read and export, residents can pay issued bills, nothing is deleted.",
     "history": "History",
     "noHistory": "No events yet",
     "event": {
@@ -162,11 +185,14 @@
     "cancelBody": "The subscription ends after the current month (or the date you choose); the tenant becomes read-only and a de-install order is opened per building with platform hardware.",
     "cancelled": "Cancellation recorded",
     "effectiveDate": "Effective date",
-    "effectiveDateHint": "Empty: the last day of the current month"
+    "effectiveDateHint": "Empty: the last day of the current month",
+    "panelTitle": "Subscription",
+    "version": "Price version",
+    "planVersionLine": "Price version {version}"
   },
   "pilot": {
     "none": "No pilot agreement",
-    "noneHint": "Record the pilot's terms (D-083) to apply its discount and measure its KPIs.",
+    "noneHint": "Record the pilot's terms to apply its discount and measure its KPIs.",
     "create": "Record the pilot",
     "createTitle": "Record the pilot agreement",
     "edit": "Edit the agreement",
@@ -227,6 +253,27 @@
       "stt": "Speech to text",
       "minutes": "Meeting minutes",
       "other": "Other"
-    }
+    },
+    "openPlatform": "Open platform AI usage",
+    "overageValue": "{count} over"
+  },
+  "figures": {
+    "label": "Customers at a glance",
+    "all": "All customers"
+  },
+  "accountActive": "Normal",
+  "rowMenu": "More for {name}",
+  "backToList": "Customers",
+  "lede": {
+    "subscription": "Plan, add-ons, trial and the history of this subscription.",
+    "invoices": "Collective’s invoices to this customer.",
+    "hardware": "Platform devices rented to this customer, with term and book value.",
+    "field-work": "Install orders and site surveys for this customer.",
+    "pilot": "The pilot agreement and the KPIs it is measured by.",
+    "ai-usage": "What this customer’s AI features cost, by month and feature.",
+    "flags": "Feature flags as they apply to this customer.",
+    "credentials": "Payment merchants, lock vendor accounts and e-Tax accounts of this customer.",
+    "support": "Support access to this customer’s data — always granted by the customer and audited.",
+    "view": "The customer’s console, read-only, under an active support grant."
   }
 }

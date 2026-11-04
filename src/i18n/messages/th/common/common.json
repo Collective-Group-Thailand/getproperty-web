@@ -11,5 +11,9 @@
   "optional": "ไม่บังคับ",
   "search": "ค้นหา",
   "noResults": "ไม่พบรายการ",
-  "requestId": "รหัสคำขอ"
+  "requestId": "รหัสคำขอ",
+  "moreActions": "การทำงานเพิ่มเติม",
+  "copy": "คัดลอก",
+  "copied": "คัดลอกแล้ว",
+  "copyLabel": "คัดลอก{label}"
 }

@@ -1,22 +1,29 @@
 import { getTranslations } from "next-intl/server";
 
+import { ActionMenu } from "@/features/shared/console/ActionMenu";
 import { FilterBar } from "@/features/shared/console/FilterBar";
 import { SectionError } from "@/features/shared/console/SectionError";
-import { formatDateTime } from "@/i18n/format";
+import { formatDate } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
-import { Callout } from "@/ui/components/Callout";
-import { Card } from "@/ui/components/Card";
+import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { ListToolbar } from "@/ui/components/ListToolbar";
 import { SimpleTable } from "@/ui/components/SimpleTable";
+import { Icon } from "@/ui/icons";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 import { IconKey } from "@/ui/icons/glyphs/key";
+import { IconLock } from "@/ui/icons/glyphs/lock";
 import { IconXCircle } from "@/ui/icons/glyphs/x-circle";
+import { cn } from "@/ui/lib/cn";
 
 import { enumParam, param, section, tenantLabel, type AdminContext } from "../shared/server";
 import { RevokeProviderCredential, SetProviderCredential } from "./CredentialActions";
 import { CREDENTIAL_KINDS } from "./providers";
+
+/** A secret as the console shows it: never the value (write-only), always the same eight dots. */
+const MASK = "••••••••";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
@@ -57,6 +64,7 @@ export async function ProviderCredentialsPanel({
   const kind = enumParam(searchParams.kind, CREDENTIAL_KINDS);
   const includeRevoked = param(searchParams.state) === "all";
   const tenantQuery = scopeQuery(scope, searchParams);
+  const path = scope.type === "tenant" ? `/tenants/${scope.tenantId}/credentials` : "/provider-credentials";
   const list = await section(
     unwrap(
       api.GET("/v1/admin/provider-credentials", {
@@ -74,75 +82,98 @@ export async function ProviderCredentialsPanel({
         ? tenantLabel(scope.names, row.tenantId, "—")
         : null;
 
+  const filtered = Boolean(kind || includeRevoked || (scope.type === "all" && tenantQuery));
   return (
-    <section className="flex flex-col gap-4" aria-labelledby="provider-credentials" data-testid="provider-credentials">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex flex-col gap-1">
-          <h2 id="provider-credentials" className="text-lg font-semibold">
-            {scope.type === "tenant" ? t("tenantTitle") : t("listTitle")}
-          </h2>
-          <p className="text-muted text-sm">{scope.type === "tenant" ? t("tenantHint") : t("platformHint")}</p>
-        </div>
-        <SetProviderCredential
-          tenantId={setFor}
-          label={setFor === null ? t("setPlatform") : t("set")}
-          testId="set-credential"
-        />
+    <section className="flex flex-col gap-4" aria-label={t("listTitle")} data-testid="provider-credentials">
+      <div
+        role="note"
+        className="border-border bg-surface rounded-card shadow-card flex items-start gap-3 border p-4 text-sm"
+      >
+        <Icon icon={IconLock} className="text-primary mt-0.5 shrink-0 text-lg" />
+        <p className="min-w-0">
+          <span className="font-semibold">{t("auditTitle")}</span>{" "}
+          <span className="text-muted" data-testid="credential-audit-note">
+            {t("auditBody")}
+          </span>
+        </p>
       </div>
-      <Callout tone="info" icon={IconKey} title={t("auditTitle")}>
-        <span data-testid="credential-audit-note">{t("auditBody")}</span>
-      </Callout>
-      <FilterBar
-        fields={[
-          ...(scope.type === "all"
-            ? [
-                {
-                  name: "tenant",
-                  label: t("filter.tenant"),
-                  type: "select" as const,
-                  placeholder: t("filter.allTenants"),
-                  options: [
-                    { value: "platform", label: t("platformMerchant") },
-                    ...[...scope.names.entries()].map(([value, label]) => ({ value, label })),
-                  ],
-                },
-              ]
-            : []),
-          {
-            name: "kind",
-            label: t("filter.kind"),
-            type: "select",
-            placeholder: t("filter.allKinds"),
-            options: CREDENTIAL_KINDS.map((value) => ({ value, label: t(`kind.${value}`) })),
-          },
-          {
-            name: "state",
-            label: t("filter.state"),
-            type: "select",
-            placeholder: t("filter.live"),
-            options: [{ value: "all", label: t("filter.withRevoked") }],
-          },
-        ]}
+      <ListToolbar
+        filters={
+          <FilterBar
+            variant="toolbar"
+            fields={[
+              ...(scope.type === "all"
+                ? [
+                    {
+                      name: "tenant",
+                      label: t("filter.tenant"),
+                      type: "select" as const,
+                      placeholder: t("filter.allTenants"),
+                      options: [
+                        { value: "platform", label: t("platformMerchant") },
+                        ...[...scope.names.entries()].map(([value, label]) => ({ value, label })),
+                      ],
+                    },
+                  ]
+                : []),
+              {
+                name: "kind",
+                label: t("filter.kind"),
+                type: "select",
+                placeholder: t("filter.allKinds"),
+                options: CREDENTIAL_KINDS.map((value) => ({ value, label: t(`kind.${value}`) })),
+              },
+              {
+                name: "state",
+                label: t("filter.state"),
+                type: "select",
+                placeholder: t("filter.live"),
+                options: [{ value: "all", label: t("filter.withRevoked") }],
+              },
+            ]}
+          />
+        }
       />
       {!list.data ? (
         <SectionError error={list.error} />
       ) : list.data.length === 0 ? (
-        <Card>
-          <EmptyState icon={IconKey} title={t("empty")} description={t("emptyHint")} />
-        </Card>
+        <EmptyState
+          variant="card"
+          icon={IconKey}
+          title={filtered ? t("emptyFiltered") : t("empty")}
+          description={filtered ? undefined : t("emptyHint")}
+          action={
+            filtered ? (
+              <Button asChild variant="secondary">
+                <a href={path}>{t("clear")}</a>
+              </Button>
+            ) : (
+              <SetProviderCredential
+                tenantId={setFor}
+                label={setFor === null ? t("setPlatform") : t("set")}
+                testId="set-credential-empty"
+              />
+            )
+          }
+        />
       ) : (
         <SimpleTable
           caption={scope.type === "tenant" ? t("tenantTitle") : t("listTitle")}
           testId="credential-table"
-          minWidth="68rem"
+          stackOnPhones
+          minWidth="64rem"
           columns={[
-            { key: "account", header: t("col.account") },
-            { key: "keys", header: t("col.keys") },
-            { key: "fingerprint", header: t("col.fingerprint") },
-            { key: "source", header: t("col.source") },
-            { key: "created", header: t("col.created") },
-            { key: "state", header: t("col.state") },
-            { key: "actions", header: <span className="sr-only">{t("col.actions")}</span> },
+            { key: "account", header: t("col.account"), phone: "title" },
+            { key: "keys", header: t("col.keys"), phone: "meta" },
+            { key: "fingerprint", header: t("col.fingerprint"), phone: "hidden" },
+            { key: "created", header: t("col.created"), phone: "meta" },
+            { key: "state", header: t("col.state"), phone: "status" },
+            {
+              key: "actions",
+              header: <span className="sr-only">{t("col.actions")}</span>,
+              phone: "figure",
+              className: "w-14",
+            },
           ]}
           rows={list.data.map((row) => {
             const live = row.revokedAt === null;
@@ -152,32 +183,31 @@ export async function ProviderCredentialsPanel({
               data: { kind: row.kind, provider: row.provider, live: String(live), fingerprint: row.fingerprint },
               cells: {
                 account: (
-                  <span className="flex flex-col">
-                    <span className="font-medium">
-                      {providerName(row.provider)} · {t(`kind.${row.kind}`)}
+                  <span className={cn("flex flex-col", !live && "text-muted")}>
+                    <span className="font-medium">{providerName(row.provider)}</span>
+                    <span className="text-muted text-sm font-normal">
+                      {[
+                        t(`kind.${row.kind}`),
+                        row.accountRefHint ? t("refHint", { hint: row.accountRefHint }) : null,
+                        owner(row),
+                        row.source === "import" ? t("source.import") : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
                     </span>
-                    {row.accountRefHint ? (
-                      <span className="text-muted text-xs">{t("refHint", { hint: row.accountRefHint })}</span>
-                    ) : null}
-                    {owner(row) ? <span className="text-muted text-xs">{owner(row)}</span> : null}
                   </span>
                 ),
                 keys: (
-                  <span className="flex flex-wrap gap-1">
+                  <span className={cn("flex flex-col gap-0.5 font-mono text-sm", !live && "text-muted")}>
                     {row.keyNames.map((name) => (
-                      <code key={name} className="bg-bg-subtle rounded-thumb px-1 text-xs">
-                        {name}
-                      </code>
+                      <span key={name} className="whitespace-nowrap">
+                        {name}: <span aria-label={t("masked")}>{MASK}</span>
+                      </span>
                     ))}
                   </span>
                 ),
-                fingerprint: <code className="font-mono text-xs">{row.fingerprint}</code>,
-                source: (
-                  <Badge size="sm" tone={row.source === "import" ? "info" : "neutral"}>
-                    {t(`source.${row.source}`)}
-                  </Badge>
-                ),
-                created: formatDateTime(row.createdAt, locale),
+                fingerprint: <code className="text-muted font-mono text-sm">{row.fingerprint}</code>,
+                created: <span className="whitespace-nowrap">{formatDate(row.createdAt, locale)}</span>,
                 state: live ? (
                   <Badge size="sm" tone="success" icon={IconCheckCircle}>
                     {t("live")}
@@ -185,13 +215,13 @@ export async function ProviderCredentialsPanel({
                 ) : (
                   <span className="flex flex-col gap-1">
                     <Badge size="sm" tone="neutral" icon={IconXCircle}>
-                      {t("revokedAt", { date: formatDateTime(row.revokedAt!, locale) })}
+                      {t("revokedAt", { date: formatDate(row.revokedAt!, locale) })}
                     </Badge>
-                    {row.revokeReason ? <span className="text-muted text-xs">{row.revokeReason}</span> : null}
+                    {row.revokeReason ? <span className="text-muted text-sm">{row.revokeReason}</span> : null}
                   </span>
                 ),
                 actions: live ? (
-                  <span className="flex flex-wrap justify-end gap-2">
+                  <ActionMenu label={t("more", { provider: providerName(row.provider) })}>
                     <SetProviderCredential
                       tenantId={row.tenantId}
                       preset={{
@@ -204,7 +234,7 @@ export async function ProviderCredentialsPanel({
                       testId="rotate-credential"
                     />
                     <RevokeProviderCredential credential={row} />
-                  </span>
+                  </ActionMenu>
                 ) : null,
               },
             };

@@ -180,7 +180,7 @@ test("support reviews listings: approves, restores a reported one and verifies a
   await page.goto(`${HOSTS.admin}/listings`);
   const queue = page.getByTestId("moderation-row");
   await expect(queue).toHaveCount(1);
-  await queue.first().getByTestId("moderation-approve").click();
+  await page.getByTestId("moderation-preview").getByTestId("moderation-approve").click();
   await page.getByRole("alertdialog").getByRole("button", { name: "Approve" }).click();
   await expect(page.getByTestId("moderation-row")).toHaveCount(0);
 
@@ -188,7 +188,7 @@ test("support reviews listings: approves, restores a reported one and verifies a
   const reported = page.getByTestId("moderation-row");
   await expect(reported).toHaveCount(1);
   await expect(reported).toContainText("3 reports");
-  await reported.getByTestId("moderation-restore").click();
+  await page.getByTestId("moderation-preview").getByTestId("moderation-restore").click();
   await page.getByRole("alertdialog").getByRole("button", { name: "Restore" }).click();
   await expect(page.getByTestId("moderation-row")).toHaveCount(0);
 

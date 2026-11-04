@@ -15,7 +15,7 @@
   "seriesTitle": "{metric} by month",
   "seriesTable": "Show as a table",
   "month": "Month",
-  "noSeries": "Nothing measured in this period yet",
+  "noSeries": "Not enough data yet",
   "lowerIsBetter": "Lower is better",
   "higherIsBetter": "Higher is better",
   "unit": {
@@ -54,6 +54,11 @@
     "optInBody": "Available once an Owner agrees to the use of anonymised data for statistics. You can withdraw at any time.",
     "consentMissing": "This consent is not offered yet.",
     "ownerOnly": "An Owner gives this consent.",
-    "privacyLink": "Go to privacy"
-  }
+    "privacyLink": "Go to privacy",
+    "asOf": "As of {asOf}"
+  },
+  "backToReports": "Back to reports",
+  "noSeriesHint": "Trends appear once a full month of data is in",
+  "pilotTitle": "Pilot targets",
+  "pilotHint": "The pilot agreement's measures: before, now and the target"
 }

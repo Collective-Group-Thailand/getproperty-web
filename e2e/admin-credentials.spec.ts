@@ -23,7 +23,7 @@ test("platform merchant: list and filters, set with write-only values that are n
   await gotoAdmin(page, "/settings");
   await page.getByTestId("provider-credentials-link").click();
   await expect(page.getByTestId("provider-credentials-page")).toBeVisible();
-  await expect(page.getByTestId("credential-audit-note")).toContainText("provider_credential.decrypted");
+  await expect(page.getByTestId("credential-audit-note")).toContainText(/decrypts a credential|ถอดรหัส/);
   await expect(page.locator('[data-testid="credential-row"][data-live="true"]')).toHaveCount(3);
   await expectAxeClean(page);
 
@@ -107,7 +107,8 @@ test("tenant tab: the form checks the document, rotate replaces the live credent
   // Rotate the TTLock account: kind and provider fixed, its key names as rows; the old one is replaced.
   const ttlock = page.locator('[data-testid="credential-row"][data-provider="ttlock"]');
   const oldFingerprint = await ttlock.getAttribute("data-fingerprint");
-  await ttlock.getByTestId("rotate-credential").click();
+  await ttlock.getByRole("button", { name: /More for|เพิ่มเติมของ/ }).click();
+  await page.getByTestId("rotate-credential").click();
   const rotate = page.getByRole("dialog");
   await expect(rotate.getByTestId("credential-provider")).toBeDisabled();
   await expect(rotate.getByTestId("credential-key")).toHaveCount(4);
@@ -123,7 +124,8 @@ test("tenant tab: the form checks the document, rotate replaces the live credent
 
   // Revoke the KBank merchant: typed with its fingerprint, a reason and an incident reference.
   const kbank = page.locator('[data-testid="credential-row"][data-provider="kbank"]');
-  await kbank.getByTestId("revoke-credential").click();
+  await kbank.getByRole("button", { name: /More for|เพิ่มเติมของ/ }).click();
+  await page.getByTestId("revoke-credential").click();
   const revoke = page.getByRole("alertdialog");
   await expect(revoke).toContainText("QR");
   const confirm = revoke.getByRole("button", { name: /^(Revoke|เพิกถอน)$/ });

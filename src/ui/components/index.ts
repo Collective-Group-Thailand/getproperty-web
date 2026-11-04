@@ -1,5 +1,6 @@
 export { AlertDialog, type AlertDialogProps } from "./AlertDialog";
 export { AppShell, BottomNav, SidebarNav, TopBar, type AppShellProps, type NavItem } from "./AppShell";
+export { Avatar, initialOf } from "./Avatar";
 export { Badge, badgeVariants, StatusBadge, type BadgeProps, type StatusBadgeProps } from "./Badge";
 export { Breadcrumbs, type Crumb } from "./Breadcrumbs";
 export { Button, buttonVariants, type ButtonProps } from "./Button";
@@ -16,6 +17,8 @@ export { DescriptionList, type DescriptionItem, type DescriptionListProps } from
 export { Dialog, DialogClose, type DialogProps } from "./Dialog";
 export { DropdownMenu, type DropdownMenuProps, type MenuItem } from "./DropdownMenu";
 export { EmptyState, type EmptyStateProps } from "./EmptyState";
+export { FactGrid, type Fact } from "./FactGrid";
+export { SplitView } from "./SplitView";
 export { PhotoPlaceholder } from "./PhotoPlaceholder";
 export { EnvBadge } from "./EnvBadge";
 export { ErrorState, type ErrorStateProps } from "./ErrorState";

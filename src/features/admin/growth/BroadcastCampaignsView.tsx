@@ -1,9 +1,8 @@
 import { getTranslations } from "next-intl/server";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 
 import { SPONSORED_CAMPAIGN_STATUS, SPONSORED_CAMPAIGN_VALUES } from "@/domain/status";
-import { FilterBar } from "@/features/shared/console/FilterBar";
+import { ActionMenu } from "@/features/shared/console/ActionMenu";
 import { ListPagination } from "@/features/shared/console/ListPagination";
 import { ConsolePage, PageHeader } from "@/features/shared/console/PageHeader";
 import { SectionError } from "@/features/shared/console/SectionError";
@@ -13,14 +12,15 @@ import { formatDate, formatDateTime } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
-import { Card } from "@/ui/components/Card";
+import { ListToolbar } from "@/ui/components/ListToolbar";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { SimpleTable } from "@/ui/components/SimpleTable";
 import { IconMegaphone } from "@/ui/icons/glyphs/megaphone";
 import { IconSettings } from "@/ui/icons/glyphs/settings";
 
-import { ListingsTabs } from "../listings/ModerationView";
-import { can, enumParam, pageParam, section, type AdminContext } from "../shared/server";
+import { StateTabs } from "../shared/lists";
+import { NotAllowed } from "../shared/NotAllowed";
+import { can, enumParam, pageParam, section, withQuery, type AdminContext } from "../shared/server";
 import { RejectCampaign } from "./RejectCampaign";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -43,7 +43,8 @@ export async function BroadcastCampaignsView({
   const listings = await getTranslations("admin.listings");
   const status = await getTranslations("status.sponsoredCampaign");
   const { api, locale, me } = context;
-  if (!can(me, "admin.tenant.read")) notFound();
+  if (!can(me, "admin.tenant.read")) return <NotAllowed context={context} />;
+  const state = enumParam(searchParams.state, SPONSORED_CAMPAIGN_VALUES);
   const list = await section(
     unwrap(
       api.GET("/v1/admin/sponsored-campaigns", {
@@ -51,7 +52,7 @@ export async function BroadcastCampaignsView({
           query: {
             page: pageParam(searchParams.page),
             perPage: 25,
-            state: enumParam(searchParams.state, SPONSORED_CAMPAIGN_VALUES),
+            state,
           },
         },
       }),
@@ -67,8 +68,8 @@ export async function BroadcastCampaignsView({
   return (
     <ConsolePage testId="admin-broadcasts">
       <PageHeader
-        title={listings("title")}
-        description={listings("description")}
+        title={listings("tab.broadcasts")}
+        description={t("intro")}
         actions={
           can(me, "admin.setting.manage") ? (
             <Button asChild variant="secondary" iconStart={IconSettings}>
@@ -79,38 +80,54 @@ export async function BroadcastCampaignsView({
           ) : null
         }
       />
-      <ListingsTabs context={context} current="/listings/broadcasts" />
-      <p className="text-muted m-0 text-sm">{t("intro")}</p>
-      <FilterBar
-        fields={[
-          {
-            name: "state",
-            label: t("state"),
-            type: "select",
-            placeholder: t("allStates"),
-            options: SPONSORED_CAMPAIGN_VALUES.map((value) => ({ value, label: status(value) })),
-          },
-        ]}
+      <ListToolbar
+        tabs={
+          <StateTabs
+            states={SPONSORED_CAMPAIGN_VALUES}
+            current={state}
+            total={(one) =>
+              unwrap(api.GET("/v1/admin/sponsored-campaigns", { params: { query: { perPage: 1, state: one } } }))
+            }
+            href={(one) => withQuery("/listings/broadcasts", { state: one })}
+            label={(one) => status(one)}
+            allLabel={t("all")}
+            navLabel={t("state")}
+          />
+        }
       />
       {!list.data ? (
         <SectionError error={list.error} />
       ) : list.data.data.length === 0 ? (
-        <Card>
-          <EmptyState icon={IconMegaphone} title={t("empty")} description={t("emptyHint")} />
-        </Card>
+        <EmptyState
+          variant="card"
+          icon={IconMegaphone}
+          title={t("empty")}
+          description={t("emptyHint")}
+          action={
+            <Button asChild variant="secondary">
+              <a href={state ? "/listings/broadcasts" : "/listings"}>{state ? t("clear") : t("openListings")}</a>
+            </Button>
+          }
+        />
       ) : (
         <>
           <SimpleTable
             caption={listings("tab.broadcasts")}
             testId="admin-campaigns"
+            stackOnPhones
             minWidth="64rem"
             columns={[
-              { key: "campaign", header: t("col.campaign") },
-              { key: "tenant", header: t("col.tenant") },
-              { key: "state", header: t("col.state") },
-              { key: "reach", header: t("col.reach"), align: "end" },
-              { key: "price", header: t("col.price"), align: "end" },
-              { key: "actions", header: <span className="sr-only">{t("col.actions")}</span> },
+              { key: "campaign", header: t("col.campaign"), phone: "title" },
+              { key: "tenant", header: t("col.tenant"), phone: "meta" },
+              { key: "state", header: t("col.state"), phone: "status" },
+              { key: "reach", header: t("col.reach"), align: "end", phone: "meta" },
+              { key: "price", header: t("col.price"), align: "end", phone: "hidden" },
+              {
+                key: "actions",
+                header: <span className="sr-only">{t("col.actions")}</span>,
+                phone: "figure",
+                className: "w-14",
+              },
             ]}
             rows={list.data.data.map((c) => ({
               key: c.id,
@@ -124,7 +141,7 @@ export async function BroadcastCampaignsView({
                       {t("listings", { count: c.listings.length })} ·{" "}
                       {c.listings.map((listing) => listing.title).join(", ")}
                     </span>
-                    <span className="text-muted text-xs tabular-nums">{when(c)}</span>
+                    <span className="text-muted text-sm tabular-nums">{when(c)}</span>
                     {c.rejectReason ? (
                       <span className="text-muted text-xs">{t("rejectedReason", { reason: c.rejectReason })}</span>
                     ) : null}
@@ -172,7 +189,9 @@ export async function BroadcastCampaignsView({
                 ),
                 actions:
                   moderate && STOPPABLE.includes(c.state) ? (
-                    <RejectCampaign campaignId={c.id} name={c.name} tenant={c.tenantName} />
+                    <ActionMenu>
+                      <RejectCampaign campaignId={c.id} name={c.name} tenant={c.tenantName} />
+                    </ActionMenu>
                   ) : null,
               },
             }))}

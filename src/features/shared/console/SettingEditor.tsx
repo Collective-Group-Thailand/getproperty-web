@@ -54,6 +54,9 @@ export function SettingEditor({
   value,
   onSave,
   testId,
+  title,
+  fields,
+  parse,
 }: {
   settingKey: string;
   description: string;
@@ -61,6 +64,12 @@ export function SettingEditor({
   value: unknown;
   onSave: (input: { value: unknown; effectiveFrom?: string; reason: string }) => Promise<unknown>;
   testId?: string;
+  /** The dialog's title in words (default "เปลี่ยน {key}"). */
+  title?: string;
+  /** Typed controls for the value (a map of numbers with units, a list) instead of the generic field. */
+  fields?: (errors: Record<string, string>) => React.ReactNode;
+  /** Reads the value of `fields` back from the form; `undefined` = does not parse. */
+  parse?: (data: FormData) => unknown;
 }) {
   const t = useTranslations("console.setting");
   return (
@@ -69,12 +78,12 @@ export function SettingEditor({
       icon={IconEdit}
       size="sm"
       testId={testId ?? `edit-${settingKey}`}
-      title={t("title", { key: settingKey })}
+      title={title ?? t("title", { key: settingKey })}
       description={description}
       submitLabel={t("save")}
       successMessage={t("saved")}
       onSubmit={(data) => {
-        const parsed = parseSettingValue(valueType, String(data.get("value") ?? ""));
+        const parsed = parse ? parse(data) : parseSettingValue(valueType, String(data.get("value") ?? ""));
         if (parsed === undefined) return Promise.reject(new Error(t("invalid")));
         const when = text(data, "effectiveFrom");
         return onSave({
@@ -86,27 +95,31 @@ export function SettingEditor({
     >
       {(errors) => (
         <>
-          <Field label={t("value")} hint={t(`hint.${valueType}`)} required error={errors.value}>
-            {valueType === "bool" ? (
-              <NativeSelect
-                name="value"
-                defaultValue={settingInput(valueType, value)}
-                options={[
-                  { value: "true", label: t("on") },
-                  { value: "false", label: t("off") },
-                ]}
-              />
-            ) : valueType === "json" ? (
-              <Textarea
-                name="value"
-                rows={6}
-                defaultValue={settingInput(valueType, value)}
-                className="font-mono text-sm"
-              />
-            ) : (
-              <Input name="value" defaultValue={settingInput(valueType, value)} data-testid="setting-value" />
-            )}
-          </Field>
+          {fields ? (
+            fields(errors)
+          ) : (
+            <Field label={t("value")} hint={t(`hint.${valueType}`)} required error={errors.value}>
+              {valueType === "bool" ? (
+                <NativeSelect
+                  name="value"
+                  defaultValue={settingInput(valueType, value)}
+                  options={[
+                    { value: "true", label: t("on") },
+                    { value: "false", label: t("off") },
+                  ]}
+                />
+              ) : valueType === "json" ? (
+                <Textarea
+                  name="value"
+                  rows={6}
+                  defaultValue={settingInput(valueType, value)}
+                  className="font-mono text-sm"
+                />
+              ) : (
+                <Input name="value" defaultValue={settingInput(valueType, value)} data-testid="setting-value" />
+              )}
+            </Field>
+          )}
           <Field label={t("effectiveFrom")} hint={t("effectiveFromHint")} error={errors.effectiveFrom}>
             <Input name="effectiveFrom" type="datetime-local" />
           </Field>

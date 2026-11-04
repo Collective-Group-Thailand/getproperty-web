@@ -109,7 +109,7 @@ export function FilterLinks({
   current,
   label,
 }: {
-  links: { key: string; href: string; label: React.ReactNode }[];
+  links: { key: string; href: string; label: React.ReactNode; testId?: string }[];
   current: string;
   label: string;
 }) {
@@ -121,6 +121,7 @@ export function FilterLinks({
             <a
               href={link.href}
               aria-current={link.key === current ? "page" : undefined}
+              data-testid={link.testId}
               className={cn(
                 "rounded-thumb flex h-8 items-center px-3 text-sm font-medium whitespace-nowrap",
                 link.key === current ? "bg-primary-subtle text-primary-subtle-fg" : "text-muted hover:text-fg",

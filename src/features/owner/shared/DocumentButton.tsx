@@ -8,13 +8,16 @@ import { LazyDialog } from "@/ui/components/overlays";
 import { lazyWarm } from "@/ui/lib/lazy";
 import { IconBill } from "@/ui/icons/glyphs/bill";
 
+import { type MenuItemOptions, useMenuEntry } from "@/features/shared/console/ActionMenu";
+
 import type { DocumentRef } from "./documents";
 
 const DocumentViewer = lazyWarm(() => import("./DocumentViewer").then((module) => module.DocumentViewer));
 
 /**
  * Opens a document (invoice, receipt, contract, statement…) in the console's PDF viewer — a dialog
- * loaded on first use (D-179) that shows the PDF and offers "open in a new tab" and "download".
+ * loaded on first use (D-179) that shows the PDF and offers "open in a new tab" and "download". Inside an
+ * `ActionMenu` (a row's "⋯") it is a menu item that opens the same viewer.
  */
 export function DocumentButton({
   document,
@@ -23,8 +26,7 @@ export function DocumentButton({
   variant = "secondary",
   size = "sm",
   testId,
-  open: controlled,
-  onOpenChange,
+  menuItem,
 }: {
   document: DocumentRef;
   label: string;
@@ -33,24 +35,23 @@ export function DocumentButton({
   variant?: ButtonProps["variant"];
   size?: ButtonProps["size"];
   testId?: string;
-  /** Controlled from outside (a row's "⋯" menu): no trigger button is rendered. */
-  open?: boolean;
-  onOpenChange?: (open: boolean) => void;
+  /** Its item inside an `ActionMenu` ("⋯"), where it differs from the button (default: `label`). */
+  menuItem?: MenuItemOptions;
 }) {
   const t = useTranslations("owner.common.document");
-  const [inner, setInner] = useState(false);
-  const open = controlled ?? inner;
-  const setOpen = (next: boolean) => {
-    onOpenChange?.(next);
-    if (controlled === undefined) setInner(next);
-  };
+  const [open, setOpen] = useState(false);
+  // Inside an `ActionMenu` ("⋯") the viewer is a menu item and renders only its dialog.
+  const inMenu = useMenuEntry(
+    { label: menuItem?.label ?? label, icon: IconBill, testId, destructive: menuItem?.destructive },
+    () => setOpen(true),
+  );
   return (
     <>
-      {controlled === undefined ? (
+      {inMenu ? null : (
         <Button variant={variant} size={size} iconStart={IconBill} onClick={() => setOpen(true)} data-testid={testId}>
           {label}
         </Button>
-      ) : null}
+      )}
       <LazyDialog open={open} onOpenChange={setOpen} title={title} size="xl" closeLabel={t("close")}>
         {open ? (
           <Suspense fallback={null}>

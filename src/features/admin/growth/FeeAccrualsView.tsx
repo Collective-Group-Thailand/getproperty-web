@@ -1,6 +1,8 @@
 import { getTranslations } from "next-intl/server";
+import Link from "next/link";
 
 import { FEE_ACCRUAL_STATUS, FEE_ACCRUAL_VALUES } from "@/domain/status";
+import { ActionMenu } from "@/features/shared/console/ActionMenu";
 import { FilterBar } from "@/features/shared/console/FilterBar";
 import { ListPagination } from "@/features/shared/console/ListPagination";
 import { SectionError } from "@/features/shared/console/SectionError";
@@ -9,8 +11,9 @@ import { formatDate, formatPercent, formatTHB } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import { Badge } from "@/ui/components/Badge";
 import { Callout } from "@/ui/components/Callout";
-import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { ListToolbar } from "@/ui/components/ListToolbar";
+import { Button } from "@/ui/components/Button";
 import { SimpleTable } from "@/ui/components/SimpleTable";
 import { IconPercent } from "@/ui/icons/glyphs/percent";
 
@@ -57,38 +60,57 @@ export async function FeeAccrualsView({
   return (
     <BillingFrame current="fees" title={billing("tab.fees")} description={billing("description.fees")}>
       <Callout tone="info">{t("intro")}</Callout>
-      <FilterBar
-        fields={[
-          { name: "q", label: t("search"), type: "search", placeholder: t("searchPlaceholder") },
-          {
-            name: "state",
-            label: t("state"),
-            type: "select",
-            placeholder: t("allStates"),
-            options: FEE_ACCRUAL_VALUES.map((value) => ({ value, label: status(value) })),
-          },
-        ]}
+      <ListToolbar
+        filters={
+          <FilterBar
+            variant="toolbar"
+            fields={[
+              { name: "q", label: t("search"), type: "search", placeholder: t("searchPlaceholder") },
+              {
+                name: "state",
+                label: t("state"),
+                type: "select",
+                placeholder: t("allStates"),
+                options: FEE_ACCRUAL_VALUES.map((value) => ({ value, label: status(value) })),
+              },
+            ]}
+          />
+        }
       />
       {!list.data ? (
         <SectionError error={list.error} />
       ) : list.data.data.length === 0 ? (
-        <Card>
-          <EmptyState icon={IconPercent} title={t("empty")} description={t("emptyHint")} />
-        </Card>
+        <EmptyState
+          variant="card"
+          icon={IconPercent}
+          title={t("empty")}
+          description={t("emptyHint")}
+          action={
+            <Button asChild variant="secondary">
+              <Link href="/subscriptions/invoices">{t("openInvoices")}</Link>
+            </Button>
+          }
+        />
       ) : (
         <>
           <SimpleTable
             caption={billing("tab.fees")}
             testId="fee-accruals"
+            stackOnPhones
             minWidth="68rem"
             columns={[
-              { key: "tenant", header: t("col.tenant") },
-              { key: "kind", header: t("col.kind") },
-              { key: "basis", header: t("col.basis") },
-              { key: "amount", header: t("col.amount"), align: "end" },
-              { key: "state", header: t("col.state") },
-              { key: "invoice", header: t("col.invoice") },
-              { key: "actions", header: <span className="sr-only">{t("col.actions")}</span> },
+              { key: "tenant", header: t("col.tenant"), phone: "title" },
+              { key: "kind", header: t("col.kind"), phone: "meta" },
+              { key: "basis", header: t("col.basis"), phone: "hidden" },
+              { key: "amount", header: t("col.amount"), align: "end", phone: "figure" },
+              { key: "state", header: t("col.state"), phone: "status" },
+              { key: "invoice", header: t("col.invoice"), phone: "meta" },
+              {
+                key: "actions",
+                header: <span className="sr-only">{t("col.actions")}</span>,
+                phone: "meta",
+                align: "end",
+              },
             ]}
             rows={list.data.data.map((fee) => ({
               key: fee.id,
@@ -154,13 +176,15 @@ export async function FeeAccrualsView({
                 ),
                 actions:
                   fee.state === "invoiced" && fee.invoice && canDispute ? (
-                    <FeeDispute
-                      accrualId={fee.id}
-                      tenant={fee.tenantName}
-                      unit={fee.unitNo}
-                      amount={formatTHB(fee.amount, locale)}
-                      invoice={fee.invoice.number}
-                    />
+                    <ActionMenu>
+                      <FeeDispute
+                        accrualId={fee.id}
+                        tenant={fee.tenantName}
+                        unit={fee.unitNo}
+                        amount={formatTHB(fee.amount, locale)}
+                        invoice={fee.invoice.number}
+                      />
+                    </ActionMenu>
                   ) : fee.state === "disputed" && fee.invoice ? (
                     <a
                       href={`/subscriptions/invoices/${fee.invoice.id}`}

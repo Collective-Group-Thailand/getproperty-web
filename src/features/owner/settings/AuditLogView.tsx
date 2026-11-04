@@ -1,20 +1,24 @@
 import { getTranslations } from "next-intl/server";
 
-import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
+import { FilterBar } from "@/features/shared/console/FilterBar";
+import { withQuery } from "@/features/shared/console/params";
 import { SectionError } from "@/features/shared/console/SectionError";
 import { formatDateTime } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import { Badge } from "@/ui/components/Badge";
-import { Card } from "@/ui/components/Card";
-import { EmptyState } from "@/ui/components/EmptyState";
-import { Input } from "@/ui/components/Input";
 import { Button } from "@/ui/components/Button";
+import { EmptyState } from "@/ui/components/EmptyState";
+import { ListToolbar } from "@/ui/components/ListToolbar";
 import { SimpleTable } from "@/ui/components/SimpleTable";
+import { StatusText } from "@/ui/components/StatusText";
+import { IconAlert } from "@/ui/icons/glyphs/alert";
+import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
+import { IconHistory } from "@/ui/icons/glyphs/history";
+import { IconXCircle } from "@/ui/icons/glyphs/x-circle";
 
 import { ownerPath } from "../shared/links";
 import { param, section, type OwnerContext } from "../shared/server";
-import { withQuery } from "@/features/shared/console/params";
-import { SettingsNav } from "./SettingsNav";
+import { SettingsFrame } from "./SettingsNav";
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 const bangkok = (value: string | undefined, end = false) =>
@@ -22,22 +26,29 @@ const bangkok = (value: string | undefined, end = false) =>
     ? new Date(`${value}T${end ? "23:59:59.999" : "00:00:00.000"}+07:00`).toISOString()
     : undefined;
 
-/** The actor of an audit row as a short label — a member's id, a support grant, the system. */
-function actorText(actor: Record<string, unknown>): string {
-  const kind =
-    typeof actor.audience === "string" ? actor.audience : typeof actor.type === "string" ? actor.type : "system";
-  const name =
-    typeof actor.displayName === "string"
-      ? actor.displayName
-      : typeof actor.id === "string"
-        ? actor.id.slice(0, 8)
-        : "";
-  return name ? `${kind} · ${name}` : kind;
-}
+/** The areas of the log, as the API's action prefixes (`invoice.*`); the filter sends the prefix. */
+const AREAS = [
+  "invoice",
+  "payment",
+  "receipt",
+  "lease",
+  "deposit",
+  "setting",
+  "tenant",
+  "member",
+  "export",
+  "support_grant",
+  "dsr",
+  "utility_tariff",
+] as const;
+
+/** The message id of an action (`support_grant.used` → `support_grant_used`). */
+const id = (value: string) => value.replaceAll(".", "_");
 
 /**
- * The tenant's audit log (F2 2.6, D-090): who did what and when — money, leases, settings, exports and
- * every read made under a support grant — filtered by action (a trailing * matches a prefix) and day.
+ * Settings › Audit log (F2 2.6, D-090; redesign G6, the admin audit table scoped to the tenant): who did what and when
+ * — money, leases, settings, exports and every read made under a support grant — the action in Thai (never its code),
+ * the person or "getproperty support", the outcome in words and an icon; filtered by area and day from one toolbar.
  */
 export async function AuditLogView({
   context,
@@ -66,61 +77,94 @@ export async function AuditLogView({
     ),
   );
   const path = ownerPath(locale, "/settings/audit-log");
+  const filtered = Boolean(keep.action || keep.from || keep.to);
+  const areaOf = (action: string) => AREAS.find((area) => action.startsWith(`${area}.`));
+  const actionText = (action: string) => {
+    if (t.has(`actionName.${id(action)}`)) return t(`actionName.${id(action)}` as never);
+    const area = areaOf(action);
+    return area ? t("actionInArea", { area: t(`area.${area}`) }) : t("actionOther");
+  };
+  const actorText = (actor: Record<string, unknown>) => {
+    if (typeof actor.displayName === "string" && actor.displayName) return actor.displayName;
+    const kind =
+      typeof actor.audience === "string" ? actor.audience : typeof actor.type === "string" ? actor.type : "system";
+    return t.has(`actor.${kind}`) ? t(`actor.${kind}` as never) : t("actor.system");
+  };
+  const subjectText = (type: string | null) =>
+    type && t.has(`subject.${id(type)}`) ? t(`subject.${id(type)}` as never) : null;
+
   return (
-    <OwnerPage testId="audit-log">
-      <PageHeader title={t("title")} description={t("description")} />
-      <SettingsNav me={me} current="/settings/audit-log" locale={locale} />
-      <form method="get" role="search" aria-label={t("search")} className="flex flex-wrap items-end gap-3">
-        <label className="flex flex-col gap-1 text-sm">
-          {t("action")}
-          <Input
-            name="action"
-            inputSize="sm"
-            defaultValue={keep.action ?? ""}
-            placeholder={t("actionPlaceholder")}
-            className="w-56"
+    <SettingsFrame
+      me={me}
+      locale={locale}
+      current="/settings/audit-log"
+      title={t("title")}
+      description={t("description")}
+      testId="audit-log"
+    >
+      <ListToolbar
+        filters={
+          <FilterBar
+            variant="toolbar"
+            fields={[
+              {
+                name: "action",
+                label: t("area.label"),
+                type: "select",
+                placeholder: t("area.all"),
+                options: [
+                  // A link from another page may carry its own prefix (support access → `support_grant.*`).
+                  ...AREAS.map((area) => ({ value: `${area}.*`, label: t(`area.${area}`) })),
+                ],
+              },
+              { name: "from", label: t("from"), type: "date" },
+              { name: "to", label: t("to"), type: "date" },
+            ]}
           />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          {t("from")}
-          <Input name="from" type="date" inputSize="sm" defaultValue={keep.from ?? ""} className="w-40" />
-        </label>
-        <label className="flex flex-col gap-1 text-sm">
-          {t("to")}
-          <Input name="to" type="date" inputSize="sm" defaultValue={keep.to ?? ""} className="w-40" />
-        </label>
-        <Button type="submit" size="sm" variant="secondary">
-          {t("apply")}
-        </Button>
-      </form>
+        }
+        className="xl:justify-start"
+      />
       {!rows.data ? (
         <SectionError error={rows.error} />
       ) : rows.data.data.length === 0 ? (
-        <Card>
-          <EmptyState title={t("empty")} />
-        </Card>
+        <EmptyState
+          variant="card"
+          icon={IconHistory}
+          title={filtered ? t("emptyFiltered") : t("empty")}
+          description={filtered ? t("emptyFilteredHint") : t("emptyHint")}
+          action={
+            filtered ? (
+              <Button asChild variant="secondary">
+                <a href={path}>{t("clear")}</a>
+              </Button>
+            ) : (
+              <Button asChild variant="secondary">
+                <a href={ownerPath(locale, "/settings")}>{t("backToSettings")}</a>
+              </Button>
+            )
+          }
+        />
       ) : (
         <SimpleTable
           caption={t("title")}
           testId="audit-table"
-          minWidth="52rem"
+          minWidth="48rem"
+          stackOnPhones
           columns={[
-            { key: "at", header: t("col.at") },
-            { key: "action", header: t("col.action") },
-            { key: "actor", header: t("col.actor") },
-            { key: "subject", header: t("col.subject") },
-            { key: "outcome", header: t("col.outcome") },
+            { key: "action", header: t("col.action"), phone: "title" },
+            { key: "actor", header: t("col.actor"), phone: "meta" },
+            { key: "subject", header: t("col.subject"), phone: "meta" },
+            { key: "at", header: t("col.at"), className: "whitespace-nowrap", phone: "figure" },
+            { key: "outcome", header: t("col.outcome"), className: "whitespace-nowrap", phone: "status" },
           ]}
           rows={rows.data.data.map((entry) => ({
             key: entry.id,
             testId: "audit-row",
             data: { action: entry.action },
-            tone: entry.outcome === "denied" ? "warning" : entry.outcome === "failure" ? "danger" : "default",
             cells: {
-              at: <span className="whitespace-nowrap">{formatDateTime(entry.occurredAt, locale)}</span>,
               action: (
-                <span className="flex flex-col gap-1">
-                  <span className="font-mono text-xs">{entry.action}</span>
+                <span className="flex flex-col items-start gap-1">
+                  <span className="font-medium">{actionText(entry.action)}</span>
                   {entry.supportGrantId ? (
                     <Badge size="sm" tone="info">
                       {t("underGrant")}
@@ -128,31 +172,45 @@ export async function AuditLogView({
                   ) : null}
                 </span>
               ),
-              actor: <span className="text-xs">{actorText(entry.actor)}</span>,
-              subject: entry.subjectType ? <span className="text-xs">{entry.subjectType}</span> : "—",
-              outcome: t(`outcome.${entry.outcome}`),
+              actor: actorText(entry.actor),
+              subject: subjectText(entry.subjectType) ?? <span className="text-muted">—</span>,
+              at: <span className="tabular-nums">{formatDateTime(entry.occurredAt, locale)}</span>,
+              outcome:
+                entry.outcome === "success" ? (
+                  <StatusText tone="success" icon={IconCheckCircle}>
+                    {t("outcome.success")}
+                  </StatusText>
+                ) : entry.outcome === "denied" ? (
+                  <StatusText tone="warning" icon={IconAlert}>
+                    {t("outcome.denied")}
+                  </StatusText>
+                ) : (
+                  <StatusText tone="danger" icon={IconXCircle}>
+                    {t("outcome.failure")}
+                  </StatusText>
+                ),
             },
           }))}
         />
       )}
-      <nav aria-label={t("pages")} className="flex justify-between gap-2">
-        {cursor ? (
-          <a className="text-primary text-sm hover:underline" href={withQuery(path, keep)}>
-            {t("newest")}
-          </a>
-        ) : (
-          <span />
-        )}
-        {rows.data?.meta.nextCursor ? (
-          <a
-            className="text-primary text-sm hover:underline"
-            href={withQuery(path, { ...keep, cursor: rows.data.meta.nextCursor })}
-            data-testid="audit-older"
-          >
-            {t("older")}
-          </a>
-        ) : null}
-      </nav>
-    </OwnerPage>
+      {cursor || rows.data?.meta.nextCursor ? (
+        <nav aria-label={t("pages")} className="flex justify-between gap-2">
+          {cursor ? (
+            <Button asChild variant="secondary" size="sm">
+              <a href={withQuery(path, keep)}>{t("newest")}</a>
+            </Button>
+          ) : (
+            <span />
+          )}
+          {rows.data?.meta.nextCursor ? (
+            <Button asChild variant="secondary" size="sm">
+              <a href={withQuery(path, { ...keep, cursor: rows.data.meta.nextCursor })} data-testid="audit-older">
+                {t("older")}
+              </a>
+            </Button>
+          ) : null}
+        </nav>
+      ) : null}
+    </SettingsFrame>
   );
 }

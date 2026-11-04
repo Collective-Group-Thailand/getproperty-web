@@ -154,6 +154,8 @@ export interface NavItem {
   onSelect?: () => void;
   /** Extra decoration after the icon (a count badge); decorative — the label carries the meaning. */
   badge?: React.ReactNode;
+  /** e2e hook of the entry's link. */
+  testId?: string;
   /** The section's own pages, listed under the entry (pass them only while the section is open). */
   children?: { href: string; label: string; active?: boolean; testId?: string }[];
 }
@@ -184,6 +186,7 @@ export function SidebarNav({
               href={item.href}
               aria-current={current ? "page" : undefined}
               title={collapsed ? item.label : undefined}
+              data-testid={item.testId}
               className={cn(
                 "rounded-control duration-fast flex items-center gap-3 px-2.5 text-sm transition-colors",
                 size === "touch" ? "h-11 text-base" : "h-10",

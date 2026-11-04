@@ -6,10 +6,11 @@ import { formatBytes, formatDate, formatDateTime, formatNumber, formatTHB } from
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
+import { Button } from "@/ui/components/Button";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { SimpleTable } from "@/ui/components/SimpleTable";
-import { Stat } from "@/ui/components/Stat";
+import { StatsRow } from "@/ui/components/StatsRow";
 
 import { section, type AdminContext } from "../shared/server";
 import { StorageAllowanceEditor, StorageNoticeEditor } from "./StorageEditors";
@@ -43,15 +44,22 @@ export async function StorageView({ context }: { context: AdminContext }) {
   return (
     <div className="flex flex-col gap-6" data-testid="admin-storage">
       {usage.data ? (
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
-          <Stat label={t("stats.tenants")} value={formatNumber(usage.data.totals.tenants, locale)} />
-          <Stat label={t("stats.used")} value={formatBytes(usage.data.totals.usedBytes, locale)} />
-          <Stat
-            label={t("stats.nearOrOver")}
-            value={<span data-testid="storage-near-or-over">{formatNumber(usage.data.totals.nearOrOver, locale)}</span>}
-            hint={t("stats.nearOrOverHint", { percent: thresholds[0] ?? 80 })}
-          />
-        </div>
+        <StatsRow
+          label={t("stats.label")}
+          highlight={usage.data.totals.nearOrOver > 0 ? "near" : undefined}
+          figures={[
+            { key: "tenants", label: t("stats.tenants"), value: formatNumber(usage.data.totals.tenants, locale) },
+            { key: "used", label: t("stats.used"), value: formatBytes(usage.data.totals.usedBytes, locale) },
+            {
+              key: "near",
+              label: t("stats.nearOrOver"),
+              value: (
+                <span data-testid="storage-near-or-over">{formatNumber(usage.data.totals.nearOrOver, locale)}</span>
+              ),
+              hint: t("stats.nearOrOverHint", { percent: thresholds[0] ?? 80 }),
+            },
+          ]}
+        />
       ) : null}
 
       {!settings.data ? (
@@ -104,12 +112,20 @@ export async function StorageView({ context }: { context: AdminContext }) {
 
       <StoragePackagesCard definitions={definitions} context={context} types={typeList} />
 
-      <Card as="section" aria-labelledby="storage-usage">
+      <Card as="section" aria-labelledby="storage-usage" id="storage-usage-card" className="scroll-mt-6">
         <CardHeader title={<span id="storage-usage">{t("usage.title")}</span>} description={t("usage.description")} />
         {!usage.data ? (
           <SectionError error={usage.error} />
         ) : usage.data.data.length === 0 ? (
-          <EmptyState title={t("usage.empty")} description={t("usage.emptyHint")} />
+          <EmptyState
+            title={t("usage.empty")}
+            description={t("usage.emptyHint")}
+            action={
+              <Button asChild variant="secondary">
+                <Link href="/tenants">{t("usage.emptyAction")}</Link>
+              </Button>
+            }
+          />
         ) : (
           <SimpleTable
             caption={t("usage.title")}
@@ -293,7 +309,14 @@ async function ReconciliationsCard({
       {!reconciliations.data ? (
         <SectionError error={reconciliations.error} />
       ) : reconciliations.data.data.length === 0 ? (
-        <EmptyState title={t("empty")} />
+        <EmptyState
+          title={t("empty")}
+          action={
+            <Button asChild variant="secondary">
+              <a href="#storage-usage-card">{t("emptyAction")}</a>
+            </Button>
+          }
+        />
       ) : (
         <SimpleTable
           caption={t("title")}

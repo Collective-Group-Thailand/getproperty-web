@@ -202,6 +202,8 @@ test("members, notification routing, privacy and support access", async ({ page 
   await expect(sms).toHaveAttribute("aria-checked", "false");
   await sms.click();
   await expect(sms).toHaveAttribute("aria-checked", "true");
+  // G6: the matrix saves its changes together from the sticky bar.
+  await page.getByTestId("notifications-save").click();
   // The switch turns on as it is clicked; the PUT may still be on its way to the API (seen on a loaded run).
   await expect
     .poll(async () => (await received("owner.notificationRoutes.update")).at(-1)?.body ?? null)
@@ -289,7 +291,6 @@ test("reports: exports for the month downloaded through the BFF; VAT figures; in
   await gotoOwner(page, "/reports?period=2026-09");
   await expect(page.getByTestId("period-label")).toContainText("2569");
   await expect(page.locator('[data-testid="export-card"][data-kind="vat_pp30"]')).toBeVisible();
-  await expect(page.getByTestId("pilot-kpis").locator("tbody tr")).toHaveCount(7);
   await expectAxeClean(page);
 
   const card = page.getByTestId("export-income_expense");
@@ -307,6 +308,9 @@ test("reports: exports for the month downloaded through the BFF; VAT figures; in
   expect(response.headers()["content-disposition"]).toContain('filename="income_expense-2026-09.xlsx"');
   expect(response.headers()["cache-control"]).toBe("no-store");
   expect((await response.body()).byteLength).toBeGreaterThan(0);
+  // G6: the pilot KPIs moved from Exports to Insights.
+  await gotoOwner(page, "/reports/insights");
+  await expect(page.getByTestId("pilot-kpis").locator("tbody tr")).toHaveCount(7);
   // Another tenant's export id is refused by the API behind the BFF.
   expect(
     (await page.request.get(`${HOSTS.owner}/bff/exports/00000000-0000-4000-8000-000000000000/download`)).status(),

@@ -20,6 +20,8 @@ export interface StepperProps {
    * segment per step with its name under it — for a phone wizard where the names carry the way (staff installs).
    */
   variant?: "dots" | "bar";
+  /** `dots` only: every step's name under its dot — for a short workflow read at a glance (maker → checker → published). */
+  labelled?: boolean;
   className?: string;
 }
 
@@ -28,7 +30,15 @@ export interface StepperProps {
  * ticked and the current one is `aria-current="step"`. On a phone only the current label is shown
  * next to "step n of m"; the dots still show where you are.
  */
-export function Stepper({ steps, current, label, progressText, variant = "dots", className }: StepperProps) {
+export function Stepper({
+  steps,
+  current,
+  label,
+  progressText,
+  variant = "dots",
+  labelled = false,
+  className,
+}: StepperProps) {
   if (variant === "bar")
     return (
       <nav aria-label={label} className={cn("flex flex-col gap-3", className)}>
@@ -66,20 +76,31 @@ export function Stepper({ steps, current, label, progressText, variant = "dots",
           const done = index < current;
           const active = index === current;
           return (
-            <li key={step.id} className="flex flex-1 items-center gap-1" aria-current={active ? "step" : undefined}>
-              <span
-                className={cn(
-                  "flex size-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold",
-                  done && "bg-primary text-primary-fg border-transparent",
-                  active && "border-primary text-primary border-2",
-                  !done && !active && "border-border text-muted",
-                )}
-              >
-                {done ? <Icon icon={IconCheck} size={14} /> : index + 1}
-                <span className="sr-only">{step.label}</span>
+            <li
+              key={step.id}
+              className={cn("flex flex-1 gap-1", labelled ? "flex-col" : "items-center")}
+              aria-current={active ? "step" : undefined}
+            >
+              <span className="flex items-center gap-1">
+                <span
+                  className={cn(
+                    "flex size-7 shrink-0 items-center justify-center rounded-full border text-xs font-semibold",
+                    done && "bg-primary text-primary-fg border-transparent",
+                    active && "border-primary text-primary border-2",
+                    !done && !active && "border-border text-muted",
+                  )}
+                >
+                  {done ? <Icon icon={IconCheck} size={14} /> : index + 1}
+                  {labelled ? null : <span className="sr-only">{step.label}</span>}
+                </span>
+                {index < steps.length - 1 ? (
+                  <span className={cn("h-0.5 flex-1 rounded-full", done ? "bg-primary" : "bg-border")} />
+                ) : null}
               </span>
-              {index < steps.length - 1 ? (
-                <span className={cn("h-0.5 flex-1 rounded-full", done ? "bg-primary" : "bg-border")} />
+              {labelled ? (
+                <span className={cn("pe-2 text-sm", active ? "text-fg font-semibold" : "text-muted")}>
+                  {step.label}
+                </span>
               ) : null}
             </li>
           );

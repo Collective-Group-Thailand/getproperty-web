@@ -5,6 +5,7 @@ import { DEVICE_STATUS, DEVICE_VALUES } from "@/domain/status/device";
 import { FilterBar } from "@/features/shared/console/FilterBar";
 import { ListPagination } from "@/features/shared/console/ListPagination";
 import { ConsolePage, PageHeader } from "@/features/shared/console/PageHeader";
+import { viewCounts } from "@/features/shared/console/views";
 import { SectionError } from "@/features/shared/console/SectionError";
 import { MqttTransportBadge } from "@/features/shared/devices/MqttTransportBadge";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
@@ -12,16 +13,26 @@ import { formatDateTime, formatNumber, formatRelativeTime } from "@/i18n/format"
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
-import { Card, CardHeader } from "@/ui/components/Card";
+import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { ListToolbar } from "@/ui/components/ListToolbar";
 import { SimpleTable } from "@/ui/components/SimpleTable";
-import { Stat } from "@/ui/components/Stat";
+import { StatsRow } from "@/ui/components/StatsRow";
+import { IconBuilding } from "@/ui/icons/glyphs/building";
 import { IconGateway } from "@/ui/icons/glyphs/gateway";
 import { IconOffline } from "@/ui/icons/glyphs/offline";
-import { IconOnline } from "@/ui/icons/glyphs/online";
-import { IconWarning } from "@/ui/icons/glyphs/warning";
 
-import { enumParam, pageParam, param, section, tenantLabel, tenantNames, type AdminContext } from "../shared/server";
+import {
+  can,
+  enumParam,
+  pageParam,
+  param,
+  section,
+  tenantLabel,
+  tenantNames,
+  withQuery,
+  type AdminContext,
+} from "../shared/server";
 import { DEVICE_KINDS } from "./constants";
 import { ImportDevices, RegisterDevice } from "./DeviceActions";
 
@@ -74,13 +85,14 @@ function connectivity(rows: Schemas["FleetBuildingRowDto"][]) {
 export async function FleetView({ context, searchParams }: { context: AdminContext; searchParams: SearchParams }) {
   const t = await getTranslations("admin.fleet");
   const kinds = await getTranslations("admin.fleet.kind");
-  const { api, locale } = context;
+  const { api, locale, me } = context;
+  const manage = can(me, "admin.device.manage");
   const kind = enumParam(searchParams.kind, DEVICE_KINDS);
   const status = enumParam(searchParams.status, DEVICE_VALUES);
   const buildingId = /^[0-9a-f-]{36}$/i.test(param(searchParams.buildingId) ?? "")
     ? param(searchParams.buildingId)
     : undefined;
-  const [summary, devices, names] = await Promise.all([
+  const [summary, devices, names, counts] = await Promise.all([
     section(unwrap(api.GET("/v1/admin/devices/fleet"))),
     section(
       unwrap(
@@ -99,17 +111,13 @@ export async function FleetView({ context, searchParams }: { context: AdminConte
       ),
     ),
     tenantNames(),
+    viewCounts(["online", "degraded", "offline", "inventory"] as const, (key) =>
+      unwrap(api.GET("/v1/admin/devices", { params: { query: { status: key, perPage: 1 } } })),
+    ),
   ]);
   const buildings = summary.data ? connectivity(summary.data.byBuilding) : [];
-  const totals = buildings.reduce(
-    (sum, building) => ({
-      online: sum.online + building.online,
-      degraded: sum.degraded + building.degraded,
-      offline: sum.offline + building.offline,
-    }),
-    { online: 0, degraded: 0, offline: 0 },
-  );
-  const stock = summary.data?.inventory.reduce((sum, row) => sum + row.count, 0) ?? 0;
+  const q = param(searchParams.q);
+  const filtered = Boolean(q || kind || status || buildingId);
 
   return (
     <ConsolePage testId="fleet">
@@ -117,141 +125,114 @@ export async function FleetView({ context, searchParams }: { context: AdminConte
         title={t("title")}
         description={t("description")}
         actions={
-          <>
-            <ImportDevices />
-            <RegisterDevice />
-          </>
+          manage ? (
+            <>
+              <ImportDevices />
+              <RegisterDevice />
+            </>
+          ) : null
         }
       />
-      {!summary.data ? (
-        <SectionError error={summary.error} />
-      ) : (
-        <>
-          <div className="grid grid-cols-2 gap-4 xl:grid-cols-4" data-testid="fleet-stats">
-            <Stat
-              icon={IconOnline}
-              label={t("online")}
-              value={<span data-testid="fleet-online">{formatNumber(totals.online, locale)}</span>}
-            />
-            <Stat
-              icon={IconWarning}
-              label={t("degraded")}
-              value={<span data-testid="fleet-degraded">{formatNumber(totals.degraded, locale)}</span>}
-            />
-            <Stat
-              icon={IconOffline}
-              label={t("offline")}
-              value={<span data-testid="fleet-offline">{formatNumber(totals.offline, locale)}</span>}
-            />
-            <Stat
-              icon={IconGateway}
-              label={t("inventory")}
-              value={formatNumber(stock, locale)}
-              hint={
-                summary.data.inventory
-                  .map((row) => `${kinds(row.kind)} ${formatNumber(row.count, locale)}`)
-                  .join(" · ") || undefined
-              }
-            />
-          </div>
-          <Card as="section" aria-labelledby="fleet-buildings">
-            <CardHeader title={<span id="fleet-buildings">{t("byBuilding")}</span>} description={t("byBuildingHint")} />
-            {buildings.length === 0 ? (
-              <EmptyState title={t("noBuildings")} />
-            ) : (
-              <SimpleTable
-                caption={t("byBuilding")}
-                testId="fleet-buildings"
-                minWidth="48rem"
-                columns={[
-                  { key: "building", header: t("col.building") },
-                  { key: "tenant", header: t("col.tenant") },
-                  { key: "online", header: t("online"), align: "end" },
-                  { key: "degraded", header: t("degraded"), align: "end" },
-                  { key: "offline", header: t("offline"), align: "end" },
-                ]}
-                rows={buildings.map((building) => ({
-                  key: building.id,
-                  testId: "fleet-building",
-                  data: { offline: building.offline, degraded: building.degraded },
-                  tone: building.offline > 0 ? "danger" : building.degraded > 0 ? "warning" : "default",
-                  cells: {
-                    building: (
-                      <a href={`/devices?buildingId=${building.id}`} className="font-semibold hover:underline">
-                        {building.name}
-                      </a>
-                    ),
-                    tenant: building.tenantName ?? tenantLabel(names, building.tenantId, "—"),
-                    online: formatNumber(building.online, locale),
-                    degraded: formatNumber(building.degraded, locale),
-                    offline: formatNumber(building.offline, locale),
-                  },
-                }))}
-              />
-            )}
-          </Card>
-        </>
-      )}
-      <section aria-labelledby="fleet-devices" className="flex flex-col gap-3">
-        <h2 id="fleet-devices" className="text-lg font-semibold">
+      <StatsRow
+        label={t("statsLabel")}
+        highlight={(counts.offline ?? 0) > 0 ? "offline" : undefined}
+        figures={(["online", "degraded", "offline", "inventory"] as const)
+          .filter((key) => counts[key] !== undefined)
+          .map((key) => ({
+            key,
+            label: key === "inventory" ? t("inventory") : t(key),
+            value: <span data-testid={`fleet-${key}`}>{formatNumber(counts[key]!, locale)}</span>,
+            hint:
+              key === "inventory" && summary.data
+                ? summary.data.inventory
+                    .map((row) => `${kinds(row.kind)} ${formatNumber(row.count, locale)}`)
+                    .join(" · ") || undefined
+                : undefined,
+            href: withQuery("/devices", { status: key }),
+          }))}
+      />
+      <section aria-labelledby="fleet-devices" className="flex flex-col gap-4">
+        <h2 id="fleet-devices" className="sr-only">
           {t("devices")}
         </h2>
         {buildingId ? (
           <p className="text-sm" data-testid="fleet-building-filter">
-            {t("buildingFilter", { name: buildings.find((b) => b.id === buildingId)?.name ?? buildingId.slice(0, 8) })}{" "}
+            {t("buildingFilter", { name: buildings.find((b) => b.id === buildingId)?.name ?? t("aBuilding") })}{" "}
             <Link href="/devices" className="text-primary hover:underline">
               {t("clearBuilding")}
             </Link>
           </p>
         ) : null}
-        <FilterBar
-          fields={[
-            { name: "q", label: t("search"), type: "search", placeholder: t("searchPlaceholder") },
-            {
-              name: "kind",
-              label: t("col.kind"),
-              type: "select",
-              placeholder: t("allKinds"),
-              options: DEVICE_KINDS.map((value) => ({ value, label: kinds(value) })),
-            },
-            {
-              name: "status",
-              label: t("col.status"),
-              type: "select",
-              placeholder: t("allStatuses"),
-              options: DEVICE_VALUES.map((value) => ({ value, label: t(`statusName.${value}`) })),
-            },
-          ]}
+        <ListToolbar
+          filters={
+            <FilterBar
+              variant="toolbar"
+              fields={[
+                { name: "q", label: t("search"), type: "search", placeholder: t("searchPlaceholder") },
+                {
+                  name: "kind",
+                  label: t("col.kind"),
+                  type: "select",
+                  placeholder: t("allKinds"),
+                  options: DEVICE_KINDS.map((value) => ({ value, label: kinds(value) })),
+                },
+                {
+                  name: "status",
+                  label: t("col.status"),
+                  type: "select",
+                  placeholder: t("allStatuses"),
+                  options: DEVICE_VALUES.map((value) => ({ value, label: t(`statusName.${value}`) })),
+                },
+              ]}
+            />
+          }
         />
         {!devices.data ? (
           <SectionError error={devices.error} />
         ) : devices.data.data.length === 0 ? (
-          <Card>
-            <EmptyState title={t("noDevices")} />
-          </Card>
+          <EmptyState
+            variant="card"
+            icon={IconGateway}
+            title={filtered ? t("noDevicesFiltered") : t("noDevices")}
+            action={
+              filtered ? (
+                <Button asChild variant="secondary">
+                  <Link href="/devices">{t("clearFilters")}</Link>
+                </Button>
+              ) : manage ? (
+                <RegisterDevice />
+              ) : (
+                <Button asChild variant="secondary">
+                  <Link href="/">{t("backHome")}</Link>
+                </Button>
+              )
+            }
+          />
         ) : (
           <SimpleTable
             caption={t("devices")}
             testId="device-table"
+            stackOnPhones
             minWidth="64rem"
             columns={[
-              { key: "serial", header: t("col.serial") },
-              { key: "kind", header: t("col.kind") },
-              { key: "tenant", header: t("col.tenant") },
-              { key: "ring", header: t("col.ring") },
-              { key: "firmware", header: t("col.firmware") },
-              { key: "seen", header: t("col.seen") },
-              { key: "status", header: t("col.status") },
+              { key: "serial", header: t("col.serial"), phone: "title" },
+              { key: "kind", header: t("col.kind"), phone: "meta" },
+              { key: "tenant", header: t("col.tenant"), phone: "meta" },
+              { key: "ring", header: t("col.ring"), phone: "hidden" },
+              { key: "firmware", header: t("col.firmware"), phone: "hidden" },
+              { key: "seen", header: t("col.seen"), phone: "meta" },
+              { key: "status", header: t("col.status"), phone: "status" },
             ]}
             rows={devices.data.data.map((device) => ({
               key: device.id,
+              href: `/devices/${device.id}`,
               testId: "device-row",
               data: { serial: device.serial, status: device.status, "ws-fallback": String(device.mqttWsFallback) },
               cells: {
                 serial: (
-                  <a href={`/devices/${device.id}`} className="flex flex-col hover:underline">
+                  <span className="flex flex-col">
                     <span className="font-mono font-semibold">{device.serial}</span>
-                    <span className="text-muted text-xs">
+                    <span className="text-muted text-sm font-normal">
                       {device.vendor} {device.model}
                     </span>
                     {device.kind === "gateway" && device.mqttWsFallback ? (
@@ -259,21 +240,23 @@ export async function FleetView({ context, searchParams }: { context: AdminConte
                         <MqttTransportBadge enabled size="sm" />
                       </span>
                     ) : null}
-                  </a>
+                  </span>
                 ),
                 kind: (
-                  <span className="flex flex-col gap-1">
+                  <span className="flex flex-col">
                     <span>{kinds(device.kind)}</span>
-                    <Badge size="sm" tone={device.ownership === "platform_haas" ? "info" : "neutral"}>
-                      {t(`ownership.${device.ownership}`)}
-                    </Badge>
+                    <span className="text-muted text-sm">{t(`ownership.${device.ownership}`)}</span>
                   </span>
                 ),
                 tenant: tenantLabel(names, device.tenantId, t("stock")),
                 ring: device.kind === "gateway" ? t(`ring.${device.otaRing}`) : "—",
-                firmware: device.firmwareVersion ?? "—",
+                firmware: <span className="font-mono text-sm">{device.firmwareVersion ?? "—"}</span>,
                 seen: device.lastSeenAt ? (
-                  <time dateTime={device.lastSeenAt} title={formatDateTime(device.lastSeenAt, locale)}>
+                  <time
+                    dateTime={device.lastSeenAt}
+                    title={formatDateTime(device.lastSeenAt, locale)}
+                    className="whitespace-nowrap"
+                  >
                     {formatRelativeTime(device.lastSeenAt, locale)}
                   </time>
                 ) : (
@@ -288,6 +271,64 @@ export async function FleetView({ context, searchParams }: { context: AdminConte
           <ListPagination meta={devices.data.meta} path="/devices" searchParams={searchParams} locale={locale} />
         ) : null}
       </section>
+      {!summary.data ? (
+        <SectionError error={summary.error} />
+      ) : (
+        <section aria-labelledby="fleet-buildings" className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1">
+            <h2 id="fleet-buildings" className="text-lg font-semibold">
+              {t("byBuilding")}
+            </h2>
+            <p className="text-muted text-sm">{t("byBuildingHint")}</p>
+          </div>
+          {buildings.length === 0 ? (
+            <EmptyState
+              variant="card"
+              icon={IconBuilding}
+              title={t("noBuildings")}
+              action={
+                <Button asChild variant="secondary">
+                  <Link href="/tenants">{t("openTenants")}</Link>
+                </Button>
+              }
+            />
+          ) : (
+            <SimpleTable
+              caption={t("byBuilding")}
+              testId="fleet-buildings"
+              stackOnPhones
+              minWidth="48rem"
+              columns={[
+                { key: "building", header: t("col.building"), phone: "title" },
+                { key: "tenant", header: t("col.tenant"), phone: "meta" },
+                { key: "online", header: t("online"), align: "end", phone: "meta", phoneLabel: true },
+                { key: "degraded", header: t("degraded"), align: "end", phone: "meta", phoneLabel: true },
+                { key: "offline", header: t("offline"), align: "end", phone: "status", phoneLabel: true },
+              ]}
+              rows={buildings.map((building) => ({
+                key: building.id,
+                href: `/devices?buildingId=${building.id}`,
+                testId: "fleet-building",
+                data: { offline: building.offline, degraded: building.degraded },
+                cells: {
+                  building: <span className="font-semibold">{building.name}</span>,
+                  tenant: building.tenantName ?? tenantLabel(names, building.tenantId, "—"),
+                  online: formatNumber(building.online, locale),
+                  degraded: formatNumber(building.degraded, locale),
+                  offline:
+                    building.offline > 0 ? (
+                      <Badge tone="danger" size="sm" icon={IconOffline}>
+                        {formatNumber(building.offline, locale)}
+                      </Badge>
+                    ) : (
+                      formatNumber(building.offline, locale)
+                    ),
+                },
+              }))}
+            />
+          )}
+        </section>
+      )}
     </ConsolePage>
   );
 }

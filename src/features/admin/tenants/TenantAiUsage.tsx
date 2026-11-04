@@ -1,11 +1,13 @@
 import { getTranslations } from "next-intl/server";
+import Link from "next/link";
 
 import { SectionError } from "@/features/shared/console/SectionError";
 import { SimpleTable } from "@/ui/components/SimpleTable";
 import { formatNumber, formatPeriodKey, formatTHB } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
-import { Card } from "@/ui/components/Card";
+import { Badge } from "@/ui/components/Badge";
+import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { IconCpu } from "@/ui/icons/glyphs/cpu";
 
@@ -34,9 +36,17 @@ export async function TenantAiUsage({
   );
   if (months.length === 0)
     return (
-      <Card>
-        <EmptyState icon={IconCpu} title={t("empty")} description={t("emptyHint")} />
-      </Card>
+      <EmptyState
+        variant="card"
+        icon={IconCpu}
+        title={t("empty")}
+        description={t("emptyHint")}
+        action={
+          <Button asChild variant="secondary">
+            <Link href="/ai-usage">{t("openPlatform")}</Link>
+          </Button>
+        }
+      />
     );
   return (
     <div className="flex flex-col gap-3">
@@ -44,29 +54,36 @@ export async function TenantAiUsage({
       <SimpleTable
         caption={t("title")}
         testId="ai-usage"
-        minWidth="44rem"
+        stackOnPhones
+        minWidth="48rem"
         columns={[
-          { key: "month", header: t("col.month") },
-          { key: "feature", header: t("col.feature") },
-          { key: "calls", header: t("col.calls"), align: "end" },
-          { key: "units", header: t("col.units"), align: "end" },
-          { key: "allowance", header: t("col.allowance"), align: "end" },
-          { key: "overage", header: t("col.overage"), align: "end" },
-          { key: "cost", header: t("col.cost"), align: "end" },
+          { key: "month", header: t("col.month"), phone: "meta" },
+          { key: "feature", header: t("col.feature"), phone: "title" },
+          { key: "calls", header: t("col.calls"), align: "end", phone: "hidden" },
+          { key: "units", header: t("col.units"), align: "end", phone: "meta" },
+          { key: "allowance", header: t("col.allowance"), align: "end", phone: "hidden" },
+          { key: "overage", header: t("col.overage"), align: "end", phone: "status" },
+          { key: "cost", header: t("col.cost"), align: "end", phone: "figure" },
         ]}
         rows={months.map((row) => ({
           key: `${row.month}-${row.feature}`,
           testId: "ai-usage-row",
           data: { feature: row.feature },
-          tone: row.overage > 0 ? "warning" : "default",
           cells: {
             month: formatPeriodKey(row.month.slice(0, 7), locale),
             feature: t(`feature.${row.feature}`),
             calls: formatNumber(row.calls, locale),
             units: formatNumber(row.units, locale),
             allowance: row.allowance === null ? "—" : formatNumber(row.allowance, locale),
-            overage: formatNumber(row.overage, locale),
-            cost: formatTHB(row.costThb, locale),
+            overage:
+              row.overage > 0 ? (
+                <Badge tone="warning" size="sm">
+                  {t("overageValue", { count: formatNumber(row.overage, locale) })}
+                </Badge>
+              ) : (
+                <span className="text-muted">{formatNumber(0, locale)}</span>
+              ),
+            cost: <span className="whitespace-nowrap">{formatTHB(row.costThb, locale)}</span>,
           },
         }))}
       />

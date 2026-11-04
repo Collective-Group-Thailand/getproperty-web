@@ -15,7 +15,7 @@ import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 
 import { BUILDING_COOKIE } from "@/features/shared/shell/building";
-import { OWNER_BOTTOM_NAV, OWNER_MENU, OWNER_MENU_GROUPS } from "./menu";
+import { OWNER_BOTTOM_NAV, OWNER_MENU, OWNER_MENU_GROUPS, SETTINGS_SECTION_KEYS } from "./menu";
 import { OwnerShellFrame } from "./OwnerShellFrame";
 
 async function buildings(): Promise<Schemas["BuildingDto"][]> {
@@ -41,7 +41,9 @@ export async function OwnerShell({
 }) {
   const t = await getTranslations();
   const prefix = (href: string) => getPathname({ href, locale });
-  const items: ShellNavItem[] = entitledMenu(me.menu, OWNER_MENU).map((item) => ({
+  // One "ตั้งค่า" entry for the settings frame's sections (G6) when the member opens the settings at all.
+  const menu = me.menu.includes("settings") ? me.menu.filter((key) => !SETTINGS_SECTION_KEYS.has(key)) : me.menu;
+  const items: ShellNavItem[] = entitledMenu(menu, OWNER_MENU).map((item) => ({
     ...item,
     href: prefix(item.href),
     label: t(`owner.nav.${item.key}`),

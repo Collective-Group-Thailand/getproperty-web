@@ -47,7 +47,12 @@
       "reason": "Reason",
       "reasonHint": "Shown to the author and the owner. Up to 1,000 characters.",
       "invalidState": "Someone already decided on this review. The list has been refreshed."
-    }
+    },
+    "title": "Building reviews",
+    "description": "Verified residents’ reviews waiting for a decision, reported by an owner, or hidden.",
+    "reportedBadge": "Reported",
+    "openReported": "Open reported reviews",
+    "openPending": "Open reviews to approve"
   },
   "handoffs": {
     "intro": "Units getbuild transferred with the buyer's wish to rent out. getbuild shows the buyer the invitation; getproperty never contacts the buyer itself.",
@@ -74,6 +79,9 @@
     "resendBody": "getbuild receives a new single-use link now and the previous one stops working.",
     "resent": "New invitation sent to getbuild",
     "invalidState": "This invitation is no longer waiting (claimed, declined or expired).",
-    "lastError": "Last error: {error}"
+    "lastError": "Last error: {error}",
+    "all": "All",
+    "clear": "Clear filter",
+    "openListings": "Open listing moderation"
   }
 }

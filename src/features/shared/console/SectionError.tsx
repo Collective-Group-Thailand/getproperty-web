@@ -1,34 +1,51 @@
 import { getTranslations } from "next-intl/server";
 
+import Link from "next/link";
+
 import { isApiError, NetworkError } from "@/lib/api/errors";
+import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
+import { EmptyState } from "@/ui/components/EmptyState";
 import { IconLock } from "@/ui/icons/glyphs/lock";
 
 /**
  * A section of a server-rendered console page whose API read failed (`section()`): the API's own
  * localised title and detail with the request id — or "no connection" — while the rest of the page
- * still renders. Server-only markup; the error object never crosses into a client component.
+ * still renders. A refusal for the person's role (403) is not an error (redesign G0 revision, G8): the same calm
+ * card with a lock as `ZoneForbidden` — what happened, who can change it, the way home — never a red error. The
+ * API's localised detail, when it sends one, replaces the generic sentence; the request id stays available for
+ * support. Server-only markup; the error object never crosses into a client component.
  */
 export async function SectionError({ error, className }: { error: unknown; className?: string }) {
   const t = await getTranslations("errors");
   const common = await getTranslations("common");
   const api = isApiError(error) ? error : null;
   const offline = error instanceof NetworkError;
-  if (api?.status === 403) {
-    // "Not allowed" (redesign G0 revision): a calm neutral notice with a lock, who can change it — never a red error.
+  if (api?.status === 403)
     return (
-      <div role="alert" data-testid="section-error" data-code={api.code} className={className}>
-        <Callout tone="neutral" icon={IconLock} title={t("forbidden.sectionTitle")} legalRef={api.legalRef}>
-          <p>{api.detail || t("forbidden.sectionBody")}</p>
-          {api.requestId ? (
-            <p className="text-muted mt-1 font-mono text-xs">
-              {common("requestId")}: {api.requestId}
-            </p>
-          ) : null}
-        </Callout>
+      <div data-testid="section-error" data-code={api.code} className={className}>
+        <EmptyState
+          variant="card"
+          icon={IconLock}
+          title={t("forbidden.sectionTitle")}
+          description={
+            <>
+              {api.detail || t("forbidden.sectionBody")}
+              {api.requestId ? (
+                <span className="text-muted mt-2 block font-mono text-xs">
+                  {common("requestId")}: {api.requestId}
+                </span>
+              ) : null}
+            </>
+          }
+          action={
+            <Button asChild variant="secondary">
+              <Link href="/">{t("forbidden.home")}</Link>
+            </Button>
+          }
+        />
       </div>
     );
-  }
   return (
     <div role="alert" data-testid="section-error" data-code={api?.code ?? "unexpected"} className={className}>
       <Callout

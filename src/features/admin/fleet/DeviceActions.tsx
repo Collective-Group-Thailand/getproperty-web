@@ -246,7 +246,7 @@ export function DeviceActions({
 
   return (
     <div className="flex flex-col gap-3" data-testid="device-actions">
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-col gap-2 [&>button]:w-full [&>span>button]:w-full">
         {actions.has("assign") ? (
           <FormDialog
             label={t("assign")}
@@ -402,55 +402,59 @@ export function DeviceActions({
           </Button>
         ) : null}
         {actions.has("set-mqtt-transport") ? <MqttTransportAction device={device} /> : null}
-        {actions.has("revoke-certificates") ? (
-          <ConfirmAction
-            label={t("revoke")}
-            icon={IconKey}
-            variant="destructive"
-            tone="destructive"
-            testId="revoke-certificates"
-            title={t("revokeTitle", { serial: device.serial })}
-            description={t("revokeBody")}
-            confirmLabel={t("revoke")}
-            phrase={device.serial}
-            ready={reason.trim().length > 0}
-            successMessage={t("revoked")}
-            onConfirm={(key) =>
-              unwrap(
-                browserApi().POST("/v1/admin/devices/{deviceId}/actions/revoke-certificates", {
-                  params: { path: { deviceId: device.id }, header: { "Idempotency-Key": key } },
-                  body: { reason: reason.trim(), incidentRef: incident.trim() || null },
-                }),
-              )
-            }
-          >
-            {reasonFields("revoke")}
-          </ConfirmAction>
-        ) : null}
-        {actions.has("retire") ? (
-          <ConfirmAction
-            label={t("retire")}
-            icon={IconRemove}
-            variant="destructive"
-            tone="destructive"
-            testId="retire-device"
-            title={t("retireTitle", { serial: device.serial })}
-            description={t("retireBody")}
-            confirmLabel={t("retire")}
-            phrase={device.serial}
-            ready={reason.trim().length > 0}
-            successMessage={t("retired")}
-            onConfirm={(key) =>
-              unwrap(
-                browserApi().POST("/v1/admin/devices/{deviceId}/actions/retire", {
-                  params: { path: { deviceId: device.id }, header: { "Idempotency-Key": key } },
-                  body: { reason: reason.trim(), incidentRef: incident.trim() || null },
-                }),
-              )
-            }
-          >
-            {reasonFields("retire")}
-          </ConfirmAction>
+        {actions.has("revoke-certificates") || actions.has("retire") ? (
+          <div className="border-border mt-2 flex flex-col gap-2 border-t pt-3 [&>button]:w-full">
+            {actions.has("revoke-certificates") ? (
+              <ConfirmAction
+                label={t("revoke")}
+                icon={IconKey}
+                variant="destructive"
+                tone="destructive"
+                testId="revoke-certificates"
+                title={t("revokeTitle", { serial: device.serial })}
+                description={t("revokeBody")}
+                confirmLabel={t("revoke")}
+                phrase={device.serial}
+                ready={reason.trim().length > 0}
+                successMessage={t("revoked")}
+                onConfirm={(key) =>
+                  unwrap(
+                    browserApi().POST("/v1/admin/devices/{deviceId}/actions/revoke-certificates", {
+                      params: { path: { deviceId: device.id }, header: { "Idempotency-Key": key } },
+                      body: { reason: reason.trim(), incidentRef: incident.trim() || null },
+                    }),
+                  )
+                }
+              >
+                {reasonFields("revoke")}
+              </ConfirmAction>
+            ) : null}
+            {actions.has("retire") ? (
+              <ConfirmAction
+                label={t("retire")}
+                icon={IconRemove}
+                variant="destructive"
+                tone="destructive"
+                testId="retire-device"
+                title={t("retireTitle", { serial: device.serial })}
+                description={t("retireBody")}
+                confirmLabel={t("retire")}
+                phrase={device.serial}
+                ready={reason.trim().length > 0}
+                successMessage={t("retired")}
+                onConfirm={(key) =>
+                  unwrap(
+                    browserApi().POST("/v1/admin/devices/{deviceId}/actions/retire", {
+                      params: { path: { deviceId: device.id }, header: { "Idempotency-Key": key } },
+                      body: { reason: reason.trim(), incidentRef: incident.trim() || null },
+                    }),
+                  )
+                }
+              >
+                {reasonFields("retire")}
+              </ConfirmAction>
+            ) : null}
+          </div>
         ) : null}
       </div>
       <ProblemNotice error={codeAction.error} />

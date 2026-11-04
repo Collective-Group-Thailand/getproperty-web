@@ -18,6 +18,7 @@ export function DateField({
   min,
   max,
   placeholder,
+  inputSize,
   onChange,
 }: {
   name: string;
@@ -25,6 +26,8 @@ export function DateField({
   min?: string;
   max?: string;
   placeholder?: string;
+  /** `sm` (36 px) inside a list toolbar, beside the other `sm` filters. */
+  inputSize?: "sm" | "md";
   onChange?: (value: string | null) => void;
 }) {
   const locale = useLocale() as Locale;
@@ -44,6 +47,7 @@ export function DateField({
         min={min}
         max={max}
         placeholder={placeholder}
+        inputSize={inputSize}
       />
     </>
   );

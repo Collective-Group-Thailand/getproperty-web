@@ -93,14 +93,7 @@ export function Chart({
         >
           {ticks.map((tick) => (
             <g key={tick}>
-              <line
-                x1={PAD.left}
-                x2={WIDTH - PAD.right}
-                y1={y(tick)}
-                y2={y(tick)}
-                className="stroke-border"
-                strokeDasharray="3 3"
-              />
+              <line x1={PAD.left} x2={WIDTH - PAD.right} y1={y(tick)} y2={y(tick)} className="stroke-border" />
               <text x={PAD.left - 8} y={y(tick) + 4} textAnchor="end" className="fill-muted text-2xs tabular-nums">
                 {formatValue(tick.toFixed(2))}
               </text>
@@ -128,14 +121,22 @@ export function Chart({
                   points={segment}
                   fill="none"
                   className="stroke-primary"
-                  strokeWidth={2}
+                  strokeWidth={1.75}
                   strokeLinejoin="round"
+                  strokeLinecap="round"
                 />
               ))}
           {type === "line"
             ? values.map((value, index) =>
                 value === null || !Number.isFinite(value) ? null : (
-                  <circle key={points[index]!.key} cx={x(index)} cy={y(value)} r={3} className="fill-primary">
+                  <circle
+                    key={points[index]!.key}
+                    cx={x(index)}
+                    cy={y(value)}
+                    r={2.5}
+                    className="fill-surface stroke-primary"
+                    strokeWidth={1.5}
+                  >
                     <title>{tip(index)}</title>
                   </circle>
                 ),

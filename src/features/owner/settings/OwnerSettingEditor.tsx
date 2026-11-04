@@ -16,7 +16,6 @@ import { Checkbox } from "@/ui/components/Checkbox";
 import { Field } from "@/ui/components/Field";
 import { Input, Textarea } from "@/ui/components/Input";
 import { NativeSelect } from "@/ui/components/NativeSelect";
-import { IconEdit } from "@/ui/icons/glyphs/edit";
 
 type Json = Record<string, unknown>;
 
@@ -59,14 +58,61 @@ export function settingValueFrom(key: string, valueType: SettingValueType, data:
       if (!TIME.test(start) || !TIME.test(end)) return undefined;
       return { ...asRecord(current), start, end, timezone: String(asRecord(current).timezone ?? "Asia/Bangkok") };
     }
+    case "tax.vat": {
+      // The rate is typed as a percentage ("7") and sent as the API's fraction string ("0.07").
+      const percent = (text(data, "ratePercent") ?? "").trim();
+      if (!/^\d{1,2}(\.\d{1,2})?$/.test(percent)) return undefined;
+      const [whole = "0", fraction = ""] = percent.split(".");
+      const digits = `${whole.padStart(3, "0")}${fraction.padEnd(2, "0")}`; // 7 → "00700" = 0.0700
+      const rate = `${digits.slice(0, 1)}.${digits.slice(1)}`.replace(/0+$/, "").replace(/\.$/, ".0");
+      return { ...asRecord(current), rate };
+    }
     default:
       return parseSettingValue(valueType, String(data.get("value") ?? ""));
   }
 }
 
+/** The unit a number setting is typed in (shown beside the field and in the row's value). */
+export const SETTING_UNIT: Record<string, "hours" | "days" | "minutes" | "percent" | "months"> = {
+  "billing.reading_grace_hours": "hours",
+  "payments.duplicate_window_hours": "hours",
+  "tm30.notify_within_hours": "hours",
+  "access.work_order_window_hours": "hours",
+  "access.resident_visitor_max_hours": "hours",
+  "deposit.refund_days": "days",
+  "readings.round_window_days": "days",
+  "analytics.csat_survey_interval_days": "days",
+  "viewing.self.code_minutes": "minutes",
+  "viewing.self.code_early_minutes": "minutes",
+  "viewing.self.overstay_minutes": "minutes",
+  "access.battery_low_pct": "percent",
+  "readings.plausibility_pct": "percent",
+  "deposit.max_months_short": "months",
+};
+
+/** "0.07" → "7" for the VAT field (string work only — no arithmetic on the API's decimal). */
+function vatPercentText(rate: unknown): string {
+  if (typeof rate !== "string" || !/^0\.\d+$/.test(rate)) return "";
+  const digits = rate.slice(2).padEnd(4, "0");
+  const whole = String(Number(digits.slice(0, 2)));
+  const fraction = digits.slice(2).replace(/0+$/, "");
+  return fraction ? `${whole}.${fraction}` : whole;
+}
+
+/** A field with its unit beside it ("24 ชั่วโมง"): the unit is part of the control, not a hint to read. */
+function UnitInput({ unit, children }: { unit: string; children: React.ReactNode }) {
+  return (
+    <span className="flex items-center gap-3">
+      <span className="w-40">{children}</span>
+      <span className="text-muted text-base">{unit}</span>
+    </span>
+  );
+}
+
 function StructuredFields({ setting, errors }: { setting: Schemas["SettingDto"]; errors: Record<string, string> }) {
   const t = useTranslations("owner.settings.editor");
   const common = useTranslations("console.setting");
+  const units = useTranslations("owner.settings.unit");
   const value = setting.value as unknown;
   const record = asRecord(value);
   switch (setting.key) {
@@ -155,6 +201,20 @@ function StructuredFields({ setting, errors }: { setting: Schemas["SettingDto"];
           </Field>
         </div>
       );
+    case "tax.vat":
+      return (
+        <Field label={t("vatRate")} hint={t("vatRateHint")} required error={errors.value}>
+          <UnitInput unit={units("percent")}>
+            <Input
+              name="ratePercent"
+              inputMode="decimal"
+              required
+              defaultValue={vatPercentText(record.rate)}
+              data-testid="setting-value"
+            />
+          </UnitInput>
+        </Field>
+      );
     case "billing.estimate_policy":
       return (
         <Field label={common("value")} required error={errors.value}>
@@ -171,6 +231,20 @@ function StructuredFields({ setting, errors }: { setting: Schemas["SettingDto"];
       );
   }
   const type = setting.valueType as SettingValueType;
+  const unit = SETTING_UNIT[setting.key];
+  if (unit && (type === "int" || type === "decimal"))
+    return (
+      <Field label={common("value")} required error={errors.value}>
+        <UnitInput unit={units(unit)}>
+          <Input
+            name="value"
+            inputMode={type === "int" ? "numeric" : "decimal"}
+            defaultValue={settingInput(type, value)}
+            data-testid="setting-value"
+          />
+        </UnitInput>
+      </Field>
+    );
   return (
     <Field label={common("value")} hint={common(`hint.${type}`)} required error={errors.value}>
       {type === "bool" ? (
@@ -217,7 +291,6 @@ export function OwnerSettingEditor({
   return (
     <FormDialog
       label={common("edit")}
-      icon={IconEdit}
       size="sm"
       testId={`edit-${setting.key}`}
       title={t("title", { name: label })}

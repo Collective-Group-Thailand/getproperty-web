@@ -6,6 +6,9 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { useLocale, useTranslations } from "next-intl";
 
 import type { Locale } from "@/i18n/routing";
+
+import { useDateLabels } from "./labels";
+import { DatePicker } from "@/ui/components/DatePicker";
 import { Field } from "@/ui/components/Field";
 import { PeriodPicker } from "@/ui/components/PeriodPicker";
 import { Input } from "@/ui/components/Input";
@@ -36,7 +39,9 @@ export type FilterField =
       /** The month the page shows when the URL names none (the page's own default). */
       fallback?: string;
     }
-  | { name: string; label: string; type: "number"; min?: number; placeholder?: string };
+  | { name: string; label: string; type: "number"; min?: number; placeholder?: string }
+  /** A day (`YYYY-MM-DD` in the URL) on the console's Thai date picker; the label is its placeholder (G6). */
+  | { name: string; label: string; type: "date" };
 
 /**
  * The filters of an owner list as URL search parameters (F2): every change replaces the URL — the
@@ -58,6 +63,7 @@ export function FilterBar({
 }) {
   const t = useTranslations("console.period");
   const sheet = useTranslations("console.filterSheet");
+  const dateLabels = useDateLabels();
   const locale = useLocale() as Locale;
   const router = useRouter();
   const pathname = usePathname();
@@ -103,6 +109,19 @@ export function FilterBar({
             allLabel={field.allLabel}
             testId={testId}
           />
+        );
+      if (field.type === "date")
+        return (
+          <div data-testid={testId}>
+            <DatePicker
+              value={params.get(field.name)}
+              onChange={(value) => apply(field.name, value ?? "")}
+              locale={locale}
+              labels={dateLabels}
+              placeholder={field.label}
+              inputSize={size}
+            />
+          </div>
         );
       if (field.type === "search") return null;
       return (
@@ -154,7 +173,13 @@ export function FilterBar({
             key={field.name}
             className={cn(
               "hidden md:block",
-              field.type === "select" ? "min-w-36" : field.type === "period" ? "" : "w-44",
+              field.type === "select"
+                ? "min-w-36"
+                : field.type === "period"
+                  ? ""
+                  : field.type === "date"
+                    ? "w-40"
+                    : "w-44",
             )}
           >
             {control(field, false)}

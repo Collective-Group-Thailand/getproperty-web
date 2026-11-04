@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { usePathname } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 
 import { NotificationCentre } from "@/features/shared/notifications/NotificationCentre";
@@ -24,10 +25,14 @@ import { IconButton } from "@/ui/components/IconButton";
 import { IconInfo } from "@/ui/icons/glyphs/info";
 import { IconMenu } from "@/ui/icons/glyphs/menu";
 
+import type { TenantTab } from "../tenants/sections";
 import { CommandPalette, openCommandPalette } from "./CommandPalette";
+import { RecordNav, tenantRecordOf } from "./RecordNav";
 
 export interface AdminShellFrameProps {
   userName: string;
+  /** The phone top bar's title ("แอดมิน Collective"): the person's name lives in the account menu there. */
+  zoneLabel: string;
   rolesLabel: string;
   groups: ShellNavGroup[];
   envBadge?: string;
@@ -36,13 +41,16 @@ export interface AdminShellFrameProps {
   fakesLabel: string;
   /** The logo, rendered by the server shell (`shellBrand()`). */
   brand: ShellBrand;
+  /** The sections of a tenant record this user may open, labelled (the column's menu on a tenant's pages). */
+  tenantSections: { key: TenantTab; label: string }[];
+  recordLabels: { back: string; nav: string };
   children: React.ReactNode;
 }
 
 /**
  * The admin console frame (redesign G0): the one navigation column (ConsoleRail) from `/v1/admin/me` entitlements —
  * who is signed in, environment, jump-to, the menu, notifications and the account; on phones the column is the top
- * bar and the menu opens in a sheet.
+ * bar titled with the zone label, and the menu opens in a sheet from the start edge.
  */
 export function AdminShellFrame(props: AdminShellFrameProps) {
   // Marks the document interactive (hydrated): the e2e suite waits for it instead of clicking
@@ -55,6 +63,19 @@ export function AdminShellFrame(props: AdminShellFrameProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [signingOut, startSignOut] = useTransition();
   const items = props.groups.flatMap((group) => group.items);
+  // On a tenant's pages the column becomes the record: the way back, its name, its sections (redesign G8).
+  const record = tenantRecordOf(usePathname());
+  const recordNav = (size: "md" | "touch") =>
+    record ? (
+      <RecordNav
+        tenantId={record}
+        sections={props.tenantSections}
+        back={{ label: props.recordLabels.back, href: "/tenants" }}
+        label={props.recordLabels.nav}
+        size={size}
+        collapsed={size === "md" && collapsed}
+      />
+    ) : null;
   return (
     <AppShell
       skipLabel={t("shell.skipToContent")}
@@ -68,12 +89,15 @@ export function AdminShellFrame(props: AdminShellFrameProps) {
           mobileMenu={<IconButton icon={IconMenu} label={t("shell.moreMenu")} onClick={() => setMenuOpen(true)} />}
           workspace={
             <>
-              <RailWorkspace
-                name={props.userName}
-                nameTestId="platform-user"
-                role={props.rolesLabel}
-                roleTestId="platform-roles"
-              />
+              <span className="truncate text-sm font-semibold md:hidden">{props.zoneLabel}</span>
+              <div className="max-md:hidden">
+                <RailWorkspace
+                  name={props.userName}
+                  nameTestId="platform-user"
+                  role={props.rolesLabel}
+                  roleTestId="platform-roles"
+                />
+              </div>
               {props.apiFakes || props.envBadge ? (
                 <div className="hidden flex-wrap items-center gap-1 md:flex">
                   <EnvBadge label={props.envBadge} />
@@ -87,7 +111,7 @@ export function AdminShellFrame(props: AdminShellFrameProps) {
             </>
           }
           search={<CommandPalette items={items} collapsed={collapsed} />}
-          nav={<ZoneSidebar groups={props.groups} collapsed={collapsed} />}
+          nav={recordNav("md") ?? <ZoneSidebar groups={props.groups} collapsed={collapsed} />}
           tools={
             <>
               <NotificationCentre zone="admin" />
@@ -112,7 +136,8 @@ export function AdminShellFrame(props: AdminShellFrameProps) {
         {props.children}
       </ShellBreadcrumbs>
       {/* Phones (Stitch revision): a full-height menu from the start edge — who and which environment at the top, a
-          field-like jump-to, the grouped menu scrolling on its own, language and sign-out pinned at the foot. */}
+          field-like jump-to, the tenant record's sections on a tenant's pages (G8), the grouped menu scrolling on its
+          own, language and sign-out pinned at the foot. */}
       <LazySheet
         open={menuOpen}
         onOpenChange={setMenuOpen}
@@ -163,6 +188,7 @@ export function AdminShellFrame(props: AdminShellFrameProps) {
               openCommandPalette();
             }}
           />
+          {record ? <div className="border-border border-b pb-4">{recordNav("touch")}</div> : null}
           <div className="-mx-5">
             <ZoneSidebar groups={props.groups} collapsed={false} size="touch" />
           </div>

@@ -21,15 +21,18 @@ export function FlagOverride({
   flagKey,
   tenantId,
   override,
+  label,
 }: {
   flagKey: string;
   tenantId: string;
   override: boolean | null;
+  /** The menu item's words when several overrides share one "⋯" ("กำหนดเฉพาะ: หอพักตัวอย่าง"). */
+  label?: string;
 }) {
   const t = useTranslations("admin.platform.flags");
   return (
     <FormDialog
-      label={t("override")}
+      label={label ?? t("override")}
       icon={IconEdit}
       size="sm"
       testId={`flag-override-${flagKey}`}

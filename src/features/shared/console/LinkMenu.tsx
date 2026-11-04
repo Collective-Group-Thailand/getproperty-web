@@ -15,18 +15,21 @@ export function LinkMenu({
   label,
   items,
   testId,
+  variant = "secondary",
 }: {
   /** Accessible name of the button and the menu, from `src/i18n`. */
   label: string;
   items: { id: string; label: string; href: string; icon?: IconGlyph; testId?: string }[];
   testId?: string;
+  /** `ghost` in a table row (the row is the target; the "⋯" stays quiet). */
+  variant?: "secondary" | "ghost";
 }) {
   const router = useRouter();
   if (items.length === 0) return null;
   return (
     <DropdownMenu
       label={label}
-      trigger={<IconButton icon={IconMore} label={label} variant="secondary" data-testid={testId} />}
+      trigger={<IconButton icon={IconMore} label={label} variant={variant} data-testid={testId} />}
       items={items.map((item) => ({
         id: item.id,
         label: <span data-testid={item.testId}>{item.label}</span>,

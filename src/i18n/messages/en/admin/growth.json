@@ -37,7 +37,8 @@
     "disputed": "Credit note requested — awaiting a second approver",
     "reason": "Reason",
     "reasonHint": "Kept on the credit note and in the audit trail",
-    "decideOnInvoice": "Approve on the invoice"
+    "decideOnInvoice": "Approve on the invoice",
+    "openInvoices": "Open platform invoices"
   },
   "media": {
     "intro": "Verified photo and 360° orders of every tenant. Once paid, book the partner photographer, upload the files as documents of the unit, then deliver.",
@@ -102,6 +103,10 @@
     "cancelBodyPaid": "The owner has paid. Money comes back only through a credit note Finance requests — nothing is refunded from here.",
     "cancelConfirm": "Cancel order",
     "cancelled": "Order cancelled",
-    "reason": "Reason"
+    "reason": "Reason",
+    "all": "All",
+    "clear": "Clear filters",
+    "openListings": "Open listing moderation",
+    "panelTitle": "Order"
   }
 }

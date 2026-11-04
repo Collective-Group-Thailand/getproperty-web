@@ -1,6 +1,6 @@
 {
   "title": "Utility tariffs",
-  "description": "The published utility rates that cap what tenants may charge (D-021a, D-140). A version is entered by one person, verified against the source by a second and then published.",
+  "description": "The rates the utilities publish — the ceiling customers may charge. One person enters a version, another checks it against the source, then it is published.",
   "col": {
     "tariff": "Tariff",
     "provider": "Utility",
@@ -15,7 +15,9 @@
     "line": "Line",
     "units": "Units",
     "price": "Rate",
-    "amount": "Amount"
+    "amount": "Amount",
+    "maker": "Entered by",
+    "checker": "Checked by"
   },
   "utility": {
     "electric": "Electricity",
@@ -33,7 +35,7 @@
   },
   "perUnit": "{price} THB/{unit}",
   "nonePublished": "Nothing published yet",
-  "workflowPending": "Version {label}",
+  "workflowPending": "Version from {label}",
   "workflowIdle": "No version waiting",
   "workflowHint": "Entered by one person, verified against the published source by a second, then published.",
   "inForce": "In force: {label}",
@@ -117,9 +119,9 @@
     "ftPeriodHint": "YYYY-MM",
     "ftPeriodPlaceholder": "e.g. 2027-01",
     "serviceCharge": "Service charge per month",
-    "serviceChargeHint": "Folded into the average rate (D-140)",
+    "serviceChargeHint": "Folded into the average rate",
     "minimumCharge": "Utility's minimum charge",
-    "minimumChargeHint": "Water (D-141)",
+    "minimumChargeHint": "Water",
     "vatRate": "VAT rate (%)",
     "vatIncluded": "Prices include VAT",
     "ceiling": "Ceiling per unit (as published)",
@@ -151,5 +153,46 @@
     "publishTitle": "Publish {label}?",
     "publishBody": "From {date} this version caps tenants' rates; the version in force then is closed. Type the date to confirm.",
     "published": "Published"
+  },
+  "code": "Code {code}",
+  "empty": "No tariffs yet",
+  "emptyBody": "Tariffs are added with the platform’s utilities.",
+  "openSettings": "Open platform settings",
+  "waitingChecker": "Waiting for a second checker",
+  "anotherUser": "Another platform user",
+  "inForceBadge": "In force · {price} THB/{unit}",
+  "diffBetween": "{from} → {to}",
+  "diffColumn": "{label}",
+  "diffOther": "Compare other versions",
+  "review": {
+    "title": "Review",
+    "verifyHint": "Check every value against the source document, then confirm.",
+    "publishHint": "Checked by a second person — ready to publish.",
+    "makerWaiting": "Waiting for a second person to check. You entered this version.",
+    "nothing": "Nothing for you to do on this version.",
+    "version": "Effective",
+    "maker": "Entered by",
+    "checker": "Checked by",
+    "rule": "The person who entered a version can’t check it."
+  },
+  "pathName": {
+    "ceilingPerUnit": "Ceiling per unit",
+    "ft_pricePerUnit": "Ft per unit",
+    "ft_period": "Ft period",
+    "ft_sourceUrl": "Ft source",
+    "flatPricePerUnit": "Flat price per unit",
+    "serviceCharge_amount": "Service charge",
+    "minimumCharge_amount": "Minimum charge",
+    "vat_rate": "VAT rate",
+    "vat_included": "VAT included",
+    "tou_onPeak_pricePerUnit": "On-peak price",
+    "tou_offPeak_pricePerUnit": "Off-peak price",
+    "kind": "Tariff kind",
+    "notes_th": "Note (Thai)",
+    "notes_en": "Note (English)",
+    "other": "Other value",
+    "tier_pricePerUnit": "Tier {n} · price per unit",
+    "tier_fromUnits": "Tier {n} · from",
+    "tier_toUnits": "Tier {n} · to"
   }
 }

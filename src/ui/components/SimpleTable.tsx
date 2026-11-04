@@ -14,6 +14,8 @@ export interface SimpleColumn {
   className?: string;
   /** The column's place in a phone row (`stackOnPhones`); default `meta`. */
   phone?: PhoneSlot;
+  /** In a phone row, name the value with the column's header ("ออนไลน์ 3"): for bare numbers that mean nothing alone. */
+  phoneLabel?: boolean;
 }
 
 export interface SimpleRow {
@@ -157,6 +159,11 @@ export function SimpleTable({
                   </th>
                 ) : (
                   <td key={column.key} className={cellClass}>
+                    {stackOnPhones && column.phoneLabel ? (
+                      <span className="text-muted me-1.5 md:hidden" aria-hidden="true">
+                        {column.header}
+                      </span>
+                    ) : null}
                     {row.cells[column.key] ?? "—"}
                   </td>
                 );

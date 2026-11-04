@@ -1,6 +1,6 @@
 {
   "title": "อัตราค่าน้ำค่าไฟ",
-  "description": "อัตราที่การไฟฟ้า/การประปาประกาศ ใช้เป็นเพดานที่ลูกค้าเรียกเก็บได้ (D-021a, D-140) คนหนึ่งบันทึก อีกคนตรวจกับเอกสารต้นทางแล้วจึงเผยแพร่",
+  "description": "อัตราที่การไฟฟ้า/การประปาประกาศ ใช้เป็นเพดานที่ลูกค้าเรียกเก็บได้ คนหนึ่งบันทึก อีกคนตรวจกับเอกสารต้นทาง แล้วจึงเผยแพร่",
   "col": {
     "tariff": "อัตรา",
     "provider": "หน่วยงาน",
@@ -15,7 +15,9 @@
     "line": "รายการ",
     "units": "หน่วย",
     "price": "อัตรา",
-    "amount": "จำนวนเงิน"
+    "amount": "จำนวนเงิน",
+    "maker": "ผู้บันทึก",
+    "checker": "ผู้ตรวจ"
   },
   "utility": {
     "electric": "ไฟฟ้า",
@@ -33,7 +35,7 @@
   },
   "perUnit": "{price} บาท/{unit}",
   "nonePublished": "ยังไม่มีเวอร์ชันที่เผยแพร่",
-  "workflowPending": "เวอร์ชัน {label}",
+  "workflowPending": "เวอร์ชันที่มีผล {label}",
   "workflowIdle": "ไม่มีเวอร์ชันที่รอดำเนินการ",
   "workflowHint": "คนหนึ่งบันทึก อีกคนตรวจกับเอกสารต้นทาง แล้วจึงเผยแพร่",
   "inForce": "มีผลอยู่: {label}",
@@ -117,9 +119,9 @@
     "ftPeriodHint": "YYYY-MM",
     "ftPeriodPlaceholder": "เช่น 2027-01",
     "serviceCharge": "ค่าบริการรายเดือน",
-    "serviceChargeHint": "รวมในอัตราเฉลี่ย (D-140)",
+    "serviceChargeHint": "รวมในอัตราเฉลี่ย",
     "minimumCharge": "ค่าบริการขั้นต่ำของหน่วยงาน",
-    "minimumChargeHint": "น้ำประปา (D-141)",
+    "minimumChargeHint": "น้ำประปา",
     "vatRate": "อัตรา VAT (%)",
     "vatIncluded": "ราคารวม VAT แล้ว",
     "ceiling": "เพดานต่อหน่วย (ตามประกาศ)",
@@ -151,5 +153,46 @@
     "publishTitle": "เผยแพร่ {label} ใช่หรือไม่",
     "publishBody": "ตั้งแต่ {date} เวอร์ชันนี้จะเป็นเพดานอัตราของลูกค้า เวอร์ชันที่มีผลอยู่ขณะนั้นจะถูกปิด พิมพ์วันที่เพื่อยืนยัน",
     "published": "เผยแพร่แล้ว"
+  },
+  "code": "รหัส {code}",
+  "empty": "ยังไม่มีอัตราค่าไฟ-น้ำ",
+  "emptyBody": "อัตราจะเพิ่มพร้อมหน่วยงานสาธารณูปโภคของแพลตฟอร์ม",
+  "openSettings": "ดูตั้งค่าแพลตฟอร์ม",
+  "waitingChecker": "รอผู้ตรวจคนที่สอง",
+  "anotherUser": "ผู้ใช้แพลตฟอร์มอื่น",
+  "inForceBadge": "มีผลอยู่ · {price} บาท/{unit}",
+  "diffBetween": "{from} → {to}",
+  "diffColumn": "{label}",
+  "diffOther": "เปรียบเทียบเวอร์ชันอื่น",
+  "review": {
+    "title": "การตรวจ",
+    "verifyHint": "เทียบทุกค่ากับเอกสารต้นทาง แล้วจึงยืนยันการตรวจ",
+    "publishHint": "อีกคนตรวจแล้ว พร้อมเผยแพร่",
+    "makerWaiting": "รอคนที่สองตรวจ คุณเป็นผู้บันทึกเวอร์ชันนี้",
+    "nothing": "ไม่มีขั้นตอนที่คุณต้องทำกับเวอร์ชันนี้",
+    "version": "มีผล",
+    "maker": "ผู้บันทึก",
+    "checker": "ผู้ตรวจ",
+    "rule": "ผู้บันทึกตรวจเองไม่ได้"
+  },
+  "pathName": {
+    "ceilingPerUnit": "เพดานต่อหน่วย",
+    "ft_pricePerUnit": "ค่า Ft ต่อหน่วย",
+    "ft_period": "งวด Ft",
+    "ft_sourceUrl": "ต้นทางค่า Ft",
+    "flatPricePerUnit": "ราคาคงที่ต่อหน่วย",
+    "serviceCharge_amount": "ค่าบริการรายเดือน",
+    "minimumCharge_amount": "ค่าบริการขั้นต่ำ",
+    "vat_rate": "อัตรา VAT",
+    "vat_included": "รวม VAT แล้ว",
+    "tou_onPeak_pricePerUnit": "ราคาช่วง On Peak",
+    "tou_offPeak_pricePerUnit": "ราคาช่วง Off Peak",
+    "kind": "ประเภทอัตรา",
+    "notes_th": "หมายเหตุ (ไทย)",
+    "notes_en": "หมายเหตุ (อังกฤษ)",
+    "other": "ค่าอื่น",
+    "tier_pricePerUnit": "ขั้นที่ {n} · ราคาต่อหน่วย",
+    "tier_fromUnits": "ขั้นที่ {n} · ตั้งแต่หน่วย",
+    "tier_toUnits": "ขั้นที่ {n} · ถึงหน่วย"
   }
 }

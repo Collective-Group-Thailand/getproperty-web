@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 
 import { MediaOrderDetail } from "@/features/admin/growth/MediaOrdersView";
+import { orNotAllowed } from "@/features/admin/shared/NotAllowed";
 import { adminContext } from "@/features/admin/shared/server";
 
 export async function generateMetadata() {
@@ -11,5 +12,5 @@ export async function generateMetadata() {
 /** One photo service order: schedule, deliver or cancel (G5, D-297). */
 export default async function Page({ params }: { params: Promise<{ orderId: string }> }) {
   const [{ orderId }, context] = await Promise.all([params, adminContext()]);
-  return <MediaOrderDetail context={context} orderId={orderId} />;
+  return orNotAllowed(context, () => MediaOrderDetail({ context, orderId }));
 }

@@ -27,7 +27,7 @@
     "title": "You can't open this page",
     "body": "Your role in this organisation doesn't include this. Ask an owner or a manager to grant it, then open the page again.",
     "home": "Back to the start",
-    "sectionTitle": "You can't see this part",
-    "sectionBody": "Your role in this organisation doesn't include this. Ask an owner or a manager to grant it."
+    "sectionTitle": "This part is not open to your role",
+    "sectionBody": "The rest of the page still works. Your role doesn't include this part — ask an owner, a manager or an administrator to grant it if you need it for your work."
   }
 }
