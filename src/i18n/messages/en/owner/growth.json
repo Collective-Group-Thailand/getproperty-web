@@ -58,7 +58,8 @@
     "buildingTitle": "Building boost",
     "buildingHint": "Every listing of yours in the building gets a sponsored slot for one month.",
     "listingTitle": "Listing boosts",
-    "listingHint": "Open the listing you want to promote and buy it there."
+    "listingHint": "Open the listing you want to promote and buy it there.",
+    "showAll": "Show all"
   },
   "media": {
     "title": "Photo services",
@@ -109,7 +110,8 @@
     "retry": "Try again",
     "retried": "Queued again",
     "pageFailing": "Your Facebook Page is not working — posting has stopped until it is fixed",
-    "fixPage": "Open Facebook Page settings"
+    "fixPage": "Open Facebook Page settings",
+    "settings": "Facebook Page settings"
   },
   "facebook": {
     "title": "Facebook Page",

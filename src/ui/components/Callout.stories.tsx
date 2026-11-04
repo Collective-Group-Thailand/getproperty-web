@@ -34,3 +34,12 @@ export const Info: Story = {
 export const Neutral: Story = {
   args: { tone: "neutral", title: undefined, children: "โหมดอ่านอย่างเดียว — แพ็กเกจถูกระงับ ข้อมูลยังอยู่ครบ" },
 };
+export const Compact: Story = {
+  args: {
+    tone: "warning",
+    size: "sm",
+    live: false,
+    title: undefined,
+    children: "ค่าเช่าห่างจากค่ากลางของย่านมาก",
+  },
+};

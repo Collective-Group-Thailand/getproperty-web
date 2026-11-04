@@ -95,10 +95,13 @@ export function CoBrokeAction({
   agreement,
   action,
   partner,
+  stacked = false,
 }: {
   agreement: Schemas["CoBrokeDto"];
   action: "sign" | "cancel" | "end";
   partner: string;
+  /** In a request card: a full-size button. */
+  stacked?: boolean;
 }) {
   const t = useTranslations("owner.agency.coBroke");
   const path = { agreementId: agreement.id };
@@ -108,7 +111,7 @@ export function CoBrokeAction({
     <ConfirmAction
       label={t(action)}
       icon={action === "sign" ? IconSign : IconXCircle}
-      size="sm"
+      size={stacked ? "md" : "sm"}
       variant={action === "sign" ? "primary" : "secondary"}
       tone={action === "sign" ? "primary" : "destructive"}
       testId={`co-broke-${action}`}

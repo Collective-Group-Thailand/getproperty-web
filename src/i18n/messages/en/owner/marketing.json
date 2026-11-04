@@ -36,7 +36,6 @@
     "title": "Close the month without walking the meters <hl>or chasing slips</hl>",
     "body": "getproperty reads the meters, bills the whole building, sends each bill with a QR to the resident's LINE, issues the receipt the moment the payment is confirmed, and sends repair requests straight to your technician. You just approve.",
     "primary": "Start free — message us on LINE",
-    "signIn": "Sign in",
     "secondary": "See pricing",
     "points": {
       "free": "No monthly fee, nothing per unit",

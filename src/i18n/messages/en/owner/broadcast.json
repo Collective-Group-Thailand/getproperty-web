@@ -67,7 +67,8 @@
     "scheduledFor": "Starts {date}",
     "completed": "Finished {date}",
     "created": "Created {date}",
-    "open": "Open campaign {name}"
+    "open": "Open campaign {name}",
+    "showAll": "Show all campaigns"
   },
   "builder": {
     "title": "New campaign",
@@ -259,5 +260,13 @@
     "km": "Khmer",
     "lo": "Lao",
     "zh": "Chinese"
+  },
+  "preview": {
+    "title": "Preview in LINE",
+    "note": "Roughly what recipients see",
+    "sponsored": "Recommended homes · Ad",
+    "empty": "Choose listings to see the message",
+    "rent": "{rent} /month",
+    "open": "View home"
   }
 }

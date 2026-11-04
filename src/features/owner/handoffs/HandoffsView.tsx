@@ -9,15 +9,17 @@ import { formatDate, formatDecimal } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/errors";
 import type { Schemas } from "@/lib/api/types";
-import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
-import { Card, CardHeader } from "@/ui/components/Card";
+import { Card } from "@/ui/components/Card";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
+import { FormSection } from "@/ui/components/FormLayout";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Icon } from "@/ui/icons";
 import { IconBuilding } from "@/ui/icons/glyphs/building";
 import { IconEdit } from "@/ui/icons/glyphs/edit";
 import { IconHome } from "@/ui/icons/glyphs/home";
+import { IconLink } from "@/ui/icons/glyphs/link";
 
 import { ownerPath } from "../shared/links";
 import { section, type OwnerContext } from "../shared/server";
@@ -42,9 +44,17 @@ export async function HandoffsView({ context }: { context: OwnerContext }) {
       {!handoffs.data ? (
         <SectionError error={handoffs.error} />
       ) : handoffs.data.data.length === 0 ? (
-        <Card padding="lg">
-          <EmptyState icon={IconBuilding} title={t("empty.title")} description={t("empty.description")} />
-        </Card>
+        <EmptyState
+          variant="card"
+          icon={IconBuilding}
+          title={t("empty.title")}
+          description={t("empty.description")}
+          action={
+            <Button asChild variant="secondary">
+              <a href={ownerPath(locale, "/listings")}>{t("empty.action")}</a>
+            </Button>
+          }
+        />
       ) : (
         <ul className="m-0 grid list-none gap-4 p-0 lg:grid-cols-2" data-testid="handoff-rows">
           {handoffs.data.data.map((handoff) => (
@@ -94,11 +104,9 @@ async function HandoffRow({ handoff, context }: { handoff: Schemas["RentalHandof
             <dd className="m-0 font-medium">{t("sqm", { size: formatDecimal(facts.areaSqm, locale, 1) })}</dd>
           </div>
         ) : null}
-        <div className="col-span-2">
+        <div className="col-span-2 sm:col-span-1">
           <dt className="text-muted">{t("campaign")}</dt>
-          <dd className="m-0">
-            <Badge size="sm">{handoff.campaignTag}</Badge>
-          </dd>
+          <dd className="m-0 font-medium">{handoff.campaignTag}</dd>
         </div>
       </dl>
       {handoff.listingId ? (
@@ -145,9 +153,17 @@ export async function HandoffClaimView({ context, token }: { context: OwnerConte
         <PageHeader title={t("title")} crumbs={crumbs} />
         {missing ? (
           <div data-testid="handoff-claim-unknown">
-            <Callout tone="warning" title={t("unknown.title")}>
-              {t("unknown.body")}
-            </Callout>
+            <EmptyState
+              variant="card"
+              icon={IconLink}
+              title={t("unknown.title")}
+              description={t("unknown.body")}
+              action={
+                <Button asChild variant="secondary">
+                  <a href={ownerPath(locale, "/listings/handoffs")}>{t("unknown.action")}</a>
+                </Button>
+              }
+            />
           </div>
         ) : (
           <SectionError error={result.error} />
@@ -165,9 +181,41 @@ export async function HandoffClaimView({ context, token }: { context: OwnerConte
   return (
     <OwnerPage testId="handoff-claim">
       <PageHeader title={t("title")} description={t("description")} crumbs={crumbs} />
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <Card as="section" aria-labelledby="claim-form" className="flex flex-col gap-4">
-          <CardHeader title={<span id="claim-form">{t("formTitle")}</span>} description={t("formHint")} />
+      <DetailLayout
+        panel={
+          <ActionPanel
+            title={t("unitTitle")}
+            description={t("unitSource")}
+            facts={(
+              [
+                ["project", t("facts.project"), facts.projectName],
+                ["unit", t("facts.unit"), facts.unitNo],
+                ["kind", t("facts.kind"), kinds(facts.kind)],
+                ["floor", t("facts.floor"), facts.floorLabel],
+                [
+                  "area",
+                  t("facts.area"),
+                  facts.areaSqm ? h("sqm", { size: formatDecimal(facts.areaSqm, locale, 1) }) : null,
+                ],
+                [
+                  "rooms",
+                  t("facts.rooms"),
+                  facts.bedrooms !== null
+                    ? t("facts.roomsValue", { bedrooms: facts.bedrooms, bathrooms: facts.bathrooms ?? 0 })
+                    : null,
+                ],
+                ["place", t("facts.place"), handoffPlace(facts) || null],
+                ["transfer", t("facts.transfer"), formatDate(handoff.transferDate, locale)],
+                ["expires", t("facts.expires"), formatDate(handoff.expiresAt, locale)],
+              ] as [string, string, string | null][]
+            )
+              .filter((row): row is [string, string, string] => !!row[2])
+              .map(([key, label, value]) => ({ key, label, value }))}
+            testId="handoff-claim-facts"
+          />
+        }
+      >
+        <FormSection title={t("formTitle")} description={t("formHint")}>
           {handoff.state === "invited" ? (
             token ? (
               <HandoffClaimForm token={token} facts={facts} suggestedTitle={title} />
@@ -179,38 +227,8 @@ export async function HandoffClaimView({ context, token }: { context: OwnerConte
               </Callout>
             </div>
           )}
-        </Card>
-        <Card as="section" aria-labelledby="claim-unit" className="flex flex-col gap-3">
-          <CardHeader title={<span id="claim-unit">{t("unitTitle")}</span>} description={t("unitSource")} />
-          <dl className="m-0 flex flex-col gap-2 text-sm" data-testid="handoff-claim-facts">
-            {(
-              [
-                [t("facts.project"), facts.projectName],
-                [t("facts.unit"), facts.unitNo],
-                [t("facts.kind"), kinds(facts.kind)],
-                [t("facts.floor"), facts.floorLabel],
-                [t("facts.area"), facts.areaSqm ? h("sqm", { size: formatDecimal(facts.areaSqm, locale, 1) }) : null],
-                [
-                  t("facts.rooms"),
-                  facts.bedrooms !== null
-                    ? t("facts.roomsValue", { bedrooms: facts.bedrooms, bathrooms: facts.bathrooms ?? 0 })
-                    : null,
-                ],
-                [t("facts.place"), handoffPlace(facts) || null],
-                [t("facts.transfer"), formatDate(handoff.transferDate, locale)],
-                [t("facts.expires"), formatDate(handoff.expiresAt, locale)],
-              ] as [string, string | null][]
-            )
-              .filter((row): row is [string, string] => !!row[1])
-              .map(([term, value]) => (
-                <div key={term} className="flex justify-between gap-3">
-                  <dt className="text-muted">{term}</dt>
-                  <dd className="m-0 text-end font-medium">{value}</dd>
-                </div>
-              ))}
-          </dl>
-        </Card>
-      </div>
+        </FormSection>
+      </DetailLayout>
     </OwnerPage>
   );
 }

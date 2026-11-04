@@ -6,16 +6,14 @@ import { SectionError } from "@/features/shared/console/SectionError";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
-import { Callout } from "@/ui/components/Callout";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
-import { LinkTabs } from "@/ui/components/LinkTabs";
+import { ViewTabs } from "@/ui/components/ListToolbar";
 import { IconCamera } from "@/ui/icons/glyphs/camera";
 import { IconMegaphone } from "@/ui/icons/glyphs/megaphone";
 
 import { ownerPath } from "../shared/links";
 import { ownerCan, param, readOnly, section, type OwnerContext } from "../shared/server";
-import { PromoteTabs } from "./BroadcastParts";
 import { BoostOffer, BoostRow, MediaOffer, MediaOrderRow } from "./GrowthRows";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -56,7 +54,7 @@ export async function PromotionView({ context, searchParams }: { context: OwnerC
       <PageHeader
         title={t("page.title")}
         description={t("page.description")}
-        crumbs={[{ label: t("page.title") }]}
+        back={null}
         actions={
           menu.has("listings") ? (
             <Button asChild variant="secondary" iconStart={IconMegaphone}>
@@ -67,15 +65,14 @@ export async function PromotionView({ context, searchParams }: { context: OwnerC
           ) : null
         }
       />
-      {menu.has("listings") ? <PromoteTabs locale={locale} current="boosts" /> : null}
-      <Callout tone="info">{t("noWallet")}</Callout>
 
       <Card as="section" aria-labelledby="promotion-boosts" className="flex flex-col gap-4">
         <CardHeader title={<span id="promotion-boosts">{t("boost.mine")}</span>} description={t("boost.mineHint")} />
-        <LinkTabs
+        <ViewTabs
           label={t("boost.mine")}
-          current={tab === "all" ? base : `${base}?state=${tab}`}
+          current={tab}
           tabs={(["all", ...STATES] as StateTab[]).map((one) => ({
+            key: one,
             href: one === "all" ? base : `${base}?state=${one}`,
             label: t(`boost.tabs.${one}`),
             testId: `promotion-tab-${one}`,
@@ -84,7 +81,24 @@ export async function PromotionView({ context, searchParams }: { context: OwnerC
         {!boosts.data ? (
           <SectionError error={boosts.error} />
         ) : shown.length === 0 ? (
-          <EmptyState icon={IconMegaphone} title={t(`boost.empty.${tab}`)} description={t("boost.emptyHint")} />
+          <EmptyState
+            icon={IconMegaphone}
+            title={t(`boost.empty.${tab}`)}
+            description={t("boost.emptyHint")}
+            action={
+              tab === "all" ? (
+                menu.has("listings") ? (
+                  <Button asChild variant="secondary">
+                    <a href={ownerPath(locale, "/listings")}>{t("page.toListings")}</a>
+                  </Button>
+                ) : null
+              ) : (
+                <Button asChild variant="secondary">
+                  <a href={base}>{t("boost.showAll")}</a>
+                </Button>
+              )
+            }
+          />
         ) : (
           <ul className="divide-border m-0 list-none divide-y p-0" data-testid="promotion-boosts">
             {shown.map((boost) => (
@@ -140,7 +154,6 @@ export async function PromotionView({ context, searchParams }: { context: OwnerC
               ))}
             </ul>
           )}
-          <p className="text-muted m-0 text-xs">{t("boost.howRanked")}</p>
         </Card>
       ) : null}
 
@@ -167,7 +180,16 @@ export async function PromotionView({ context, searchParams }: { context: OwnerC
           {!orders.data ? (
             <SectionError error={orders.error} />
           ) : orders.data.data.length === 0 ? (
-            <EmptyState icon={IconCamera} title={t("media.empty")} description={t("media.emptyHint")} />
+            <EmptyState
+              icon={IconCamera}
+              title={t("media.empty")}
+              description={t("media.emptyHint")}
+              action={
+                <Button asChild variant="secondary">
+                  <a href={ownerPath(locale, "/listings")}>{t("page.toListings")}</a>
+                </Button>
+              }
+            />
           ) : (
             <ul className="divide-border m-0 list-none divide-y p-0" data-testid="promotion-media-orders">
               {orders.data.data.map((order) => (
@@ -177,6 +199,9 @@ export async function PromotionView({ context, searchParams }: { context: OwnerC
           )}
         </Card>
       ) : null}
+      <p className="border-border text-muted m-0 border-t pt-4 text-sm" data-testid="promotion-rules">
+        {t("noWallet")} {t("boost.howRanked")}
+      </p>
     </OwnerPage>
   );
 }

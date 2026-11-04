@@ -19,6 +19,7 @@ import { Checkbox } from "@/ui/components/Checkbox";
 import { DatePicker } from "@/ui/components/DatePicker";
 import { Field } from "@/ui/components/Field";
 import { Input, NumberInput } from "@/ui/components/Input";
+import { PhotoPlaceholder } from "@/ui/components/PhotoPlaceholder";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { toast } from "@/ui/components/Toast";
 import { Icon } from "@/ui/icons";
@@ -39,6 +40,7 @@ import {
   segmentBody,
   type SegmentForm,
 } from "./broadcast";
+import { LinePreview } from "./LinePreview";
 
 export interface BuilderListing {
   id: string;
@@ -48,6 +50,8 @@ export interface BuilderListing {
   /** District or nearest station, when the listing names one. */
   place: string | null;
   kind: Schemas["PortfolioUnitKind"] | null;
+  /** The listing's cover (signed URL), for the row and the LINE preview. */
+  photo: string | null;
 }
 
 export interface BuilderArea {
@@ -234,23 +238,35 @@ export function CampaignBuilder({
                     data-testid="campaign-listing"
                     data-id={listing.id}
                   >
-                    <Checkbox
-                      checked={on}
-                      disabled={full}
-                      onCheckedChange={() => setChosen((current) => toggle(current, listing.id))}
-                      label={<span className="font-semibold">{listing.title}</span>}
-                      description={
-                        <span className="tabular-nums">
-                          {[
-                            t("builder.rent", { rent: listing.rent }),
-                            listing.kind ? t(`kinds.${listing.kind}`) : null,
-                            listing.place,
-                          ]
-                            .filter(Boolean)
-                            .join(" · ")}
-                        </span>
-                      }
-                    />
+                    <div className="flex items-start gap-3">
+                      {listing.photo ? (
+                        // eslint-disable-next-line @next/next/no-img-element -- signed object-storage preview
+                        <img
+                          src={listing.photo}
+                          alt=""
+                          className="rounded-thumb bg-bg-subtle size-14 shrink-0 object-cover"
+                        />
+                      ) : (
+                        <PhotoPlaceholder className="rounded-thumb size-14 shrink-0" />
+                      )}
+                      <Checkbox
+                        checked={on}
+                        disabled={full}
+                        onCheckedChange={() => setChosen((current) => toggle(current, listing.id))}
+                        label={<span className="font-semibold">{listing.title}</span>}
+                        description={
+                          <span className="tabular-nums">
+                            {[
+                              t("builder.rent", { rent: listing.rent }),
+                              listing.kind ? t(`kinds.${listing.kind}`) : null,
+                              listing.place,
+                            ]
+                              .filter(Boolean)
+                              .join(" · ")}
+                          </span>
+                        }
+                      />
+                    </div>
                   </li>
                 );
               })}
@@ -434,6 +450,17 @@ export function CampaignBuilder({
       </div>
 
       <aside className="flex flex-col gap-4 lg:sticky lg:top-6" aria-labelledby="estimate-title">
+        <LinePreview
+          listings={listings
+            .filter((listing) => chosen.includes(listing.id))
+            .map((listing) => ({
+              id: listing.id,
+              title: listing.title,
+              rent: listing.rent,
+              place: listing.place,
+              photo: listing.photo,
+            }))}
+        />
         <Card className="flex flex-col gap-4" data-testid="campaign-estimate">
           <h2 id="estimate-title" className="m-0 text-base font-semibold">
             {t("estimate.title")}

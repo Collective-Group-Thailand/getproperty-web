@@ -7,13 +7,13 @@ import { unwrap } from "@/lib/api/client";
 import { Button } from "@/ui/components/Button";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
-import { LinkTabs } from "@/ui/components/LinkTabs";
+import { ViewTabs } from "@/ui/components/ListToolbar";
 import { IconAdd } from "@/ui/icons/glyphs/add";
 import { IconMegaphone } from "@/ui/icons/glyphs/megaphone";
 
 import { ownerPath } from "../shared/links";
 import { ownerCan, param, readOnly, section, type OwnerContext } from "../shared/server";
-import { CampaignRow, HowItWorks, ProductCard, PromoteTabs } from "./BroadcastParts";
+import { CampaignRow, HowItWorks, ProductCard } from "./BroadcastParts";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 const STATES = ["draft", "scheduled", "sending", "sent"] as const;
@@ -27,7 +27,6 @@ type StateTab = (typeof STATES)[number] | "all";
  */
 export async function BroadcastsView({ context, searchParams }: { context: OwnerContext; searchParams: SearchParams }) {
   const t = await getTranslations("owner.broadcast");
-  const growth = await getTranslations("owner.growth");
   const { api, locale, me } = context;
   if (!ownerCan(me, "listing.read")) notFound();
   const raw = param(searchParams.state);
@@ -59,10 +58,9 @@ export async function BroadcastsView({ context, searchParams }: { context: Owner
       <PageHeader
         title={t("title")}
         description={t("description")}
-        crumbs={[{ label: growth("page.title"), href: ownerPath(locale, "/promote") }, { label: t("tabs.broadcasts") }]}
+        back={null}
         actions={newCampaign("broadcast-new")}
       />
-      <PromoteTabs locale={locale} current="broadcasts" />
 
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
         {product.data ? <ProductCard product={product.data} locale={locale} /> : <SectionError error={product.error} />}
@@ -71,10 +69,11 @@ export async function BroadcastsView({ context, searchParams }: { context: Owner
 
       <Card as="section" aria-labelledby="broadcast-campaigns" className="flex flex-col gap-4">
         <CardHeader title={<span id="broadcast-campaigns">{t("list.title")}</span>} />
-        <LinkTabs
+        <ViewTabs
           label={t("list.title")}
-          current={tab === "all" ? base : `${base}?state=${tab}`}
+          current={tab}
           tabs={(["all", ...STATES] as StateTab[]).map((one) => ({
+            key: one,
             href: one === "all" ? base : `${base}?state=${one}`,
             label: t(`list.tabs.${one}`),
             testId: `broadcast-tab-${one}`,
@@ -87,7 +86,15 @@ export async function BroadcastsView({ context, searchParams }: { context: Owner
             icon={IconMegaphone}
             title={t(`list.empty.${tab}`)}
             description={t("list.emptyHint")}
-            action={tab === "all" ? newCampaign("broadcast-new-empty") : null}
+            action={
+              tab === "all" ? (
+                newCampaign("broadcast-new-empty")
+              ) : (
+                <Button asChild variant="secondary">
+                  <a href={base}>{t("list.showAll")}</a>
+                </Button>
+              )
+            }
           />
         ) : (
           <ul className="divide-border m-0 list-none divide-y p-0" data-testid="campaigns">

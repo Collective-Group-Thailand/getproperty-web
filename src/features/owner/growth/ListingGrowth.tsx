@@ -169,6 +169,11 @@ export async function ListingGrowth({ context, listing }: { context: OwnerContex
               icon={IconMegaphone}
               title={live ? t("posts.emptyQueued") : t("posts.emptyNotLive")}
               description={page.autoPost ? undefined : t("posts.autoPostOff")}
+              action={
+                <Button asChild variant="secondary" iconStart={IconSettings}>
+                  <a href={ownerPath(locale, "/settings/facebook-page")}>{t("posts.settings")}</a>
+                </Button>
+              }
             />
           ) : (
             <EmptyState

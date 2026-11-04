@@ -6,19 +6,20 @@ import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { SectionError } from "@/features/shared/console/SectionError";
 import { currentTime } from "@/features/shared/console/time";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
-import { formatDate, formatPercent, formatPeriodKey, formatTHB } from "@/i18n/format";
+import { formatDate, formatNumber, formatPercent, formatPeriodKey, formatTHB } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
 import { unwrap, unwrapWithETag, type ApiClient } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/errors";
 import type { Schemas } from "@/lib/api/types";
-import { Badge } from "@/ui/components/Badge";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { DescriptionList } from "@/ui/components/DescriptionList";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { IconChevronLeft } from "@/ui/icons/glyphs/chevron-left";
 import { IconChevronRight } from "@/ui/icons/glyphs/chevron-right";
+import { IconLease } from "@/ui/icons/glyphs/lease";
 import { IconResidents } from "@/ui/icons/glyphs/residents";
 import { IconShield } from "@/ui/icons/glyphs/shield";
 
@@ -71,7 +72,7 @@ export async function EmployersView({ context, create }: { context: OwnerContext
           ) : undefined
         }
       />
-      {canManage && employers.length === 0 ? (
+      {canManage && employers.length === 0 && rows.length > 0 ? (
         <Callout
           tone="info"
           title={t("noCompanyTitle")}
@@ -87,9 +88,19 @@ export async function EmployersView({ context, create }: { context: OwnerContext
       {!agreements.data ? (
         <SectionError error={agreements.error} />
       ) : rows.length === 0 ? (
-        <Card padding="lg">
-          <EmptyState icon={IconResidents} title={t("empty.title")} description={t("empty.description")} />
-        </Card>
+        <EmptyState
+          variant="card"
+          icon={IconResidents}
+          title={canManage && employers.length === 0 ? t("noCompanyTitle") : t("empty.title")}
+          description={canManage && employers.length === 0 ? t("noCompanyBody") : t("empty.description")}
+          action={
+            <Button asChild variant="secondary">
+              <a href={ownerPath(locale, employers.length > 0 ? "/employers?new=1" : "/parties")}>
+                {employers.length > 0 ? t("empty.action") : t("addCompany")}
+              </a>
+            </Button>
+          }
+        />
       ) : (
         <ul className="m-0 grid list-none gap-4 p-0 lg:grid-cols-2" data-testid="employer-rows">
           {rows.map((agreement) => (
@@ -97,7 +108,7 @@ export async function EmployersView({ context, create }: { context: OwnerContext
           ))}
         </ul>
       )}
-      <p className="text-muted text-sm">{t("lawNote")}</p>
+      <p className="border-border text-muted m-0 border-t pt-4 text-sm">{t("lawNote")}</p>
     </OwnerPage>
   );
 }
@@ -125,12 +136,10 @@ async function AgreementCard({ agreement, locale }: { agreement: Agreement; loca
         </div>
         <StatusBadgeOf map={EMPLOYER_AGREEMENT_STATUS} value={agreement.state} size="sm" />
       </div>
-      <div className="flex flex-wrap gap-2">
-        <Badge size="sm">{t(`form.splitRule.${agreement.splitRule}`)}</Badge>
-        <Badge size="sm" tone="info">
-          {t("deductBadge", { percent: formatPercent(agreement.deductPercent, locale) })}
-        </Badge>
-      </div>
+      <p className="m-0 text-sm">
+        {t(`form.splitRule.${agreement.splitRule}`)} ·{" "}
+        {t("deductBadge", { percent: formatPercent(agreement.deductPercent, locale) })}
+      </p>
       <dl className="border-border m-0 grid grid-cols-3 gap-3 border-t pt-3 text-sm">
         <div>
           <dt className="text-muted">{t("leases")}</dt>
@@ -210,17 +219,35 @@ export async function EmployerDetailView({
           { label: t("title"), href: ownerPath(locale, "/employers") },
           { label: agreement.employer.displayName },
         ]}
-        actions={
-          canManage && !ended ? (
-            <>
-              <EditAgreementButton agreement={agreement} etag={etag} />
-              <EndAgreementButton agreement={agreement} etag={etag} />
-            </>
-          ) : undefined
-        }
       />
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <DetailLayout
+        panelFirstOnPhones={false}
+        panel={
+          <ActionPanel
+            title={t("panelTitle")}
+            status={<StatusBadgeOf map={EMPLOYER_AGREEMENT_STATUS} value={agreement.state} size="sm" />}
+            facts={[
+              { key: "leases", label: t("leases"), value: formatNumber(agreement.leaseIds.length, locale) },
+              { key: "workers", label: t("workersLabel"), value: formatNumber(agreement.workers.length, locale) },
+              { key: "deduct", label: t("form.deduct"), value: formatPercent(agreement.deductPercent, locale) },
+            ]}
+            secondary={
+              <>
+                {canManage && !ended ? <EditAgreementButton agreement={agreement} etag={etag} /> : null}
+                {ownerCan(me, "tm30.manage") ? (
+                  <Button asChild variant="secondary" iconStart={IconShield}>
+                    <a href={`${ownerPath(locale, "/tm30")}?employer=${agreement.id}`} data-testid="employer-tm30">
+                      {t("tm30")}
+                    </a>
+                  </Button>
+                ) : null}
+              </>
+            }
+            destructive={canManage && !ended ? <EndAgreementButton agreement={agreement} etag={etag} /> : undefined}
+          />
+        }
+      >
         <Card as="section" aria-labelledby="employer-terms" className="flex flex-col gap-4">
           <CardHeader title={<span id="employer-terms">{t("terms")}</span>} />
           <DescriptionList
@@ -257,7 +284,17 @@ export async function EmployerDetailView({
             description={t("leasesHint")}
           />
           {found.length === 0 ? (
-            <p className="text-muted m-0 text-sm">{t("noLeases")}</p>
+            <EmptyState
+              icon={IconLease}
+              className="py-8 md:py-10"
+              title={t("noLeasesTitle")}
+              description={t("noLeases")}
+              action={
+                <Button asChild variant="secondary">
+                  <a href={ownerPath(locale, "/leases")}>{t("openLeases")}</a>
+                </Button>
+              }
+            />
           ) : (
             <ul className="divide-border m-0 list-none divide-y p-0" data-testid="employer-leases">
               {found.map((lease) => (
@@ -273,60 +310,53 @@ export async function EmployerDetailView({
               ))}
             </ul>
           )}
-          {ownerCan(me, "tm30.manage") ? (
-            <Button asChild size="sm" variant="secondary" iconStart={IconShield} className="self-start">
-              <a href={`${ownerPath(locale, "/tm30")}?employer=${agreement.id}`} data-testid="employer-tm30">
-                {t("tm30")}
-              </a>
-            </Button>
+        </Card>
+
+        <Card as="section" aria-labelledby="employer-workers-title" className="flex flex-col gap-3">
+          <CardHeader
+            title={<span id="employer-workers-title">{t("workersLabel")}</span>}
+            description={t("workersHint")}
+          />
+          <WorkersEditor agreementId={agreement.id} rows={rows} canManage={canManage && !ended} />
+        </Card>
+
+        <Card
+          as="section"
+          aria-labelledby="employer-statement"
+          className="flex flex-col gap-4"
+          data-testid="employer-statement"
+        >
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <CardHeader
+              title={
+                <span id="employer-statement">{t("statement.title", { month: formatPeriodKey(month, locale) })}</span>
+              }
+              description={t("statement.hint")}
+            />
+            <nav aria-label={t("statement.monthNav")} className="flex items-center gap-2">
+              <Button asChild size="sm" variant="secondary" iconStart={IconChevronLeft}>
+                <a href={`${base}?month=${shiftMonth(month, -1)}`} data-testid="statement-previous">
+                  {formatPeriodKey(shiftMonth(month, -1), locale)}
+                </a>
+              </Button>
+              <Button asChild size="sm" variant="secondary" iconEnd={IconChevronRight}>
+                <a href={`${base}?month=${shiftMonth(month, 1)}`} data-testid="statement-next">
+                  {formatPeriodKey(shiftMonth(month, 1), locale)}
+                </a>
+              </Button>
+            </nav>
+          </div>
+          {!statement.data ? (
+            <SectionError error={statement.error} />
+          ) : (
+            <Statement statement={statement.data} locale={locale} />
+          )}
+          {statement.data && statement.data.lines.length > 0 && canManage ? (
+            <PayrollExportButton agreementId={agreement.id} month={month} />
           ) : null}
         </Card>
-      </div>
-
-      <Card as="section" aria-labelledby="employer-workers-title" className="flex flex-col gap-3">
-        <CardHeader
-          title={<span id="employer-workers-title">{t("workersLabel")}</span>}
-          description={t("workersHint")}
-        />
-        <WorkersEditor agreementId={agreement.id} rows={rows} canManage={canManage && !ended} />
-      </Card>
-
-      <Card
-        as="section"
-        aria-labelledby="employer-statement"
-        className="flex flex-col gap-4"
-        data-testid="employer-statement"
-      >
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <CardHeader
-            title={
-              <span id="employer-statement">{t("statement.title", { month: formatPeriodKey(month, locale) })}</span>
-            }
-            description={t("statement.hint")}
-          />
-          <nav aria-label={t("statement.monthNav")} className="flex items-center gap-2">
-            <Button asChild size="sm" variant="secondary" iconStart={IconChevronLeft}>
-              <a href={`${base}?month=${shiftMonth(month, -1)}`} data-testid="statement-previous">
-                {formatPeriodKey(shiftMonth(month, -1), locale)}
-              </a>
-            </Button>
-            <Button asChild size="sm" variant="secondary" iconEnd={IconChevronRight}>
-              <a href={`${base}?month=${shiftMonth(month, 1)}`} data-testid="statement-next">
-                {formatPeriodKey(shiftMonth(month, 1), locale)}
-              </a>
-            </Button>
-          </nav>
-        </div>
-        {!statement.data ? (
-          <SectionError error={statement.error} />
-        ) : (
-          <Statement statement={statement.data} locale={locale} />
-        )}
-        {statement.data && statement.data.lines.length > 0 && canManage ? (
-          <PayrollExportButton agreementId={agreement.id} month={month} />
-        ) : null}
-        <p className="text-muted m-0 text-xs">{t("lawNote")}</p>
-      </Card>
+      </DetailLayout>
+      <p className="border-border text-muted m-0 border-t pt-4 text-sm">{t("lawNote")}</p>
     </OwnerPage>
   );
 }
@@ -343,7 +373,10 @@ async function Statement({ statement, locale }: { statement: Schemas["EmployerSt
   const money = (value: string) => formatTHB(value, locale);
   return (
     <div className="flex flex-col gap-4">
-      <dl className="m-0 grid grid-cols-2 gap-3 md:grid-cols-5" data-testid="statement-totals">
+      <dl
+        className="border-border m-0 grid grid-cols-2 gap-y-3 border-y py-3 md:grid-cols-5 md:gap-y-0"
+        data-testid="statement-totals"
+      >
         {(
           [
             ["total", statement.total],
@@ -353,7 +386,10 @@ async function Statement({ statement, locale }: { statement: Schemas["EmployerSt
             ["employerPays", statement.employerPays],
           ] as const
         ).map(([key, value]) => (
-          <div key={key} className="bg-bg-subtle rounded-card flex flex-col gap-1 p-3">
+          <div
+            key={key}
+            className="md:border-border flex flex-col gap-1 pe-3 md:border-s md:ps-4 md:first:border-s-0 md:first:ps-0"
+          >
             <dt className="text-muted text-xs">{t(`totals.${key}`)}</dt>
             <dd className="m-0 text-base font-semibold tabular-nums" data-testid={`statement-${key}`}>
               {money(value)}

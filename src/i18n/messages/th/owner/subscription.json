@@ -1,6 +1,6 @@
 {
   "title": "ค่าบริการ getproperty",
-  "description": "getproperty ใช้ฟรี ไม่มีค่ารายเดือน หน้านี้แสดงค่าธรรมเนียมต่อรายการชำระ ใบแจ้งหนี้จาก getproperty และอุปกรณ์ที่อาคารของคุณ",
+  "description": "แพ็กเกจ สิ่งที่นับได้เดือนนี้ ใบแจ้งหนี้จาก getproperty และอุปกรณ์ที่อาคารของคุณ",
   "readOnly": {
     "title": "บัญชีของคุณอ่านได้อย่างเดียว",
     "body": "การใช้งานถูกระงับเพราะมีใบแจ้งหนี้ค้างชำระ ({count} ใบ) ชำระด้วย Thai QR ด้านล่าง บัญชีจะกลับมาใช้งานได้เมื่อ getproperty ยืนยันการชำระ"
@@ -38,7 +38,6 @@
   "ocrImages": "รูปมิเตอร์ที่อ่าน",
   "estimate": "ประมาณการเดือนนี้",
   "estimateHint": "จากที่นับได้ถึงตอนนี้ ใบแจ้งหนี้ออกสิ้นเดือน",
-  "estimateTotal": "ก่อน VAT {subtotal} · VAT {vat} · รวม {total}",
   "invoices": "ใบแจ้งหนี้จาก getproperty",
   "invoicesHint": "ชำระแต่ละใบด้วย Thai QR ไฟล์ PDF คือใบกำกับภาษี",
   "noInvoices": "ยังไม่มีใบแจ้งหนี้",
@@ -224,5 +223,14 @@
       "waiting": "เริ่มใช้งานเมื่อชำระใบแจ้งหนี้",
       "ownedPending": "มีรายการรอชำระ"
     }
-  }
+  },
+  "beforeVat": "ก่อน VAT",
+  "vat": "VAT",
+  "estimateTotalLabel": "รวมโดยประมาณ",
+  "invoicePanel": {
+    "due": "ครบกำหนด {date}",
+    "paidOn": "ชำระแล้วเมื่อ {date}"
+  },
+  "invoicePaper": "ใบแจ้งหนี้ {number}",
+  "billedTo": "เรียกเก็บจาก"
 }
