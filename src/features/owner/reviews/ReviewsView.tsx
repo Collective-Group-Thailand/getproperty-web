@@ -5,7 +5,6 @@ import { FilterBar } from "@/features/shared/console/FilterBar";
 import { ListPagination } from "@/features/shared/console/ListPagination";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { SectionError } from "@/features/shared/console/SectionError";
-import { Stars } from "@/features/shared/growth/Stars";
 import { reviewTenure } from "@/features/shared/growth/reviews";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { formatDate } from "@/i18n/format";
@@ -13,15 +12,19 @@ import type { Locale } from "@/i18n/routing";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
+import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
+import { ListToolbar, ViewTabs } from "@/ui/components/ListToolbar";
 import { Card } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { Icon } from "@/ui/icons";
+import { IconChat } from "@/ui/icons/glyphs/chat";
+import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 import { IconFlag } from "@/ui/icons/glyphs/flag";
 import { IconShield } from "@/ui/icons/glyphs/shield";
 import { IconStar } from "@/ui/icons/glyphs/star";
 
-import { ownerPath } from "../shared/links";
+import { ownerPath, withQuery } from "../shared/links";
 import { ownerCan, pageParam, param, readOnly, section, type OwnerContext } from "../shared/server";
 import { ReviewActions } from "./ReviewActions";
 
@@ -54,55 +57,101 @@ export async function ReviewsView({ context, searchParams }: { context: OwnerCon
   const canAct = !readOnly(me) && ownerCan(me, "listing.manage");
   const rows = list.data?.data ?? [];
 
+  const path = (query: Record<string, string | undefined>) =>
+    ownerPath(locale, withQuery("/reviews", { building: building?.id, ...query }));
+
   return (
     <OwnerPage testId="owner-reviews">
-      <PageHeader
-        title={t("title")}
-        description={t("description")}
-        crumbs={[{ label: t("crumb"), href: ownerPath(locale, "/listings") }, { label: t("title") }]}
+      <PageHeader title={t("title")} description={t("lede")} />
+      <ListToolbar
+        tabs={
+          <ViewTabs
+            label={t("filter.state")}
+            current={state ?? "all"}
+            tabs={[
+              { key: "all", href: path({}), label: t("filter.allStates") },
+              ...STATES.map((value) => ({
+                key: value,
+                href: path({ state: value }),
+                label: t(`filter.states.${value}`),
+              })),
+            ]}
+          />
+        }
+        filters={
+          context.buildings.length > 1 ? (
+            <FilterBar
+              variant="toolbar"
+              fields={[
+                {
+                  name: "building",
+                  label: t("filter.building"),
+                  type: "select",
+                  placeholder: t("filter.allBuildings"),
+                  options: context.buildings.map((candidate) => ({ value: candidate.id, label: candidate.name })),
+                },
+              ]}
+            />
+          ) : undefined
+        }
       />
-      <Callout tone="info" icon={IconShield} title={t("howTitle")}>
-        {t("howBody")}
-      </Callout>
-      <FilterBar
-        fields={[
-          {
-            name: "building",
-            label: t("filter.building"),
-            type: "select",
-            placeholder: t("filter.allBuildings"),
-            options: context.buildings.map((candidate) => ({ value: candidate.id, label: candidate.name })),
-          },
-          {
-            name: "state",
-            label: t("filter.state"),
-            type: "select",
-            placeholder: t("filter.allStates"),
-            options: STATES.map((value) => ({ value, label: t(`filter.states.${value}`) })),
-          },
-        ]}
-      />
-      {!list.data ? (
-        <SectionError error={list.error} />
-      ) : rows.length === 0 ? (
-        <Card padding="lg">
-          <EmptyState icon={IconStar} title={t("empty.title")} description={t("empty.description")} />
-        </Card>
-      ) : (
-        <ul className="m-0 flex list-none flex-col gap-4 p-0" data-testid="review-rows">
-          {rows.map((review) => (
-            <ReviewCard key={review.id} review={review} locale={locale} canAct={canAct} />
-          ))}
-        </ul>
-      )}
-      {list.data ? (
-        <ListPagination
-          meta={list.data.meta}
-          path={ownerPath(locale, "/reviews")}
-          searchParams={searchParams}
-          locale={locale}
-        />
-      ) : null}
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_18rem] lg:gap-8">
+        <div className="flex max-w-3xl min-w-0 flex-col gap-4">
+          {!list.data ? (
+            <SectionError error={list.error} />
+          ) : rows.length === 0 ? (
+            <EmptyState
+              variant="card"
+              icon={IconStar}
+              title={t("empty.title")}
+              description={t("empty.description")}
+              action={
+                <Button asChild variant="secondary">
+                  <a href={state || building ? ownerPath(locale, "/reviews") : ownerPath(locale, "/listings")}>
+                    {state || building ? t("empty.clear") : t("empty.listings")}
+                  </a>
+                </Button>
+              }
+            />
+          ) : (
+            <ul className="m-0 flex list-none flex-col gap-4 p-0" data-testid="review-rows">
+              {rows.map((review) => (
+                <ReviewCard key={review.id} review={review} locale={locale} canAct={canAct} />
+              ))}
+            </ul>
+          )}
+          {list.data ? (
+            <ListPagination
+              meta={list.data.meta}
+              path={ownerPath(locale, "/reviews")}
+              searchParams={searchParams}
+              locale={locale}
+            />
+          ) : null}
+        </div>
+        <aside
+          className="rounded-card border-border bg-surface shadow-card flex flex-col gap-4 border p-5 lg:sticky lg:top-6"
+          aria-labelledby="reviews-how"
+        >
+          <h2 id="reviews-how" className="text-base font-semibold">
+            {t("howTitle")}
+          </h2>
+          <ul className="m-0 flex list-none flex-col gap-4 p-0 text-sm">
+            {(
+              [
+                ["verified", IconShield],
+                ["moderated", IconCheckCircle],
+                ["reply", IconChat],
+              ] as const
+            ).map(([key, glyph]) => (
+              <li key={key} className="flex gap-3">
+                <Icon icon={glyph} className="text-subtle mt-0.5 shrink-0 text-lg" />
+                <span>{t(`how.${key}`)}</span>
+              </li>
+            ))}
+          </ul>
+        </aside>
+      </div>
     </OwnerPage>
   );
 }
@@ -122,7 +171,10 @@ async function ReviewCard({
     <Card as="li" className="flex flex-col gap-3" data-testid="review-row" data-state={review.state}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <Stars rating={review.rating} label={t("stars", { rating: review.rating })} size={18} />
+          <span className="inline-flex items-center gap-1.5 font-semibold tabular-nums">
+            <Icon icon={IconStar} className="text-subtle" />
+            {t("rating", { rating: review.rating })}
+          </span>
           <span className="text-muted text-sm">
             {review.buildingName} · {t(tenure.to ? "tenureFromTo" : "tenureFrom", tenure)}
           </span>
@@ -135,7 +187,7 @@ async function ReviewCard({
         </div>
       </div>
       {review.body ? (
-        <p className="m-0 leading-relaxed break-words whitespace-pre-line" data-testid="review-body">
+        <p className="m-0 text-lg leading-relaxed break-words whitespace-pre-line" data-testid="review-body">
           {review.body}
         </p>
       ) : null}
@@ -147,11 +199,15 @@ async function ReviewCard({
         </div>
       ) : null}
       {review.reportedAt ? (
-        <p className="text-muted m-0 inline-flex items-center gap-1 text-sm" data-testid="review-reported">
-          <Icon icon={IconFlag} />
-          {t("reportedOn", { date: formatDate(review.reportedAt, locale) })}
-          {review.reportReason ? ` — ${review.reportReason}` : ""}
-        </p>
+        <div className="bg-bg-subtle rounded-card flex gap-3 p-3 text-sm" data-testid="review-reported">
+          <Icon icon={IconFlag} className="text-subtle mt-0.5 shrink-0" />
+          <span className="flex flex-col gap-0.5">
+            <span className="font-medium">
+              {t("reportedOn", { date: formatDate(review.reportedAt, locale) })} · {t("reportPending")}
+            </span>
+            {review.reportReason ? <span className="text-muted break-words">{review.reportReason}</span> : null}
+          </span>
+        </div>
       ) : null}
       {review.ownerReply ? (
         <div className="bg-bg-subtle rounded-card flex flex-col gap-1 p-3" data-testid="review-owner-reply">
@@ -165,7 +221,7 @@ async function ReviewCard({
         </div>
       ) : null}
       <div className="border-border flex flex-wrap items-center justify-between gap-3 border-t pt-3">
-        <span className="text-muted text-xs">
+        <span className="text-muted text-sm">
           {review.publishedAt ? t("publishedOn", { date: formatDate(review.publishedAt, locale) }) : null}
         </span>
         {canAct ? <ReviewActions review={review} /> : null}

@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 
 import { MOCK_API } from "../playwright.config";
-import { gotoOwner, setBuilding, signInOwner, W } from "./support/owner";
+import { gotoOwner, hydrated, setBuilding, signInOwner, W } from "./support/owner";
 import { expectAxeClean } from "./support/staff";
 
 /**
@@ -71,9 +71,11 @@ test("dashboard queue and the inbox with SLA clocks, filters and a new request",
   await expect(page.getByTestId("request-row")).toHaveCount(1);
   await page.getByTestId("filter-category").selectOption("");
   await expect(page.getByTestId("request-row")).toHaveCount(3);
-  await page.getByTestId("filter-view").selectOption("all");
+  await page.getByTestId("view-all").click();
   await expect(page).toHaveURL(/view=all/);
   await expect(page.getByTestId("request-row")).toHaveCount(5);
+  // The view tabs are links (a full navigation): wait until the page is interactive again.
+  await hydrated(page);
 
   await page.getByTestId("new-request").click();
   const dialog = page.getByRole("dialog", { name: "แจ้งซ่อมใหม่" });
@@ -215,7 +217,8 @@ test("work order steps: before photo, parts, cost, complete needs an after photo
   await phrase.fill((await phrase.getAttribute("placeholder")) ?? "");
   await expectAxeClean(page);
   await verify.getByRole("button", { name: "ตรวจรับงาน" }).click();
-  await expect(page.getByTestId("work-order-actions")).toBeEmpty();
+  // Nothing left to do: the panel says so instead of showing an empty row of actions (G4).
+  await expect(page.getByTestId("work-order-actions")).toHaveCount(0);
   await expect(page.getByTestId("work-order")).toContainText("ตรวจรับเมื่อ");
 });
 

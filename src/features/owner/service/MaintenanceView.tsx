@@ -6,17 +6,18 @@ import { SectionError } from "@/features/shared/console/SectionError";
 import { formatDate } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import { Badge } from "@/ui/components/Badge";
-import { Card, CardHeader } from "@/ui/components/Card";
+import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { SimpleTable } from "@/ui/components/SimpleTable";
+import { IconAlert } from "@/ui/icons/glyphs/alert";
 import { IconCalendar } from "@/ui/icons/glyphs/calendar";
+import { IconClock } from "@/ui/icons/glyphs/clock";
 
 import { ownerPath } from "../shared/links";
 import { fieldMembers } from "../shared/members";
 import { focusedBuilding, ownerCan, readOnly, type OwnerContext } from "../shared/server";
 import { EditPlan, NewPlan, type AssetChoice } from "./MaintenanceActions";
 import { buildingUnits, serviceCategories } from "./server";
-import { ServiceNav } from "./ServiceNav";
 import { bangkokToday } from "@/features/shared/console/time";
 
 /**
@@ -58,61 +59,95 @@ export async function MaintenanceView({ context }: { context: OwnerContext }) {
       <PageHeader
         title={t("title")}
         description={t("description")}
-        crumbs={[{ label: t("title") }]}
         actions={
           canManage && building ? (
             <NewPlan assets={assets} units={units} categories={categoryOptions} members={members} />
           ) : null
         }
       />
-      <ServiceNav current="/maintenance" locale={locale} />
       {plans.error ? <SectionError error={plans.error} /> : null}
-      <Card>
-        <CardHeader title={t("nextDue")} description={t("nextDueHint")} />
-        {list.length === 0 ? (
-          <EmptyState icon={IconCalendar} title={t("empty.title")} description={t("empty.body")} />
-        ) : (
+      {list.length === 0 ? (
+        <EmptyState
+          variant="card"
+          icon={IconCalendar}
+          title={t("empty.title")}
+          description={t("empty.body")}
+          action={
+            canManage && building ? (
+              <NewPlan
+                assets={assets}
+                units={units}
+                categories={categoryOptions}
+                members={members}
+                variant="secondary"
+              />
+            ) : (
+              <Button asChild variant="secondary">
+                <a href={ownerPath(locale, "/work-orders")}>{t("empty.workOrders")}</a>
+              </Button>
+            )
+          }
+        />
+      ) : (
+        <section aria-labelledby="plans-next-due" className="flex flex-col gap-3">
+          <div className="flex flex-col gap-0.5">
+            <h2 id="plans-next-due" className="text-lg font-semibold">
+              {t("nextDue")}
+            </h2>
+            <p className="text-muted text-sm">{t("nextDueHint")}</p>
+          </div>
           <SimpleTable
             caption={t("nextDue")}
             testId="plan-table"
-            minWidth="48rem"
+            stackOnPhones
+            minWidth="52rem"
             columns={[
-              { key: "due", header: t("due") },
-              { key: "plan", header: t("plan") },
-              { key: "interval", header: t("interval") },
-              { key: "last", header: t("lastWorkOrder") },
-              { key: "actions", header: <span className="sr-only">{t("actions")}</span> },
+              { key: "plan", header: t("plan"), phone: "title" },
+              { key: "due", header: t("due"), phone: "figure", className: "md:w-44" },
+              { key: "interval", header: t("interval"), phone: "meta" },
+              { key: "last", header: t("lastWorkOrder"), phone: "meta", className: "md:w-36" },
+              {
+                key: "actions",
+                header: <span className="sr-only">{t("actions")}</span>,
+                phone: "status",
+                className: "md:w-24",
+              },
             ]}
             rows={list.map((plan) => {
               const overdue = plan.isActive && plan.nextDueOn < today;
+              const days = Math.round((Date.parse(plan.nextDueOn) - Date.parse(today)) / 86_400_000);
               return {
                 key: plan.id,
                 testId: "plan-row",
-                tone: overdue ? "warning" : "default",
                 data: { overdue, active: plan.isActive },
                 cells: {
                   due: (
-                    <span className="flex flex-col gap-1">
-                      <span className="tabular-nums">{formatDate(plan.nextDueOn, locale)}</span>
-                      {overdue ? (
-                        <Badge tone="warning" size="sm">
-                          {t("overdue")}
-                        </Badge>
-                      ) : null}
-                      {plan.isActive ? null : (
-                        <Badge tone="neutral" size="sm">
+                    <span className="flex flex-col items-start gap-1 max-md:items-end">
+                      <span className="whitespace-nowrap tabular-nums">{formatDate(plan.nextDueOn, locale)}</span>
+                      {!plan.isActive ? (
+                        <Badge tone="neutral" size="sm" icon={IconClock}>
                           {t("paused")}
                         </Badge>
-                      )}
+                      ) : overdue ? (
+                        <Badge tone="warning" size="sm" icon={IconAlert}>
+                          {t("overdue")}
+                        </Badge>
+                      ) : days <= 14 ? (
+                        <span className="text-muted text-sm font-normal">
+                          {days === 0 ? t("dueToday") : t("dueIn", { days })}
+                        </span>
+                      ) : null}
                     </span>
                   ),
                   plan: (
-                    <span className="flex flex-col">
+                    <span className="flex flex-col gap-0.5">
                       <span className="font-medium">{plan.title}</span>
-                      <span className="text-muted text-xs">{plan.assetItemName}</span>
+                      <span className="text-muted text-sm">{plan.assetItemName}</span>
                     </span>
                   ),
-                  interval: t("every", { days: plan.intervalDays, lead: plan.leadDays }),
+                  interval: (
+                    <span className="text-sm">{t("every", { days: plan.intervalDays, lead: plan.leadDays })}</span>
+                  ),
                   last: plan.lastWorkOrderId ? (
                     <a
                       className="underline-offset-4 hover:underline"
@@ -128,8 +163,8 @@ export async function MaintenanceView({ context }: { context: OwnerContext }) {
               };
             })}
           />
-        )}
-      </Card>
+        </section>
+      )}
     </OwnerPage>
   );
 }

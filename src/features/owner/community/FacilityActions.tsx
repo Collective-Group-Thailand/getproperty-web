@@ -92,14 +92,21 @@ function policyOf(data: FormData): Schemas["BookingPolicyDto"] {
 }
 
 /** A facility of the building with its booking policy (D-212 defaults: 60-min slots, 08:00–22:00, ≤ 120 min…). */
-export function NewFacility({ buildingId }: { buildingId: string }) {
+export function NewFacility({
+  buildingId,
+  variant = "primary",
+}: {
+  buildingId: string;
+  /** `secondary` as the next step of an empty page (the head keeps the filled one). */
+  variant?: "primary" | "secondary";
+}) {
   const t = useTranslations("owner.community.facilities");
   return (
     <FormDialog
       label={t("add")}
       icon={IconAdd}
-      variant="primary"
-      testId="facility-add"
+      variant={variant}
+      testId={variant === "primary" ? "facility-add" : "facility-add-empty"}
       title={t("addTitle")}
       description={t("addBody")}
       submitLabel={t("save")}

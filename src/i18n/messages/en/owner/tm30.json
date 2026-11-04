@@ -18,7 +18,11 @@
   },
   "empty": {
     "title": "No TM30 notifications",
-    "body": "When a foreign occupant moves in, the notification due appears here."
+    "body": "When a foreign occupant moves in, the notification due appears here.",
+    "filteredTitle": "Nothing matches these filters",
+    "filteredBody": "Clear the filters or search for another name.",
+    "clear": "Show every notification",
+    "leases": "Go to leases"
   },
   "col": {
     "person": "Occupant",
@@ -72,5 +76,15 @@
   },
   "employerFilter": "Workers of {name}",
   "employerFilterBody": "Only the foreign workers staying under this employer's leases. The upload file is still made per building.",
-  "employerClear": "Show everyone"
+  "employerClear": "Show everyone",
+  "figures": {
+    "label": "TM30 figures",
+    "overdue": "Overdue",
+    "open": "To notify",
+    "incomplete": "Missing data"
+  },
+  "overdueBy": "{span} overdue",
+  "leftFor": "{span} left",
+  "nothingToFile": "Nothing waiting for a file",
+  "goParties": "Go to parties"
 }

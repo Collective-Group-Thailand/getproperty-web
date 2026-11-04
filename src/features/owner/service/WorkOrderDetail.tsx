@@ -10,6 +10,7 @@ import { unwrap } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/errors";
 import type { Schemas } from "@/lib/api/types";
 import { Card, CardHeader } from "@/ui/components/Card";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { SimpleTable } from "@/ui/components/SimpleTable";
 
@@ -76,11 +77,60 @@ export async function WorkOrderDetail({ context, workOrderId }: { context: Owner
           place: workOrder.unitNo ?? t("commonArea"),
           building: building?.name ?? "",
         })}
-        crumbs={[{ label: t("crumb"), href: ownerPath(locale, "/work-orders") }, { label: workOrder.title }]}
-        actions={canHandle ? <WorkOrderActions workOrder={workOrder} members={members} /> : null}
       />
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2" as="section" aria-labelledby="work-order-facts">
+      <DetailLayout
+        panel={
+          <ActionPanel
+            testId="work-order-panel"
+            title={t("nextSteps")}
+            facts={[
+              { key: "cost", label: costT("amount"), value: formatTHB(workOrder.costTotal, locale) },
+              ...(workOrder.scheduledAt
+                ? [{ key: "visit", label: t("visit"), value: formatDateTime(workOrder.scheduledAt, locale) }]
+                : []),
+            ]}
+            description={canHandle && workOrder.nextActions.length === 0 ? t("noNextSteps") : undefined}
+            primary={
+              canHandle && workOrder.nextActions.length > 0 ? (
+                <WorkOrderActions workOrder={workOrder} members={members} />
+              ) : undefined
+            }
+            footer={
+              <section aria-labelledby="work-order-request-card" className="flex flex-col gap-2">
+                <h3 id="work-order-request-card" className="text-fg text-sm font-semibold">
+                  {t("reported")}
+                </h3>
+                {request ? (
+                  <>
+                    <a
+                      className="text-fg font-medium underline-offset-4 hover:underline"
+                      href={ownerPath(locale, `/service-requests/${request.id}`)}
+                      data-testid="work-order-request"
+                    >
+                      <span className="font-mono">{request.ref}</span>
+                    </a>
+                    <p className="line-clamp-3 whitespace-pre-line">{request.description}</p>
+                    {request.photoIds.length ? (
+                      <div className="flex flex-wrap gap-2">
+                        {request.photoIds.map((id, index) => (
+                          <PhotoThumb key={id} fileId={id} alt={t("reportedAlt", { index: index + 1 })} size="sm" />
+                        ))}
+                      </div>
+                    ) : null}
+                  </>
+                ) : workOrder.maintenancePlanId ? (
+                  <a className="text-fg underline-offset-4 hover:underline" href={ownerPath(locale, "/maintenance")}>
+                    {t("preventive")}
+                  </a>
+                ) : (
+                  <p>{t("noRequest")}</p>
+                )}
+              </section>
+            }
+          />
+        }
+      >
+        <Card as="section" aria-labelledby="work-order-facts">
           <CardHeader title={<span id="work-order-facts">{t("facts")}</span>} />
           {workOrder.description ? <p className="mb-4 whitespace-pre-line">{workOrder.description}</p> : null}
           <DescriptionList
@@ -139,21 +189,6 @@ export async function WorkOrderDetail({ context, workOrderId }: { context: Owner
                   ]
                 : []),
               {
-                id: "request",
-                term: t("request"),
-                description: request ? (
-                  <a
-                    className="underline-offset-4 hover:underline"
-                    href={ownerPath(locale, `/service-requests/${request.id}`)}
-                    data-testid="work-order-request"
-                  >
-                    {request.ref}
-                  </a>
-                ) : workOrder.maintenancePlanId ? (
-                  t("preventive")
-                ) : null,
-              },
-              {
                 id: "checkedIn",
                 term: t("checkedInAt"),
                 description: workOrder.checkedInAt ? formatDateTime(workOrder.checkedInAt, locale) : null,
@@ -175,103 +210,90 @@ export async function WorkOrderDetail({ context, workOrderId }: { context: Owner
             ]}
           />
         </Card>
-        <Card as="section" aria-labelledby="work-order-request-card">
-          <CardHeader title={<span id="work-order-request-card">{t("reported")}</span>} />
-          {request ? (
-            <>
-              <p className="text-sm whitespace-pre-line">{request.description}</p>
-              {request.photoIds.length ? (
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {request.photoIds.map((id, index) => (
-                    <PhotoThumb key={id} fileId={id} alt={t("reportedAlt", { index: index + 1 })} size="sm" />
-                  ))}
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          {(["before", "after"] as const).map((role) => (
+            <Card key={role} as="section" aria-labelledby={`photos-${role}-title`} data-testid={`photos-${role}-card`}>
+              <CardHeader title={<span id={`photos-${role}-title`}>{t(role)}</span>} />
+              {photos(role === "before" ? workOrder.beforePhotoIds : workOrder.afterPhotoIds, role)}
+              {canHandle && PHOTO_OPEN.includes(workOrder.status) ? (
+                <div className="mt-3">
+                  <WorkOrderPhotoUpload workOrder={workOrder} role={role} />
                 </div>
               ) : null}
-            </>
-          ) : (
-            <p className="text-muted text-sm">{t("noRequest")}</p>
-          )}
-        </Card>
-      </div>
+            </Card>
+          ))}
+        </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        {(["before", "after"] as const).map((role) => (
-          <Card key={role} as="section" aria-labelledby={`photos-${role}-title`} data-testid={`photos-${role}-card`}>
-            <CardHeader title={<span id={`photos-${role}-title`}>{t(role)}</span>} />
-            {photos(role === "before" ? workOrder.beforePhotoIds : workOrder.afterPhotoIds, role)}
-            {canHandle && PHOTO_OPEN.includes(workOrder.status) ? (
-              <div className="mt-3">
-                <WorkOrderPhotoUpload workOrder={workOrder} role={role} />
-              </div>
-            ) : null}
-          </Card>
-        ))}
-      </div>
-
-      <Card data-testid="work-order-thread-card">
-        <ServiceThread
-          target={{ surface: "owner", kind: "workOrder", id: workOrder.id }}
-          initial={messages.data?.data ?? null}
-          canWrite={canHandle}
-          ended={
-            workOrder.status === "cancelled" ||
-            (request !== null && (request.status === "closed" || request.status === "cancelled"))
-          }
-        />
-      </Card>
-
-      <Card as="section" aria-labelledby="work-order-costs" data-testid="work-order-costs">
-        <CardHeader
-          title={<span id="work-order-costs">{costT("title")}</span>}
-          description={costT("hint")}
-          action={canHandle && COST_OPEN.includes(workOrder.status) ? <AddCostLine workOrder={workOrder} /> : null}
-        />
-        {workOrder.costLines.length ? (
-          <SimpleTable
-            caption={costT("title")}
-            minWidth="36rem"
-            columns={[
-              { key: "description", header: costT("description") },
-              { key: "kind", header: costT("kind") },
-              { key: "quantity", header: costT("quantity"), align: "end" },
-              { key: "unitPrice", header: costT("unitPrice"), align: "end" },
-              { key: "amount", header: costT("amount"), align: "end" },
-              { key: "actions", header: <span className="sr-only">{costT("actions")}</span> },
-            ]}
-            rows={workOrder.costLines.map((line) => ({
-              key: line.id,
-              testId: "cost-row",
-              cells: {
-                description: (
-                  <span className="flex items-center gap-2">
-                    {line.description}
-                    {line.receiptDocumentId ? (
-                      <PhotoThumb
-                        fileId={line.receiptDocumentId}
-                        alt={costT("receiptAlt", { description: line.description })}
-                        size="sm"
-                      />
-                    ) : null}
-                  </span>
-                ),
-                kind: costT(`kinds.${line.kind}`),
-                quantity: line.quantity,
-                unitPrice: formatTHB(line.unitPrice, locale),
-                amount: formatTHB(line.amount, locale),
-                actions:
-                  canHandle && COST_OPEN.includes(workOrder.status) ? (
-                    <RemoveCostLine workOrderId={workOrder.id} line={line} />
-                  ) : null,
-              },
-            }))}
+        <Card data-testid="work-order-thread-card">
+          <ServiceThread
+            target={{ surface: "owner", kind: "workOrder", id: workOrder.id }}
+            initial={messages.data?.data ?? null}
+            canWrite={canHandle}
+            ended={
+              workOrder.status === "cancelled" ||
+              (request !== null && (request.status === "closed" || request.status === "cancelled"))
+            }
           />
-        ) : (
-          <p className="text-muted text-sm">{costT("none")}</p>
-        )}
-        <p className="mt-3 text-end font-semibold" data-testid="work-order-cost-total">
-          {costT("total", { total: formatTHB(workOrder.costTotal, locale) })}
-        </p>
-      </Card>
+        </Card>
+
+        <Card as="section" aria-labelledby="work-order-costs" data-testid="work-order-costs">
+          <CardHeader
+            title={<span id="work-order-costs">{costT("title")}</span>}
+            description={costT("hint")}
+            action={canHandle && COST_OPEN.includes(workOrder.status) ? <AddCostLine workOrder={workOrder} /> : null}
+          />
+          {workOrder.costLines.length ? (
+            <SimpleTable
+              caption={costT("title")}
+              minWidth="36rem"
+              columns={[
+                { key: "description", header: costT("description") },
+                { key: "kind", header: costT("kind") },
+                { key: "quantity", header: costT("quantity"), align: "end" },
+                { key: "unitPrice", header: costT("unitPrice"), align: "end" },
+                { key: "amount", header: costT("amount"), align: "end" },
+                { key: "actions", header: <span className="sr-only">{costT("actions")}</span> },
+              ]}
+              rows={workOrder.costLines.map((line) => ({
+                key: line.id,
+                testId: "cost-row",
+                cells: {
+                  description: (
+                    <span className="flex items-center gap-2">
+                      {line.description}
+                      {line.receiptDocumentId ? (
+                        <PhotoThumb
+                          fileId={line.receiptDocumentId}
+                          alt={costT("receiptAlt", { description: line.description })}
+                          size="sm"
+                        />
+                      ) : null}
+                    </span>
+                  ),
+                  kind: costT(`kinds.${line.kind}`),
+                  quantity: line.quantity,
+                  unitPrice: formatTHB(line.unitPrice, locale),
+                  amount: formatTHB(line.amount, locale),
+                  actions:
+                    canHandle && COST_OPEN.includes(workOrder.status) ? (
+                      <RemoveCostLine workOrderId={workOrder.id} line={line} />
+                    ) : null,
+                },
+              }))}
+            />
+          ) : (
+            <p className="text-muted text-sm">{costT("none")}</p>
+          )}
+          <p
+            className="border-border mt-3 flex justify-between gap-4 border-t pt-3 font-semibold tabular-nums"
+            data-testid="work-order-cost-total"
+          >
+            <span>{costT("totalLabel")}</span>
+            <span>{formatTHB(workOrder.costTotal, locale)}</span>
+          </p>
+        </Card>
+      </DetailLayout>
     </OwnerPage>
   );
 }

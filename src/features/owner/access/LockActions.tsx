@@ -31,15 +31,24 @@ const SCOPES: Schemas["LockScope"][] = ["unit", "building_door", "common_area"];
 const VENDORS: Schemas["LockVendor"][] = ["ttlock", "tuya", "hikvision", "zkteco", "other"];
 
 /** Registers a lock of the building (D-070): a unit lock gets the lessee's code at once when the unit is leased. */
-export function RegisterLock({ buildingId, units }: { buildingId: string; units: { id: string; unitNo: string }[] }) {
+export function RegisterLock({
+  buildingId,
+  units,
+  variant = "primary",
+}: {
+  buildingId: string;
+  units: { id: string; unitNo: string }[];
+  /** `secondary` as the next step of an empty list (the head keeps the filled one). */
+  variant?: "primary" | "secondary";
+}) {
   const t = useTranslations("owner.access.register");
   const [scope, setScope] = useState<Schemas["LockScope"]>("unit");
   return (
     <FormDialog
       label={t("action")}
       icon={IconAdd}
-      variant="primary"
-      testId="lock-register"
+      variant={variant}
+      testId={variant === "primary" ? "lock-register" : "lock-register-empty"}
       title={t("title")}
       description={t("body")}
       submitLabel={t("submit")}
@@ -113,8 +122,8 @@ export function LockControls({ lock }: { lock: Pick<Schemas["LockDto"], "id" | "
   const t = useTranslations("owner.access.lock");
   const refresh = useApiAction();
   return (
-    <div className="flex flex-col items-end gap-2">
-      <div className="flex flex-wrap gap-2">
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 [&_button]:w-full [&>*]:w-full">
         <Button
           variant="secondary"
           iconStart={IconRefresh}
@@ -135,7 +144,8 @@ export function LockControls({ lock }: { lock: Pick<Schemas["LockDto"], "id" | "
         <ConfirmAction
           label={lock.isActive ? t("deactivate") : t("activate")}
           icon={lock.isActive ? IconLock : IconUnlock}
-          variant="secondary"
+          variant={lock.isActive ? "destructive" : "secondary"}
+          tone={lock.isActive ? "destructive" : "primary"}
           testId="lock-active"
           title={lock.isActive ? t("deactivateTitle", { name: lock.name }) : t("activateTitle", { name: lock.name })}
           description={lock.isActive ? t("deactivateBody") : t("activateBody")}
@@ -249,10 +259,11 @@ export function IssueCodes({ lockId, members }: { lockId: string; members: Field
   );
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-col gap-2 [&_button]:w-full [&>*]:w-full">
         <FormDialog
           label={t("visitor")}
           icon={IconKey}
+          variant="primary"
           testId="code-visitor"
           title={t("visitorTitle")}
           description={t("visitorBody")}

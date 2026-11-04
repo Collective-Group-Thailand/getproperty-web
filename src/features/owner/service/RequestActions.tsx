@@ -168,51 +168,21 @@ export function RequestActions({
   const categoryOptions = useCategoryOptions(categories);
   const subject = { ref: request.ref, unit: request.unitNo ?? t("commonArea") };
 
+  // One filled action: open a work order, else close the finished work, else triage (G4 panel).
+  const lead = can("create-work-order")
+    ? "create-work-order"
+    : can("close")
+      ? "close"
+      : can("triage")
+        ? "triage"
+        : null;
   return (
-    <div className="flex flex-wrap gap-2" data-testid="request-actions">
-      {can("triage") ? (
-        <FormDialog
-          label={t("triage")}
-          icon={IconFilter}
-          testId="request-triage"
-          title={t("triageTitle", subject)}
-          description={t("triageBody")}
-          submitLabel={t("triage")}
-          successMessage={t("triaged")}
-          onSubmit={(data) =>
-            unwrap(
-              browserApi().POST("/v1/owner/service-requests/{serviceRequestId}/actions/triage", {
-                params: { path },
-                body: {
-                  categoryId: text(data, "categoryId"),
-                  priority: text(data, "priority") as Schemas["ServicePriority"] | undefined,
-                },
-              }),
-            )
-          }
-        >
-          {(errors) => (
-            <>
-              <Field label={t("category")} error={errors.categoryId}>
-                <NativeSelect name="categoryId" defaultValue={request.category.id} options={categoryOptions} />
-              </Field>
-              <Field label={t("priority")} error={errors.priority}>
-                <NativeSelect
-                  name="priority"
-                  defaultValue={request.priority}
-                  options={PRIORITIES.map((value) => ({ value, label: priorities(value) }))}
-                  data-testid="triage-priority"
-                />
-              </Field>
-            </>
-          )}
-        </FormDialog>
-      ) : null}
+    <div className="flex flex-col gap-2 [&_button]:w-full [&>*]:w-full" data-testid="request-actions">
       {can("create-work-order") ? (
         <FormDialog
           label={t("createWorkOrder")}
           icon={IconWrench}
-          variant="primary"
+          variant={lead === "create-work-order" ? "primary" : "secondary"}
           testId="request-create-work-order"
           title={t("createTitle", subject)}
           description={t("createBody")}
@@ -269,7 +239,7 @@ export function RequestActions({
         <ConfirmAction
           label={t("close")}
           icon={IconCheck}
-          variant="secondary"
+          variant={lead === "close" ? "primary" : "secondary"}
           testId="request-close"
           title={t("closeTitle", subject)}
           description={t("closeBody")}
@@ -312,36 +282,77 @@ export function RequestActions({
           </Field>
         </ConfirmAction>
       ) : null}
-      {can("cancel") ? (
-        <ConfirmAction
-          label={t("cancel")}
-          icon={IconXCircle}
-          variant="destructive"
-          tone="destructive"
-          testId="request-cancel"
-          title={t("cancelTitle", subject)}
-          description={t("cancelBody")}
-          confirmLabel={t("cancel")}
-          ready={cancelReason.trim().length > 0}
-          successMessage={t("cancelled")}
-          onConfirm={() =>
+      {can("triage") ? (
+        <FormDialog
+          label={t("triage")}
+          icon={IconFilter}
+          variant={lead === "triage" ? "primary" : "secondary"}
+          testId="request-triage"
+          title={t("triageTitle", subject)}
+          description={t("triageBody")}
+          submitLabel={t("triage")}
+          successMessage={t("triaged")}
+          onSubmit={(data) =>
             unwrap(
-              browserApi().POST("/v1/owner/service-requests/{serviceRequestId}/actions/cancel", {
+              browserApi().POST("/v1/owner/service-requests/{serviceRequestId}/actions/triage", {
                 params: { path },
-                body: { reason: cancelReason.trim() },
+                body: {
+                  categoryId: text(data, "categoryId"),
+                  priority: text(data, "priority") as Schemas["ServicePriority"] | undefined,
+                },
               }),
             )
           }
         >
-          <Field label={t("reason")} required hint={t("cancelHint")}>
-            <Textarea
-              rows={2}
-              value={cancelReason}
-              onChange={(event) => setCancelReason(event.target.value)}
-              data-testid="cancel-reason"
-            />
-          </Field>
-        </ConfirmAction>
+          {(errors) => (
+            <>
+              <Field label={t("category")} error={errors.categoryId}>
+                <NativeSelect name="categoryId" defaultValue={request.category.id} options={categoryOptions} />
+              </Field>
+              <Field label={t("priority")} error={errors.priority}>
+                <NativeSelect
+                  name="priority"
+                  defaultValue={request.priority}
+                  options={PRIORITIES.map((value) => ({ value, label: priorities(value) }))}
+                  data-testid="triage-priority"
+                />
+              </Field>
+            </>
+          )}
+        </FormDialog>
+      ) : null}
+      {can("cancel") ? (
+        <div className="border-border mt-2 border-t pt-3">
+          <ConfirmAction
+            label={t("cancel")}
+            icon={IconXCircle}
+            variant="destructive"
+            tone="destructive"
+            testId="request-cancel"
+            title={t("cancelTitle", subject)}
+            description={t("cancelBody")}
+            confirmLabel={t("cancel")}
+            ready={cancelReason.trim().length > 0}
+            successMessage={t("cancelled")}
+            onConfirm={() =>
+              unwrap(
+                browserApi().POST("/v1/owner/service-requests/{serviceRequestId}/actions/cancel", {
+                  params: { path },
+                  body: { reason: cancelReason.trim() },
+                }),
+              )
+            }
+          >
+            <Field label={t("reason")} required hint={t("cancelHint")}>
+              <Textarea
+                rows={2}
+                value={cancelReason}
+                onChange={(event) => setCancelReason(event.target.value)}
+                data-testid="cancel-reason"
+              />
+            </Field>
+          </ConfirmAction>
+        </div>
       ) : null}
     </div>
   );

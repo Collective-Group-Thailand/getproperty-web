@@ -36,7 +36,8 @@ export function PhotoThumb({
   fileId: string;
   alt: string;
   purpose?: string;
-  size?: "sm" | "md" | "lg";
+  /** `thumb`: 64 × 48 in a dense table row (G4 review queue); `sm` 48; `md` 80; `lg` the column's width at 4:3. */
+  size?: "thumb" | "sm" | "md" | "lg";
   className?: string;
 }) {
   const t = useTranslations("owner.common.photo");
@@ -72,7 +73,14 @@ export function PhotoThumb({
     };
   }, [fileId, purpose]);
 
-  const box = size === "sm" ? "size-12" : size === "lg" ? "aspect-[4/3] w-full" : "size-20";
+  const box =
+    size === "thumb"
+      ? "h-12 w-16 rounded-thumb"
+      : size === "sm"
+        ? "size-12 rounded-control"
+        : size === "lg"
+          ? "aspect-[4/3] w-full rounded-control"
+          : "size-20 rounded-control";
   return (
     <>
       <button
@@ -81,7 +89,7 @@ export function PhotoThumb({
         onClick={() => file && setOpen(true)}
         disabled={!file}
         aria-label={t("open", { alt })}
-        className={cn("rounded-control bg-bg-subtle block shrink-0 overflow-hidden", box, className)}
+        className={cn("bg-bg-subtle block shrink-0 overflow-hidden", box, className)}
         data-testid="photo-thumb"
         data-file={fileId}
       >

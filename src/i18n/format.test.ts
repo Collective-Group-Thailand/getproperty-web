@@ -8,6 +8,7 @@ import {
   formatPercent,
   formatPeriodKey,
   formatPhone,
+  formatDuration,
   formatRelativeTime,
   formatTHB,
   formatTime,
@@ -118,5 +119,15 @@ describe("formatTime", () => {
   it("shows the Bangkok time of day", () => {
     expect(formatTime("2026-10-21T11:00:00Z", "en")).toBe("18:00");
     expect(formatTime("not a date")).toBe("—");
+  });
+});
+
+describe("formatDuration", () => {
+  it("names a span in its largest whole unit", () => {
+    expect(formatDuration(45 * 60_000, "en")).toBe("45 mins");
+    expect(formatDuration(-6 * 3_600_000, "th")).toBe("6 ชม.");
+    expect(formatDuration(3 * 86_400_000, "th")).toBe("3 วัน");
+    expect(formatDuration(10_000, "en")).toBe("1 min");
+    expect(formatDuration(3_590_000, "th")).toBe("1 ชม.");
   });
 });

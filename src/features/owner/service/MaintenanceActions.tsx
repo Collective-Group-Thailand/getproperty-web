@@ -115,11 +115,14 @@ export function NewPlan({
   units,
   categories,
   members,
+  variant = "primary",
 }: {
   assets: AssetChoice[];
   units: { id: string; unitNo: string }[];
   categories: Category[];
   members: FieldMember[];
+  /** `secondary` as the next step of the empty page (the head keeps the filled one). */
+  variant?: "primary" | "secondary";
 }) {
   const t = useTranslations("owner.service.maintenance");
   const [unitId, setUnitId] = useState("");
@@ -128,8 +131,8 @@ export function NewPlan({
     <FormDialog
       label={t("add")}
       icon={IconAdd}
-      variant="primary"
-      testId="plan-add"
+      variant={variant}
+      testId={variant === "primary" ? "plan-add" : "plan-add-empty"}
       title={t("addTitle")}
       description={t("addBody")}
       submitLabel={t("save")}

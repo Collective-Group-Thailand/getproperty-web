@@ -13,6 +13,7 @@ import { unwrap } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/errors";
 import { Badge } from "@/ui/components/Badge";
 import { Card, CardHeader } from "@/ui/components/Card";
+import { ActionPanel, DetailLayout } from "@/ui/components/DetailLayout";
 import { DescriptionList } from "@/ui/components/DescriptionList";
 import { Timeline } from "@/ui/components/Timeline";
 import { IconAlert } from "@/ui/icons/glyphs/alert";
@@ -44,6 +45,7 @@ export async function RequestDetail({
 }) {
   const t = await getTranslations("owner.service.request");
   const reporter = await getTranslations("owner.service.reporter");
+  const list = await getTranslations("owner.service.list");
   const kinds = await getTranslations("owner.service.kind");
   const events = await getTranslations("owner.service.timeline");
   const statuses = await getTranslations("status.serviceRequest");
@@ -89,21 +91,71 @@ export async function RequestDetail({
           place: request.unitNo ?? t("commonArea"),
           building: building?.name ?? "",
         })}
-        crumbs={[{ label: t("crumb"), href: ownerPath(locale, "/service-requests") }, { label: request.ref }]}
-        actions={
-          canHandle ? (
-            <RequestActions
-              request={request}
-              categories={categories.map(({ id, nameTh, nameEn, slaHours }) => ({ id, nameTh, nameEn, slaHours }))}
-              members={members}
-            />
-          ) : null
-        }
       />
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2" as="section" aria-labelledby="request-facts">
-          <CardHeader title={<span id="request-facts">{t("facts")}</span>} />
-          <p className="mb-4 whitespace-pre-line" data-testid="request-description">
+      <DetailLayout
+        panel={
+          <ActionPanel
+            testId="request-panel"
+            summary={
+              <div className="flex flex-col gap-2" data-testid="request-sla">
+                <h2 className="sr-only">{t("sla")}</h2>
+                <SlaTimer request={request} locale={locale} now={now} size="panel" />
+                {request.slaDueAt ? (
+                  <p className="text-muted text-sm">{t("slaHours", { hours: request.slaHours })}</p>
+                ) : null}
+              </div>
+            }
+            title={t("nextSteps")}
+            description={canHandle && request.nextActions.length === 0 ? t("noNextSteps") : undefined}
+            primary={
+              canHandle && request.nextActions.length > 0 ? (
+                <RequestActions
+                  request={request}
+                  categories={categories.map(({ id, nameTh, nameEn, slaHours }) => ({ id, nameTh, nameEn, slaHours }))}
+                  members={members}
+                />
+              ) : undefined
+            }
+            footer={
+              <section aria-labelledby="request-work-orders" data-testid="request-work-orders">
+                <h3 id="request-work-orders" className="text-fg mb-2 text-sm font-semibold">
+                  {t("workOrders")}
+                </h3>
+                {request.workOrders.length ? (
+                  <ul className="divide-border flex flex-col divide-y">
+                    {request.workOrders.map((workOrder) => (
+                      <li key={workOrder.id} className="flex flex-col gap-1 py-2" data-testid="request-work-order">
+                        <a
+                          className="text-fg font-medium underline-offset-4 hover:underline"
+                          href={ownerPath(locale, `/work-orders/${workOrder.id}`)}
+                        >
+                          {workOrder.title}
+                        </a>
+                        <span className="flex flex-wrap items-center gap-2">
+                          <StatusBadgeOf map={WORK_ORDER_STATUS} value={workOrder.status} size="sm" />
+                          <span>{kinds(workOrder.kind)}</span>
+                        </span>
+                        {workOrder.scheduledAt ? (
+                          <span className="tabular-nums">
+                            {t("visit", { at: formatDateTime(workOrder.scheduledAt, locale) })}
+                          </span>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p>{t("noWorkOrders")}</p>
+                )}
+              </section>
+            }
+          />
+        }
+      >
+        <Card as="section" aria-labelledby="request-facts">
+          <h2 id="request-facts" className="sr-only">
+            {t("facts")}
+          </h2>
+          <p className="mb-5 text-lg font-medium whitespace-pre-line" data-testid="request-description">
             {request.description}
           </p>
           <DescriptionList
@@ -120,7 +172,10 @@ export async function RequestDetail({
                 description:
                   request.reporterKind === "system"
                     ? t("automatic", {
-                        reason: request.autoReason ?? "",
+                        reason:
+                          request.autoReason && list.has(`autoReason.${request.autoReason}`)
+                            ? list(`autoReason.${request.autoReason}`)
+                            : list("autoReason.other"),
                       })
                     : reporter(request.reporterKind, { name: request.requesterName ?? "" }),
               },
@@ -190,84 +245,49 @@ export async function RequestDetail({
             </div>
           ) : null}
         </Card>
-        <Card as="section" aria-labelledby="request-sla" data-testid="request-sla">
-          <CardHeader title={<span id="request-sla">{t("sla")}</span>} />
-          <SlaTimer request={request} locale={locale} now={now} />
-          <p className="text-muted mt-2 text-sm">{t("slaHours", { hours: request.slaHours })}</p>
-        </Card>
-      </div>
 
-      <Card as="section" aria-labelledby="request-work-orders" data-testid="request-work-orders">
-        <CardHeader title={<span id="request-work-orders">{t("workOrders")}</span>} />
-        {request.workOrders.length ? (
-          <ul className="divide-border flex flex-col divide-y text-sm">
-            {request.workOrders.map((workOrder) => (
-              <li
-                key={workOrder.id}
-                className="flex flex-wrap items-center gap-3 py-2"
-                data-testid="request-work-order"
-              >
-                <a
-                  className="font-medium underline-offset-4 hover:underline"
-                  href={ownerPath(locale, `/work-orders/${workOrder.id}`)}
-                >
-                  {workOrder.title}
-                </a>
-                <span className="text-muted">{kinds(workOrder.kind)}</span>
-                <StatusBadgeOf map={WORK_ORDER_STATUS} value={workOrder.status} size="sm" />
-                {workOrder.scheduledAt ? (
-                  <span className="text-muted">
-                    {t("visit", { at: formatDateTime(workOrder.scheduledAt, locale) })}
-                  </span>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-muted text-sm">{t("noWorkOrders")}</p>
-        )}
-      </Card>
-
-      {me.currentTenant?.type === "landlord" ? (
-        <RepairCosts
-          api={api}
-          serviceRequestId={request.id}
-          unitId={request.unitId}
-          locale={locale}
-          today={bangkokToday()}
-          canHandle={canHandle}
-        />
-      ) : null}
-
-      <Card data-testid="request-thread-card">
-        <ServiceThread
-          target={{ surface: "owner", kind: "serviceRequest", id: request.id }}
-          initial={messages.data?.data ?? null}
-          canWrite={canHandle}
-          ended={request.status === "closed" || request.status === "cancelled"}
-        />
-      </Card>
-
-      <Card as="section" aria-labelledby="request-timeline" data-testid="request-timeline">
-        <CardHeader title={<span id="request-timeline">{t("timeline")}</span>} />
-        {timeline.error ? (
-          <SectionError error={timeline.error} />
-        ) : (
-          <Timeline
-            events={(timeline.data?.data ?? []).map((entry, index) => ({
-              id: `${entry.at}-${index}`,
-              title: events.has(entry.event) ? events(entry.event) : entry.event,
-              time: formatRelativeTime(entry.at, locale, now),
-              timeTitle: formatDateTime(entry.at, locale),
-              description: entry.from
-                ? t("transition", { from: statusLabel(entry.from), to: statusLabel(entry.to) })
-                : null,
-              icon: entry.event === "sla.breached" ? IconAlert : entry.event === "sla.warning" ? IconTimer : undefined,
-              tone: entry.event === "sla.breached" ? "danger" : entry.event === "sla.warning" ? "warning" : "neutral",
-            }))}
+        {me.currentTenant?.type === "landlord" ? (
+          <RepairCosts
+            api={api}
+            serviceRequestId={request.id}
+            unitId={request.unitId}
+            locale={locale}
+            today={bangkokToday()}
+            canHandle={canHandle}
           />
-        )}
-      </Card>
+        ) : null}
+
+        <Card data-testid="request-thread-card">
+          <ServiceThread
+            target={{ surface: "owner", kind: "serviceRequest", id: request.id }}
+            initial={messages.data?.data ?? null}
+            canWrite={canHandle}
+            ended={request.status === "closed" || request.status === "cancelled"}
+          />
+        </Card>
+
+        <Card as="section" aria-labelledby="request-timeline" data-testid="request-timeline">
+          <CardHeader title={<span id="request-timeline">{t("timeline")}</span>} />
+          {timeline.error ? (
+            <SectionError error={timeline.error} />
+          ) : (
+            <Timeline
+              events={(timeline.data?.data ?? []).map((entry, index) => ({
+                id: `${entry.at}-${index}`,
+                title: events.has(entry.event) ? events(entry.event) : events("other"),
+                time: formatRelativeTime(entry.at, locale, now),
+                timeTitle: formatDateTime(entry.at, locale),
+                description: entry.from
+                  ? t("transition", { from: statusLabel(entry.from), to: statusLabel(entry.to) })
+                  : null,
+                icon:
+                  entry.event === "sla.breached" ? IconAlert : entry.event === "sla.warning" ? IconTimer : undefined,
+                tone: entry.event === "sla.breached" ? "danger" : entry.event === "sla.warning" ? "warning" : "neutral",
+              }))}
+            />
+          )}
+        </Card>
+      </DetailLayout>
     </OwnerPage>
   );
 }

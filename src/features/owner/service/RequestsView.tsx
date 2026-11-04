@@ -1,59 +1,83 @@
 import { getTranslations } from "next-intl/server";
 
-import { PRIORITY_STATUS } from "@/domain/status/priority";
 import { SERVICE_REQUEST_STATUS, SERVICE_REQUEST_VALUES } from "@/domain/status/serviceRequest";
 import { FilterBar } from "@/features/shared/console/FilterBar";
 import { ListPagination } from "@/features/shared/console/ListPagination";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { enumParam } from "@/features/shared/console/params";
+import { currentTime } from "@/features/shared/console/time";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
-import { formatDateTime } from "@/i18n/format";
+import { formatDateTime, formatNumber } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
+import type { Schemas } from "@/lib/api/types";
 import { Badge } from "@/ui/components/Badge";
-import { Card } from "@/ui/components/Card";
+import { Button } from "@/ui/components/Button";
 import { EmptyState } from "@/ui/components/EmptyState";
+import { ListToolbar, ViewTabs } from "@/ui/components/ListToolbar";
 import { SimpleTable } from "@/ui/components/SimpleTable";
+import { StatsRow } from "@/ui/components/StatsRow";
 import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 import { IconShield } from "@/ui/icons/glyphs/shield";
 
 import { ownerPath, withQuery } from "../shared/links";
 import { focusedBuilding, ownerCan, pageParam, param, readOnly, type OwnerContext } from "../shared/server";
+import { viewCounts } from "../shared/views";
 import { NewRequestButton } from "./RequestActions";
 import { buildingUnits, categoryName, serviceCategories } from "./server";
-import { ServiceNav } from "./ServiceNav";
-import { SlaTimer } from "./SlaTimer";
-import { currentTime } from "@/features/shared/console/time";
+import { slaState, SlaTimer } from "./SlaTimer";
 
 type SearchParams = Record<string, string | string[] | undefined>;
+type View = "open" | "breached" | "all";
+type Request = Schemas["ServiceRequestDto"];
+
+const URGENCY = { breached: 0, warning: 1, ok: 2, none: 3 } as const;
 
 /**
- * The service requests inbox (F2 2.7, D-072, D-159): the focused building's requests, open first by default,
- * each with reference, place, category, priority, who reported it (automatic requests with their reason),
- * the SLA clock and the warranty referral mark; filters in the URL; a new request from the console.
+ * The requests in the order a caretaker works them: past their SLA first (the longest overdue on top), then the
+ * nearest due, requests without a clock last. Only when the page holds every request of the view — a partial page is
+ * left in the API's order (needs API: `sort=slaDueAt` on `GET /v1/owner/service-requests`).
+ */
+function byUrgency(requests: Request[], now: number): Request[] {
+  const due = (request: Request) => (request.slaDueAt ? Date.parse(request.slaDueAt) : Number.POSITIVE_INFINITY);
+  return [...requests].sort((a, b) => URGENCY[slaState(a, now)] - URGENCY[slaState(b, now)] || due(a) - due(b));
+}
+
+/**
+ * The service requests queue (F2 2.7, D-072, D-159; G4): the focused building's requests as a work queue — figures
+ * from the API (open, past SLA, waiting for triage, waiting for parts), one toolbar (open · past SLA · all, search,
+ * status, category, warranty) and rows that open the request, the SLA as icon + words.
  */
 export async function RequestsView({ context, searchParams }: { context: OwnerContext; searchParams: SearchParams }) {
   const t = await getTranslations("owner.service.list");
   const reporter = await getTranslations("owner.service.reporter");
   const statuses = await getTranslations("status.serviceRequest");
+  const priorities = await getTranslations("status.priority");
   const { api, locale, me } = context;
   const building = focusedBuilding(context);
-  const view = param(searchParams.view) ?? "open";
   const status = enumParam(searchParams.status, SERVICE_REQUEST_VALUES);
-  const sla = enumParam(searchParams.sla, ["breached"] as const);
+  const view: View =
+    enumParam(searchParams.sla, ["breached"] as const) === "breached"
+      ? "breached"
+      : param(searchParams.view) === "all"
+        ? "all"
+        : "open";
   const now = currentTime();
-  const [list, categories, units] = await Promise.all([
+  const base = { buildingId: building?.id };
+  const count = (query: Record<string, unknown>) =>
+    unwrap(api.GET("/v1/owner/service-requests", { params: { query: { ...base, ...query, perPage: 1 } } }));
+  const [list, categories, units, counts] = await Promise.all([
     unwrap(
       api.GET("/v1/owner/service-requests", {
         params: {
           query: {
+            ...base,
             page: pageParam(searchParams.page),
             perPage: 25,
-            buildingId: building?.id,
             status,
-            open: !status && view === "open" ? true : undefined,
+            open: !status && view !== "all" ? true : undefined,
+            slaBreached: view === "breached" ? true : undefined,
             categoryId: param(searchParams.category),
             inWarranty: param(searchParams.warranty) === "true" ? true : undefined,
-            slaBreached: sla === "breached" ? true : undefined,
             q: param(searchParams.q),
           },
         },
@@ -61,15 +85,28 @@ export async function RequestsView({ context, searchParams }: { context: OwnerCo
     ),
     serviceCategories(api),
     building ? buildingUnits(api, building.id) : Promise.resolve([]),
+    viewCounts(["open", "breached", "new", "waiting"] as const, (key) =>
+      key === "open"
+        ? count({ open: true })
+        : key === "breached"
+          ? count({ open: true, slaBreached: true })
+          : count({ status: key === "new" ? "new" : "waiting_parts" }),
+    ),
   ]);
   const canHandle = ownerCan(me, "service_request.handle") && !readOnly(me);
+  const filtered = Boolean(
+    param(searchParams.q) || status || param(searchParams.category) || param(searchParams.warranty),
+  );
+  const whole = list.meta.total <= list.data.length;
+  const rows = view !== "all" && whole ? byUrgency(list.data, now) : list.data;
+  const path = (query: Record<string, string | undefined>) => ownerPath(locale, withQuery("/service-requests", query));
+  const figure = (value: number | undefined) => (value === undefined ? "—" : formatNumber(value, locale));
 
   return (
     <OwnerPage testId="service-requests">
       <PageHeader
         title={t("title")}
         description={building ? t("descriptionBuilding", { building: building.name }) : t("description")}
-        crumbs={[{ label: t("title") }]}
         actions={
           canHandle && building ? (
             <NewRequestButton
@@ -80,78 +117,135 @@ export async function RequestsView({ context, searchParams }: { context: OwnerCo
           ) : null
         }
       />
-      <ServiceNav current="/service-requests" locale={locale} />
-      <FilterBar
-        fields={[
-          { name: "q", label: t("filter.search"), type: "search", placeholder: t("filter.searchPlaceholder") },
+      <StatsRow
+        label={t("figures.label")}
+        highlight={counts.breached ? "breached" : undefined}
+        figures={[
+          { key: "open", label: t("figures.open"), value: figure(counts.open), href: path({}) },
           {
-            name: "view",
-            label: t("filter.view"),
-            type: "select",
-            placeholder: t("filter.open"),
-            options: [{ value: "all", label: t("filter.all") }],
+            key: "breached",
+            label: t("figures.breached"),
+            value: figure(counts.breached),
+            href: path({ sla: "breached" }),
           },
+          { key: "new", label: t("figures.new"), value: figure(counts.new), href: path({ status: "new" }) },
           {
-            name: "status",
-            label: t("filter.status"),
-            type: "select",
-            placeholder: t("filter.anyStatus"),
-            options: SERVICE_REQUEST_VALUES.map((value) => ({ value, label: statuses(value) })),
-          },
-          {
-            name: "category",
-            label: t("filter.category"),
-            type: "select",
-            placeholder: t("filter.anyCategory"),
-            options: categories.map((category) => ({ value: category.id, label: categoryName(category, locale) })),
-          },
-          {
-            name: "sla",
-            label: t("filter.sla"),
-            type: "select",
-            placeholder: t("filter.anySla"),
-            options: [{ value: "breached", label: t("filter.slaBreached") }],
-          },
-          {
-            name: "warranty",
-            label: t("filter.warranty"),
-            type: "select",
-            placeholder: t("filter.anyWarranty"),
-            options: [{ value: "true", label: t("filter.inWarranty") }],
+            key: "waiting",
+            label: t("figures.waiting"),
+            value: figure(counts.waiting),
+            href: path({ status: "waiting_parts" }),
           },
         ]}
       />
-      {list.data.length === 0 ? (
-        <Card>
-          <EmptyState icon={IconCheckCircle} title={t("empty.title")} description={t("empty.body")} />
-        </Card>
+      <ListToolbar
+        tabs={
+          <ViewTabs
+            label={t("filter.view")}
+            current={view}
+            tabs={[
+              { key: "open", href: path({}), label: t("filter.open"), count: counts.open, testId: "view-open" },
+              {
+                key: "breached",
+                href: path({ sla: "breached" }),
+                label: t("filter.slaBreached"),
+                count: counts.breached,
+                testId: "view-breached",
+              },
+              { key: "all", href: path({ view: "all" }), label: t("filter.all"), testId: "view-all" },
+            ]}
+          />
+        }
+        filters={
+          <FilterBar
+            variant="toolbar"
+            fields={[
+              { name: "q", label: t("filter.search"), type: "search", placeholder: t("filter.searchPlaceholder") },
+              {
+                name: "status",
+                label: t("filter.status"),
+                type: "select",
+                placeholder: t("filter.anyStatus"),
+                options: SERVICE_REQUEST_VALUES.map((value) => ({ value, label: statuses(value) })),
+              },
+              {
+                name: "category",
+                label: t("filter.category"),
+                type: "select",
+                placeholder: t("filter.anyCategory"),
+                options: categories.map((category) => ({ value: category.id, label: categoryName(category, locale) })),
+              },
+              {
+                name: "warranty",
+                label: t("filter.warranty"),
+                type: "select",
+                placeholder: t("filter.anyWarranty"),
+                options: [{ value: "true", label: t("filter.inWarranty") }],
+              },
+            ]}
+          />
+        }
+      />
+      {rows.length === 0 ? (
+        <EmptyState
+          variant="card"
+          icon={IconCheckCircle}
+          title={
+            filtered ? t("empty.filteredTitle") : view === "breached" ? t("empty.breachedTitle") : t("empty.title")
+          }
+          description={filtered ? t("empty.filteredBody") : t("empty.body")}
+          action={
+            <Button asChild variant="secondary">
+              <a href={filtered || view !== "open" ? path({}) : path({ view: "all" })}>
+                {filtered || view !== "open" ? t("empty.clear") : t("empty.all")}
+              </a>
+            </Button>
+          }
+        />
       ) : (
         <SimpleTable
           caption={t("title")}
           testId="request-table"
-          minWidth="56rem"
+          stackOnPhones
+          minWidth="58rem"
           columns={[
-            { key: "ref", header: t("col.ref") },
-            { key: "place", header: t("col.place") },
-            { key: "problem", header: t("col.problem") },
-            { key: "status", header: t("col.status") },
-            { key: "sla", header: t("col.sla") },
+            { key: "problem", header: t("col.problem"), phone: "title" },
+            { key: "place", header: t("col.place"), phone: "figure", className: "md:w-24" },
+            { key: "reported", header: t("col.reported"), phone: "hidden", className: "md:w-40" },
+            { key: "status", header: t("col.status"), phone: "status", className: "md:w-36" },
+            { key: "sla", header: t("col.sla"), phone: "meta", className: "md:w-56" },
           ]}
-          rows={list.data.map((request) => ({
+          rows={rows.map((request) => ({
             key: request.id,
+            href: ownerPath(locale, `/service-requests/${request.id}`),
             testId: "request-row",
             data: { status: request.status, breached: request.slaBreached, ref: request.ref },
-            tone: request.slaBreached ? "danger" : "default",
             cells: {
-              ref: (
-                <span className="flex flex-col">
-                  <a
-                    className="font-mono font-semibold underline-offset-4 hover:underline"
-                    href={ownerPath(locale, `/service-requests/${request.id}`)}
-                  >
-                    {request.ref}
-                  </a>
-                  <span className="text-muted text-xs">{formatDateTime(request.createdAt, locale)}</span>
+              problem: (
+                <span className="flex min-w-0 flex-col gap-0.5">
+                  <span className="line-clamp-2">{request.description}</span>
+                  <span className="text-muted flex flex-wrap items-center gap-x-1.5 text-sm font-normal">
+                    <span className="font-mono">{request.ref}</span>
+                    <span aria-hidden>·</span>
+                    <span>{categoryName(request.category, locale)}</span>
+                    {request.priority !== "normal" ? (
+                      <>
+                        <span aria-hidden>·</span>
+                        <span>{priorities(request.priority)}</span>
+                      </>
+                    ) : null}
+                    <span aria-hidden className="max-md:hidden">
+                      ·
+                    </span>
+                    <span className="max-md:hidden">
+                      {request.reporterKind === "system" && request.autoReason
+                        ? t("auto", {
+                            reason: t.has(`autoReason.${request.autoReason}`)
+                              ? t(`autoReason.${request.autoReason}`)
+                              : t("autoReason.other"),
+                          })
+                        : reporter(request.reporterKind, { name: request.requesterName ?? "" })}
+                    </span>
+                  </span>
                 </span>
               ),
               place: request.unitNo ? (
@@ -159,30 +253,21 @@ export async function RequestsView({ context, searchParams }: { context: OwnerCo
               ) : (
                 <span className="text-muted">{t("commonArea")}</span>
               ),
-              problem: (
-                <span className="flex flex-col gap-1">
-                  <span className="flex flex-wrap items-center gap-2">
-                    <span className="font-medium">{categoryName(request.category, locale)}</span>
-                    <StatusBadgeOf map={PRIORITY_STATUS} value={request.priority} size="sm" />
-                    {request.inWarranty ? (
-                      <Badge tone="info" size="sm" icon={IconShield}>
-                        {t("warranty")}
-                      </Badge>
-                    ) : null}
-                  </span>
-                  <span className="line-clamp-2">{request.description}</span>
-                  <span className="text-muted text-xs">
-                    {request.reporterKind === "system" && request.autoReason
-                      ? t("auto", {
-                          reason: t.has(`autoReason.${request.autoReason}`)
-                            ? t(`autoReason.${request.autoReason}`)
-                            : request.autoReason,
-                        })
-                      : reporter(request.reporterKind, { name: request.requesterName ?? "" })}
-                  </span>
+              reported: (
+                <span className="text-muted text-sm whitespace-nowrap tabular-nums">
+                  {formatDateTime(request.createdAt, locale)}
                 </span>
               ),
-              status: <StatusBadgeOf map={SERVICE_REQUEST_STATUS} value={request.status} size="sm" />,
+              status: (
+                <span className="flex flex-wrap items-center gap-1.5">
+                  <StatusBadgeOf map={SERVICE_REQUEST_STATUS} value={request.status} size="sm" />
+                  {request.inWarranty ? (
+                    <Badge tone="info" size="sm" icon={IconShield}>
+                      {t("warranty")}
+                    </Badge>
+                  ) : null}
+                </span>
+              ),
               sla: <SlaTimer request={request} locale={locale} now={now} />,
             },
           }))}
@@ -190,7 +275,7 @@ export async function RequestsView({ context, searchParams }: { context: OwnerCo
       )}
       <ListPagination
         meta={list.meta}
-        path={ownerPath(locale, withQuery("/service-requests", {}))}
+        path={ownerPath(locale, "/service-requests")}
         searchParams={searchParams}
         locale={locale}
       />
