@@ -5,12 +5,6 @@
   "noneOpen": "No units to inspect",
   "noneOpenHint": "Move-outs and new leases waiting for their move-in inspection show up here",
   "heading": "{unit} · {type, select, move_in {move-in} move_out {move-out} other {inspection}}",
-  "statusWord": {
-    "scheduled": "Scheduled",
-    "in_progress": "In progress",
-    "completed": "Completed",
-    "signed": "Signed"
-  },
   "report": "Report {number}",
   "doneTitle": "Inspection completed",
   "doneBody": "Report closed {date}; it can no longer be changed",
@@ -26,7 +20,6 @@
   "cameraLoading": "Opening…",
   "complete": {
     "title": "Complete the inspection",
-    "missing": "{count, plural, one {Give # more line a condition} other {Give # more lines a condition}} before completing",
     "start": "Sign and complete",
     "notes": "Report notes",
     "staffSignature": "Inspector's signature",
@@ -37,7 +30,10 @@
     "errorTitle": "The inspection could not be completed",
     "submit": "Complete the inspection",
     "submitSigned": "Complete (both signed)",
-    "cancel": "Not yet"
+    "cancel": "Not yet",
+    "left": "{count, plural, one {# line left} other {# lines left}}",
+    "ready": "Every line is checked",
+    "next": "Next line"
   },
   "area": {
     "room": "Room",
@@ -54,7 +50,7 @@
     "fair": "Fair",
     "damaged": "Damaged",
     "missing": "Missing",
-    "not_applicable": "None"
+    "not_applicable": "Not in this room"
   },
   "notes": "Note",
   "register": "Meter register",
@@ -65,10 +61,18 @@
   "photoAlt": "{item}, photo {index}",
   "removePhoto": "Remove photo {index}",
   "photoWaiting": "Waiting",
-  "addPhotos": "Take photos",
   "shoot": "Photograph {item}",
   "sameAngle": "Move-in photo: take the same angle to compare",
   "closeCamera": "Close the camera",
   "downloadReport": "Open the report (PDF)",
-  "reportUnavailable": "The report is not ready yet; try again"
+  "reportUnavailable": "The report is not ready yet; try again",
+  "lede": "Move-in and move-out checks of your buildings",
+  "backToday": "Back to Today",
+  "scheduledFor": "Scheduled {at}",
+  "completedAt": "Completed {at}",
+  "progress": "{done} of {total} lines checked",
+  "progressLabel": "Inspection progress",
+  "lineDone": "Line checked",
+  "current": "Checking now",
+  "addPhoto": "Photo"
 }

@@ -61,5 +61,7 @@
   "count": "({count})",
   "earlyBadge": "Read before the round; counts from {date}",
   "unavailableTitle": "The reading round could not be loaded",
-  "unavailable": "Try again when you have signal; what you read on this phone is kept."
+  "unavailable": "Try again when you have signal; what you read on this phone is kept.",
+  "readCaption": "read",
+  "backToday": "Back to Today"
 }

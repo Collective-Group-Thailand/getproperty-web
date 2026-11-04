@@ -24,7 +24,7 @@ test.beforeAll(async () => {
   await fetch(`${MOCK_API}/__mock/r2/reset`, { method: "POST" });
 });
 
-test("Today lists the tasks by type and floor; a parcel is handed over from the list with the PIN", async ({
+test("Today lists the tasks by type and floor; a parcel opened from Today is handed over with the PIN", async ({
   page,
 }) => {
   await signInStaff(page);
@@ -46,13 +46,18 @@ test("Today lists the tasks by type and floor; a parcel is handed over from the 
   await page.getByTestId("tasks-mine").click();
   await hydrated(page);
 
-  const parcel = tasks.getByTestId("today-parcels").getByTestId("task").filter({ hasText: "A-201" });
-  await parcel.getByTestId("task-complete").click();
-  await parcel.getByTestId("task-pin").fill("111111");
-  await parcel.getByTestId("task-pin-submit").click();
-  await expect(parcel.getByTestId("task-problem")).toBeVisible();
-  await parcel.getByTestId("task-pin").fill("482913");
-  await parcel.getByTestId("task-pin-submit").click();
+  // Today's rows carry no buttons (redesign G7): the parcel's row opens its sheet on the parcels screen.
+  await tasks.getByTestId("today-parcels").getByTestId("task").filter({ hasText: "A-201" }).getByRole("link").click();
+  await hydrated(page);
+  const sheet = page.getByTestId("parcel-sheet");
+  await expect(sheet).toBeVisible();
+  await sheet.getByTestId("pick-up-pin").fill("111111");
+  await sheet.getByTestId("pick-up-submit").click();
+  await expect(sheet.getByTestId("pick-up-problem")).toBeVisible();
+  await sheet.getByTestId("pick-up-pin").fill("482913");
+  await sheet.getByTestId("pick-up-submit").click();
+  await expect(sheet).toHaveCount(0);
+  await gotoStaff(page, "/");
   await expect(tasks.getByTestId("today-parcels").getByRole("link")).toHaveCount(1);
   const state = await r2<{ parcels: { unitNo: string; status: string; pickupConfirmedBy: string | null }[] }>();
   expect(state.parcels.find((one) => one.unitNo === "A-201")).toMatchObject({
@@ -179,7 +184,7 @@ test("parcels: intake with the camera, a staff-confirmed hand-over", async ({ pa
 
   const a301 = page.locator('[data-testid="parcel"][data-unit="A-301"]');
   await a301.getByTestId("pick-up").click();
-  await a301.getByTestId("pick-up-staff").click();
+  await page.getByTestId("parcel-sheet").getByTestId("pick-up-staff").click();
   await expect(page.getByTestId("parcel")).toHaveCount(1);
   const state = await r2<{
     parcels: { unitNo: string; status: string; pickupConfirmedBy: string | null; carrier: string | null }[];

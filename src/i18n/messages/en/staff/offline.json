@@ -29,5 +29,6 @@
   "held": "Held",
   "offlinePageTitle": "No connection",
   "offlinePageBody": "This page needs a connection. What you saved while offline stays on this phone and is sent when the signal is back.",
-  "offlinePageRetry": "Try again"
+  "offlinePageRetry": "Try again",
+  "banner": "What you save stays on this phone and is sent when the signal is back."
 }

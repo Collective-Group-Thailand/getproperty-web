@@ -10,7 +10,9 @@
     "cutoff": "Cut-off {date}",
     "floor": "{floor} · {count} left",
     "noFloor": "No floor",
-    "none": "No reading round for this building yet"
+    "none": "No reading round for this building yet",
+    "leftCaption": "meters left",
+    "floorLeft": "{count} left"
   },
   "allDone": "Nothing left for today",
   "allDoneHint": "New work shows up here, and as a notification if you turned them on",
@@ -36,18 +38,8 @@
       "high": "High priority",
       "urgent": "Urgent"
     },
-    "readOnly": "Done by Collective's field engineers"
-  },
-  "complete": {
-    "finish": "Finish",
-    "handOver": "Hand over",
-    "pin": "Pick-up PIN",
-    "pinHint": "6 digits from the resident's app",
-    "withPin": "Hand over with the PIN",
-    "staffConfirmed": "No PIN — I confirm who picks it up",
-    "note": "What was done",
-    "cancel": "Cancel",
-    "offline": "Not sent: no signal. Try again.",
-    "takeAfterPhoto": "Take the after photo in the work order"
+    "readOnly": "Done by Collective's field engineers",
+    "seeEveryone": "See everyone's tasks",
+    "seeMine": "Back to my tasks"
   }
 }

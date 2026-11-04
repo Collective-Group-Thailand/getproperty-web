@@ -1,7 +1,6 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -16,11 +15,13 @@ import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
-import { Field } from "@/ui/components/Field";
-import { NativeSelect } from "@/ui/components/NativeSelect";
-import { IconFilter } from "@/ui/icons/glyphs/filter";
+import { Card } from "@/ui/components/Card";
+import { SegmentedControl } from "@/ui/components/SegmentedControl";
+import { Icon } from "@/ui/icons";
+import { IconInfo } from "@/ui/icons/glyphs/info";
 import { IconWrench } from "@/ui/icons/glyphs/wrench";
 
+import { StaffActionBar, StaffList } from "../shell/StaffList";
 import { PhotoThumb } from "../shared/PhotoThumb";
 import { newKey, problemText } from "../shared/problem";
 
@@ -55,127 +56,121 @@ export function RequestScreen({
   const can = (name: string) => request.nextActions.includes(name);
   const path = { serviceRequestId: request.id };
 
+  const triage = async () => {
+    setBusy("triage");
+    setError(null);
+    try {
+      await unwrap(
+        browserApi().POST("/v1/staff/service-requests/{serviceRequestId}/actions/triage", {
+          params: { path },
+          body: { priority },
+        }),
+      );
+      router.refresh();
+    } catch (failure) {
+      setError(failure);
+    } finally {
+      setBusy(null);
+    }
+  };
+  const take = async () => {
+    setBusy("take");
+    setError(null);
+    try {
+      const workOrder = await unwrap(
+        browserApi().POST("/v1/staff/service-requests/{serviceRequestId}/work-orders", {
+          params: { path, header: { "Idempotency-Key": key } },
+          body: {
+            title: request.description.slice(0, 80),
+            kind: "repair",
+            assigneeUserId: userId,
+          },
+        }),
+      );
+      router.push(`/work-orders/${workOrder.id}`);
+    } catch (failure) {
+      setError(failure);
+    } finally {
+      setBusy(null);
+    }
+  };
+  const problem = error ? (
+    <Callout tone="danger">
+      <span role="alert">{problemText(error, t("offline"))}</span>
+    </Callout>
+  ) : null;
+
   return (
-    <div className="flex flex-col gap-6 py-6" data-testid="staff-request">
+    <div className="flex flex-col gap-5 py-6" data-testid="staff-request">
       <header className="flex flex-col gap-2">
-        <Button asChild variant="ghost" size="lg" className="self-start">
-          <Link href="/work-orders">{t("back")}</Link>
-        </Button>
-        <h1 className="text-2xl font-semibold">
+        <p className="text-muted font-mono text-sm tabular-nums">
           {request.ref} · {request.unitNo ?? t("commonArea")}
-        </h1>
+        </p>
+        <h1 className="text-xl leading-snug font-semibold whitespace-pre-line">{request.description}</h1>
         <span className="flex flex-wrap gap-2">
           <StatusBadgeOf map={SERVICE_REQUEST_STATUS} value={request.status} />
           <StatusBadgeOf map={PRIORITY_STATUS} value={request.priority} />
         </span>
+        <p className="text-muted text-sm">{t("reportedAt", { at: formatDateTime(request.createdAt, locale) })}</p>
+        <p className="text-muted text-sm" data-testid="request-visit-preference">
+          {visit("preferred")}:{" "}
+          {request.preferredVisit ? visit(`preference.${request.preferredVisit}`) : visit("noPreference")}
+          {request.visitConfirmedAt
+            ? ` · ${visit("confirmedAt", { at: formatDateTime(request.visitConfirmedAt, locale) })}`
+            : ""}
+        </p>
       </header>
-      <p className="text-lg whitespace-pre-line">{request.description}</p>
-      <p className="text-base" data-testid="request-visit-preference">
-        {visit("preferred")}:{" "}
-        {request.preferredVisit ? visit(`preference.${request.preferredVisit}`) : visit("noPreference")}
-        {request.visitConfirmedAt
-          ? ` · ${visit("confirmedAt", { at: formatDateTime(request.visitConfirmedAt, locale) })}`
-          : ""}
-      </p>
+
       {request.photoIds.length ? (
-        <ul className="flex flex-wrap gap-2">
+        <ul className="flex flex-wrap gap-2" aria-label={t("photos")}>
           {request.photoIds.map((id, index) => (
             <li key={id}>
-              <PhotoThumb fileId={id} alt={t("photoAlt", { index: index + 1 })} />
+              <PhotoThumb fileId={id} size="sm" className="size-24" alt={t("photoAlt", { index: index + 1 })} />
             </li>
           ))}
         </ul>
       ) : null}
+
       {can("triage") ? (
-        <section aria-labelledby="triage" className="flex flex-col gap-3">
+        <Card as="section" aria-labelledby="triage" className="flex flex-col gap-3">
           <h2 id="triage" className="text-lg font-semibold">
             {t("triage")}
           </h2>
-          <Field label={t("priority")}>
-            <NativeSelect
-              inputSize="lg"
-              value={priority}
-              onChange={(event) => setPriority(event.target.value as Schemas["ServicePriority"])}
-              options={PRIORITIES.map((value) => ({ value, label: priorities(value) }))}
-            />
-          </Field>
-          <Button
-            variant="secondary"
-            size="xl"
-            block
-            iconStart={IconFilter}
-            loading={busy === "triage"}
-            onClick={async () => {
-              setBusy("triage");
-              setError(null);
-              try {
-                await unwrap(
-                  browserApi().POST("/v1/staff/service-requests/{serviceRequestId}/actions/triage", {
-                    params: { path },
-                    body: { priority },
-                  }),
-                );
-                router.refresh();
-              } catch (failure) {
-                setError(failure);
-              } finally {
-                setBusy(null);
-              }
-            }}
-            data-testid="request-triage"
-          >
-            {t("triage")}
-          </Button>
-        </section>
+          <SegmentedControl
+            label={t("priority")}
+            fullWidth
+            value={priority}
+            onValueChange={(value) => setPriority(value as Schemas["ServicePriority"])}
+            options={PRIORITIES.map((value) => ({ value, label: priorities(value) }))}
+          />
+          <p className="text-muted flex items-center gap-2 text-sm">
+            <Icon icon={IconInfo} />
+            {t("urgentHint")}
+          </p>
+        </Card>
       ) : null}
-      {can("create-work-order") ? (
-        <Button
-          size="xl"
-          block
-          iconStart={IconWrench}
-          loading={busy === "take"}
-          onClick={async () => {
-            setBusy("take");
-            setError(null);
-            try {
-              const workOrder = await unwrap(
-                browserApi().POST("/v1/staff/service-requests/{serviceRequestId}/work-orders", {
-                  params: { path, header: { "Idempotency-Key": key } },
-                  body: {
-                    title: request.description.slice(0, 80),
-                    kind: "repair",
-                    assigneeUserId: userId,
-                  },
-                }),
-              );
-              router.push(`/work-orders/${workOrder.id}`);
-            } catch (failure) {
-              setError(failure);
-            } finally {
-              setBusy(null);
-            }
-          }}
-          data-testid="request-take"
-        >
-          {t("take")}
-        </Button>
-      ) : null}
+
       {request.workOrders.length ? (
-        <section aria-labelledby="request-work" className="flex flex-col gap-2">
+        <section aria-labelledby="request-work" className="flex flex-col gap-3">
           <h2 id="request-work" className="text-lg font-semibold">
             {t("workOrders")}
           </h2>
-          <ul className="flex flex-col gap-1">
-            {request.workOrders.map((workOrder) => (
-              <li key={workOrder.id}>
-                <Button asChild variant="secondary" size="lg" block>
-                  <Link href={`/work-orders/${workOrder.id}`}>{workOrder.title}</Link>
-                </Button>
-              </li>
-            ))}
-          </ul>
+          <StaffList
+            label={t("workOrders")}
+            groups={[
+              {
+                key: "work",
+                rows: request.workOrders.map((workOrder) => ({
+                  key: workOrder.id,
+                  href: `/work-orders/${workOrder.id}`,
+                  title: workOrder.title,
+                })),
+              },
+            ]}
+          />
         </section>
       ) : null}
+
       <ServiceThread
         target={{ surface: "staff", kind: "serviceRequest", id: request.id }}
         initial={messages}
@@ -183,11 +178,36 @@ export function RequestScreen({
         ended={request.status === "closed" || request.status === "cancelled"}
         touch
       />
-      {error ? (
-        <Callout tone="danger">
-          <span role="alert">{problemText(error, t("offline"))}</span>
-        </Callout>
-      ) : null}
+
+      {can("triage") || can("create-work-order") ? (
+        <StaffActionBar problem={problem}>
+          {can("triage") ? (
+            <Button
+              variant="secondary"
+              size="xl"
+              className="px-5"
+              loading={busy === "triage"}
+              onClick={() => void triage()}
+              data-testid="request-triage"
+            >
+              {t("saveTriage")}
+            </Button>
+          ) : null}
+          {can("create-work-order") ? (
+            <Button
+              size="xl"
+              iconStart={IconWrench}
+              loading={busy === "take"}
+              onClick={() => void take()}
+              data-testid="request-take"
+            >
+              {t("take")}
+            </Button>
+          ) : null}
+        </StaffActionBar>
+      ) : (
+        problem
+      )}
     </div>
   );
 }

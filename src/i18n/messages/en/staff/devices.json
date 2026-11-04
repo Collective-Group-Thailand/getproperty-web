@@ -97,7 +97,8 @@
     "doneBody": "{serial} now reads {meter}, starting at {register}",
     "another": "Install the next meter",
     "toDevices": "Back to devices",
-    "loading": "Opening…"
+    "loading": "Opening…",
+    "cancel": "Cancel"
   },
   "wiring": {
     "gateway": "Gateway",
@@ -128,7 +129,8 @@
   "identify": {
     "action": "Blink the gateway's light ({seconds} s)",
     "status": "Command",
-    "offline": "You need signal to send a command"
+    "offline": "You need signal to send a command",
+    "hint": "To find it in the cabinet"
   },
   "swap": {
     "title": "Replace a meter",
@@ -173,10 +175,10 @@
     "doneTitle": "Meter replaced",
     "doneBody": "{meter} is counted on the new meter from now on; nothing to read again",
     "toDevices": "Back to devices",
-    "loading": "Opening…"
+    "loading": "Opening…",
+    "cancel": "Cancel"
   },
   "detail": {
-    "back": "All devices",
     "kind": {
       "gateway": "Gateway",
       "electric_meter": "Electricity meter",
@@ -206,7 +208,10 @@
     "closed": "{from} to {to}",
     "since": "since {from}",
     "events": "Recent events",
-    "ipPlaceholder": "e.g. 192.168.1.50"
+    "ipPlaceholder": "e.g. 192.168.1.50",
+    "readNowHint": "Ask the meters for their latest values",
+    "facts": "Device details",
+    "meterCount": "Meters"
   },
   "orders": {
     "title": "Install orders",
@@ -222,5 +227,17 @@
       "gateway": "Gateway",
       "meter_device": "Meter device"
     }
-  }
+  },
+  "lede": "Gateways, smart meters and the meter of every unit in this building",
+  "swapTile": "Replace a meter",
+  "swapHint": "Take the old one out, put the new one in, carry the register over",
+  "noGatewaysHint": "A gateway reads the smart meters of the building; provision one to start",
+  "noPointsHint": "Meter points are added by the office with the units of the building",
+  "backToday": "Back to Today",
+  "meterActions": "Actions for meter {meter}",
+  "utility": {
+    "electric": "electricity",
+    "water": "water"
+  },
+  "toDevices": "Back to devices"
 }

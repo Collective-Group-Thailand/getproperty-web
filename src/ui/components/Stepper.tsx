@@ -15,6 +15,11 @@ export interface StepperProps {
   label: string;
   /** "Step {n} of {total}" in the page language. */
   progressText: string;
+  /**
+   * `dots` (default): numbered dots joined by lines. `bar`: "Step n of m", the current step's name as a title, then one
+   * segment per step with its name under it — for a phone wizard where the names carry the way (staff installs).
+   */
+  variant?: "dots" | "bar";
   className?: string;
 }
 
@@ -23,7 +28,33 @@ export interface StepperProps {
  * ticked and the current one is `aria-current="step"`. On a phone only the current label is shown
  * next to "step n of m"; the dots still show where you are.
  */
-export function Stepper({ steps, current, label, progressText, className }: StepperProps) {
+export function Stepper({ steps, current, label, progressText, variant = "dots", className }: StepperProps) {
+  if (variant === "bar")
+    return (
+      <nav aria-label={label} className={cn("flex flex-col gap-3", className)}>
+        <div className="flex flex-col gap-0.5">
+          <p className="text-muted text-sm" data-testid="stepper-progress">
+            {progressText}
+          </p>
+          <p className="text-xl font-semibold">{steps[current]?.label}</p>
+        </div>
+        <ol className="grid auto-cols-fr grid-flow-col gap-1.5">
+          {steps.map((step, index) => (
+            <li
+              key={step.id}
+              className="flex min-w-0 flex-col gap-1.5"
+              aria-current={index === current ? "step" : undefined}
+            >
+              <span className={cn("h-1 rounded-full", index <= current ? "bg-primary" : "bg-border")} />
+              <span className={cn("truncate text-xs", index === current ? "text-fg font-semibold" : "text-muted")}>
+                {index < current ? <Icon icon={IconCheck} size={12} className="text-primary me-0.5 inline" /> : null}
+                {step.label}
+              </span>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    );
   return (
     <nav aria-label={label} className={cn("flex flex-col gap-2", className)}>
       <p className="text-muted text-sm" data-testid="stepper-progress">

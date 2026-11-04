@@ -17,13 +17,20 @@ import { IconPackageCheck } from "@/ui/icons/glyphs/package-check";
 import { problemText } from "../shared/problem";
 
 /**
- * Hands a parcel over (D-212): the resident shows the 6-digit PIN from their app; without it, staff confirm
- * the hand-over themselves (recorded as such). Return to the sender needs a reason.
+ * Hands a parcel over (D-212), inside the parcel's sheet: the resident shows the 6-digit PIN from their app; without
+ * it, staff confirm the hand-over themselves (recorded as such). Return to the sender needs a reason. `onDone` closes
+ * the sheet once the API took it.
  */
-export function ParcelPickUp({ parcel }: { parcel: Pick<Schemas["ParcelDto"], "id" | "unitNo"> }) {
+export function ParcelPickUp({
+  parcel,
+  onDone,
+}: {
+  parcel: Pick<Schemas["ParcelDto"], "id" | "unitNo">;
+  onDone: () => void;
+}) {
   const t = useTranslations("staff.parcels.pickUp");
   const router = useRouter();
-  const [mode, setMode] = useState<"closed" | "pin" | "return">("closed");
+  const [mode, setMode] = useState<"pin" | "return">("pin");
   const [pin, setPin] = useState("");
   const [reason, setReason] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
@@ -35,7 +42,7 @@ export function ParcelPickUp({ parcel }: { parcel: Pick<Schemas["ParcelDto"], "i
     setError(null);
     try {
       await call();
-      setMode("closed");
+      onDone();
       router.refresh();
     } catch (failure) {
       setError(failure);
@@ -43,24 +50,6 @@ export function ParcelPickUp({ parcel }: { parcel: Pick<Schemas["ParcelDto"], "i
       setBusy(null);
     }
   };
-
-  if (mode === "closed")
-    return (
-      <div className="grid grid-cols-2 gap-2">
-        <Button size="xl" iconStart={IconPackageCheck} onClick={() => setMode("pin")} data-testid="pick-up">
-          {t("action")}
-        </Button>
-        <Button
-          size="xl"
-          variant="secondary"
-          iconStart={IconBack}
-          onClick={() => setMode("return")}
-          data-testid="return"
-        >
-          {t("return")}
-        </Button>
-      </div>
-    );
 
   return (
     <div className="flex flex-col gap-3" data-testid="pick-up-panel">
@@ -81,6 +70,7 @@ export function ParcelPickUp({ parcel }: { parcel: Pick<Schemas["ParcelDto"], "i
           <Button
             size="xl"
             block
+            iconStart={IconPackageCheck}
             loading={busy === "pin"}
             disabled={pin.length !== 6}
             onClick={() =>
@@ -116,6 +106,16 @@ export function ParcelPickUp({ parcel }: { parcel: Pick<Schemas["ParcelDto"], "i
           >
             {t("staffConfirmed")}
           </Button>
+          <Button
+            size="lg"
+            variant="ghost"
+            iconStart={IconBack}
+            className="self-center"
+            onClick={() => setMode("return")}
+            data-testid="return"
+          >
+            {t("return")}
+          </Button>
         </>
       ) : (
         <>
@@ -148,11 +148,11 @@ export function ParcelPickUp({ parcel }: { parcel: Pick<Schemas["ParcelDto"], "i
           >
             {t("returnSubmit")}
           </Button>
+          <Button size="lg" variant="ghost" className="self-center" onClick={() => setMode("pin")}>
+            {t("cancel")}
+          </Button>
         </>
       )}
-      <Button size="lg" variant="ghost" onClick={() => setMode("closed")}>
-        {t("cancel")}
-      </Button>
       {error ? (
         <Callout tone="danger">
           <span role="alert" data-testid="pick-up-problem">
