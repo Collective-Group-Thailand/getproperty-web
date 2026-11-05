@@ -90,7 +90,9 @@
       "verification_unavailable": "ตรวจกับธนาคารไม่ได้",
       "not_recognised": "อ่านสลิปไม่ได้",
       "amount_unreadable": "อ่านยอดเงินไม่ได้",
-      "possible_qr_duplicate": "อาจซ้ำกับการจ่าย QR"
+      "possible_qr_duplicate": "อาจซ้ำกับการจ่าย QR",
+      "date_out_of_window": "วันที่บนสลิปอยู่นอกช่วงที่รับได้",
+      "duplicate_reference_platform": "เลขอ้างอิงนี้ถูกใช้ที่อื่นแล้ว"
     },
     "imageAlt": "สลิปโอนเงินจาก {payer} ห้อง {unit}",
     "noImage": "ไม่มีรูป",

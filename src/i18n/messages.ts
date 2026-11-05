@@ -34,6 +34,7 @@ export const MESSAGE_FILES = {
     "insight",
     "insights",
     "invoices",
+    "juristic",
     "leads",
     "leases",
     "listings",

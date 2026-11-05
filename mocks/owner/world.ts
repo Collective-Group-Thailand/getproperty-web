@@ -83,6 +83,7 @@ function buildingDto(
 ): Schemas["BuildingDto"] {
   return {
     access: "operator",
+    legalForm: null,
     operatorTenantId: TENANT_ID,
     ownerTenantId: TENANT_ID,
     status: "active",
@@ -105,6 +106,8 @@ function unitDto(
     currentLeaseId: null,
     notes: null,
     ownershipRatio: null,
+    landAreaSqwa: null,
+    plotNo: null,
     statusChangedAt: iso(-30),
     statusReason: null,
     unitProfileId: PROFILE_STUDIO,
@@ -1260,6 +1263,7 @@ function cycleDto(
   return {
     propertyId: PROPERTY_MAIN,
     propertyName: "หอพักตัวอย่าง",
+    frequency: "monthly",
     periodStart: bounds.start,
     periodEnd: bounds.end,
     cutOffAt,
@@ -1320,7 +1324,15 @@ function initialPayments(invoices: MockInvoice[]): Schemas["PaymentDto"][] {
       allocatedTotal: a201.total,
       creditedAmount: "0.00",
       whtAmount: "0.00",
-      allocations: [{ invoiceId: a201.id, invoiceNumber: a201.number, amount: a201.total, reversedAt: null }],
+      allocations: [
+        {
+          invoiceId: a201.id,
+          invoiceNumber: a201.number,
+          amount: a201.total,
+          reversedAt: null,
+          surchargeAmount: "0.00",
+        },
+      ],
       method: "qr",
       provider: "kbank",
       providerRef: "KB-20261001-0001",
@@ -1354,7 +1366,13 @@ function initialPayments(invoices: MockInvoice[]): Schemas["PaymentDto"][] {
       creditedAmount: "0.00",
       whtAmount: "0.00",
       allocations: [
-        { invoiceId: INVOICE.a302prev, invoiceNumber: "INV-2569-000102", amount: "1000.00", reversedAt: null },
+        {
+          invoiceId: INVOICE.a302prev,
+          invoiceNumber: "INV-2569-000102",
+          amount: "1000.00",
+          reversedAt: null,
+          surchargeAmount: "0.00",
+        },
       ],
       method: "transfer_slip",
       provider: null,
@@ -2064,6 +2082,7 @@ export function initialOwnerWorld(): OwnerWorld {
         name: "หอพักตัวอย่าง",
         address: ADDRESS,
         provinceCode: "10",
+        kind: "apartment",
         status: "active",
         createdAt: iso(-500),
         version: 2,
@@ -2080,6 +2099,7 @@ export function initialOwnerWorld(): OwnerWorld {
           postcode: "10250",
         },
         provinceCode: "10",
+        kind: "apartment",
         status: "active",
         createdAt: iso(-200),
         version: 1,
@@ -2202,6 +2222,7 @@ export function initialOwnerWorld(): OwnerWorld {
         createdAt: iso(-1),
         expiresAt: iso(6),
         acceptedAt: null,
+        accessUntil: null,
         nextActions: ["revoke"],
       },
     ],
@@ -2281,6 +2302,7 @@ function initialRatePlans(): Schemas["RatePlanDto"][] {
       name: "ค่าไฟห้องพัก",
       buildingId: null,
       isDefault: true,
+      frequency: "monthly",
       version: 1,
       versions: [
         {
@@ -2302,6 +2324,7 @@ function initialRatePlans(): Schemas["RatePlanDto"][] {
             tenantRate: "8.0000",
           },
           complianceAcknowledgementId: id("ac000000", 1),
+          resolutionId: null,
         },
       ],
     },
@@ -2311,6 +2334,7 @@ function initialRatePlans(): Schemas["RatePlanDto"][] {
       name: "ค่าน้ำห้องพัก",
       buildingId: null,
       isDefault: true,
+      frequency: "monthly",
       version: 1,
       versions: [
         {
@@ -2325,6 +2349,7 @@ function initialRatePlans(): Schemas["RatePlanDto"][] {
           aboveCap: false,
           capCheck: null,
           complianceAcknowledgementId: null,
+          resolutionId: null,
         },
       ],
     },
@@ -2334,6 +2359,7 @@ function initialRatePlans(): Schemas["RatePlanDto"][] {
       name: "ค่าส่วนกลาง",
       buildingId: BUILDING_A,
       isDefault: true,
+      frequency: "monthly",
       version: 1,
       versions: [
         {
@@ -2348,6 +2374,7 @@ function initialRatePlans(): Schemas["RatePlanDto"][] {
           aboveCap: false,
           capCheck: null,
           complianceAcknowledgementId: null,
+          resolutionId: null,
         },
       ],
     },

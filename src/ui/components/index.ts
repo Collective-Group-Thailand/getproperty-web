@@ -63,3 +63,7 @@ export { TabPanel, Tabs, type TabItem, type TabsProps } from "./Tabs";
 export { Timeline, type TimelineEvent } from "./Timeline";
 export { toast, Toaster } from "./Toast";
 export { Tooltip, TooltipProvider, type TooltipProps } from "./Tooltip";
+export { AgingStrip, type AgingTile } from "./AgingStrip";
+export { BasisPreview, type BasisPreviewRow } from "./BasisPreview";
+export { ErrorSummary, type ErrorSummaryItem } from "./ErrorSummary";
+export { ShareBar, type ShareSegment } from "./ShareBar";

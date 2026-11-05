@@ -77,7 +77,8 @@
     "assignee": "Assign to",
     "assigneeHint": "Leave empty for any staff member of the building",
     "anyone": "Any staff member",
-    "note": "Note to staff"
+    "note": "Note to staff",
+    "computeAdvance": "Compute again"
   },
   "review": {
     "caption": "Draft invoices of the cycle",
@@ -114,5 +115,21 @@
     "settings": "This cycle's settings",
     "change": "Change in settings",
     "timeline": "Cycle timeline"
+  },
+  "juristicTitle": "Billing cycles",
+  "juristicDescription": "Common fees and funds are billed in advance by quarter, half-year or year; utilities monthly.",
+  "frequency": {
+    "label": "Frequency",
+    "all": "Every frequency",
+    "monthly": "Monthly",
+    "quarterly": "Quarterly",
+    "semiannual": "Half-yearly",
+    "annual": "Yearly"
+  },
+  "advance": {
+    "title": "Billed in advance",
+    "body": "{period} bills common fees and funds for {from} – {to}; no meter readings. The income is recognised month by month.",
+    "opens": "Opened",
+    "covers": "Bills for"
   }
 }

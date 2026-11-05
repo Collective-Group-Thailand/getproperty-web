@@ -27,7 +27,8 @@
     "condo_unit": "Condo unit",
     "house": "House",
     "shop": "Shop",
-    "parking": "Parking"
+    "parking": "Parking",
+    "plot": "Plot"
   },
   "board": {
     "filter": {

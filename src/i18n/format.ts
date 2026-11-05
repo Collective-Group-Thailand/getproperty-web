@@ -172,9 +172,58 @@ export function formatPeriodKey(
   locale: Locale = "th",
   options: Pick<DateFormatOptions, "era"> = {},
 ): string {
-  if (!/^\d{4}-\d{2}$/.test(key)) return key;
-  return formatDate(`${key}-15T12:00:00+07:00`, locale, { ...options, style: "month" });
+  const period = parsePeriodKey(key);
+  if (!period) return key;
+  if (period.frequency === "monthly")
+    return formatDate(`${key}-15T12:00:00+07:00`, locale, { ...options, style: "month" });
+  const { era = locale === "th" ? "be" : "ce" } = options;
+  const year = String(era === "be" ? period.year + 543 : period.year);
+  const words = PERIOD_WORDS[locale];
+  if (period.frequency === "quarterly") return words.quarter(period.index, year);
+  if (period.frequency === "semiannual") return words.half(period.index, year);
+  return words.year(year);
 }
+
+/** Frequencies of the API's period keys (D-303): `YYYY-MM` · `YYYY-Qn` · `YYYY-Hn` · `YYYY`. */
+export type PeriodFrequency = "monthly" | "quarterly" | "semiannual" | "annual";
+
+/** A period key's frequency, year and position in the year (`2027-Q3` → quarterly, 2027, 3); `null` when not a key. */
+export function parsePeriodKey(key: string): { frequency: PeriodFrequency; year: number; index: number } | null {
+  const match = /^(\d{4})(?:-(?:(\d{2})|Q([1-4])|H([12])))?$/.exec(key);
+  if (!match) return null;
+  const year = Number(match[1]);
+  if (match[2]) {
+    const month = Number(match[2]);
+    return month >= 1 && month <= 12 ? { frequency: "monthly", year, index: month } : null;
+  }
+  if (match[3]) return { frequency: "quarterly", year, index: Number(match[3]) };
+  if (match[4]) return { frequency: "semiannual", year, index: Number(match[4]) };
+  return { frequency: "annual", year, index: 1 };
+}
+
+/**
+ * How people name a longer billing period (D-303, J-DESIGN): `ไตรมาส 1/2570`, `ครึ่งปีแรก 2570`, `ปี 2570`;
+ * `Q1 2027`, `First half 2027`, `Year 2027`. Calendar words belong with the date formatters here, not in messages.
+ */
+const PERIOD_WORDS: Record<
+  Locale,
+  {
+    quarter: (n: number, year: string) => string;
+    half: (n: number, year: string) => string;
+    year: (year: string) => string;
+  }
+> = {
+  th: {
+    quarter: (n, year) => `ไตรมาส ${n}/${year}`,
+    half: (n, year) => `${n === 1 ? "ครึ่งปีแรก" : "ครึ่งปีหลัง"} ${year}`,
+    year: (year) => `ปี ${year}`,
+  },
+  en: {
+    quarter: (n, year) => `Q${n} ${year}`,
+    half: (n, year) => `${n === 1 ? "First half" : "Second half"} ${year}`,
+    year: (year) => `Year ${year}`,
+  },
+};
 
 /** A date with the time, for audit trails and timelines. */
 export function formatDateTime(input: DateInput, locale: Locale = "th", options: DateFormatOptions = {}): string {

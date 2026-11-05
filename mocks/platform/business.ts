@@ -198,6 +198,7 @@ const tenantHandlers: HttpHandler[] = [
         id: crypto.randomUUID(),
         role: "owner",
         channel: "sms",
+        accessUntil: null,
         state: "pending",
         code,
         inviteUrl: `http://localhost:3000/join?code=${code}`,

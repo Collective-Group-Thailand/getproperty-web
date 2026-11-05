@@ -29,20 +29,25 @@
   "mode": {
     "flat": "One price per unit",
     "tiered": "Tiers",
-    "fixed": "Fixed amount"
+    "fixed": "Fixed amount",
+    "budget": "Budget"
   },
   "basis": "Basis",
   "basisName": {
     "per_unit": "Per unit used",
     "fixed": "Fixed per month",
     "per_sqm": "Per square metre",
-    "per_ownership_ratio": "By ownership ratio"
+    "per_ownership_ratio": "By ownership ratio",
+    "per_sqwa": "Per square wah (land area)",
+    "budget_split": "Shared from a budget"
   },
   "pricePerUnit": "Price per {unit}",
   "unit": {
     "kwh": "kWh",
     "m3": "m³",
-    "unit": "unit"
+    "unit": "unit",
+    "sqwa": "sq wah",
+    "sqm": "m²"
   },
   "amount": "Amount (THB)",
   "tiers": "Tiers",
@@ -130,5 +135,40 @@
     }
   },
   "emptyAction": "View invoices",
-  "planMenu": "Options for {name}"
+  "planMenu": "Options for {name}",
+  "frequency": "Billing frequency",
+  "frequencyHint": "Common fees and funds can be billed in advance quarterly, half-yearly or yearly; prices stay per month.",
+  "frequencyMonthlyOnly": "This kind is always billed monthly.",
+  "frequencyNext": "A new frequency applies from the next cycle opened; open cycles stay as they are.",
+  "frequencyName": {
+    "monthly": "Monthly",
+    "quarterly": "Quarterly",
+    "semiannual": "Half-yearly",
+    "annual": "Yearly"
+  },
+  "planScope": "{building} · billed {frequency}",
+  "budgetAmount": "Budget (THB)",
+  "budgetAmountHint": "What all co-owners pay together; the system shares it out per unit.",
+  "budgetPeriod": "This amount is",
+  "budgetPeriodName": {
+    "year": "Per year",
+    "month": "Per month"
+  },
+  "budgetPerYear": "Budget per year",
+  "budgetPerMonth": "Budget per month",
+  "splitBy": "Share by",
+  "splitByHint": "Units without this value on the register cannot be billed yet.",
+  "splitByName": {
+    "ownership_ratio": "Ownership ratio",
+    "area_sqm": "Floor area (m²)",
+    "land_area_sqwa": "Land area (sq wah)",
+    "per_unit": "Equal per unit"
+  },
+  "resolution": "Resolution",
+  "resolutionHint": "A juristic common-fee rate names the adopted resolution of this building.",
+  "resolutionNone": "No adopted resolution for this building yet — record one under “Budgets and resolutions” first.",
+  "resolutionPick": "Choose a resolution",
+  "resolutionRequired": "Choose the resolution that adopted this rate.",
+  "resolutionOption": "Resolution {number} · {title}",
+  "resolutionRef": "Per resolution {number}"
 }

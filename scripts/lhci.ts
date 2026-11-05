@@ -80,6 +80,8 @@ if (configs.length === 0) {
 /** Which mock persona each console set is measured as (mocks/README.md). */
 const SESSIONS: Record<string, () => Promise<string>> = {
   owner: () => operatorSession("+66810000001"),
+  // Pack J (JW1a): the juristic office of the mock (condominium + housing estate).
+  juristic: () => operatorSession("+66810000010", "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c88"),
   staff: () => operatorSession("+66810000004"),
   admin: () => platformSession("ops@example.com"),
 };
@@ -97,10 +99,10 @@ async function post(path: string, body: unknown): Promise<Record<string, unknown
 const cookieHeader = (pair: Record<string, unknown>, extra = "") =>
   `__Host-gp_at=${String(pair.accessToken)}; __Host-gp_rt=${String(pair.refreshToken)}${extra}`;
 
-async function operatorSession(phone: string): Promise<string> {
+async function operatorSession(phone: string, tenantId = "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11"): Promise<string> {
   const challenge = await post("/v1/auth/operator/otp/request", { phone });
   const pair = await post("/v1/auth/operator/otp/verify", { challengeId: challenge.challengeId, code: "123456" });
-  return cookieHeader(pair, "; __Host-gp_tenant=0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11");
+  return cookieHeader(pair, `; __Host-gp_tenant=${tenantId}`);
 }
 
 async function platformSession(email: string): Promise<string> {

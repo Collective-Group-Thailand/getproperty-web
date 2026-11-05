@@ -98,15 +98,7 @@ function DoorIllustration({ code }: { code: string }) {
       />
       <path d="M18 18 L60 26 L60 104 L18 110 Z" className="fill-surface" stroke="currentColor" strokeWidth="2" />
       <rect x="29" y="44" width="20" height="11" rx="2" stroke="currentColor" strokeWidth="1.5" />
-      <text
-        x="39"
-        y="52.5"
-        textAnchor="middle"
-        fontSize="7"
-        fontWeight="600"
-        fill="currentColor"
-        className="font-mono"
-      >
+      <text x="39" y="52.5" textAnchor="middle" fontSize="7" fontWeight="600" fill="currentColor" className="font-mono">
         {code}
       </text>
       <circle cx="53" cy="70" r="2" fill="currentColor" />

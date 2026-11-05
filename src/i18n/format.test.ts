@@ -7,6 +7,7 @@ import {
   formatBytes,
   formatPercent,
   formatPeriodKey,
+  parsePeriodKey,
   formatPhone,
   formatDuration,
   formatRelativeTime,
@@ -113,6 +114,27 @@ describe("formatPeriodKey", () => {
     expect(formatPeriodKey("2026-10", "en")).toBe("Oct 2026");
     expect(formatPeriodKey("not-a-key", "th")).toBe("not-a-key");
   });
+
+  it("names quarters, halves and years in Thai with the Buddhist year (D-303)", () => {
+    expect(formatPeriodKey("2027-Q1", "th")).toBe("ไตรมาส 1/2570");
+    expect(formatPeriodKey("2026-Q4", "th")).toBe("ไตรมาส 4/2569");
+    expect(formatPeriodKey("2027-H1", "th")).toBe("ครึ่งปีแรก 2570");
+    expect(formatPeriodKey("2027-H2", "th")).toBe("ครึ่งปีหลัง 2570");
+    expect(formatPeriodKey("2027", "th")).toBe("ปี 2570");
+  });
+
+  it("names them in English with the Gregorian year, or the era asked for", () => {
+    expect(formatPeriodKey("2027-Q3", "en")).toBe("Q3 2027");
+    expect(formatPeriodKey("2027-H2", "en")).toBe("Second half 2027");
+    expect(formatPeriodKey("2027", "en")).toBe("Year 2027");
+    expect(formatPeriodKey("2027-Q1", "th", { era: "ce" })).toBe("ไตรมาส 1/2027");
+  });
+
+  it("leaves what is not a period key as it is", () => {
+    expect(formatPeriodKey("2027-Q5", "th")).toBe("2027-Q5");
+    expect(formatPeriodKey("2027-H3", "en")).toBe("2027-H3");
+    expect(formatPeriodKey("2027-13", "th")).toBe("2027-13");
+  });
 });
 
 describe("formatTime", () => {
@@ -129,5 +151,16 @@ describe("formatDuration", () => {
     expect(formatDuration(3 * 86_400_000, "th")).toBe("3 วัน");
     expect(formatDuration(10_000, "en")).toBe("1 min");
     expect(formatDuration(3_590_000, "th")).toBe("1 ชม.");
+  });
+});
+
+describe("parsePeriodKey", () => {
+  it("reads the frequency, year and position of a key", () => {
+    expect(parsePeriodKey("2026-10")).toEqual({ frequency: "monthly", year: 2026, index: 10 });
+    expect(parsePeriodKey("2027-Q2")).toEqual({ frequency: "quarterly", year: 2027, index: 2 });
+    expect(parsePeriodKey("2027-H1")).toEqual({ frequency: "semiannual", year: 2027, index: 1 });
+    expect(parsePeriodKey("2027")).toEqual({ frequency: "annual", year: 2027, index: 1 });
+    expect(parsePeriodKey("2027-00")).toBeNull();
+    expect(parsePeriodKey("27-Q1")).toBeNull();
   });
 });

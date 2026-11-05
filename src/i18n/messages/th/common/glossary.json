@@ -4,13 +4,16 @@
     "condo_juristic": "นิติบุคคลอาคารชุด",
     "pm_company": "บริษัทบริหารอาคาร",
     "landlord": "เจ้าของห้องให้เช่า",
-    "agency": "นายหน้า / เอเจนซี"
+    "agency": "นายหน้า / เอเจนซี",
+    "juristic": "นิติบุคคล"
   },
   "tenantRole": {
     "owner": "เจ้าของ",
     "manager": "ผู้จัดการ",
     "staff": "เจ้าหน้าที่",
-    "accountant": "ฝ่ายบัญชี"
+    "accountant": "ฝ่ายบัญชี",
+    "committee": "กรรมการ",
+    "auditor": "ผู้สอบบัญชี"
   },
   "platformRole": {
     "platform_admin": "ผู้ดูแลแพลตฟอร์ม",

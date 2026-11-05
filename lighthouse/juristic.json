@@ -1,0 +1,47 @@
+{
+  "extends": "./shared.json",
+  "$comment": "Juristic console (pack J, JW1a): the owner budgets (D-179) — initial JS ≤ 260 KB gz on every URL, LCP ≤ 2.5 s as a warning — measured signed in as the mock's juristic office (scripts/lhci.ts, persona `juristic`): overview, register (condo floors, estate plots), a unit, the transfer wizard, invite codes, resolutions, budgets with the rate builder, the new-budget form, cycles, rate plans and members.",
+  "ci": {
+    "collect": {
+      "url": [
+        "http://localhost:3200/juristic",
+        "http://localhost:3200/juristic/register",
+        "http://localhost:3200/juristic/register?property=7b9f0a01-0000-4000-8000-000000000002",
+        "http://localhost:3200/juristic/register/3b24ua01-0000-4000-8000-000000000006",
+        "http://localhost:3200/juristic/register/3b24ua01-0000-4000-8000-000000000001/transfer",
+        "http://localhost:3200/juristic/register/invites",
+        "http://localhost:3200/juristic/resolutions",
+        "http://localhost:3200/juristic/resolutions/e5010a01-0000-4000-8000-000000000001",
+        "http://localhost:3200/juristic/budgets",
+        "http://localhost:3200/juristic/budgets/b0d6a001-0000-4000-8000-000000000001",
+        "http://localhost:3200/juristic/budgets/new",
+        "http://localhost:3200/juristic/cycles",
+        "http://localhost:3200/billing/rate-plans",
+        "http://localhost:3200/settings/members"
+      ],
+      "numberOfRuns": 1,
+      "settings": {
+        "preset": "desktop",
+        "throttlingMethod": "simulate",
+        "blockedUrlPatterns": ["*/realtime/stream*"],
+        "maxWaitForLoad": 15000
+      }
+    },
+    "assert": {
+      "assertions": {
+        "largest-contentful-paint": [
+          "warn",
+          {
+            "maxNumericValue": 2500
+          }
+        ],
+        "resource-summary:script:size": [
+          "error",
+          {
+            "maxNumericValue": 266240
+          }
+        ]
+      }
+    }
+  }
+}

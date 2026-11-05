@@ -248,5 +248,45 @@
     "areaValue": "{area} m²",
     "rowMenu": "Options for {name}",
     "caption": "Unit types of the building"
+  },
+  "kind": {
+    "label": "Property kind",
+    "hint": "Sets the words and the register's layout — condos by floor, estates by soi and plot.",
+    "pick": "Choose the kind",
+    "required": "Choose the kind",
+    "name": {
+      "condo": "Condominium",
+      "village": "Housing estate",
+      "community": "Community",
+      "office": "Office building",
+      "retail": "Retail",
+      "industrial": "Industrial",
+      "mixed": "Mixed use",
+      "apartment": "Apartment"
+    },
+    "edit": "Change kind",
+    "editTitle": "Kind of {name}",
+    "editHint": "Changes the words and the register's layout of this property.",
+    "save": "Save",
+    "saved": "Property kind saved"
+  },
+  "legalForm": {
+    "label": "Managed under",
+    "hint": "Decides the collection steps and rules that apply to this building.",
+    "pick": "Choose the law",
+    "required": "Choose the law",
+    "missing": "Not set",
+    "name": {
+      "condo_act": "Condominium Act",
+      "land_allocation_act": "Land Allocation Act",
+      "voluntary": "Voluntary association",
+      "lease_contract": "Lease contract"
+    },
+    "edit": "Change",
+    "set": "Set",
+    "editTitle": "Law for {name}",
+    "editHint": "In a mixed project each building may differ.",
+    "save": "Save",
+    "saved": "Saved"
   }
 }

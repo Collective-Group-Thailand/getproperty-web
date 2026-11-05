@@ -93,6 +93,14 @@ export {
 } from "./growth";
 export { CO_BROKE_STATUS, MANDATE_STATUS, type CoBrokeState, type MandateState } from "./mandate";
 export {
+  BUDGET_STATUS,
+  REGISTER_STATUS,
+  RESOLUTION_STATUS,
+  type BudgetState,
+  type RegisterCompleteness,
+  type ResolutionState,
+} from "./juristic";
+export {
   CONTRACT_DOCUMENT_STATUS,
   CONTRACT_DOCUMENT_VALUES,
   LEGAL_REVIEW_STATUS,
@@ -170,6 +178,7 @@ import {
   BUILDING_REVIEW_STATUS,
 } from "./growth";
 import { CO_BROKE_STATUS, MANDATE_STATUS } from "./mandate";
+import { BUDGET_STATUS, REGISTER_STATUS, RESOLUTION_STATUS } from "./juristic";
 import { CONTRACT_DOCUMENT_STATUS, LEGAL_REVIEW_STATUS, RENEWAL_OFFER_STATUS } from "./contract";
 import { LISTING_STATUS, LISTING_VERIFICATION_STATUS } from "./listing";
 
@@ -198,6 +207,9 @@ export const STATUS_MAPS = {
   buildingReview: BUILDING_REVIEW_STATUS,
   mandate: MANDATE_STATUS,
   coBroke: CO_BROKE_STATUS,
+  resolution: RESOLUTION_STATUS,
+  budget: BUDGET_STATUS,
+  register: REGISTER_STATUS,
   contractDocument: CONTRACT_DOCUMENT_STATUS,
   legalReview: LEGAL_REVIEW_STATUS,
   renewalOffer: RENEWAL_OFFER_STATUS,

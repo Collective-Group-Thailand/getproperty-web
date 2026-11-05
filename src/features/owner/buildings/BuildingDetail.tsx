@@ -21,7 +21,8 @@ import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { section, type OwnerContext } from "../shared/server";
 import { SettingValue } from "../shared/SettingValue";
 import { EnergyInsightCard } from "./EnergyInsightCard";
-import { NewFloorButton, NewUtilityAccountButton, RemoveUtilityAccountButton } from "./forms";
+import { EditLegalFormButton, NewFloorButton, NewUtilityAccountButton, RemoveUtilityAccountButton } from "./forms";
+import { isJuristicTenant } from "../shell/menu";
 
 /** Billing-cycle and reading-policy settings shown on a building (their editor is F2 2.6). */
 const BUILDING_SETTINGS = [
@@ -58,6 +59,8 @@ export async function BuildingDetail({ context, buildingId }: { context: OwnerCo
   ]);
   const property = context.properties.find((candidate) => candidate.id === building.propertyId);
   const address = property?.address;
+  const juristic = isJuristicTenant(context.me.currentTenant?.type);
+  const legalForms = await getTranslations("owner.buildings.legalForm");
   const readOnly = building.access === "grant";
   const href = (suffix: string) => ownerPath(locale, `/buildings/${building.id}${suffix}`);
   const summary = board.data?.summary;
@@ -162,6 +165,20 @@ export async function BuildingDetail({ context, buildingId }: { context: OwnerCo
                   : null,
               },
               { id: "type", term: t("type"), description: types(`type.${building.type}`) },
+              ...(juristic || building.legalForm
+                ? [
+                    {
+                      id: "legalForm",
+                      term: legalForms("label"),
+                      description: (
+                        <span className="flex flex-wrap items-center gap-2" data-testid="building-legal-form-value">
+                          {building.legalForm ? legalForms(`name.${building.legalForm}`) : legalForms("missing")}
+                          {juristic && !readOnly ? <EditLegalFormButton building={building} /> : null}
+                        </span>
+                      ),
+                    },
+                  ]
+                : []),
               { id: "floors", term: t("floorsCount"), description: building.floorsCount ?? null },
               {
                 id: "vat",

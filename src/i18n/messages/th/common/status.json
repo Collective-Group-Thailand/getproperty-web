@@ -487,5 +487,19 @@
     "rejected": "ไม่อนุมัติ",
     "hidden": "getproperty ซ่อนไว้",
     "withdrawn": "ผู้เขียนถอนแล้ว"
+  },
+  "resolution": {
+    "draft": "ร่าง",
+    "adopted": "รับรองแล้ว",
+    "void": "ยกเลิกแล้ว"
+  },
+  "budget": {
+    "draft": "ร่าง",
+    "approved": "อนุมัติแล้ว",
+    "superseded": "มีฉบับใหม่แทน"
+  },
+  "register": {
+    "complete": "ครบ 100%",
+    "incomplete": "ยังไม่ครบ"
   }
 }

@@ -90,7 +90,9 @@
       "verification_unavailable": "Bank check unavailable",
       "not_recognised": "Slip not recognised",
       "amount_unreadable": "Amount unreadable",
-      "possible_qr_duplicate": "Possibly paid by QR already"
+      "possible_qr_duplicate": "Possibly paid by QR already",
+      "date_out_of_window": "Slip date outside the accepted window",
+      "duplicate_reference_platform": "Reference already used elsewhere"
     },
     "imageAlt": "Transfer slip from {payer}, unit {unit}",
     "noImage": "No picture.",

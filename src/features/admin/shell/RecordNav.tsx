@@ -6,6 +6,7 @@ import { SidebarNav } from "@/ui/components/AppShell";
 import { Skeleton } from "@/ui/components/Skeleton";
 import { Icon, type IconGlyph } from "@/ui/icons";
 import { IconBill } from "@/ui/icons/glyphs/bill";
+import { IconBuilding } from "@/ui/icons/glyphs/building";
 import { IconChart } from "@/ui/icons/glyphs/chart";
 import { IconChat } from "@/ui/icons/glyphs/chat";
 import { IconChevronLeft } from "@/ui/icons/glyphs/chevron-left";
@@ -32,6 +33,7 @@ export function tenantRecordOf(pathname: string | null): string | null {
 
 const ICONS: Record<TenantTab, IconGlyph> = {
   overview: IconDashboard,
+  buildings: IconBuilding,
   subscription: IconWallet,
   invoices: IconBill,
   hardware: IconGateway,
