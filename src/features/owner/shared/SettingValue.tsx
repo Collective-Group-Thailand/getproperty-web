@@ -82,6 +82,39 @@ export function SettingValue({
       case "analytics.csat_survey_interval_days":
       case "readings.round_window_days":
         return t("days", { count: Number(value) });
+      // JW4: the gate's rules (J4.1 / J4.2), shown with their units.
+      case "gate.policy.timeout_seconds":
+      case "gate.lpr.repeat_seconds":
+      case "gate.open.min_interval_seconds":
+      case "gate.sos.cancel_seconds":
+        return t("seconds", { count: Number(value) });
+      case "gate.pin_lock_minutes":
+      case "gate.lpr.pending_minutes":
+      case "gate.incident.visit_window_minutes":
+        return t("minutes", { count: Number(value) });
+      case "gate.open_visit_alert_hours":
+      case "gate.offline_max_hours":
+      case "gate.device_enrol_hours":
+        return t("hours", { count: Number(value) });
+      case "gate.retention_days":
+      case "gate.remember_days":
+      case "gate.invite_max_days":
+        return t("days", { count: Number(value) });
+      case "gate.barrier.pulse_ms":
+        return t("milliseconds", { count: Number(value) });
+      case "gate.resident_open.radius_m":
+        return t("metres", { count: Number(value) });
+      case "gate.pin_max_attempts":
+      case "gate.sos.max_per_hour":
+      case "gate.resident_open.max_per_hour":
+        return t("times", { count: Number(value) });
+      case "gate.lpr.min_confidence":
+        if (typeof value === "string" || typeof value === "number")
+          return t("percent", { value: Math.round(Number(value) * 100) });
+        break;
+      case "gate.policy.action":
+        if (value === "allow_and_log" || value === "deny" || value === "guard_calls") return t(`gateAction.${value}`);
+        break;
       case "reminders.schedule":
         if (Array.isArray(value)) return t("reminderDays", { days: value.join(", ") });
         break;

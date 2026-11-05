@@ -33,6 +33,10 @@
  *   POST /__mock/owner/contracts/sample            a reservation sent for signature (capture data for one contract)
  *   POST /__mock/owner/link-requests?party=<id>  a phone sign-in matched the party: a pending link request (D-226)
  *   GET  /__mock/owner/received?op=  requests the owner world received (body, Idempotency-Key)
+ *   POST /__mock/gate/reset         reset the estate's gate (JW4); GET /__mock/gate: visits, incidents, received
+ *   POST /__mock/gate/answer?visit=&answer=approve|deny|call-me   a house answers in LIFF (latest waiting visit)
+ *   POST /__mock/gate/sos?kind=&unit=   a resident's SOS · POST /__mock/gate/lpr?category=&number=&match=  a camera read
+ *   POST /__mock/gate/barrier?state=open|closed|fault · /__mock/gate/overstay?visit= · /__mock/gate/streams/drop
  *   POST /__mock/owner/growth/price?product=<key>|all|addon   publish a growth price (G4/G5, O-027)
  *   POST /__mock/owner/growth/pay?boost=<id>|order=<id>        Finance records a boost / photo order payment
  *   POST /__mock/owner/growth/free-building[?on=0]             `boost.building.free` for the sample tenant
@@ -99,6 +103,7 @@ import { resetR2World } from "./r2";
 import { emit } from "./handlers/realtime";
 import { gatewayComesOnline, readUpload, storeUpload, UPLOAD_CORS } from "./handlers/staff";
 import { listingPhotoBytes } from "./owner/listing-photos";
+import { gateControl } from "./owner/gate";
 import { BUILDING_A, BUILDING_B, buildingOf } from "./staff-world";
 import { expireAccessTokens, initialStaffWorld, resetState, state } from "./state";
 
@@ -118,6 +123,8 @@ function sendJson(res: ServerResponse, status: number, body: unknown) {
 }
 
 async function control(url: URL, req: IncomingMessage, res: ServerResponse) {
+  const gate = gateControl(url, req.method ?? "GET");
+  if (gate) return sendJson(res, gate.status, gate.body);
   const owner = ownerControl(url, req);
   if (owner) return sendJson(res, owner.status, owner.body);
   const platform = platformControl(url, req);

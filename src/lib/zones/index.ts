@@ -77,9 +77,9 @@ export function resolveZone(host: string | null | undefined, hosts: Record<Zone,
  * First path segments no external URL may start with, on any host: the internal segments of the
  * staff and admin zones (the proxy rewrites *onto* them; a direct `/staff/x` on the owner host is
  * another zone's page) and the retired resident segments (D-154 — the resident app is
- * `getproperty-liff`).
+ * `getproperty-liff`) — and the gate tablet's internal root (`gate-tablet`, JW4: `/gate` is rewritten onto it).
  */
-export const RESERVED_SEGMENTS = ["staff", "admin", "tenant", "resident"] as const;
+export const RESERVED_SEGMENTS = ["staff", "admin", "tenant", "resident", "gate-tablet"] as const;
 
 export function isReservedPath(pathname: string): boolean {
   const first = pathname.split("/")[1]?.toLowerCase() ?? "";

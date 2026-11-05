@@ -25,6 +25,11 @@ export interface CspOptions {
   assetOrigin?: string;
   /** Sentry ingest origin derived from `NEXT_PUBLIC_SENTRY_DSN`, when error reporting is on. */
   sentryOrigin?: string;
+  /**
+   * The gate tablet (`/gate` on the owner host, JW4): the camera for the visitor photo and the invite QR, so the
+   * page may use the camera and show its `blob:` / `mediastream:` preview. Nothing else on the owner host can.
+   */
+  camera?: boolean;
 }
 
 function origin(url: string | undefined): string | undefined {
@@ -40,7 +45,8 @@ export function sentryOriginFromDsn(dsn: string | undefined): string | undefined
   return origin(dsn);
 }
 
-export function buildCsp({ zone, nonce, dev, assetOrigin, sentryOrigin }: CspOptions): string {
+export function buildCsp({ zone, nonce, dev, assetOrigin, sentryOrigin, camera }: CspOptions): string {
+  const media = zone === "staff" || camera === true;
   const asset = origin(assetOrigin);
   const sentry = origin(sentryOrigin);
   const list = (...values: (string | false | undefined)[]) => values.filter(Boolean).join(" ");
@@ -52,7 +58,7 @@ export function buildCsp({ zone, nonce, dev, assetOrigin, sentryOrigin }: CspOpt
     "img-src": list("'self'", "data:", zone !== "admin" && "blob:", asset),
     "font-src": "'self'",
     "connect-src": list("'self'", asset, sentry, dev && "ws:"),
-    "media-src": list("'self'", zone === "staff" && "blob:", zone === "staff" && "mediastream:"),
+    "media-src": list("'self'", media && "blob:", media && "mediastream:"),
     "worker-src": zone === "staff" ? "'self'" : "'none'",
     "manifest-src": "'self'",
     // The owner console shows PDFs (invoices, contracts, statements) in its document viewer from a
@@ -68,9 +74,9 @@ export function buildCsp({ zone, nonce, dev, assetOrigin, sentryOrigin }: CspOpt
   return policy.join("; ");
 }
 
-/** `Permissions-Policy`: the camera only on the staff host; nothing else any zone needs. */
-export function permissionsPolicy(zone: Zone): string {
-  const camera = zone === "staff" ? "camera=(self)" : "camera=()";
+/** `Permissions-Policy`: the camera only on the staff host and the gate tablet; nothing else any zone needs. */
+export function permissionsPolicy(zone: Zone, options: { camera?: boolean } = {}): string {
+  const camera = zone === "staff" || options.camera === true ? "camera=(self)" : "camera=()";
   return [
     camera,
     "microphone=()",
@@ -99,7 +105,7 @@ export interface SecurityHeaderOptions extends CspOptions {
 export function securityHeaders(options: SecurityHeaderOptions): Record<string, string> {
   const headers: Record<string, string> = {
     "Content-Security-Policy": buildCsp(options),
-    "Permissions-Policy": permissionsPolicy(options.zone),
+    "Permissions-Policy": permissionsPolicy(options.zone, { camera: options.camera }),
     "Referrer-Policy": "strict-origin-when-cross-origin",
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "DENY",

@@ -545,5 +545,36 @@
   "verifiedDocument": {
     "valid": "Valid",
     "expired": "Expired"
+  },
+  "gateVisit": {
+    "requested": "Waiting for the house",
+    "approved": "Approved",
+    "denied": "Denied",
+    "timed_out": "Time up",
+    "entered": "Inside",
+    "exited": "Left",
+    "cancelled": "Cancelled"
+  },
+  "incident": {
+    "open": "Open",
+    "acknowledged": "Acknowledged",
+    "resolved": "Resolved",
+    "cancelled": "Cancelled"
+  },
+  "gateInvite": {
+    "pending_approval": "Waiting for the office",
+    "active": "Valid",
+    "rejected": "Rejected",
+    "revoked": "Revoked"
+  },
+  "gateDevice": {
+    "pending": "Waiting to register",
+    "active": "Active",
+    "revoked": "Removed"
+  },
+  "gateGuard": {
+    "active": "Active",
+    "locked": "Locked for now",
+    "revoked": "Revoked"
   }
 }

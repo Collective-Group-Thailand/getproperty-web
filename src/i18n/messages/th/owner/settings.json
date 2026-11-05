@@ -41,7 +41,8 @@
     "deposits": "เงินประกัน",
     "access": "ประตูและการเข้าออก",
     "compliance": "กฎหมายและภาษี",
-    "other": "อื่น ๆ"
+    "other": "อื่น ๆ",
+    "gate": "ป้อมและผู้มาติดต่อ"
   },
   "key": {
     "billing_cutoff": "วันตัดรอบบิล",
@@ -84,7 +85,30 @@
     "juristic_plan_default_days": "ผิดนัดแผนผ่อนเมื่อ",
     "juristic_plan_max_instalments": "จำนวนงวดผ่อนสูงสุด",
     "juristic_debt_clearance_fee": "ค่าธรรมเนียมหนังสือปลอดหนี้",
-    "juristic_debt_clearance_validity_days": "อายุหนังสือปลอดหนี้"
+    "juristic_debt_clearance_validity_days": "อายุหนังสือปลอดหนี้",
+    "gate_policy_timeout_seconds": "เวลาที่บ้านมีให้ตอบ (ค่าเริ่มต้น)",
+    "gate_policy_action": "ถ้าบ้านไม่ตอบ (ค่าเริ่มต้น)",
+    "gate_delivery_drop_point": "ส่งของเข้าได้โดยไม่ต้องถาม",
+    "gate_remember_days": "จำรถที่บ้านอนุญาตไว้",
+    "gate_invite_max_days": "QR เชิญใช้ได้นานสุด",
+    "gate_open_visit_alert_hours": "เตือนสำนักงานเมื่ออยู่นานเกิน",
+    "gate_offline_max_hours": "บันทึกตอนออฟไลน์ย้อนหลังได้",
+    "gate_device_enrol_hours": "รหัสลงทะเบียนแท็บเล็ตใช้ได้",
+    "gate_pin_max_attempts": "ใส่ PIN ผิดได้",
+    "gate_pin_lock_minutes": "ล็อก PIN นาน",
+    "gate_lpr_min_confidence": "กล้อง LPR ต้องอ่านได้อย่างน้อย",
+    "gate_lpr_pending_minutes": "ป้ายจากกล้องรอ รปภ. ได้",
+    "gate_lpr_repeat_seconds": "ไม่นับป้ายเดิมซ้ำภายใน",
+    "gate_auto_open_known_plates": "เปิดไม้กั้นเองให้รถในทะเบียน",
+    "gate_resident_open_enabled": "ผู้อยู่อาศัยเปิดไม้กั้นจาก LINE",
+    "gate_resident_open_require_geofence": "ต้องอยู่ใกล้ประตูจึงเปิดได้",
+    "gate_resident_open_radius_m": "ระยะจากประตู",
+    "gate_resident_open_max_per_hour": "เปิดจาก LINE ได้ต่อชั่วโมง",
+    "gate_open_min_interval_seconds": "เว้นระยะเปิดไม้กั้นแต่ละครั้ง",
+    "gate_barrier_pulse_ms": "สัญญาณเปิดไม้กั้น",
+    "gate_sos_cancel_seconds": "ผู้แจ้ง SOS ยกเลิกได้ภายใน",
+    "gate_sos_max_per_hour": "แจ้ง SOS ได้ต่อชั่วโมง",
+    "gate_incident_visit_window_minutes": "รถที่ออกก่อนเกิดเหตุไม่เกิน (นับเข้าเหตุ)"
   },
   "property": {
     "title": "การตั้งค่าอาคาร",
@@ -816,7 +840,8 @@
     "deposits": "กำหนดคืนเงินและเพดานตามกฎหมาย",
     "access": "รหัสประตูสำหรับงานซ่อม ผู้มาเยือน และการนัดดูห้อง",
     "compliance": "ภาษี e-Tax และกติกาตามกฎหมาย",
-    "other": "การตั้งค่าอื่นของบริษัท"
+    "other": "การตั้งค่าอื่นของบริษัท",
+    "gate": "เวลาที่บ้านให้ตอบ การจำรถ กล้อง LPR ไม้กั้น และ SOS"
   },
   "desc": {
     "billing_cutoff": "วันและเวลาที่ระบบสรุปค่าใช้จ่ายของรอบบิล",
@@ -859,7 +884,12 @@
     "juristic_plan_default_days": "งวดที่ออกบิลแล้วแต่ยังไม่ชำระเกินจำนวนวันนี้หลังครบกำหนด แผนจะผิดนัด งวดที่เหลือเรียกเก็บรวมครั้งเดียว",
     "juristic_plan_max_instalments": "แผนผ่อนแต่ละแผนแบ่งได้ไม่เกินจำนวนงวดนี้ (อย่างน้อย 2 งวด)",
     "juristic_debt_clearance_fee": "0.00 = ออกหนังสือทันทีเมื่อไม่มียอดค้าง ถ้ามีค่าธรรมเนียม จะออกหลังชำระค่าธรรมเนียมแล้ว",
-    "juristic_debt_clearance_validity_days": "นับจากวันออก แสดงในเอกสารและหน้าตรวจสอบ"
+    "juristic_debt_clearance_validity_days": "นับจากวันออก แสดงในเอกสารและหน้าตรวจสอบ",
+    "gate_policy_timeout_seconds": "ใช้กับบ้านที่ไม่ได้ตั้งเอง ระหว่าง 60–900 วินาที",
+    "gate_policy_action": "สิ่งที่ รปภ. ทำเมื่อครบเวลา",
+    "gate_delivery_drop_point": "เช่น โครงการมีจุดรับของ บ้านตั้งเองได้",
+    "gate_remember_days": "รถที่จำไว้เข้าได้โดยแจ้งบ้านอย่างเดียว",
+    "gate_lpr_min_confidence": "ต่ำกว่านี้ให้ รปภ. ตรวจป้ายเอง"
   },
   "unit": {
     "hours": "ชั่วโมง",

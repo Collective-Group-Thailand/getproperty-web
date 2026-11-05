@@ -11,7 +11,11 @@ const MAX_ATTEMPTS = 5;
 /** getproperty-api's default `REFRESH_REUSE_GRACE_SECONDS` (D-229). */
 const REFRESH_REUSE_GRACE_MS = 30_000;
 
-function subject(audience: "operator" | "platform", key: string) {
+function subject(audience: "operator" | "platform" | "guard", key: string) {
+  if (audience === "guard") {
+    // A guard's refresh keeps the shift (JW4): the key is the shift id.
+    return { id: key, type: "user" as const, audience, roles: ["guard"], permissions: [], scopes: [`shift:${key}`] };
+  }
   if (audience === "operator") {
     const persona = OPERATORS.find((p) => p.key === key)!;
     const single = persona.memberships.length === 1 ? persona.memberships[0] : undefined;

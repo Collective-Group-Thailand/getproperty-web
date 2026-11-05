@@ -111,6 +111,14 @@ export {
   WORKSPACE_LINK_STATUS,
 } from "./collections";
 export {
+  GATE_DEVICE_STATUS,
+  GATE_GUARD_STATUS,
+  GATE_INVITE_STATUS,
+  GATE_VISIT_STATUS,
+  INCIDENT_STATUS,
+  type GateGuardView,
+} from "./gate";
+export {
   CONTRACT_DOCUMENT_STATUS,
   CONTRACT_DOCUMENT_VALUES,
   LEGAL_REVIEW_STATUS,
@@ -200,6 +208,7 @@ import {
   WORKSPACE_LINK_STATUS,
 } from "./collections";
 import { CONTRACT_DOCUMENT_STATUS, LEGAL_REVIEW_STATUS, RENEWAL_OFFER_STATUS } from "./contract";
+import { GATE_DEVICE_STATUS, GATE_GUARD_STATUS, GATE_INVITE_STATUS, GATE_VISIT_STATUS, INCIDENT_STATUS } from "./gate";
 import { LISTING_STATUS, LISTING_VERIFICATION_STATUS } from "./listing";
 
 /** Every status map by its domain key (the `status.<domain>` namespace of its labels). */
@@ -238,6 +247,11 @@ export const STATUS_MAPS = {
   letterBatch: LETTER_BATCH_STATUS,
   workspaceLink: WORKSPACE_LINK_STATUS,
   verifiedDocument: VERIFIED_DOCUMENT_STATUS,
+  gateVisit: GATE_VISIT_STATUS,
+  incident: INCIDENT_STATUS,
+  gateInvite: GATE_INVITE_STATUS,
+  gateDevice: GATE_DEVICE_STATUS,
+  gateGuard: GATE_GUARD_STATUS,
   contractDocument: CONTRACT_DOCUMENT_STATUS,
   legalReview: LEGAL_REVIEW_STATUS,
   renewalOffer: RENEWAL_OFFER_STATUS,

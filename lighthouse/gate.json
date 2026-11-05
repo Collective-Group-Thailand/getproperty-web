@@ -1,0 +1,50 @@
+{
+  "extends": "./shared.json",
+  "$comment": "The gate tablet (JW4): `/gate` on the owner host, a 1180 \u00d7 820 landscape tablet, signed in as the mock's guard on an enrolled tablet (scripts/lhci.ts, session `gate`: device cookie + guard token pair). Initial JS \u2264 180 KB gz \u2014 a hard limit (J-juristic-web JW4 acceptance): the kiosk ships no query library and no overlay library, the QR scanner (and jsqr) loads on first use. The gate's SSE stream is blocked (blockedUrlPatterns) so the page can go network-idle; maxWaitForLoad caps it at 15 s.",
+  "ci": {
+    "collect": {
+      "url": ["http://localhost:3200/gate", "http://localhost:3200/en/gate"],
+      "numberOfRuns": 3,
+      "settings": {
+        "formFactor": "desktop",
+        "screenEmulation": {
+          "mobile": false,
+          "width": 1180,
+          "height": 820,
+          "deviceScaleFactor": 2,
+          "disabled": false
+        },
+        "throttlingMethod": "simulate",
+        "throttling": {
+          "rttMs": 40,
+          "throughputKbps": 10240,
+          "cpuSlowdownMultiplier": 2
+        },
+        "blockedUrlPatterns": ["*/v1/guard/events*"],
+        "maxWaitForLoad": 15000
+      }
+    },
+    "assert": {
+      "assertions": {
+        "largest-contentful-paint": [
+          "warn",
+          {
+            "maxNumericValue": 2500
+          }
+        ],
+        "cumulative-layout-shift": [
+          "warn",
+          {
+            "maxNumericValue": 0.1
+          }
+        ],
+        "resource-summary:script:size": [
+          "error",
+          {
+            "maxNumericValue": 184320
+          }
+        ]
+      }
+    }
+  }
+}

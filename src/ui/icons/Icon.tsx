@@ -1,6 +1,6 @@
 import { createElement } from "react";
 
-import { cn } from "../lib/cn";
+import { cx as cn } from "../lib/cx";
 import type { IconGlyph } from "./glyph";
 
 export interface IconProps extends Omit<React.SVGProps<SVGSVGElement>, "ref" | "children"> {

@@ -134,6 +134,18 @@ export const CURATED_ICONS = {
   sms: "message-square-text",
   send: "send",
   repeat: "repeat",
+  // J (JW4): the gate tablet — visitor kinds, notify the house, SOS kinds, the LPR camera, ID last 4, entry
+  car: "car",
+  truck: "truck",
+  hammer: "hammer",
+  "bell-ring": "bell-ring",
+  siren: "siren",
+  flame: "flame",
+  "heart-pulse": "heart-pulse",
+  "shield-alert": "shield-alert",
+  cctv: "cctv",
+  "id-card": "id-card",
+  "log-in": "log-in",
   // theme & language
   "theme-system": "monitor",
   "theme-light": "sun",

@@ -41,7 +41,8 @@
     "deposits": "Deposits",
     "access": "Doors and access",
     "compliance": "Compliance and tax",
-    "other": "Other"
+    "other": "Other",
+    "gate": "Gate and visitors"
   },
   "key": {
     "billing_cutoff": "Billing cut-off",
@@ -84,7 +85,30 @@
     "juristic_plan_default_days": "A plan defaults after",
     "juristic_plan_max_instalments": "Most instalments per plan",
     "juristic_debt_clearance_fee": "Debt clearance certificate fee",
-    "juristic_debt_clearance_validity_days": "Debt clearance certificate validity"
+    "juristic_debt_clearance_validity_days": "Debt clearance certificate validity",
+    "gate_policy_timeout_seconds": "House answer time (default)",
+    "gate_policy_action": "If the house does not answer (default)",
+    "gate_delivery_drop_point": "Deliveries go in without asking",
+    "gate_remember_days": "Remember approved cars for",
+    "gate_invite_max_days": "Invite QR valid for at most",
+    "gate_open_visit_alert_hours": "Tell the office after a visit has stayed",
+    "gate_offline_max_hours": "Offline records accepted for",
+    "gate_device_enrol_hours": "Tablet registration codes last",
+    "gate_pin_max_attempts": "Wrong PINs allowed",
+    "gate_pin_lock_minutes": "PIN lock lasts",
+    "gate_lpr_min_confidence": "LPR camera must read at least",
+    "gate_lpr_pending_minutes": "Camera reads wait for a guard for",
+    "gate_lpr_repeat_seconds": "Ignore the same plate again within",
+    "gate_auto_open_known_plates": "Open the barrier for registered cars",
+    "gate_resident_open_enabled": "Residents open the barrier from LINE",
+    "gate_resident_open_require_geofence": "Must be near the gate to open",
+    "gate_resident_open_radius_m": "Distance from the gate",
+    "gate_resident_open_max_per_hour": "Openings from LINE per hour",
+    "gate_open_min_interval_seconds": "Wait between barrier openings",
+    "gate_barrier_pulse_ms": "Barrier open pulse",
+    "gate_sos_cancel_seconds": "A resident may cancel an SOS within",
+    "gate_sos_max_per_hour": "SOS per hour per person",
+    "gate_incident_visit_window_minutes": "Count cars that left up to (before an SOS)"
   },
   "property": {
     "title": "Building settings",
@@ -816,7 +840,8 @@
     "deposits": "Refund deadline and the legal cap",
     "access": "Door codes for repairs, visitors and viewings",
     "compliance": "Tax, e-Tax and legal rules",
-    "other": "Other company settings"
+    "other": "Other company settings",
+    "gate": "House answer time, remembered cars, LPR camera, barrier and SOS"
   },
   "desc": {
     "billing_cutoff": "When the billing period closes and charges are summed up",
@@ -859,7 +884,12 @@
     "juristic_plan_default_days": "A billed instalment still unpaid this many days after its due date defaults the plan; the rest is billed at once.",
     "juristic_plan_max_instalments": "The most monthly instalments a plan may have (at least 2).",
     "juristic_debt_clearance_fee": "0.00 = issued at once when nothing is owed; with a fee, issued once the fee is paid.",
-    "juristic_debt_clearance_validity_days": "From the day it is issued; shown on the document and the check page."
+    "juristic_debt_clearance_validity_days": "From the day it is issued; shown on the document and the check page.",
+    "gate_policy_timeout_seconds": "For houses without their own rule, 60–900 seconds",
+    "gate_policy_action": "What the guard does when the time is up",
+    "gate_delivery_drop_point": "e.g. the estate has a drop point; a house may set its own",
+    "gate_remember_days": "A remembered car enters with a notice only",
+    "gate_lpr_min_confidence": "Below this the guard checks the plate"
   },
   "unit": {
     "hours": "hours",

@@ -15,6 +15,7 @@ import { initialInsightWorld, type MockInsightWorld } from "./owner/insight";
 import { initialNetworkWorld, type MockNetworkWorld } from "./owner/network";
 import { initialJuristicWorld, type MockJuristicWorld } from "./owner/juristic";
 import { initialCollectionsWorld, type MockCollectionsWorld } from "./owner/collections";
+import { initialGateWorld, type MockGateWorld } from "./owner/gate";
 import {
   initialChannels,
   initialDevices,
@@ -31,7 +32,7 @@ type Schemas = components["schemas"];
  * (`GET /__mock/requests`) and the realtime streams. Reset with `POST /__mock/reset`.
  */
 
-export type Audience = "operator" | "platform";
+export type Audience = "operator" | "platform" | "guard";
 
 export interface AccessGrant {
   audience: Audience;
@@ -193,6 +194,8 @@ export interface MockState {
   juristic: MockJuristicWorld;
   /** The juristic tenant's money collection, statements, plans, certificates, D-270 workspace (JW1b): see owner/collections.ts. */
   collections: MockCollectionsWorld;
+  /** The juristic estate's gate: tablets, guards, visits, policies, incidents (JW4): see owner/gate.ts. */
+  gate: MockGateWorld;
   webVitals: unknown[];
   log: LoggedRequest[];
   /** Access token lifetime; the suite shortens it to exercise refresh. */
@@ -215,6 +218,7 @@ export function initialIdentities(): MockIdentity[] {
 }
 
 function initial(): MockState {
+  const juristic = initialJuristicWorld();
   return {
     access: new Map(),
     refresh: new Map(),
@@ -247,8 +251,9 @@ function initial(): MockState {
     broadcast: initialBroadcastWorld(),
     network: initialNetworkWorld(),
     insight: initialInsightWorld(),
-    juristic: initialJuristicWorld(),
+    juristic,
     collections: initialCollectionsWorld(),
+    gate: initialGateWorld(juristic),
     webVitals: [],
     log: [],
     // 15 minutes like the API; a long Lighthouse run sets MOCK_ACCESS_TTL_MS so its fixed session cookie lasts.

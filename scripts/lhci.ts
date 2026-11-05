@@ -83,6 +83,8 @@ const SESSIONS: Record<string, () => Promise<string>> = {
   // Pack J (JW1a): the juristic office of the mock (condominium + housing estate).
   juristic: () => operatorSession("+66810000010", "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c88"),
   staff: () => operatorSession("+66810000004"),
+  // JW4: the gate tablet — an enrolled device (mock code) and the guard สมชาย on shift (PIN 1234).
+  gate: () => guardSession(),
   admin: () => platformSession("ops@example.com"),
 };
 
@@ -103,6 +105,17 @@ async function operatorSession(phone: string, tenantId = "0d0c7a4e-5b0e-4c55-9d7
   const challenge = await post("/v1/auth/operator/otp/request", { phone });
   const pair = await post("/v1/auth/operator/otp/verify", { challengeId: challenge.challengeId, code: "123456" });
   return cookieHeader(pair, `; __Host-gp_tenant=${tenantId}`);
+}
+
+async function guardSession(): Promise<string> {
+  const device = await post("/v1/auth/guard/devices/enrol", { code: "GATE-2569" });
+  const pair = await post("/v1/auth/guard/sign-in", {
+    deviceId: device.deviceId,
+    deviceSecret: device.deviceSecret,
+    guardId: "6a7e0b04-0000-4000-8000-000000000001",
+    pin: "1234",
+  });
+  return `__Host-gp_gdev=${String(device.deviceId)}.${String(device.deviceSecret)}; __Host-gp_gat=${String(pair.accessToken)}; __Host-gp_grt=${String(pair.refreshToken)}`;
 }
 
 async function platformSession(email: string): Promise<string> {

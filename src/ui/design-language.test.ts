@@ -104,6 +104,7 @@ describe("design language bans", () => {
       "src/ui/components/Sheet.tsx",
       "src/ui/components/Stepper.tsx",
       "src/ui/components/CountBadge.tsx",
+      "src/ui/components/PolicyTimer.tsx",
       "src/features/owner/marketing/listings/ListingReviews.tsx",
     ];
     expect(

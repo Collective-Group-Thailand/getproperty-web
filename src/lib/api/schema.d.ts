@@ -3412,6 +3412,72 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/auth/guard/devices/enrol": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Enrol a gate tablet
+         * @description Exchanges the one-time enrolment code from the owner console (`POST /v1/owner/gates/{gateId}/devices`, valid `gate.device_enrol_hours`) for the tablet’s device secret — shown once, stored only as sha256. A used, expired or unknown code is 401 `gate.enrol_code_invalid` (D-320, D-327).
+         *
+         *     Implements: D-320, D-327.
+         */
+        post: operations["auth.guard.enrol"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/guard/roster": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Guards who may sign in on this tablet
+         * @description The active guards of the tablet’s property (id, display name, locked flag) for the sign-in screen. A revoked or unknown tablet is 401 `gate.device_unknown` (D-320).
+         *
+         *     Implements: D-320, D-327.
+         */
+        post: operations["auth.guard.roster"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/guard/sign-in": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Guard sign-in with a PIN
+         * @description Starts a shift on the enrolled tablet: a token pair of audience `guard` (scopes `tenant:`, `property:`, `gate:`, `gate_device:`, `shift:`; refresh family ≤ `GUARD_REFRESH_TOKEN_TTL_HOURS`). A guard’s open shift on another tablet ends (`superseded`). Wrong PINs are counted: after `gate.pin_max_attempts` the guard is locked for `gate.pin_lock_minutes` (423 `gate.pin_locked` with `lockedUntil`); unknown guard or wrong PIN is 401 `gate.pin_invalid` (D-320, D-327).
+         *
+         *     Implements: D-320, D-327, ADR-0003.
+         */
+        post: operations["auth.guard.signIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/auth/logout": {
         parameters: {
             query?: never;
@@ -4088,6 +4154,524 @@ export interface paths {
          *     Implements: D-130, D-165, D-239, D-249.
          */
         post: operations["device.token.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/guard/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Gate event stream (server-sent events)
+         * @description Server-sent events of this gate with the Bearer guard token (use a fetch-based EventSource that sends headers). On connect the visit events after `Last-Event-ID` (header) or `lastEventId` (query) are replayed (last 24 h, ≤ 500), then live events follow; every event carries `id:` = the visit event id, so a reconnect resumes without gaps. Events: `ready`, `heartbeat` every 25 s, `gate.visit.*` with `{ type, ids }` — refetch the visit (contract §6, D-327).
+         *
+         *     Implements: D-315, D-327.
+         */
+        get: operations["guard.events.stream"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/guard/gates/{gateId}/actions/open": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Open the barrier
+         * @description Sends `gate.open` (device protocol 1.3) to every live barrier of **the gate of this shift** (another gate = 404) with the reason (`other` needs a note) and optionally the visit it opens for (visit timeline `gate_opened`). The command is sent once and refused by the edge after 30 s; at most one open per gate every `gate.open.min_interval_seconds` (3) — 429 with Retry-After. Audited (D-316, D-328).
+         *
+         *     Implements: D-316, D-328.
+         */
+        post: operations["guard.gates.open"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/guard/hardware": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Barrier and camera of my gate
+         * @description Live barriers and LPR cameras of the gate of this shift with the last reported barrier position (`gate.state`) — the tablet header (D-328).
+         *
+         *     Implements: D-328.
+         */
+        get: operations["guard.hardware.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/guard/incidents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * SOS and incidents of my estate
+         * @description `active` (default): open and acknowledged incidents of the estate — the tablet shows the takeover banner while any is open (fetch on connect and on `gate.incident.*` stream events); `recent`: the last 24 h (D-317, D-328).
+         *
+         *     Implements: D-317, D-328.
+         */
+        get: operations["guard.incidents.list"];
+        put?: never;
+        /**
+         * Raise an SOS from the gate
+         * @description The tablet’s SOS button: an incident of the estate (source `guard`, optionally the house) — every gate, the office and the committee are alerted at once (D-317, D-328).
+         *
+         *     Implements: D-317, D-328.
+         */
+        post: operations["guard.incidents.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/guard/incidents/{incidentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * An incident of my estate
+         * @description The incident (house, kind, note) and its timeline; another estate’s incident is a 404 (D-317).
+         *
+         *     Implements: D-317, D-328.
+         */
+        get: operations["guard.incidents.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/guard/incidents/{incidentId}/actions/acknowledge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Acknowledge an incident
+         * @description The guard has it: `open` → `acknowledged` (idempotent); the resident who sent the SOS is told at once (LINE, urgent) (D-317).
+         *
+         *     Implements: D-317, D-328.
+         */
+        post: operations["guard.incidents.acknowledge"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/guard/incidents/{incidentId}/actions/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resolve an incident
+         * @description `open` | `acknowledged` → `resolved` with an optional note (idempotent once resolved) (D-317).
+         *
+         *     Implements: D-317, D-328.
+         */
+        post: operations["guard.incidents.resolve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/guard/invites/actions/scan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Scan a visitor invite
+         * @description The QR of a resident’s invite: when it is active, inside its window and not used up, the visit is recorded `entered` at once (residents notified) and the use is counted. When the invite names a plate the car must match (`visit_invite.plate_mismatch`). Another estate’s or an unknown invite is a 404. `clientRef` replays like `POST /v1/guard/visits` (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        post: operations["guard.invites.scan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/guard/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My shift at the gate
+         * @description The signed-in guard, the gate and property of the shift, the tablet, and the privacy notice to show next to the visitor fields (`gate.privacy_notice`, PDPA, D-315).
+         *
+         *     Implements: D-315, D-320, D-327.
+         */
+        get: operations["guard.me.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/guard/ping": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Ping the guard surface
+         * @description Answers with the surface name, the server time (Asia/Bangkok) and the API version. Placeholder operation of the `guard` surface until its real endpoints land. Anonymous or with an `guard` token (checked from B1.3: wrong audience → 403 `auth.wrong_audience`).
+         *
+         *     Implements: D-002, ADR-0002.
+         */
+        get: operations["guard.system.ping"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/guard/plate-detections": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Plate reads at my gate
+         * @description `pending` (default): unknown, blacklisted, ambiguous or low-confidence reads of the LPR camera waiting to pre-fill the visit form (`gate.lpr.pending_minutes`, 10); `recent`: every read of the last hour, incl. known plates that entered by themselves. Fetch on `gate.plate_detected` stream events (D-328).
+         *
+         *     Implements: D-316, D-328.
+         */
+        get: operations["guard.plateDetections.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/guard/plate-detections/{detectionId}/actions/claim": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Use a plate read for a visit
+         * @description The first guard takes a pending read to pre-fill the visit form (plate, the matched unit if any); another tablet then gets 409 `plate_detection.invalid_state`, as does an expired read (D-328).
+         *
+         *     Implements: D-328.
+         */
+        post: operations["guard.plateDetections.claim"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/guard/plate-detections/{detectionId}/actions/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Dismiss a plate read
+         * @description A pending read that needs no visit (a passing car, a misread) leaves the list (D-328).
+         *
+         *     Implements: D-328.
+         */
+        post: operations["guard.plateDetections.dismiss"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/guard/privacy-notice": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Privacy notice for the gate screen
+         * @description The purpose notice the gate shows wherever a visitor’s data is captured (`gate.privacy_notice`, th / en with version; ⚖ draft wording, PDPA D-025, D-315).
+         *
+         *     Implements: D-025, D-315.
+         */
+        get: operations["guard.privacyNotice.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/guard/shift/actions/end": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * End my shift
+         * @description Signs the guard out: the shift ends and its session (refresh family) is revoked at once; the tablet stays enrolled for the next guard (D-320).
+         *
+         *     Implements: D-320, D-327.
+         */
+        post: operations["guard.shift.end"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/guard/units": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Find a destination unit
+         * @description Units of the gate’s property by number (`q`), with whether anyone of the house can be asked in LINE (no names) and the house policy. `hasArrears` appears only while `gate.show_arrears` is on (⚖ O-038, off by default) — otherwise no arrears data at all (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        get: operations["guard.units.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/guard/visits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The gate lists
+         * @description `waiting` (requested, approved, timed out — last 24 h), `inside` (entered, no exit stamp yet) or `today` (everything since midnight Bangkok) at this gate, newest first (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        get: operations["guard.visits.list"];
+        put?: never;
+        /**
+         * Record a visit
+         * @description Records a visitor at the gate: kind, destination unit, plate (Thai category + number + province), optional name, optional **last 4 ID digits** (exactly 4, never more). The outcome is decided at once: a blacklisted plate is `denied`; a remembered car of the unit or a delivery to an estate with a drop point is `entered` (residents notified only); a unit nobody can be asked about gets its house policy at once (`timed_out`); otherwise `requested` — every resident of the unit (co-owner, tenant, co-tenant, family; not payer-only) is asked in LINE and the house policy applies after its timeout. Offline queue: `clientRef` is generated by the tablet and a replay with the same `clientRef` returns the visit already recorded (`replayed: true`), never a duplicate; `recordedAt` / `enteredOffline` keep what happened offline (D-315, D-327).
+         *
+         *     Implements: D-315, D-327.
+         */
+        post: operations["guard.visits.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/guard/visits/{visitId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * A visit at this gate
+         * @description The visit with its timeline, who asked to be called and a 5-minute photo link. A visit of another estate is a 404 (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        get: operations["guard.visits.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/guard/visits/{visitId}/actions/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel a visit
+         * @description The visitor left before entering (requested, approved, timed out or denied) (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        post: operations["guard.visits.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/guard/visits/{visitId}/actions/enter": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Stamp the entry
+         * @description The visitor goes in: allowed after an approval or a timeout with `allow_and_log` / `guard_calls`; refused after a denial or a `deny` timeout (`visit.denied`). While the house has not answered the guard may still let the visitor in with a `reason` (guard override, audited — D-315: never force every visit to wait). Repeating it is harmless.
+         *
+         *     Implements: D-315, D-327.
+         */
+        post: operations["guard.visits.enter"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/guard/visits/{visitId}/actions/exit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Stamp the exit
+         * @description The visitor left (from `entered`); repeating it is harmless (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        post: operations["guard.visits.exit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/guard/visits/{visitId}/photo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Attach the visit photo
+         * @description One photo per visit (JPEG / PNG / WebP, ≤ 2 MB decoded, inline base64), stored with retention class `visitor` and deleted with the visit after `gate.retention_days`; a new photo replaces the old one (deleted). Never an ID card image (D-315).
+         *
+         *     Implements: D-025, D-315, D-327.
+         */
+        post: operations["guard.visits.photo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/guard/visits/changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Visit changes since an event
+         * @description The JSON twin of `GET /v1/guard/events` for tablets that cannot stream or are catching up after being offline: visit events of this gate after `after` (last 24 h, at most 500, oldest first); refetch the visits named (D-327).
+         *
+         *     Implements: D-327.
+         */
+        get: operations["guard.visits.changes"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -7080,6 +7664,548 @@ export interface paths {
          *     Implements: D-025, D-035.
          */
         post: operations["owner.files.presign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/gate-blacklist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Estate blacklist
+         * @description Live entries (optionally of one property), newest first (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        get: operations["owner.gateBlacklist.list"];
+        put?: never;
+        /**
+         * Add a plate to the blacklist
+         * @description Visits of this plate are refused at once at the property’s gates; the reason (5–500) is required and audited (409 `gate.blacklist_exists`) (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        post: operations["owner.gateBlacklist.add"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/gate-blacklist/{entryId}/actions/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Remove a plate from the blacklist
+         * @description With a reason (audited); the revoked entry is deleted by gate-retention after `gate.retention_days` (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        post: operations["owner.gateBlacklist.revoke"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/gate-guards": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Guards
+         * @description Active and revoked guards (optionally of one property), the gate of an open shift and a lockout (D-320).
+         *
+         *     Implements: D-320, D-327.
+         */
+        get: operations["owner.gateGuards.list"];
+        put?: never;
+        /**
+         * Create a guard
+         * @description A guard of a property with a PIN (4–6 digits, stored as argon2id; tell it to the guard in person). The guard signs in only on an enrolled gate tablet of that property — a credential-less login with tenant role `guard`, never invitable (D-320, D-327).
+         *
+         *     Implements: D-320, D-327.
+         */
+        post: operations["owner.gateGuards.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/gate-guards/{guardId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Rename a guard
+         * @description Changes the display name shown on the tablet roster (D-320).
+         *
+         *     Implements: D-320.
+         */
+        patch: operations["owner.gateGuards.update"];
+        trace?: never;
+    };
+    "/v1/owner/gate-guards/{guardId}/actions/reset-pin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set a new PIN
+         * @description Replaces the guard’s PIN and lifts a lockout (audited without the PIN) (D-320, D-327).
+         *
+         *     Implements: D-320, D-327.
+         */
+        post: operations["owner.gateGuards.resetPin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/gate-guards/{guardId}/actions/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Revoke a guard
+         * @description The guard can no longer sign in; an open shift ends and its session stops at once; the login is disabled. Idempotent (D-320).
+         *
+         *     Implements: D-320, D-327.
+         */
+        post: operations["owner.gateGuards.revoke"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/gate-invites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Visitor invites
+         * @description Residents’ invites (no tokens), filter `state=pending_approval` for contractors waiting (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        get: operations["owner.gateInvites.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/gate-invites/{inviteId}/actions/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve a contractor invite
+         * @description The invite becomes active; the resident is told. Repeating it is harmless (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        post: operations["owner.gateInvites.approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/gate-invites/{inviteId}/actions/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reject a contractor invite
+         * @description With a reason (3–500, shown to the resident); repeating it is harmless (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        post: operations["owner.gateInvites.reject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/gate-policies/units/{unitId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * House gate policy of a unit
+         * @description The unit’s own policy or the estate defaults (`gate.policy.timeout_seconds` 180, `gate.policy.action` guard_calls) (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        get: operations["owner.gatePolicies.get"];
+        /**
+         * Set the house gate policy of a unit
+         * @description Timeout 60–900 s; when nobody answers: `allow_and_log` (let in, the household sees the log), `deny`, or `guard_calls` (the guard phones the house); deliveries may skip the question (null = the estate drop-point setting); a household note for the guard. Audited (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        put: operations["owner.gatePolicies.set"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/gate-vehicles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Registered cars
+         * @description Cars the households registered (LPR entry, resident open), optionally of one unit or property; residents add and remove them (D-328).
+         *
+         *     Implements: D-328.
+         */
+        get: operations["owner.gateVehicles.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/gate-visits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Visit log
+         * @description The estate’s visits (plate, name, ID last 4 digits) newest first, filtered by property, gate, unit, state and period. A `reason` (5–500) is required and every read is audited (`gate.visit_log_read`) — PDPA purpose limitation (D-315). Staff limited to buildings see only visits to their buildings’ units.
+         *
+         *     Implements: D-025, D-315, D-327.
+         */
+        get: operations["owner.gateVisits.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/gate-visits/{visitId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * A visit of the log
+         * @description One visit with its timeline; `reason` required and audited (D-315).
+         *
+         *     Implements: D-025, D-315, D-327.
+         */
+        get: operations["owner.gateVisits.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/gates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Gates
+         * @description The tenant’s gates (optionally of one property) with the count of live tablets (D-327).
+         *
+         *     Implements: D-327.
+         */
+        get: operations["owner.gates.list"];
+        put?: never;
+        /**
+         * Create a gate
+         * @description A gate (guard post) of one of the tenant’s properties; names are unique per property (409) (D-315, D-327).
+         *
+         *     Implements: D-315, D-327.
+         */
+        post: operations["owner.gates.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/gates/{gateId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * A gate
+         * @description One gate; another tenant’s gate is a 404 (D-327).
+         *
+         *     Implements: D-327.
+         */
+        get: operations["owner.gates.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Edit a gate
+         * @description Rename, change the kind, switch off (`inactive`: its tablets refuse new visits) or mark barrier / LPR wiring for J4.2 (D-327).
+         *
+         *     Implements: D-327.
+         */
+        patch: operations["owner.gates.update"];
+        trace?: never;
+    };
+    "/v1/owner/gates/{gateId}/devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Tablets of a gate
+         * @description Pending, active and revoked tablets of the gate (codes and secrets are never shown again) (D-327).
+         *
+         *     Implements: D-327.
+         */
+        get: operations["owner.gates.devices"];
+        put?: never;
+        /**
+         * Add a gate tablet
+         * @description Creates a tablet slot and a one-time enrolment code (shown once, valid `gate.device_enrol_hours`, stored hashed). The tablet enters it in `POST /v1/auth/guard/devices/enrol` (D-320, D-327).
+         *
+         *     Implements: D-320, D-327.
+         */
+        post: operations["owner.gates.addDevice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/gates/{gateId}/devices/{deviceId}/actions/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Revoke a gate tablet
+         * @description The tablet stops working at once: its open guard shifts end and their sessions are revoked; it needs a new enrolment code. Idempotent (D-320, D-327).
+         *
+         *     Implements: D-320, D-327.
+         */
+        post: operations["owner.gates.revokeDevice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/gates/{gateId}/edge-devices": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Attach a barrier or LPR camera
+         * @description A barrier relay or an LPR camera on a getproperty-edge gateway (a provisioned gateway of a building of this estate, same tenant — else 422 `gate.edge_device_invalid`) and its channel there (409 when another live device uses it). Active at once; the gate’s `barrier` / `lpr` flags follow; the gateway config (`gateDevices`, protocol 1.3) is recompiled and published (D-316, D-328).
+         *
+         *     Implements: D-316, D-328.
+         */
+        post: operations["owner.gates.attachEdgeDevice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/gates/{gateId}/edge-devices/{gateDeviceId}/actions/detach": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Detach a barrier or LPR camera
+         * @description The device stops at once (no more `gate.open` to it, its events are refused); the gateway config drops it. Idempotent (D-328).
+         *
+         *     Implements: D-328.
+         */
+        post: operations["owner.gates.detachEdgeDevice"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/incidents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Incident log
+         * @description SOS and incidents of the tenant’s estates, newest first, by property, state and period. `reason` (5–500) is required; every read writes one `gate.incident_log_read` audit row (PDPA, like the visit log) (D-317, D-328).
+         *
+         *     Implements: D-317, D-328.
+         */
+        get: operations["owner.incidents.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/incidents/{incidentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * An incident
+         * @description The incident, its timeline (raised, acknowledged, resolved, cancelled) and the visits inside the estate at that time (entered and not exited before the SOS − `gate.incident.visit_window_minutes`). `reason` required, audited (D-317, D-328).
+         *
+         *     Implements: D-317, D-328.
+         */
+        get: operations["owner.incidents.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/incidents/{incidentId}/actions/acknowledge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Acknowledge an incident
+         * @description The office has it: `open` → `acknowledged` (idempotent); the resident is told (D-317).
+         *
+         *     Implements: D-317, D-328.
+         */
+        post: operations["owner.incidents.acknowledge"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/incidents/{incidentId}/actions/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Resolve an incident
+         * @description `open` | `acknowledged` → `resolved` with an optional note (idempotent once resolved) (D-317).
+         *
+         *     Implements: D-317, D-328.
+         */
+        post: operations["owner.incidents.resolve"];
         delete?: never;
         options?: never;
         head?: never;
@@ -16168,6 +17294,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/resident/gates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Gates I can open
+         * @description Gates with a barrier of the estates of my units (gate roles co-owner, tenant, co-tenant, family), whether the estate lets residents open them (`gate.resident_open.enabled`), whether the phone location is needed, and the registered cars of my units there (D-316, D-328).
+         *
+         *     Implements: D-316, D-328.
+         */
+        get: operations["resident.gates.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/gates/{gateId}/actions/open": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Open the barrier for my car
+         * @description Only for a registered car of a unit I hold a gate role on today, at a gate of that estate (anything else 404). Refused while `gate.resident_open.enabled` is off (403); while `gate.resident_open.require_geofence` is on the phone location must be within `gate.resident_open.radius_m` of the estate (403 `gate.outside_geofence`; 409 when the estate has no location) — the location is checked and never stored, only the decision is audited. At most one open per gate every 3 s and `gate.resident_open.max_per_hour` per login (429) (D-316, D-328).
+         *
+         *     Implements: D-316, D-328.
+         */
+        post: operations["resident.gates.open"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/resident/inspections": {
         parameters: {
             query?: never;
@@ -17702,6 +18872,78 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/resident/sos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * SOS of my houses
+         * @description Incidents of the units I hold a gate role on (or one `unitId`), newest first (D-317).
+         *
+         *     Implements: D-317, D-328.
+         */
+        get: operations["resident.sos.list"];
+        put?: never;
+        /**
+         * Send an SOS
+         * @description An emergency at my house (gate roles of the unit; another unit = 404): every gate of the estate, the office (owner, manager, staff) and the committee are alerted at once (urgent). An open SOS of the same unit by me is returned instead of a second one (`existing: true`); more than `gate.sos.max_per_hour` in an hour → 429. I may cancel within `gate.sos.cancel_seconds` (30). The incident links the visits inside the estate at that time (D-317, D-328).
+         *
+         *     Implements: D-317, D-328.
+         */
+        post: operations["resident.sos.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/sos/{incidentId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My SOS
+         * @description Its status: `open` (alerted), `acknowledged` (a guard or the office has it, with the time), `resolved`, `cancelled`; `cancellableUntil` while I may still cancel (D-317, D-328).
+         *
+         *     Implements: D-317, D-328.
+         */
+        get: operations["resident.sos.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/sos/{incidentId}/actions/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel my SOS
+         * @description Only the resident who sent it, within `gate.sos.cancel_seconds` (30) — afterwards 409 `incident.cancel_window_passed` (call the gate). Idempotent (D-328).
+         *
+         *     Implements: D-317, D-328.
+         */
+        post: operations["resident.sos.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/resident/statements": {
         parameters: {
             query?: never;
@@ -17928,6 +19170,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/resident/units/{unitId}/gate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My house at the gate
+         * @description The house policy, the estate’s gates, the privacy notice and whether I may change the policy or create invites (co-owner, tenant, co-tenant) (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        get: operations["resident.units.gate"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/units/{unitId}/gate-policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set my house gate policy
+         * @description Timeout 60–900 s and what the gate does when nobody answers (`allow_and_log`, `deny`, `guard_calls`), deliveries, a note for the guard — co-owner, tenant or co-tenant only (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        put: operations["resident.units.setGatePolicy"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/resident/units/{unitId}/payment-mandates": {
         parameters: {
             query?: never;
@@ -18044,6 +19330,56 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/resident/units/{unitId}/remembered-vehicles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cars my house remembers
+         * @description Live "remember this car" entries; their entries at the gate are notify-only (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        get: operations["resident.units.rememberedVehicles"];
+        put?: never;
+        /**
+         * Remember a car
+         * @description For at most `gate.remember_days` (30); the same plate extends the entry. Co-owner, tenant or co-tenant only (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        post: operations["resident.units.rememberVehicle"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/units/{unitId}/remembered-vehicles/{vehicleId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Forget a car
+         * @description The next visit of this car asks the house again (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        delete: operations["resident.units.forgetVehicle"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/resident/units/{unitId}/usage": {
         parameters: {
             query?: never;
@@ -18066,6 +19402,106 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/resident/units/{unitId}/vehicles": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cars of my house
+         * @description The registered cars of the unit (every gate role reads; another unit = 404). They enter by LPR and may open the barrier from LINE (D-328).
+         *
+         *     Implements: D-316, D-328.
+         */
+        get: operations["resident.unitVehicles.list"];
+        put?: never;
+        /**
+         * Register a car of my house
+         * @description The household (co-owner, tenant, co-tenant — not family) registers a car by its full plate (409 when already registered). It is removed automatically when the person who registered it no longer holds a role on the unit (D-328).
+         *
+         *     Implements: D-316, D-328.
+         */
+        post: operations["resident.unitVehicles.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/units/{unitId}/vehicles/{vehicleId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove a car of my house
+         * @description The household removes a registered car (idempotent) (D-328).
+         *
+         *     Implements: D-328.
+         */
+        delete: operations["resident.unitVehicles.delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/units/{unitId}/visit-invites": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Invites of my house
+         * @description Newest first, with uses and state (tokens are never shown again) (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        get: operations["resident.units.visitInvites"];
+        put?: never;
+        /**
+         * Invite a visitor
+         * @description A single- or multi-use invite with a time window (≤ `gate.invite_max_days`) and an optional plate; the QR token is returned once and stored hashed. At the gate the guard scans it and the visitor enters without waiting. Contractor invites wait for the office’s approval (`pending_approval`). Co-owner, tenant or co-tenant only (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        post: operations["resident.units.createVisitInvite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/units/{unitId}/visit-invites/{inviteId}/actions/revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Revoke an invite
+         * @description The QR stops working at once; repeating it is harmless (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        post: operations["resident.units.revokeVisitInvite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/resident/uploads": {
         parameters: {
             query?: never;
@@ -18082,6 +19518,138 @@ export interface paths {
          *     Implements: D-023, D-072, D-203, D-266.
          */
         post: operations["resident.uploads.presign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/visits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Visits to my houses
+         * @description Newest first, of every unit I hold a gate role on (or one `unitId`), optionally by state (D-315, D-309).
+         *
+         *     Implements: D-309, D-315, D-327.
+         */
+        get: operations["resident.visits.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/visits/{visitId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * A visit to my house
+         * @description The visit (plate, name, kind — never the ID digits), who of the household answered, what the house policy does if nobody answers, and a 5-minute link to the gate photo (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        get: operations["resident.visits.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/visits/{visitId}/actions/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Let the visitor in
+         * @description First answer wins: when the visit still waits it becomes `approved` (the gate sees it at once); otherwise `accepted: false` and the visit shows who answered first. `rememberVehicle` remembers the car for `gate.remember_days` (30) — its next entries are notify-only (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        post: operations["resident.visits.approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/visits/{visitId}/actions/call-me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Ask the guard to call me
+         * @description The gate sees "call back" with my name; decides nothing (the visit keeps waiting). `accepted: false` once the visit is decided (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        post: operations["resident.visits.callMe"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/visits/{visitId}/actions/deny": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Do not let the visitor in
+         * @description First answer wins (same rules as approve) (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        post: operations["resident.visits.deny"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/visits/{visitId}/actions/exit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * My visitor has left
+         * @description Exit stamp by the household (from `entered`); repeating it is harmless (D-315).
+         *
+         *     Implements: D-315, D-327.
+         */
+        post: operations["resident.visits.exit"];
         delete?: never;
         options?: never;
         head?: never;
@@ -22094,6 +23662,59 @@ export interface components {
         };
         /** @enum {string} */
         BillToKind: "named_party" | "agency";
+        BlacklistCreateDto: {
+            /**
+             * @example {
+             *       "category": "1กข",
+             *       "number": "1234",
+             *       "province": "กรุงเทพมหานคร"
+             *     }
+             */
+            plate: components["schemas"]["PlateDto"];
+            /**
+             * Format: uuid
+             * @example 7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d
+             */
+            propertyId: string;
+            /** @example ขับรถเร็วในหมู่บ้านซ้ำหลายครั้ง (มติกรรมการ 3/2569) */
+            reason: string;
+        };
+        BlacklistDto: {
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /**
+             * @example {
+             *       "category": "1กข",
+             *       "number": "1234",
+             *       "province": "กรุงเทพมหานคร"
+             *     }
+             */
+            plate: components["schemas"]["PlateDto"];
+            /**
+             * Format: uuid
+             * @example 7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d
+             */
+            propertyId: string;
+            /** @example ขับรถเร็วในหมู่บ้านซ้ำหลายครั้ง */
+            reason: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            revokedAt: string | null;
+        };
+        BlacklistRevokeDto: {
+            /** @example กรรมการยกเลิกตามคำร้อง */
+            reason: string;
+        };
         BoardBuildingDto: {
             /** @example A */
             code: string;
@@ -25661,6 +27282,28 @@ export interface components {
             /** @example schedule */
             triggeredBy: components["schemas"]["ReminderTrigger"];
         };
+        EdgeDeviceAttachDto: {
+            /**
+             * @description Relay output / camera id on the gateway (1–32: letters, digits, _ . : -).
+             * @example relay-1
+             */
+            channel: string;
+            /**
+             * Format: uuid
+             * @description A provisioned getproperty-edge gateway of a building of this estate (same tenant).
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            edgeDeviceId: string;
+            /** @example barrier */
+            kind: components["schemas"]["GateHardwareKind"];
+            /** @example ไม้กั้นขาเข้า */
+            name: string;
+            /**
+             * @description Barrier only: relay pulse in ms (default `gate.barrier.pulse_ms`).
+             * @example 800
+             */
+            pulseMs?: number;
+        };
         EkycWebhookAckDto: {
             /**
              * @description false when the attempt was already decided (a repeated delivery).
@@ -26771,6 +28414,306 @@ export interface components {
         };
         /** @enum {string} */
         Furnishing: "unfurnished" | "partly_furnished" | "fully_furnished";
+        GateCreateDto: {
+            /** @example main */
+            kind?: components["schemas"]["GateKind"];
+            /** @example ป้อมหน้า */
+            name: string;
+            /**
+             * Format: uuid
+             * @example 7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d
+             */
+            propertyId: string;
+        };
+        GateDeviceCreatedDto: {
+            /**
+             * @description Barrier / LPR only: relay output / camera id on the gateway.
+             * @example null
+             */
+            channel: string | null;
+            /**
+             * Format: uuid
+             * @description Barrier / LPR only (J4.2): the getproperty-edge gateway that drives it.
+             * @example null
+             */
+            edgeDeviceId: string | null;
+            /**
+             * @description One-time enrolment code — shown once.
+             * @example ABCD-EFGH-JKLM
+             */
+            enrolCode: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-06T18:00:00+07:00
+             */
+            enrolExpiresAt: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            enrolledAt: string | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            gateId: string;
+            /**
+             * @description Barrier only: the last reported position.
+             * @example null
+             */
+            hwState: components["schemas"]["GateHwState"] | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            hwStateAt: string | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example guard_tablet */
+            kind: components["schemas"]["GateDeviceKind"];
+            /**
+             * Format: date-time
+             * @example null
+             */
+            lastSeenAt: string | null;
+            /** @example แท็บเล็ตป้อมหน้า */
+            name: string;
+            /**
+             * @description Barrier only: relay pulse (null = `gate.barrier.pulse_ms`).
+             * @example null
+             */
+            pulseMs: number | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            revokedAt: string | null;
+            /** @example pending */
+            state: components["schemas"]["GateDeviceState"];
+        };
+        GateDeviceCreateDto: {
+            /** @example แท็บเล็ตป้อมหน้า */
+            name: string;
+        };
+        GateDeviceDto: {
+            /**
+             * @description Barrier / LPR only: relay output / camera id on the gateway.
+             * @example null
+             */
+            channel: string | null;
+            /**
+             * Format: uuid
+             * @description Barrier / LPR only (J4.2): the getproperty-edge gateway that drives it.
+             * @example null
+             */
+            edgeDeviceId: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-06T18:00:00+07:00
+             */
+            enrolExpiresAt: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            enrolledAt: string | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            gateId: string;
+            /**
+             * @description Barrier only: the last reported position.
+             * @example null
+             */
+            hwState: components["schemas"]["GateHwState"] | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            hwStateAt: string | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example guard_tablet */
+            kind: components["schemas"]["GateDeviceKind"];
+            /**
+             * Format: date-time
+             * @example null
+             */
+            lastSeenAt: string | null;
+            /** @example แท็บเล็ตป้อมหน้า */
+            name: string;
+            /**
+             * @description Barrier only: relay pulse (null = `gate.barrier.pulse_ms`).
+             * @example null
+             */
+            pulseMs: number | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            revokedAt: string | null;
+            /** @example pending */
+            state: components["schemas"]["GateDeviceState"];
+        };
+        /** @enum {string} */
+        GateDeviceKind: "guard_tablet" | "barrier" | "lpr";
+        /** @enum {string} */
+        GateDeviceState: "pending" | "active" | "revoked";
+        GateDto: {
+            /** @example false */
+            barrier: boolean;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            createdAt: string;
+            /**
+             * @description Tablets enrolled or waiting for enrolment.
+             * @example 1
+             */
+            devices: number;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example main */
+            kind: components["schemas"]["GateKind"];
+            /** @example false */
+            lpr: boolean;
+            /** @example ป้อมหน้า */
+            name: string;
+            /**
+             * Format: uuid
+             * @example 7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d
+             */
+            propertyId: string;
+            /** @example active */
+            state: components["schemas"]["ActiveStatus"];
+        };
+        GateGuardDto: {
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            createdAt: string;
+            /** @example สมศักดิ์ */
+            displayName: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            lockedUntil: string | null;
+            /**
+             * Format: uuid
+             * @description Gate of the open shift.
+             * @example null
+             */
+            onShiftAtGateId: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            pinSetAt: string;
+            /**
+             * Format: uuid
+             * @example 7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d
+             */
+            propertyId: string;
+            /** @example active */
+            state: components["schemas"]["GateGuardState"];
+        };
+        /** @enum {string} */
+        GateGuardState: "active" | "revoked";
+        /** @enum {string} */
+        GateHardwareKind: "barrier" | "lpr";
+        /**
+         * @description Barrier only: the last reported position.
+         * @enum {string}
+         */
+        GateHwState: "open" | "closed" | "fault";
+        /** @enum {string} */
+        GateKind: "main" | "side" | "service";
+        GateOpenCommandDto: {
+            /**
+             * Format: uuid
+             * @description `gate.open` cmdId = commandId on the wire.
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            commandId: string;
+            /**
+             * Format: date-time
+             * @description The edge refuses after this instant.
+             * @example 2026-11-05T18:00:30+07:00
+             */
+            expiresAt: string;
+            /**
+             * Format: uuid
+             * @description The barrier.
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            gateDeviceId: string;
+        };
+        GateOpenResultDto: {
+            commands: components["schemas"]["GateOpenCommandDto"][];
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            gateId: string;
+        };
+        /** @enum {string} */
+        GatePolicyAction: "allow_and_log" | "deny" | "guard_calls";
+        GateRefDto: {
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example main */
+            kind: components["schemas"]["GateKind"];
+            /** @example ป้อมหน้า */
+            name: string;
+        };
+        GateRefMiniDto: {
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example ป้อมหน้า */
+            name: string;
+        };
+        GateUpdateDto: {
+            /**
+             * @description A barrier is wired (J4.2).
+             * @example false
+             */
+            barrier?: boolean;
+            /** @example main */
+            kind?: components["schemas"]["GateKind"];
+            /**
+             * @description An LPR camera is wired (J4.2).
+             * @example false
+             */
+            lpr?: boolean;
+            /** @example ป้อมหน้า */
+            name?: string;
+            /** @example active */
+            state?: components["schemas"]["ActiveStatus"];
+        };
         GatewayConfigVersionDto: {
             /**
              * Format: date-time
@@ -26849,12 +28792,569 @@ export interface components {
             /** @example null */
             rssi: number | null;
         };
+        GeoClaimDto: {
+            /**
+             * @description Reported GPS accuracy (credited up to 100 m).
+             * @example 20
+             */
+            accuracyM?: number;
+            /** @example 13.6905 */
+            lat: number;
+            /** @example 100.6851 */
+            lng: number;
+        };
         /** @enum {string} */
         GrantAccess: "read" | "write";
         /** @enum {string} */
         GrantReason: "pm_contract" | "landlord_unit" | "owner_portal" | "contractor" | "developer_post_sale" | "warranty" | "juristic_handover" | "support_other";
         /** @enum {string} */
         GrantScope: "building" | "unit";
+        GuardCreateDto: {
+            /** @example สมศักดิ์ */
+            displayName: string;
+            /**
+             * @description 4–6 digits, not one digit repeated.
+             * @example 482913
+             */
+            pin: string;
+            /**
+             * Format: uuid
+             * @example 7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d
+             */
+            propertyId: string;
+        };
+        GuardDeviceAuthDto: {
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            deviceId: string;
+            /** @example q2r8XoT1Vb9mJ0yPz4LkWnE6aGs3dHf5Q2r8XoT1Vb9 */
+            deviceSecret: string;
+        };
+        GuardEnrolDto: {
+            /**
+             * @description The one-time enrolment code from the owner console.
+             * @example ABCD-EFGH-JKLM
+             */
+            code: string;
+            /** @example แท็บเล็ตป้อมหน้า */
+            name?: string;
+        };
+        GuardEnrolledDto: {
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            deviceId: string;
+            /**
+             * @description Shown once; the tablet keeps it in secure storage.
+             * @example q2r8XoT1Vb9mJ0yPz4LkWnE6aGs3dHf5Q2r8XoT1Vb9
+             */
+            deviceSecret: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            gateId: string;
+            /** @example ป้อมหน้า */
+            gateName: string;
+            /**
+             * Format: uuid
+             * @example 7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d
+             */
+            propertyId: string;
+            /** @example หมู่บ้านตัวอย่าง */
+            propertyName: string;
+            /**
+             * Format: uuid
+             * @example 0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11
+             */
+            tenantId: string;
+            /** @example นิติบุคคลหมู่บ้านตัวอย่าง */
+            tenantName: string;
+        };
+        GuardGateOpenDto: {
+            /**
+             * @description Required for `other` (3–200).
+             * @example รถดับเพลิง
+             */
+            note?: string;
+            /** @example visit */
+            reason: components["schemas"]["GuardOpenReason"];
+            /**
+             * Format: uuid
+             * @description The visit of this gate the barrier opens for.
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            visitId?: string;
+        };
+        GuardHardwareDto: {
+            /** @example closed */
+            hwState: components["schemas"]["GateHwState"] | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            hwStateAt: string | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example barrier */
+            kind: components["schemas"]["GateHardwareKind"];
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            lastSeenAt: string | null;
+            /** @example ไม้กั้นขาเข้า */
+            name: string;
+        };
+        GuardIncidentCreateDto: {
+            /** @example intrusion */
+            kind: components["schemas"]["IncidentKind"];
+            /** @example มีคนปีนรั้วด้านหลังโครงการ */
+            note?: string;
+            /**
+             * Format: uuid
+             * @description The house concerned, if any.
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            unitId?: string;
+        };
+        GuardIncidentDetailDto: {
+            /**
+             * Format: date-time
+             * @example null
+             */
+            acknowledgedAt: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            cancelledAt: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            createdAt: string;
+            events: components["schemas"]["IncidentEventDto"][];
+            /**
+             * @description The gate tablet that raised it (source guard).
+             * @example null
+             */
+            gate: components["schemas"]["GateRefMiniDto"] | null;
+            /** @example false */
+            hasPhoto: boolean;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example medical */
+            kind: components["schemas"]["IncidentKind"];
+            /** @example คุณพ่อหมดสติ */
+            note: string | null;
+            /**
+             * Format: uuid
+             * @example 7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d
+             */
+            propertyId: string;
+            /** @example หมู่บ้านตัวอย่าง */
+            propertyName: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            resolvedAt: string | null;
+            /** @example resident_sos */
+            source: components["schemas"]["IncidentSource"];
+            /** @example open */
+            state: components["schemas"]["IncidentState"];
+            /**
+             * @description The house — where to go.
+             * @example {
+             *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+             *       "unitNo": "A-101"
+             *     }
+             */
+            unit: components["schemas"]["UnitRefDto"] | null;
+            /**
+             * @description Visits inside the estate at the time.
+             * @example 2
+             */
+            visitCount: number;
+        };
+        /** @enum {string} */
+        GuardIncidentView: "active" | "recent";
+        GuardMeDto: {
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            gateDeviceId: string;
+            /** @example แท็บเล็ตป้อมหน้า */
+            gateDeviceName: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            gateId: string;
+            /** @example ป้อมหน้า */
+            gateName: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            guardId: string;
+            /** @example สมศักดิ์ */
+            guardName: string;
+            /**
+             * @example {
+             *       "en": "The juristic person records the plate, your name (optional), the last 4 digits of your ID (optional) …",
+             *       "retentionDays": 90,
+             *       "th": "นิติบุคคลเก็บทะเบียนรถ ชื่อ (ถ้าให้) เลขบัตร 4 ตัวท้าย (ถ้าให้) และรูปถ่าย (ถ้ามี) ของผู้มาติดต่อ …",
+             *       "version": 1
+             *     }
+             */
+            privacyNotice: components["schemas"]["PrivacyNoticeDto"];
+            /**
+             * Format: uuid
+             * @example 7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d
+             */
+            propertyId: string;
+            /** @example หมู่บ้านตัวอย่าง */
+            propertyName: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            shiftId: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-05T18:00:00+07:00
+             */
+            startedAt: string;
+        };
+        /** @enum {string} */
+        GuardOpenReason: "visit" | "resident" | "delivery" | "service" | "emergency" | "other";
+        GuardPinDto: {
+            /**
+             * @description 4–6 digits; also unlocks a locked guard.
+             * @example 482913
+             */
+            pin: string;
+        };
+        GuardRosterDto: {
+            /** @example ป้อมหน้า */
+            gateName: string;
+            /**
+             * @example [
+             *       {
+             *         "displayName": "สมศักดิ์",
+             *         "guardId": "3b241101-e2bb-4255-8caf-4136c566a962",
+             *         "locked": false
+             *       }
+             *     ]
+             */
+            guards: components["schemas"]["GuardRosterItemDto"][];
+            /** @example หมู่บ้านตัวอย่าง */
+            propertyName: string;
+        };
+        GuardRosterItemDto: {
+            /** @example สมศักดิ์ */
+            displayName: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            guardId: string;
+            /** @example false */
+            locked: boolean;
+        };
+        GuardSignInDto: {
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            deviceId: string;
+            /** @example q2r8XoT1Vb9mJ0yPz4LkWnE6aGs3dHf5Q2r8XoT1Vb9 */
+            deviceSecret: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            guardId: string;
+            /**
+             * @description 4–6 digits.
+             * @example 482913
+             */
+            pin: string;
+        };
+        GuardUnitDto: {
+            /**
+             * Format: uuid
+             * @example 5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c
+             */
+            buildingId: string;
+            /** @example โซน A */
+            buildingName: string;
+            /**
+             * @description Present only while `gate.show_arrears` is on (⚖ O-038, off by default): a yes/no flag, never an amount.
+             * @example false
+             */
+            hasArrears?: boolean;
+            /**
+             * @description "สมาชิก LINE เชื่อมต่อแล้ว": somebody of the house can be asked in LINE.
+             * @example true
+             */
+            lineLinked: boolean;
+            /**
+             * @example {
+             *       "action": "guard_calls",
+             *       "custom": false,
+             *       "deliverySkipApproval": null,
+             *       "householdNote": null,
+             *       "timeoutSeconds": 180
+             *     }
+             */
+            policy: components["schemas"]["HousePolicyDto"];
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            unitId: string;
+            /** @example 88/12 */
+            unitNo: string;
+        };
+        GuardUpdateDto: {
+            /** @example สมศักดิ์ */
+            displayName?: string;
+        };
+        GuardVisitDetailDto: {
+            /**
+             * @description Name of the resident who asked to be called (the guard calls the house number on file).
+             * @example null
+             */
+            callBackName: string | null;
+            /**
+             * Format: date-time
+             * @description A resident asked the guard to call.
+             * @example null
+             */
+            callMeAt: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            cancelledAt: string | null;
+            /**
+             * Format: uuid
+             * @description The tablet-generated id (offline replays).
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            clientRef: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-05T18:00:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            decidedAt: string | null;
+            /**
+             * @description `timeout`, `nobody_reachable`, `blacklisted`, `no_destination` or the guard override reason.
+             * @example null
+             */
+            decisionReason: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            enteredAt: string | null;
+            /** @example null */
+            entryBasis: components["schemas"]["VisitEntryBasis"] | null;
+            /** @example [] */
+            events: components["schemas"]["VisitEventDto"][];
+            /**
+             * Format: date-time
+             * @example null
+             */
+            exitedAt: string | null;
+            /** @example null */
+            exitedBy: components["schemas"]["VisitActorKind"] | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            gateId: string;
+            /** @example ป้อมหน้า */
+            gateName: string;
+            /** @example false */
+            hasPhoto: boolean;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /**
+             * @description Last 4 ID digits only (D-315).
+             * @example 1234
+             */
+            idLast4: string | null;
+            /** @example guest */
+            kind: components["schemas"]["VisitKind"];
+            /** @example null */
+            note: string | null;
+            /**
+             * @description 5-minute link to the photo.
+             * @example null
+             */
+            photoUrl: string | null;
+            /**
+             * @example {
+             *       "category": "1กข",
+             *       "number": "1234",
+             *       "province": "กรุงเทพมหานคร"
+             *     }
+             */
+            plate: components["schemas"]["PlateDto"] | null;
+            /**
+             * Format: date-time
+             * @description Offline record: when the tablet recorded it.
+             * @example null
+             */
+            recordedAt: string | null;
+            /**
+             * Format: date-time
+             * @description When the house policy applies if nobody answers.
+             * @example 2026-11-05T18:03:00+07:00
+             */
+            respondBy: string | null;
+            /** @example requested */
+            state: components["schemas"]["VisitState"];
+            /** @example guard_calls */
+            timeoutAction: components["schemas"]["GatePolicyAction"] | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            unitId: string | null;
+            /** @example 88/12 */
+            unitNo: string | null;
+            /** @example สมชาย */
+            visitorName: string | null;
+        };
+        GuardVisitDto: {
+            /**
+             * Format: date-time
+             * @description A resident asked the guard to call.
+             * @example null
+             */
+            callMeAt: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            cancelledAt: string | null;
+            /**
+             * Format: uuid
+             * @description The tablet-generated id (offline replays).
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            clientRef: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-05T18:00:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            decidedAt: string | null;
+            /**
+             * @description `timeout`, `nobody_reachable`, `blacklisted`, `no_destination` or the guard override reason.
+             * @example null
+             */
+            decisionReason: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            enteredAt: string | null;
+            /** @example null */
+            entryBasis: components["schemas"]["VisitEntryBasis"] | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            exitedAt: string | null;
+            /** @example null */
+            exitedBy: components["schemas"]["VisitActorKind"] | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            gateId: string;
+            /** @example ป้อมหน้า */
+            gateName: string;
+            /** @example false */
+            hasPhoto: boolean;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /**
+             * @description Last 4 ID digits only (D-315).
+             * @example 1234
+             */
+            idLast4: string | null;
+            /** @example guest */
+            kind: components["schemas"]["VisitKind"];
+            /** @example null */
+            note: string | null;
+            /**
+             * @example {
+             *       "category": "1กข",
+             *       "number": "1234",
+             *       "province": "กรุงเทพมหานคร"
+             *     }
+             */
+            plate: components["schemas"]["PlateDto"] | null;
+            /**
+             * Format: date-time
+             * @description Offline record: when the tablet recorded it.
+             * @example null
+             */
+            recordedAt: string | null;
+            /**
+             * Format: date-time
+             * @description When the house policy applies if nobody answers.
+             * @example 2026-11-05T18:03:00+07:00
+             */
+            respondBy: string | null;
+            /** @example requested */
+            state: components["schemas"]["VisitState"];
+            /** @example guard_calls */
+            timeoutAction: components["schemas"]["GatePolicyAction"] | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            unitId: string | null;
+            /** @example 88/12 */
+            unitNo: string | null;
+            /** @example สมชาย */
+            visitorName: string | null;
+        };
+        /** @enum {string} */
+        GuardVisitView: "waiting" | "inside" | "today";
         /** @enum {string} */
         GuideAudience: "landlord" | "apartment";
         /** @enum {string} */
@@ -27307,6 +29807,40 @@ export interface components {
         HealthStatus: "ok" | "error" | "shutting_down";
         /** @enum {string} */
         HeldField: "name" | "phone" | "email" | "line_id" | "id_number" | "id_document_image" | "date_of_birth" | "address" | "emergency_contact" | "tm30";
+        HousePolicyDto: {
+            /** @example guard_calls */
+            action: components["schemas"]["GatePolicyAction"];
+            /**
+             * @description False = the estate defaults (`gate.policy.*`) apply.
+             * @example false
+             */
+            custom: boolean;
+            /**
+             * @description Deliveries enter without asking (null = the estate setting `gate.delivery_drop_point`).
+             * @example null
+             */
+            deliverySkipApproval: boolean | null;
+            /**
+             * @description Household note for the guard (≤ 300).
+             * @example กดกริ่งหน้าบ้านได้เลย
+             */
+            householdNote: string | null;
+            /**
+             * @description Seconds the gate waits for an answer (60–900).
+             * @example 180
+             */
+            timeoutSeconds: number;
+        };
+        HousePolicyUpdateDto: {
+            /** @example guard_calls */
+            action?: components["schemas"]["GatePolicyAction"];
+            /** @example null */
+            deliverySkipApproval?: boolean | null;
+            /** @example กดกริ่งหน้าบ้านได้เลย */
+            householdNote?: string | null;
+            /** @example 180 */
+            timeoutSeconds?: number;
+        };
         /** @enum {string} */
         IdDocumentType: "thai_national_id" | "passport" | "other";
         /** @enum {string} */
@@ -27490,12 +30024,196 @@ export interface components {
             /** @example ขอสิทธิ์เข้าถึงจากทีมซัพพอร์ต */
             title: string | null;
         };
+        IncidentDecisionDto: {
+            /** @example รปภ. ไปถึงบ้านแล้ว เรียกรถพยาบาลให้ */
+            note?: string;
+        };
+        IncidentDetailDto: {
+            /**
+             * Format: date-time
+             * @example null
+             */
+            acknowledgedAt: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            cancelledAt: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            createdAt: string;
+            events: components["schemas"]["IncidentEventDto"][];
+            /**
+             * @description The gate tablet that raised it (source guard).
+             * @example null
+             */
+            gate: components["schemas"]["GateRefMiniDto"] | null;
+            /** @example false */
+            hasPhoto: boolean;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example medical */
+            kind: components["schemas"]["IncidentKind"];
+            /** @example คุณพ่อหมดสติ */
+            note: string | null;
+            /**
+             * Format: uuid
+             * @example 7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d
+             */
+            propertyId: string;
+            /** @example หมู่บ้านตัวอย่าง */
+            propertyName: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            resolvedAt: string | null;
+            /** @example resident_sos */
+            source: components["schemas"]["IncidentSource"];
+            /** @example open */
+            state: components["schemas"]["IncidentState"];
+            /**
+             * @description The house — where to go.
+             * @example {
+             *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+             *       "unitNo": "A-101"
+             *     }
+             */
+            unit: components["schemas"]["UnitRefDto"] | null;
+            /**
+             * @description Visits inside the estate at the time.
+             * @example 2
+             */
+            visitCount: number;
+            /** @description Visits inside the estate at the time of the incident. */
+            visits: components["schemas"]["IncidentVisitDto"][];
+        };
+        IncidentDto: {
+            /**
+             * Format: date-time
+             * @example null
+             */
+            acknowledgedAt: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            cancelledAt: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            createdAt: string;
+            /**
+             * @description The gate tablet that raised it (source guard).
+             * @example null
+             */
+            gate: components["schemas"]["GateRefMiniDto"] | null;
+            /** @example false */
+            hasPhoto: boolean;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example medical */
+            kind: components["schemas"]["IncidentKind"];
+            /** @example คุณพ่อหมดสติ */
+            note: string | null;
+            /**
+             * Format: uuid
+             * @example 7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d
+             */
+            propertyId: string;
+            /** @example หมู่บ้านตัวอย่าง */
+            propertyName: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            resolvedAt: string | null;
+            /** @example resident_sos */
+            source: components["schemas"]["IncidentSource"];
+            /** @example open */
+            state: components["schemas"]["IncidentState"];
+            /**
+             * @description The house — where to go.
+             * @example {
+             *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+             *       "unitNo": "A-101"
+             *     }
+             */
+            unit: components["schemas"]["UnitRefDto"] | null;
+            /**
+             * @description Visits inside the estate at the time.
+             * @example 2
+             */
+            visitCount: number;
+        };
+        IncidentEventDto: {
+            /** @example resident */
+            actorKind: components["schemas"]["VisitActorKind"];
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example raised */
+            kind: components["schemas"]["IncidentEventKind"];
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            occurredAt: string;
+        };
+        /** @enum {string} */
+        IncidentEventKind: "raised" | "acknowledged" | "resolved" | "cancelled" | "note";
+        /** @enum {string} */
+        IncidentKind: "fire" | "medical" | "intrusion" | "other";
         IncidentReportDto: {
             /**
              * @description What is wrong at the unit (damage, a door that does not lock, someone inside).
              * @example ก๊อกน้ำในห้องน้ำรั่ว น้ำนองพื้น
              */
             note: string;
+        };
+        /** @enum {string} */
+        IncidentSource: "resident_sos" | "guard" | "device";
+        /** @enum {string} */
+        IncidentState: "open" | "acknowledged" | "resolved" | "cancelled";
+        IncidentVisitDto: {
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            enteredAt: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            exitedAt: string | null;
+            /** @example ป้อมหน้า */
+            gateName: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example guest */
+            kind: components["schemas"]["VisitKind"];
+            /** @example กข 0000 กรุงเทพมหานคร */
+            plate: string | null;
+            /** @example entered */
+            state: components["schemas"]["VisitState"];
+            /** @example A-102 */
+            unitNo: string | null;
+            /** @example สมปอง */
+            visitorName: string | null;
         };
         IncomeByKindDto: {
             /**
@@ -28192,6 +30910,35 @@ export interface components {
         };
         /** @enum {string} */
         InvitationState: "pending" | "accepted" | "expired" | "revoked";
+        InviteDecisionDto: {
+            /**
+             * @description Required to reject.
+             * @example ช่างไม่มีใบอนุญาตทำงานในหมู่บ้าน
+             */
+            reason?: string;
+        };
+        InviteScanDto: {
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            clientRef: string;
+            /**
+             * @example {
+             *       "category": "1กข",
+             *       "number": "1234",
+             *       "province": "กรุงเทพมหานคร"
+             *     }
+             */
+            plate?: components["schemas"]["PlateDto"];
+            /**
+             * @description The QR payload.
+             * @example gpv1.Zm9vYmFyYmF6cXV4cXV1eGNvcmdlZ3JhdWx0Z2FycGx5
+             */
+            token: string;
+        };
+        /** @enum {string} */
+        InviteVisitorKind: "guest" | "delivery" | "contractor" | "other";
         InvoiceChargeCancelDto: {
             /** @example ซ้ำกับรายการเดิม */
             reason: string;
@@ -33047,7 +35794,7 @@ export interface components {
          * @description Menu entitlements of the owner console (keys of the web routes).
          * @enum {string}
          */
-        OwnerMenuKey: "portfolio" | "listings" | "leads" | "mandated_units" | "mandates" | "co_broke" | "deals" | "dashboard" | "buildings" | "units" | "parties" | "leases" | "deposits" | "readings" | "devices" | "rate_plans" | "invoices" | "payments" | "reports" | "utility_loss" | "service_requests" | "access" | "parcels" | "announcements" | "juristic_register" | "juristic_cycles" | "juristic_budgets" | "juristic_payment_plans" | "juristic_debt_clearances" | "juristic_receivables" | "juristic_statements" | "juristic_collection_ladder" | "juristic_workspace_invitations" | "members" | "bank_accounts" | "settings" | "notifications" | "privacy" | "access_grants" | "support_access" | "audit_log" | "subscription";
+        OwnerMenuKey: "portfolio" | "listings" | "leads" | "mandated_units" | "mandates" | "co_broke" | "deals" | "dashboard" | "buildings" | "units" | "parties" | "leases" | "deposits" | "readings" | "devices" | "rate_plans" | "invoices" | "payments" | "reports" | "utility_loss" | "service_requests" | "access" | "parcels" | "announcements" | "juristic_register" | "juristic_cycles" | "juristic_budgets" | "juristic_payment_plans" | "juristic_debt_clearances" | "juristic_receivables" | "juristic_statements" | "juristic_collection_ladder" | "juristic_workspace_invitations" | "juristic_gate" | "gate" | "members" | "bank_accounts" | "settings" | "notifications" | "privacy" | "access_grants" | "support_access" | "audit_log" | "subscription";
         OwnerReviewDto: {
             body: string | null;
             /** Format: uuid */
@@ -34348,6 +37095,95 @@ export interface components {
              */
             versionId: string;
         };
+        PlateDetectionDto: {
+            /**
+             * @description Decimal string 0–1.
+             * @example 0.942
+             */
+            confidence: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            detectedAt: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            gateId: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /**
+             * @description Opaque edge reference of the snapshot (the image stays on the edge).
+             * @example snap/2026-11-05/183000-1.jpg
+             */
+            imageRef: string | null;
+            /** @example none */
+            match: components["schemas"]["PlateMatch"];
+            /**
+             * @example {
+             *       "category": "1กข",
+             *       "number": "1234",
+             *       "province": "กรุงเทพมหานคร"
+             *     }
+             */
+            plate: components["schemas"]["PlateReadDto"];
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            receivedAt: string;
+            /** @example pending */
+            state: components["schemas"]["PlateDetectionState"];
+            /**
+             * @description The unit of the matched car (also for low-confidence matches).
+             * @example null
+             */
+            unit: components["schemas"]["UnitRefDto"] | null;
+            /**
+             * Format: uuid
+             * @description The visit a known plate entered with.
+             * @example null
+             */
+            visitId: string | null;
+        };
+        /** @enum {string} */
+        PlateDetectionState: "pending" | "matched" | "claimed" | "dismissed" | "expired" | "ignored";
+        /** @enum {string} */
+        PlateDetectionView: "pending" | "recent";
+        PlateDto: {
+            /**
+             * @description Thai category: 1–4 digits / Thai consonants with at least one consonant.
+             * @example 1กข
+             */
+            category: string;
+            /**
+             * @description 1–4 digits.
+             * @example 1234
+             */
+            number: string;
+            /**
+             * @description Province (1–60 characters, from the web list).
+             * @example กรุงเทพมหานคร
+             */
+            province: string;
+        };
+        /** @enum {string} */
+        PlateMatch: "resident_vehicle" | "remembered_vehicle" | "blacklisted" | "ambiguous" | "low_confidence" | "none";
+        PlateReadDto: {
+            /** @example 1กข */
+            category: string;
+            /** @example 1234 */
+            number: string;
+            /**
+             * @description Null when the camera did not read it.
+             * @example กรุงเทพมหานคร
+             */
+            province: string | null;
+        };
         PlatformCallbackResultDto: {
             /** @example evt_KB202611050001 */
             eventId: string;
@@ -35067,6 +37903,19 @@ export interface components {
             /** @example หอพักตัวอย่าง */
             tenantName: string;
         };
+        PrivacyNoticeDto: {
+            /** @example The juristic person records the plate, your name (optional) … */
+            en: string;
+            /**
+             * @description Days before the gate data is deleted (`gate.retention_days`).
+             * @example 90
+             */
+            retentionDays: number;
+            /** @example นิติบุคคลเก็บทะเบียนรถ ชื่อ (ถ้าให้) เลขบัตร 4 ตัวท้าย (ถ้าให้) … */
+            th: string;
+            /** @example 1 */
+            version: number;
+        };
         PrivacyPartyDto: {
             /** @example ผู้เช่า ทดสอบ */
             displayName: string;
@@ -35182,6 +38031,12 @@ export interface components {
              * @example 1
              */
             legalTextVersion?: number;
+            /**
+             * Format: date-time
+             * @description `gate.pin_locked` only (J4.1, D-327): when the guard may enter the PIN again
+             * @example 2026-11-05T22:15:00+07:00
+             */
+            lockedUntil?: string;
             /**
              * @description `viewing.requirements_missing` only (G7, D-295): what the prospect still has to do before a self viewing — `identity` (e-KYC), `phone` (verified phone), `terms` (visitor terms)
              * @example [
@@ -37358,6 +40213,56 @@ export interface components {
         };
         /** @enum {string} */
         RelocationOfferState: "open" | "dismissed" | "withdrawn" | "closed";
+        RememberedVehicleCreateDto: {
+            /**
+             * @description At most `gate.remember_days`.
+             * @example 30
+             */
+            days?: number;
+            /** @example visitor */
+            kind?: components["schemas"]["RememberedVehicleKind"];
+            /** @example รถพี่สาว */
+            label?: string;
+            /**
+             * @example {
+             *       "category": "1กข",
+             *       "number": "1234",
+             *       "province": "กรุงเทพมหานคร"
+             *     }
+             */
+            plate: components["schemas"]["PlateDto"];
+        };
+        RememberedVehicleDto: {
+            /**
+             * Format: date-time
+             * @example 2026-12-05T18:00:00+07:00
+             */
+            expiresAt: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example visitor */
+            kind: components["schemas"]["RememberedVehicleKind"];
+            /** @example รถพี่สาว */
+            label: string | null;
+            /**
+             * @example {
+             *       "category": "1กข",
+             *       "number": "1234",
+             *       "province": "กรุงเทพมหานคร"
+             *     }
+             */
+            plate: components["schemas"]["PlateDto"];
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            unitId: string;
+        };
+        /** @enum {string} */
+        RememberedVehicleKind: "resident" | "visitor";
         /** @enum {string} */
         ReminderStatus: "scheduled" | "sent" | "skipped_paid" | "deferred_quiet_hours" | "cancelled" | "failed";
         /** @enum {string} */
@@ -38021,6 +40926,127 @@ export interface components {
          * @enum {string}
          */
         ResidentEntitlement: "bills" | "usage" | "service_requests" | "lease" | "announcements" | "parcels" | "facilities" | "access";
+        ResidentGateDto: {
+            /**
+             * @description I may change the policy and create invites (co-owner, tenant, co-tenant).
+             * @example true
+             */
+            canEdit: boolean;
+            /**
+             * @example [
+             *       {
+             *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+             *         "kind": "main",
+             *         "name": "ป้อมหน้า"
+             *       }
+             *     ]
+             */
+            gates: components["schemas"]["GateRefDto"][];
+            /**
+             * @example {
+             *       "action": "guard_calls",
+             *       "custom": false,
+             *       "deliverySkipApproval": null,
+             *       "householdNote": null,
+             *       "timeoutSeconds": 180
+             *     }
+             */
+            policy: components["schemas"]["HousePolicyDto"];
+            /**
+             * @example {
+             *       "en": "The juristic person records the plate, your name (optional), the last 4 digits of your ID (optional) …",
+             *       "retentionDays": 90,
+             *       "th": "นิติบุคคลเก็บทะเบียนรถ ชื่อ (ถ้าให้) เลขบัตร 4 ตัวท้าย (ถ้าให้) และรูปถ่าย (ถ้ามี) ของผู้มาติดต่อ …",
+             *       "version": 1
+             *     }
+             */
+            privacyNotice: components["schemas"]["PrivacyNoticeDto"];
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            unitId: string;
+            /** @example 88/12 */
+            unitNo: string;
+        };
+        ResidentGateOpenDto: {
+            /** @description The phone location — required while `gate.resident_open.require_geofence` is on; checked against the estate location, never stored or logged (only the decision is audited). */
+            location?: components["schemas"]["GeoClaimDto"];
+            /**
+             * Format: uuid
+             * @description One of the registered cars of my units in this estate.
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            vehicleId: string;
+        };
+        ResidentIncidentDto: {
+            /**
+             * Format: date-time
+             * @example null
+             */
+            acknowledgedAt: string | null;
+            /**
+             * Format: date-time
+             * @description Until when I may still cancel (null: not mine, or too late).
+             * @example 2026-11-05T18:00:30+07:00
+             */
+            cancellableUntil: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            cancelledAt: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            createdAt: string;
+            /**
+             * @description The gate tablet that raised it (source guard).
+             * @example null
+             */
+            gate: components["schemas"]["GateRefMiniDto"] | null;
+            /** @example false */
+            hasPhoto: boolean;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example medical */
+            kind: components["schemas"]["IncidentKind"];
+            /** @example คุณพ่อหมดสติ */
+            note: string | null;
+            /**
+             * Format: uuid
+             * @example 7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d
+             */
+            propertyId: string;
+            /** @example หมู่บ้านตัวอย่าง */
+            propertyName: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            resolvedAt: string | null;
+            /** @example resident_sos */
+            source: components["schemas"]["IncidentSource"];
+            /** @example open */
+            state: components["schemas"]["IncidentState"];
+            /**
+             * @description The house — where to go.
+             * @example {
+             *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+             *       "unitNo": "A-101"
+             *     }
+             */
+            unit: components["schemas"]["UnitRefDto"] | null;
+            /**
+             * @description Visits inside the estate at the time.
+             * @example 2
+             */
+            visitCount: number;
+        };
         ResidentInspectionDto: {
             /**
              * @description I may countersign now (lessee or co-tenant, not signed yet).
@@ -38551,6 +41577,36 @@ export interface components {
             effectiveDate: string;
             /** @example ย้ายที่ทำงาน */
             reason?: string | null;
+        };
+        ResidentOpenableGateDto: {
+            /**
+             * @description `gate.resident_open.enabled` of the estate.
+             * @example true
+             */
+            enabled: boolean;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            gateId: string;
+            /** @example main */
+            kind: components["schemas"]["GateKind"];
+            /** @example ป้อมหน้า */
+            name: string;
+            /**
+             * Format: uuid
+             * @example 7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d
+             */
+            propertyId: string;
+            /** @example หมู่บ้านตัวอย่าง */
+            propertyName: string;
+            /**
+             * @description Send `location` with the open request.
+             * @example false
+             */
+            requireGeofence: boolean;
+            /** @description Registered cars of my units in this estate. */
+            vehicles: components["schemas"]["ResidentVehicleDto"][];
         };
         ResidentParcelDto: {
             /**
@@ -39212,6 +42268,158 @@ export interface components {
              */
             unitId: string;
         };
+        ResidentVehicleCreateDto: {
+            /** @example รถคุณแม่ */
+            label?: string;
+            /**
+             * @example {
+             *       "category": "1กข",
+             *       "number": "1234",
+             *       "province": "กรุงเทพมหานคร"
+             *     }
+             */
+            plate: components["schemas"]["PlateDto"];
+        };
+        ResidentVehicleDto: {
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example รถคุณแม่ */
+            label: string | null;
+            /**
+             * @example {
+             *       "category": "1กข",
+             *       "number": "1234",
+             *       "province": "กรุงเทพมหานคร"
+             *     }
+             */
+            plate: components["schemas"]["PlateDto"];
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            unitId: string;
+        };
+        ResidentVisitAnswerDto: {
+            /**
+             * @description Approve only: remember this car for `gate.remember_days` (30).
+             * @example false
+             */
+            rememberVehicle?: boolean;
+        };
+        ResidentVisitDto: {
+            /**
+             * Format: date-time
+             * @description A resident asked the guard to call.
+             * @example null
+             */
+            callMeAt: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            cancelledAt: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-05T18:00:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            decidedAt: string | null;
+            /**
+             * @description Who of the household answered.
+             * @example null
+             */
+            decidedByName: string | null;
+            /**
+             * @description `timeout`, `nobody_reachable`, `blacklisted`, `no_destination` or the guard override reason.
+             * @example null
+             */
+            decisionReason: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            enteredAt: string | null;
+            /** @example null */
+            entryBasis: components["schemas"]["VisitEntryBasis"] | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            exitedAt: string | null;
+            /** @example null */
+            exitedBy: components["schemas"]["VisitActorKind"] | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            gateId: string;
+            /** @example ป้อมหน้า */
+            gateName: string;
+            /** @example false */
+            hasPhoto: boolean;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example guest */
+            kind: components["schemas"]["VisitKind"];
+            /**
+             * @description 5-minute link to the gate photo.
+             * @example null
+             */
+            photoUrl: string | null;
+            /**
+             * @example {
+             *       "category": "1กข",
+             *       "number": "1234",
+             *       "province": "กรุงเทพมหานคร"
+             *     }
+             */
+            plate: components["schemas"]["PlateDto"] | null;
+            /**
+             * @description What happens if nobody answers.
+             * @example {
+             *       "action": "guard_calls",
+             *       "custom": false,
+             *       "deliverySkipApproval": null,
+             *       "householdNote": null,
+             *       "timeoutSeconds": 180
+             *     }
+             */
+            policy: components["schemas"]["HousePolicyDto"];
+            /**
+             * Format: date-time
+             * @description When the house policy applies if nobody answers.
+             * @example 2026-11-05T18:03:00+07:00
+             */
+            respondBy: string | null;
+            /** @example requested */
+            state: components["schemas"]["VisitState"];
+            /** @example guard_calls */
+            timeoutAction: components["schemas"]["GatePolicyAction"] | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            unitId: string | null;
+            /** @example 88/12 */
+            unitNo: string | null;
+            /** @example สมชาย */
+            visitorName: string | null;
+        };
         ResidentVisitorCodeCreateDto: {
             /**
              * Format: uuid
@@ -39543,6 +42751,13 @@ export interface components {
              * @example 2026-03
              */
             to: string | null;
+        };
+        RevokeReasonDto: {
+            /**
+             * @description Why (audited).
+             * @example แท็บเล็ตหาย
+             */
+            reason: string;
         };
         RoleGrantDto: {
             /**
@@ -41070,6 +44285,96 @@ export interface components {
         SocialProvider: "facebook_page";
         /** @enum {string} */
         SortOrder: "asc" | "desc";
+        SosCancelDto: {
+            /** @example กดผิด */
+            reason?: string;
+        };
+        SosCreatedDto: {
+            /**
+             * Format: date-time
+             * @example null
+             */
+            acknowledgedAt: string | null;
+            /**
+             * Format: date-time
+             * @description Until when I may still cancel (null: not mine, or too late).
+             * @example 2026-11-05T18:00:30+07:00
+             */
+            cancellableUntil: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            cancelledAt: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            createdAt: string;
+            /**
+             * @description An open SOS of this unit by me already existed and is returned.
+             * @example false
+             */
+            existing: boolean;
+            /**
+             * @description The gate tablet that raised it (source guard).
+             * @example null
+             */
+            gate: components["schemas"]["GateRefMiniDto"] | null;
+            /** @example false */
+            hasPhoto: boolean;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example medical */
+            kind: components["schemas"]["IncidentKind"];
+            /** @example คุณพ่อหมดสติ */
+            note: string | null;
+            /**
+             * Format: uuid
+             * @example 7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d
+             */
+            propertyId: string;
+            /** @example หมู่บ้านตัวอย่าง */
+            propertyName: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            resolvedAt: string | null;
+            /** @example resident_sos */
+            source: components["schemas"]["IncidentSource"];
+            /** @example open */
+            state: components["schemas"]["IncidentState"];
+            /**
+             * @description The house — where to go.
+             * @example {
+             *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+             *       "unitNo": "A-101"
+             *     }
+             */
+            unit: components["schemas"]["UnitRefDto"] | null;
+            /**
+             * @description Visits inside the estate at the time.
+             * @example 2
+             */
+            visitCount: number;
+        };
+        SosCreateDto: {
+            /** @example medical */
+            kind: components["schemas"]["IncidentKind"];
+            /** @example คุณพ่อหมดสติ */
+            note?: string;
+            /** @description An optional photo (JPEG / PNG / WebP, ≤ 2 MB decoded). */
+            photo?: components["schemas"]["VisitPhotoDto"];
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            unitId: string;
+        };
         SponsoredCampaignCreateDto: {
             /** @description My own published listings (1–`broadcast.sponsored.max_listings`). */
             listingIds: string[];
@@ -42624,7 +45929,7 @@ export interface components {
         /** @enum {string} */
         SupportGrantState: "requested" | "approved" | "active" | "expired" | "revoked" | "denied";
         /** @enum {string} */
-        SurfaceName: "auth" | "owner" | "staff" | "resident" | "technician" | "prospect" | "admin" | "device" | "webhooks" | "public";
+        SurfaceName: "auth" | "owner" | "staff" | "resident" | "technician" | "prospect" | "guard" | "admin" | "device" | "webhooks" | "public";
         SystemInfoDto: {
             /**
              * @description Short git commit of the build, when known
@@ -43460,7 +46765,7 @@ export interface components {
             submittedAt?: string;
         };
         /** @enum {string} */
-        TokenAudience: "operator" | "resident" | "technician" | "platform" | "device" | "prospect";
+        TokenAudience: "operator" | "resident" | "technician" | "platform" | "device" | "prospect" | "guard";
         TokenPairDto: {
             /** @example eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCIsImtpZCI6ImdwLWRldi0xIn0.eyJzdWIiOiIuLi4ifQ.c2ln */
             accessToken: string;
@@ -44026,6 +47331,15 @@ export interface components {
             defaultRent?: string;
             /** @example ห้องสตูดิโอใหญ่ */
             name?: string;
+        };
+        UnitRefDto: {
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example A-101 */
+            unitNo: string;
         };
         UnitResidentInviteCreatedDto: {
             /**
@@ -44900,6 +48214,589 @@ export interface components {
             /** @description Free slots in time order (Asia/Bangkok offsets). */
             slots: components["schemas"]["ViewingSlotDto"][];
         };
+        /** @enum {string} */
+        VisitActorKind: "guard" | "resident" | "operator" | "system" | "device";
+        VisitAnswerResultDto: {
+            /**
+             * @description False when another answer was first — `visit` shows that result.
+             * @example true
+             */
+            accepted: boolean;
+            /**
+             * @example {
+             *       "callMeAt": null,
+             *       "cancelledAt": null,
+             *       "createdAt": "2026-11-05T18:00:00+07:00",
+             *       "decidedAt": null,
+             *       "decidedByName": null,
+             *       "decisionReason": null,
+             *       "enteredAt": null,
+             *       "entryBasis": null,
+             *       "exitedAt": null,
+             *       "exitedBy": null,
+             *       "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+             *       "gateName": "ป้อมหน้า",
+             *       "hasPhoto": false,
+             *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+             *       "kind": "guest",
+             *       "photoUrl": null,
+             *       "plate": {
+             *         "category": "1กข",
+             *         "number": "1234",
+             *         "province": "กรุงเทพมหานคร"
+             *       },
+             *       "policy": {
+             *         "action": "guard_calls",
+             *         "custom": false,
+             *         "deliverySkipApproval": null,
+             *         "householdNote": null,
+             *         "timeoutSeconds": 180
+             *       },
+             *       "respondBy": "2026-11-05T18:03:00+07:00",
+             *       "state": "requested",
+             *       "timeoutAction": "guard_calls",
+             *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+             *       "unitNo": "88/12",
+             *       "visitorName": "สมชาย"
+             *     }
+             */
+            visit: components["schemas"]["ResidentVisitDto"];
+        };
+        VisitChangeDto: {
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example answered */
+            kind: components["schemas"]["VisitEventKind"];
+            /**
+             * Format: date-time
+             * @example 2026-11-05T18:01:00+07:00
+             */
+            occurredAt: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            visitId: string;
+        };
+        VisitCreatedDto: {
+            /**
+             * Format: date-time
+             * @description A resident asked the guard to call.
+             * @example null
+             */
+            callMeAt: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            cancelledAt: string | null;
+            /**
+             * Format: uuid
+             * @description The tablet-generated id (offline replays).
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            clientRef: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-05T18:00:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            decidedAt: string | null;
+            /**
+             * @description `timeout`, `nobody_reachable`, `blacklisted`, `no_destination` or the guard override reason.
+             * @example null
+             */
+            decisionReason: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            enteredAt: string | null;
+            /** @example null */
+            entryBasis: components["schemas"]["VisitEntryBasis"] | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            exitedAt: string | null;
+            /** @example null */
+            exitedBy: components["schemas"]["VisitActorKind"] | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            gateId: string;
+            /** @example ป้อมหน้า */
+            gateName: string;
+            /** @example false */
+            hasPhoto: boolean;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /**
+             * @description Last 4 ID digits only (D-315).
+             * @example 1234
+             */
+            idLast4: string | null;
+            /** @example guest */
+            kind: components["schemas"]["VisitKind"];
+            /** @example null */
+            note: string | null;
+            /**
+             * @example {
+             *       "category": "1กข",
+             *       "number": "1234",
+             *       "province": "กรุงเทพมหานคร"
+             *     }
+             */
+            plate: components["schemas"]["PlateDto"] | null;
+            /**
+             * Format: date-time
+             * @description Offline record: when the tablet recorded it.
+             * @example null
+             */
+            recordedAt: string | null;
+            /**
+             * @description True when this `clientRef` was already recorded (offline replay): the existing visit, nothing new.
+             * @example false
+             */
+            replayed: boolean;
+            /**
+             * Format: date-time
+             * @description When the house policy applies if nobody answers.
+             * @example 2026-11-05T18:03:00+07:00
+             */
+            respondBy: string | null;
+            /** @example requested */
+            state: components["schemas"]["VisitState"];
+            /** @example guard_calls */
+            timeoutAction: components["schemas"]["GatePolicyAction"] | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            unitId: string | null;
+            /** @example 88/12 */
+            unitNo: string | null;
+            /** @example สมชาย */
+            visitorName: string | null;
+        };
+        VisitCreateDto: {
+            /**
+             * Format: uuid
+             * @description Generated by the tablet; a replay with the same id returns the recorded visit.
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            clientRef: string;
+            /**
+             * @description Offline record: the guard already let the visitor in at `recordedAt`.
+             * @example false
+             */
+            enteredOffline?: boolean;
+            /**
+             * @description Exactly the last 4 digits of an ID — never more (D-315).
+             * @example 1234
+             */
+            idLast4?: string;
+            /** @example guest */
+            kind: components["schemas"]["VisitKind"];
+            /** @example ส่งพัสดุใหญ่ */
+            note?: string;
+            /**
+             * @example {
+             *       "category": "1กข",
+             *       "number": "1234",
+             *       "province": "กรุงเทพมหานคร"
+             *     }
+             */
+            plate?: components["schemas"]["PlateDto"];
+            /**
+             * Format: date-time
+             * @description Offline record: when the tablet recorded it (≤ `gate.offline_max_hours` old).
+             * @example 2026-11-05T17:40:00+07:00
+             */
+            recordedAt?: string;
+            /**
+             * Format: uuid
+             * @description Destination unit (required unless kind = other).
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            unitId?: string;
+            /** @example สมชาย */
+            visitorName?: string;
+        };
+        VisitDto: {
+            /**
+             * Format: date-time
+             * @description A resident asked the guard to call.
+             * @example null
+             */
+            callMeAt: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            cancelledAt: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-05T18:00:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            decidedAt: string | null;
+            /**
+             * @description `timeout`, `nobody_reachable`, `blacklisted`, `no_destination` or the guard override reason.
+             * @example null
+             */
+            decisionReason: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            enteredAt: string | null;
+            /** @example null */
+            entryBasis: components["schemas"]["VisitEntryBasis"] | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            exitedAt: string | null;
+            /** @example null */
+            exitedBy: components["schemas"]["VisitActorKind"] | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            gateId: string;
+            /** @example ป้อมหน้า */
+            gateName: string;
+            /** @example false */
+            hasPhoto: boolean;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example guest */
+            kind: components["schemas"]["VisitKind"];
+            /**
+             * @example {
+             *       "category": "1กข",
+             *       "number": "1234",
+             *       "province": "กรุงเทพมหานคร"
+             *     }
+             */
+            plate: components["schemas"]["PlateDto"] | null;
+            /**
+             * Format: date-time
+             * @description When the house policy applies if nobody answers.
+             * @example 2026-11-05T18:03:00+07:00
+             */
+            respondBy: string | null;
+            /** @example requested */
+            state: components["schemas"]["VisitState"];
+            /** @example guard_calls */
+            timeoutAction: components["schemas"]["GatePolicyAction"] | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            unitId: string | null;
+            /** @example 88/12 */
+            unitNo: string | null;
+            /** @example สมชาย */
+            visitorName: string | null;
+        };
+        /** @enum {string} */
+        VisitEntryBasis: "approval" | "invite" | "remembered_vehicle" | "delivery_drop_point" | "policy" | "guard_override" | "offline" | "resident_vehicle";
+        VisitEventDto: {
+            /** @example guard */
+            actorKind: components["schemas"]["VisitActorKind"];
+            /**
+             * Format: uuid
+             * @description Also the SSE event id (`Last-Event-ID`).
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example created */
+            kind: components["schemas"]["VisitEventKind"];
+            /**
+             * Format: date-time
+             * @example 2026-11-05T18:00:00+07:00
+             */
+            occurredAt: string;
+            /**
+             * @example {
+             *       "answer": "approve"
+             *     }
+             */
+            payload: {
+                [key: string]: unknown;
+            };
+        };
+        /** @enum {string} */
+        VisitEventKind: "created" | "notified" | "answered" | "policy_applied" | "entered" | "exited" | "cancelled" | "photo_added" | "overstayed" | "note" | "gate_opened";
+        VisitInviteCreatedDto: {
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example 1 */
+            maxUses: number;
+            /** @example null */
+            note: string | null;
+            /** @example null */
+            plate: components["schemas"]["PlateDto"] | null;
+            /** @example null */
+            rejectReason: string | null;
+            /** @example active */
+            state: components["schemas"]["VisitInviteState"];
+            /**
+             * @description QR payload — shown once (stored hashed).
+             * @example gpv1.Zm9vYmFyYmF6cXV4cXV1eGNvcmdlZ3JhdWx0Z2FycGx5
+             */
+            token: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            unitId: string;
+            /** @example 88/12 */
+            unitNo: string | null;
+            /** @example single */
+            usage: components["schemas"]["VisitInviteUsage"];
+            /** @example 0 */
+            uses: number;
+            /**
+             * Format: date-time
+             * @example 2026-11-06T09:00:00+07:00
+             */
+            validFrom: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-06T18:00:00+07:00
+             */
+            validTo: string;
+            /** @example guest */
+            visitorKind: components["schemas"]["InviteVisitorKind"];
+            /** @example คุณแม่ */
+            visitorName: string | null;
+        };
+        VisitInviteCreateDto: {
+            /**
+             * @description Multi-use only (default 10).
+             * @example 10
+             */
+            maxUses?: number;
+            /** @example มาช่วงบ่าย */
+            note?: string;
+            /**
+             * @description When given, the guard checks the car.
+             * @example {
+             *       "category": "1กข",
+             *       "number": "1234",
+             *       "province": "กรุงเทพมหานคร"
+             *     }
+             */
+            plate?: components["schemas"]["PlateDto"];
+            /** @example single */
+            usage: components["schemas"]["VisitInviteUsage"];
+            /**
+             * Format: date-time
+             * @example 2026-11-06T09:00:00+07:00
+             */
+            validFrom: string;
+            /**
+             * Format: date-time
+             * @description Window ≤ `gate.invite_max_days`.
+             * @example 2026-11-06T18:00:00+07:00
+             */
+            validTo: string;
+            /**
+             * @description Contractor invites wait for the operator approval.
+             * @example guest
+             */
+            visitorKind: components["schemas"]["InviteVisitorKind"];
+            /** @example คุณแม่ */
+            visitorName?: string;
+        };
+        VisitInviteDto: {
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example 1 */
+            maxUses: number;
+            /** @example null */
+            note: string | null;
+            /** @example null */
+            plate: components["schemas"]["PlateDto"] | null;
+            /** @example null */
+            rejectReason: string | null;
+            /** @example active */
+            state: components["schemas"]["VisitInviteState"];
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            unitId: string;
+            /** @example 88/12 */
+            unitNo: string | null;
+            /** @example single */
+            usage: components["schemas"]["VisitInviteUsage"];
+            /** @example 0 */
+            uses: number;
+            /**
+             * Format: date-time
+             * @example 2026-11-06T09:00:00+07:00
+             */
+            validFrom: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-06T18:00:00+07:00
+             */
+            validTo: string;
+            /** @example guest */
+            visitorKind: components["schemas"]["InviteVisitorKind"];
+            /** @example คุณแม่ */
+            visitorName: string | null;
+        };
+        /** @enum {string} */
+        VisitInviteState: "pending_approval" | "active" | "rejected" | "revoked";
+        /** @enum {string} */
+        VisitInviteUsage: "single" | "multi";
+        /** @enum {string} */
+        VisitKind: "guest" | "delivery" | "contractor" | "resident_vehicle" | "other";
+        VisitLogDetailDto: {
+            /**
+             * Format: date-time
+             * @description A resident asked the guard to call.
+             * @example null
+             */
+            callMeAt: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            cancelledAt: string | null;
+            /**
+             * Format: uuid
+             * @description The tablet-generated id (offline replays).
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            clientRef: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-05T18:00:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            decidedAt: string | null;
+            /**
+             * @description `timeout`, `nobody_reachable`, `blacklisted`, `no_destination` or the guard override reason.
+             * @example null
+             */
+            decisionReason: string | null;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            enteredAt: string | null;
+            /** @example null */
+            entryBasis: components["schemas"]["VisitEntryBasis"] | null;
+            /** @example [] */
+            events: components["schemas"]["VisitEventDto"][];
+            /**
+             * Format: date-time
+             * @example null
+             */
+            exitedAt: string | null;
+            /** @example null */
+            exitedBy: components["schemas"]["VisitActorKind"] | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            gateId: string;
+            /** @example ป้อมหน้า */
+            gateName: string;
+            /** @example false */
+            hasPhoto: boolean;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /**
+             * @description Last 4 ID digits only (D-315).
+             * @example 1234
+             */
+            idLast4: string | null;
+            /** @example guest */
+            kind: components["schemas"]["VisitKind"];
+            /** @example null */
+            note: string | null;
+            /**
+             * @example {
+             *       "category": "1กข",
+             *       "number": "1234",
+             *       "province": "กรุงเทพมหานคร"
+             *     }
+             */
+            plate: components["schemas"]["PlateDto"] | null;
+            /**
+             * Format: date-time
+             * @description Offline record: when the tablet recorded it.
+             * @example null
+             */
+            recordedAt: string | null;
+            /**
+             * Format: date-time
+             * @description When the house policy applies if nobody answers.
+             * @example 2026-11-05T18:03:00+07:00
+             */
+            respondBy: string | null;
+            /** @example requested */
+            state: components["schemas"]["VisitState"];
+            /** @example guard_calls */
+            timeoutAction: components["schemas"]["GatePolicyAction"] | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            unitId: string | null;
+            /** @example 88/12 */
+            unitNo: string | null;
+            /** @example สมชาย */
+            visitorName: string | null;
+        };
         VisitorCodeCreateDto: {
             /**
              * Format: date-time
@@ -44938,11 +48835,26 @@ export interface components {
              */
             version: number;
         };
+        VisitPhotoDto: {
+            /**
+             * @description The photo, base64 (≤ 2 MB decoded).
+             * @example /9j/4AAQSkZJRgABAQ…
+             */
+            contentBase64: string;
+            /** @example image/jpeg */
+            mimeType: components["schemas"]["ResidentUploadContentType"];
+        };
         /**
          * @description When the resident prefers the visit (LIFF #24).
          * @enum {string}
          */
         VisitPreference: "anytime" | "morning" | "afternoon" | "evening";
+        VisitReasonDto: {
+            /** @example เจ้าของบ้านโทรยืนยันกับ รปภ. */
+            reason?: string;
+        };
+        /** @enum {string} */
+        VisitState: "requested" | "approved" | "denied" | "timed_out" | "entered" | "exited" | "cancelled";
         /**
          * @description `normal_wear` is refused (compliance.deposit_wear).
          * @enum {string}
@@ -66026,6 +69938,332 @@ export interface operations {
             };
         };
     };
+    "auth.guard.enrol": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GuardEnrolDto"];
+            };
+        };
+        responses: {
+            /** @description Enrolled */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "deviceId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "deviceSecret": "q2r8XoT1Vb9mJ0yPz4LkWnE6aGs3dHf5Q2r8XoT1Vb9",
+                     *       "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "gateName": "ป้อมหน้า",
+                     *       "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "propertyName": "หมู่บ้านตัวอย่าง",
+                     *       "tenantId": "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11",
+                     *       "tenantName": "นิติบุคคลหมู่บ้านตัวอย่าง"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GuardEnrolledDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `gate.enrol_code_invalid` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "auth.guard.roster": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GuardDeviceAuthDto"];
+            };
+        };
+        responses: {
+            /** @description Roster */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "gateName": "ป้อมหน้า",
+                     *       "guards": [
+                     *         {
+                     *           "displayName": "สมศักดิ์",
+                     *           "guardId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "locked": false
+                     *         }
+                     *       ],
+                     *       "propertyName": "หมู่บ้านตัวอย่าง"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GuardRosterDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `gate.device_unknown` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `gate.inactive` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "auth.guard.signIn": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GuardSignInDto"];
+            };
+        };
+        responses: {
+            /** @description Signed in */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "accessToken": "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCIsImtpZCI6ImdwLWRldi0xIn0.eyJzdWIiOiIuLi4ifQ.c2ln",
+                     *       "accessTokenExpiresAt": "2026-11-01T00:30:00+07:00",
+                     *       "refreshToken": "q2r8XoT1Vb9mJ0yPz4LkWnE6aGs3dHf5Q2r8XoT1Vb9",
+                     *       "refreshTokenExpiresAt": "2026-12-01T00:15:00+07:00",
+                     *       "subject": {
+                     *         "audience": "guard",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "permissions": [
+                     *           "gate.visit.record",
+                     *           "gate.open",
+                     *           "gate.incident.respond"
+                     *         ],
+                     *         "roles": [
+                     *           "guard"
+                     *         ],
+                     *         "scopes": [
+                     *           "tenant:0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c11",
+                     *           "gate:3b241101-e2bb-4255-8caf-4136c566a962"
+                     *         ],
+                     *         "type": "user"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["TokenPairDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `gate.device_unknown`, `gate.pin_invalid` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `gate.inactive` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `gate.pin_locked` */
+            423: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "auth.sessions.logout": {
         parameters: {
             query?: never;
@@ -69180,6 +73418,2930 @@ export interface operations {
             };
             /** @description Problem: `device.certificate_invalid` */
             401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "guard.events.stream": {
+        parameters: {
+            query?: {
+                /** @description Resume after this event (alternative to the `Last-Event-ID` header). */
+                lastEventId?: string;
+            };
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                "last-event-id": string;
+                /** @description The last event id the client received. */
+                "Last-Event-ID"?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Event stream */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example id: 3b241101-e2bb-4255-8caf-4136c566a962
+                     *     event: gate.visit.answered
+                     *     data: {"type":"gate.visit.answered","ids":{"visitId":"3b241101-e2bb-4255-8caf-4136c566a962","visitEventId":"3b241101-e2bb-4255-8caf-4136c566a962"}}
+                     */
+                    "text/event-stream": string;
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "guard.gates.open": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Recommended client-generated uuid. When sent, a replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. Without it the request is not deduplicated. */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
+            };
+            path: {
+                gateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GuardGateOpenDto"];
+            };
+        };
+        responses: {
+            /** @description Sent to the barrier. Poll `guard.hardware.list` until it completes. */
+            202: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "commands": [
+                     *         {
+                     *           "commandId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "expiresAt": "2026-11-05T18:00:30+07:00",
+                     *           "gateDeviceId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *         }
+                     *       ],
+                     *       "gateId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GateOpenResultDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `gate.inactive`, `gate.no_barrier`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `gate.open_rate_limited`, `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "guard.hardware.list": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Hardware */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "hwState": "closed",
+                     *         "hwStateAt": "2026-11-01T00:15:00+07:00",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "kind": "barrier",
+                     *         "lastSeenAt": "2026-11-01T00:15:00+07:00",
+                     *         "name": "ไม้กั้นขาเข้า"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["GuardHardwareDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "guard.incidents.list": {
+        parameters: {
+            query?: {
+                view?: components["schemas"]["GuardIncidentView"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Incidents */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "acknowledgedAt": null,
+                     *         "cancelledAt": null,
+                     *         "createdAt": "2026-11-01T00:15:00+07:00",
+                     *         "gate": null,
+                     *         "hasPhoto": false,
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "kind": "medical",
+                     *         "note": "คุณพ่อหมดสติ",
+                     *         "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *         "propertyName": "หมู่บ้านตัวอย่าง",
+                     *         "resolvedAt": null,
+                     *         "source": "resident_sos",
+                     *         "state": "open",
+                     *         "unit": {
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "unitNo": "A-101"
+                     *         },
+                     *         "visitCount": 2
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["IncidentDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "guard.incidents.create": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GuardIncidentCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Raised */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acknowledgedAt": null,
+                     *       "cancelledAt": null,
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "gate": {
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "name": "ป้อมหน้า"
+                     *       },
+                     *       "hasPhoto": false,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "medical",
+                     *       "note": "คุณพ่อหมดสติ",
+                     *       "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "propertyName": "หมู่บ้านตัวอย่าง",
+                     *       "resolvedAt": null,
+                     *       "source": "guard",
+                     *       "state": "open",
+                     *       "unit": null,
+                     *       "visitCount": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["IncidentDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "guard.incidents.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                incidentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Incident */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acknowledgedAt": null,
+                     *       "cancelledAt": null,
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "events": [
+                     *         {
+                     *           "actorKind": "resident",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "kind": "raised",
+                     *           "occurredAt": "2026-11-01T00:15:00+07:00"
+                     *         }
+                     *       ],
+                     *       "gate": null,
+                     *       "hasPhoto": false,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "medical",
+                     *       "note": "คุณพ่อหมดสติ",
+                     *       "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "propertyName": "หมู่บ้านตัวอย่าง",
+                     *       "resolvedAt": null,
+                     *       "source": "resident_sos",
+                     *       "state": "open",
+                     *       "unit": {
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "unitNo": "A-101"
+                     *       },
+                     *       "visitCount": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GuardIncidentDetailDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "guard.incidents.acknowledge": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Recommended client-generated uuid. When sent, a replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. Without it the request is not deduplicated. */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
+            };
+            path: {
+                incidentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IncidentDecisionDto"];
+            };
+        };
+        responses: {
+            /** @description Acknowledged */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acknowledgedAt": "2026-11-01T00:15:00+07:00",
+                     *       "cancelledAt": null,
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "gate": null,
+                     *       "hasPhoto": false,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "medical",
+                     *       "note": "คุณพ่อหมดสติ",
+                     *       "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "propertyName": "หมู่บ้านตัวอย่าง",
+                     *       "resolvedAt": null,
+                     *       "source": "resident_sos",
+                     *       "state": "acknowledged",
+                     *       "unit": {
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "unitNo": "A-101"
+                     *       },
+                     *       "visitCount": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["IncidentDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `incident.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "guard.incidents.resolve": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Recommended client-generated uuid. When sent, a replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. Without it the request is not deduplicated. */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
+            };
+            path: {
+                incidentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IncidentDecisionDto"];
+            };
+        };
+        responses: {
+            /** @description Resolved */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acknowledgedAt": "2026-11-01T00:15:00+07:00",
+                     *       "cancelledAt": null,
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "gate": null,
+                     *       "hasPhoto": false,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "medical",
+                     *       "note": "คุณพ่อหมดสติ",
+                     *       "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "propertyName": "หมู่บ้านตัวอย่าง",
+                     *       "resolvedAt": "2026-11-01T00:15:00+07:00",
+                     *       "source": "resident_sos",
+                     *       "state": "resolved",
+                     *       "unit": {
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "unitNo": "A-101"
+                     *       },
+                     *       "visitCount": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["IncidentDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `incident.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "guard.invites.scan": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InviteScanDto"];
+            };
+        };
+        responses: {
+            /** @description Entered */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "callMeAt": null,
+                     *       "cancelledAt": null,
+                     *       "clientRef": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "createdAt": "2026-11-05T18:00:00+07:00",
+                     *       "decidedAt": null,
+                     *       "decisionReason": null,
+                     *       "enteredAt": null,
+                     *       "entryBasis": "invite",
+                     *       "exitedAt": null,
+                     *       "exitedBy": null,
+                     *       "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "gateName": "ป้อมหน้า",
+                     *       "hasPhoto": false,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "idLast4": "1234",
+                     *       "kind": "guest",
+                     *       "note": null,
+                     *       "plate": {
+                     *         "category": "1กข",
+                     *         "number": "1234",
+                     *         "province": "กรุงเทพมหานคร"
+                     *       },
+                     *       "recordedAt": null,
+                     *       "replayed": false,
+                     *       "respondBy": "2026-11-05T18:03:00+07:00",
+                     *       "state": "entered",
+                     *       "timeoutAction": "guard_calls",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "unitNo": "88/12",
+                     *       "visitorName": "สมชาย"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VisitCreatedDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `visit.denied`, `visit_invite.not_active`, `visit_invite.outside_window`, `visit_invite.plate_mismatch`, `visit_invite.used_up` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "guard.me.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Shift */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "gateDeviceId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "gateDeviceName": "แท็บเล็ตป้อมหน้า",
+                     *       "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "gateName": "ป้อมหน้า",
+                     *       "guardId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "guardName": "สมศักดิ์",
+                     *       "privacyNotice": {
+                     *         "en": "The juristic person records the plate, your name (optional), the last 4 digits of your ID (optional) …",
+                     *         "retentionDays": 90,
+                     *         "th": "นิติบุคคลเก็บทะเบียนรถ ชื่อ (ถ้าให้) เลขบัตร 4 ตัวท้าย (ถ้าให้) และรูปถ่าย (ถ้ามี) ของผู้มาติดต่อ …",
+                     *         "version": 1
+                     *       },
+                     *       "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "propertyName": "หมู่บ้านตัวอย่าง",
+                     *       "shiftId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "startedAt": "2026-11-01T00:15:00+07:00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GuardMeDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "guard.system.ping": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The surface is up */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "serverTime": "2026-11-01T00:15:00+07:00",
+                     *       "surface": "guard",
+                     *       "version": "0.1.0"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["SystemPingDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "guard.plateDetections.list": {
+        parameters: {
+            query?: {
+                view?: components["schemas"]["PlateDetectionView"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Reads */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "confidence": "0.942",
+                     *         "detectedAt": "2026-11-01T00:15:00+07:00",
+                     *         "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "imageRef": null,
+                     *         "match": "none",
+                     *         "plate": {
+                     *           "category": "1กข",
+                     *           "number": "1234",
+                     *           "province": "กรุงเทพมหานคร"
+                     *         },
+                     *         "receivedAt": "2026-11-01T00:15:00+07:00",
+                     *         "state": "pending",
+                     *         "unit": null,
+                     *         "visitId": null
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["PlateDetectionDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "guard.plateDetections.claim": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                detectionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Claimed */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "confidence": "0.942",
+                     *       "detectedAt": "2026-11-01T00:15:00+07:00",
+                     *       "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "imageRef": null,
+                     *       "match": "none",
+                     *       "plate": {
+                     *         "category": "1กข",
+                     *         "number": "1234",
+                     *         "province": "กรุงเทพมหานคร"
+                     *       },
+                     *       "receivedAt": "2026-11-01T00:15:00+07:00",
+                     *       "state": "claimed",
+                     *       "unit": null,
+                     *       "visitId": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PlateDetectionDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `plate_detection.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "guard.plateDetections.dismiss": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                detectionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Dismissed */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "confidence": "0.942",
+                     *       "detectedAt": "2026-11-01T00:15:00+07:00",
+                     *       "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "imageRef": null,
+                     *       "match": "none",
+                     *       "plate": {
+                     *         "category": "1กข",
+                     *         "number": "1234",
+                     *         "province": "กรุงเทพมหานคร"
+                     *       },
+                     *       "receivedAt": "2026-11-01T00:15:00+07:00",
+                     *       "state": "dismissed",
+                     *       "unit": null,
+                     *       "visitId": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PlateDetectionDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `plate_detection.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "guard.privacyNotice.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Notice */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "en": "The juristic person records the plate, your name (optional), the last 4 digits of your ID (optional) …",
+                     *       "retentionDays": 90,
+                     *       "th": "นิติบุคคลเก็บทะเบียนรถ ชื่อ (ถ้าให้) เลขบัตร 4 ตัวท้าย (ถ้าให้) และรูปถ่าย (ถ้ามี) ของผู้มาติดต่อ …",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PrivacyNoticeDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "guard.shift.end": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Signed out */
+            204: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "guard.units.list": {
+        parameters: {
+            query?: {
+                limit?: number;
+                q?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Units */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *         "buildingName": "โซน A",
+                     *         "lineLinked": true,
+                     *         "policy": {
+                     *           "action": "guard_calls",
+                     *           "custom": false,
+                     *           "deliverySkipApproval": null,
+                     *           "householdNote": null,
+                     *           "timeoutSeconds": 180
+                     *         },
+                     *         "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "unitNo": "88/12"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["GuardUnitDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "guard.visits.list": {
+        parameters: {
+            query?: {
+                limit?: number;
+                view?: components["schemas"]["GuardVisitView"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Visits */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "callMeAt": null,
+                     *         "cancelledAt": null,
+                     *         "clientRef": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "createdAt": "2026-11-05T18:00:00+07:00",
+                     *         "decidedAt": null,
+                     *         "decisionReason": null,
+                     *         "enteredAt": null,
+                     *         "entryBasis": null,
+                     *         "exitedAt": null,
+                     *         "exitedBy": null,
+                     *         "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "gateName": "ป้อมหน้า",
+                     *         "hasPhoto": false,
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "idLast4": "1234",
+                     *         "kind": "guest",
+                     *         "note": null,
+                     *         "plate": {
+                     *           "category": "1กข",
+                     *           "number": "1234",
+                     *           "province": "กรุงเทพมหานคร"
+                     *         },
+                     *         "recordedAt": null,
+                     *         "respondBy": "2026-11-05T18:03:00+07:00",
+                     *         "state": "requested",
+                     *         "timeoutAction": "guard_calls",
+                     *         "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "unitNo": "88/12",
+                     *         "visitorName": "สมชาย"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["GuardVisitDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "guard.visits.create": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VisitCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Recorded */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "callMeAt": null,
+                     *       "cancelledAt": null,
+                     *       "clientRef": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "createdAt": "2026-11-05T18:00:00+07:00",
+                     *       "decidedAt": null,
+                     *       "decisionReason": null,
+                     *       "enteredAt": null,
+                     *       "entryBasis": null,
+                     *       "exitedAt": null,
+                     *       "exitedBy": null,
+                     *       "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "gateName": "ป้อมหน้า",
+                     *       "hasPhoto": false,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "idLast4": "1234",
+                     *       "kind": "guest",
+                     *       "note": null,
+                     *       "plate": {
+                     *         "category": "1กข",
+                     *         "number": "1234",
+                     *         "province": "กรุงเทพมหานคร"
+                     *       },
+                     *       "recordedAt": null,
+                     *       "replayed": false,
+                     *       "respondBy": "2026-11-05T18:03:00+07:00",
+                     *       "state": "requested",
+                     *       "timeoutAction": "guard_calls",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "unitNo": "88/12",
+                     *       "visitorName": "สมชาย"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VisitCreatedDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `gate.inactive`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed`, `visit.offline_too_old` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "guard.visits.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                visitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Visit */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "callBackName": null,
+                     *       "callMeAt": null,
+                     *       "cancelledAt": null,
+                     *       "clientRef": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "createdAt": "2026-11-05T18:00:00+07:00",
+                     *       "decidedAt": null,
+                     *       "decisionReason": null,
+                     *       "enteredAt": null,
+                     *       "entryBasis": null,
+                     *       "events": [],
+                     *       "exitedAt": null,
+                     *       "exitedBy": null,
+                     *       "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "gateName": "ป้อมหน้า",
+                     *       "hasPhoto": false,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "idLast4": "1234",
+                     *       "kind": "guest",
+                     *       "note": null,
+                     *       "photoUrl": null,
+                     *       "plate": {
+                     *         "category": "1กข",
+                     *         "number": "1234",
+                     *         "province": "กรุงเทพมหานคร"
+                     *       },
+                     *       "recordedAt": null,
+                     *       "respondBy": "2026-11-05T18:03:00+07:00",
+                     *       "state": "requested",
+                     *       "timeoutAction": "guard_calls",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "unitNo": "88/12",
+                     *       "visitorName": "สมชาย"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GuardVisitDetailDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "guard.visits.cancel": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Recommended client-generated uuid. When sent, a replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. Without it the request is not deduplicated. */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
+            };
+            path: {
+                visitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VisitReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Cancelled */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "callMeAt": null,
+                     *       "cancelledAt": null,
+                     *       "clientRef": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "createdAt": "2026-11-05T18:00:00+07:00",
+                     *       "decidedAt": null,
+                     *       "decisionReason": null,
+                     *       "enteredAt": null,
+                     *       "entryBasis": null,
+                     *       "exitedAt": null,
+                     *       "exitedBy": null,
+                     *       "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "gateName": "ป้อมหน้า",
+                     *       "hasPhoto": false,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "idLast4": "1234",
+                     *       "kind": "guest",
+                     *       "note": null,
+                     *       "plate": {
+                     *         "category": "1กข",
+                     *         "number": "1234",
+                     *         "province": "กรุงเทพมหานคร"
+                     *       },
+                     *       "recordedAt": null,
+                     *       "respondBy": "2026-11-05T18:03:00+07:00",
+                     *       "state": "cancelled",
+                     *       "timeoutAction": "guard_calls",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "unitNo": "88/12",
+                     *       "visitorName": "สมชาย"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GuardVisitDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `visit.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "guard.visits.enter": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Recommended client-generated uuid. When sent, a replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. Without it the request is not deduplicated. */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
+            };
+            path: {
+                visitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VisitReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Entered */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "callMeAt": null,
+                     *       "cancelledAt": null,
+                     *       "clientRef": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "createdAt": "2026-11-05T18:00:00+07:00",
+                     *       "decidedAt": null,
+                     *       "decisionReason": null,
+                     *       "enteredAt": null,
+                     *       "entryBasis": null,
+                     *       "exitedAt": null,
+                     *       "exitedBy": null,
+                     *       "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "gateName": "ป้อมหน้า",
+                     *       "hasPhoto": false,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "idLast4": "1234",
+                     *       "kind": "guest",
+                     *       "note": null,
+                     *       "plate": {
+                     *         "category": "1กข",
+                     *         "number": "1234",
+                     *         "province": "กรุงเทพมหานคร"
+                     *       },
+                     *       "recordedAt": null,
+                     *       "respondBy": "2026-11-05T18:03:00+07:00",
+                     *       "state": "entered",
+                     *       "timeoutAction": "guard_calls",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "unitNo": "88/12",
+                     *       "visitorName": "สมชาย"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GuardVisitDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `visit.awaiting_answer`, `visit.denied`, `visit.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "guard.visits.exit": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Recommended client-generated uuid. When sent, a replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. Without it the request is not deduplicated. */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
+            };
+            path: {
+                visitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Exited */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "callMeAt": null,
+                     *       "cancelledAt": null,
+                     *       "clientRef": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "createdAt": "2026-11-05T18:00:00+07:00",
+                     *       "decidedAt": null,
+                     *       "decisionReason": null,
+                     *       "enteredAt": null,
+                     *       "entryBasis": null,
+                     *       "exitedAt": null,
+                     *       "exitedBy": null,
+                     *       "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "gateName": "ป้อมหน้า",
+                     *       "hasPhoto": false,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "idLast4": "1234",
+                     *       "kind": "guest",
+                     *       "note": null,
+                     *       "plate": {
+                     *         "category": "1กข",
+                     *         "number": "1234",
+                     *         "province": "กรุงเทพมหานคร"
+                     *       },
+                     *       "recordedAt": null,
+                     *       "respondBy": "2026-11-05T18:03:00+07:00",
+                     *       "state": "exited",
+                     *       "timeoutAction": "guard_calls",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "unitNo": "88/12",
+                     *       "visitorName": "สมชาย"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GuardVisitDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `visit.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "guard.visits.photo": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                visitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VisitPhotoDto"];
+            };
+        };
+        responses: {
+            /** @description Attached */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "callMeAt": null,
+                     *       "cancelledAt": null,
+                     *       "clientRef": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "createdAt": "2026-11-05T18:00:00+07:00",
+                     *       "decidedAt": null,
+                     *       "decisionReason": null,
+                     *       "enteredAt": null,
+                     *       "entryBasis": null,
+                     *       "exitedAt": null,
+                     *       "exitedBy": null,
+                     *       "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "gateName": "ป้อมหน้า",
+                     *       "hasPhoto": true,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "idLast4": "1234",
+                     *       "kind": "guest",
+                     *       "note": null,
+                     *       "plate": {
+                     *         "category": "1กข",
+                     *         "number": "1234",
+                     *         "province": "กรุงเทพมหานคร"
+                     *       },
+                     *       "recordedAt": null,
+                     *       "respondBy": "2026-11-05T18:03:00+07:00",
+                     *       "state": "requested",
+                     *       "timeoutAction": "guard_calls",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "unitNo": "88/12",
+                     *       "visitorName": "สมชาย"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GuardVisitDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `visit.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.payload_too_large` */
+            413: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "guard.visits.changes": {
+        parameters: {
+            query?: {
+                /** @description The last visit event id seen. */
+                after?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Changes */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "kind": "answered",
+                     *         "occurredAt": "2026-11-01T00:15:00+07:00",
+                     *         "visitId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["VisitChangeDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -90007,6 +97169,3716 @@ export interface operations {
                 };
             };
             /** @description Problem: `document.type_not_allowed`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.gateBlacklist.list": {
+        parameters: {
+            query?: {
+                propertyId?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Entries */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "createdAt": "2026-11-01T00:15:00+07:00",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "plate": {
+                     *           "category": "1กข",
+                     *           "number": "1234",
+                     *           "province": "กรุงเทพมหานคร"
+                     *         },
+                     *         "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *         "reason": "ขับรถเร็วในหมู่บ้านซ้ำหลายครั้ง (มติกรรมการ 3/2569)",
+                     *         "revokedAt": null
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["BlacklistDto"][];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.gateBlacklist.add": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BlacklistCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Added */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "plate": {
+                     *         "category": "1กข",
+                     *         "number": "1234",
+                     *         "province": "กรุงเทพมหานคร"
+                     *       },
+                     *       "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "reason": "ขับรถเร็วในหมู่บ้านซ้ำหลายครั้ง (มติกรรมการ 3/2569)",
+                     *       "revokedAt": null
+                     *     }
+                     */
+                    "application/json": components["schemas"]["BlacklistDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `gate.blacklist_exists`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.gateBlacklist.revoke": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                entryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BlacklistRevokeDto"];
+            };
+        };
+        responses: {
+            /** @description Revoked */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "plate": {
+                     *         "category": "1กข",
+                     *         "number": "1234",
+                     *         "province": "กรุงเทพมหานคร"
+                     *       },
+                     *       "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "reason": "ขับรถเร็วในหมู่บ้านซ้ำหลายครั้ง (มติกรรมการ 3/2569)",
+                     *       "revokedAt": "2026-11-01T00:15:00+07:00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["BlacklistDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.gateGuards.list": {
+        parameters: {
+            query?: {
+                propertyId?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Guards */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "createdAt": "2026-11-01T00:15:00+07:00",
+                     *         "displayName": "สมศักดิ์",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "lockedUntil": null,
+                     *         "onShiftAtGateId": null,
+                     *         "pinSetAt": "2026-11-01T00:15:00+07:00",
+                     *         "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *         "state": "active"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["GateGuardDto"][];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.gateGuards.create": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GuardCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "displayName": "สมศักดิ์",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "lockedUntil": null,
+                     *       "onShiftAtGateId": null,
+                     *       "pinSetAt": "2026-11-01T00:15:00+07:00",
+                     *       "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "state": "active"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GateGuardDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.gateGuards.update": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                guardId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GuardUpdateDto"];
+            };
+        };
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "displayName": "สมศักดิ์",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "lockedUntil": null,
+                     *       "onShiftAtGateId": null,
+                     *       "pinSetAt": "2026-11-01T00:15:00+07:00",
+                     *       "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "state": "active"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GateGuardDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.conflict` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.gateGuards.resetPin": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                guardId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GuardPinDto"];
+            };
+        };
+        responses: {
+            /** @description PIN set */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "displayName": "สมศักดิ์",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "lockedUntil": null,
+                     *       "onShiftAtGateId": null,
+                     *       "pinSetAt": "2026-11-01T00:15:00+07:00",
+                     *       "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "state": "active"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GateGuardDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.conflict`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.gateGuards.revoke": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                guardId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RevokeReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Revoked */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "displayName": "สมศักดิ์",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "lockedUntil": null,
+                     *       "onShiftAtGateId": null,
+                     *       "pinSetAt": "2026-11-01T00:15:00+07:00",
+                     *       "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "state": "revoked"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GateGuardDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.gateInvites.list": {
+        parameters: {
+            query?: {
+                state?: components["schemas"]["VisitInviteState"];
+                unitId?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Invites */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "createdAt": "2026-11-01T00:15:00+07:00",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "maxUses": 1,
+                     *         "note": null,
+                     *         "plate": null,
+                     *         "rejectReason": null,
+                     *         "state": "active",
+                     *         "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "unitNo": "88/12",
+                     *         "usage": "single",
+                     *         "uses": 0,
+                     *         "validFrom": "2026-11-06T09:00:00+07:00",
+                     *         "validTo": "2026-11-06T18:00:00+07:00",
+                     *         "visitorKind": "guest",
+                     *         "visitorName": "คุณแม่"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["VisitInviteDto"][];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.gateInvites.approve": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                inviteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Approved */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "maxUses": 1,
+                     *       "note": null,
+                     *       "plate": null,
+                     *       "rejectReason": null,
+                     *       "state": "active",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "unitNo": "88/12",
+                     *       "usage": "single",
+                     *       "uses": 0,
+                     *       "validFrom": "2026-11-06T09:00:00+07:00",
+                     *       "validTo": "2026-11-06T18:00:00+07:00",
+                     *       "visitorKind": "contractor",
+                     *       "visitorName": "คุณแม่"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VisitInviteDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `visit_invite.not_active` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.gateInvites.reject": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                inviteId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InviteDecisionDto"];
+            };
+        };
+        responses: {
+            /** @description Rejected */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "maxUses": 1,
+                     *       "note": null,
+                     *       "plate": null,
+                     *       "rejectReason": "ช่างไม่มีใบอนุญาตทำงานในหมู่บ้าน",
+                     *       "state": "rejected",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "unitNo": "88/12",
+                     *       "usage": "single",
+                     *       "uses": 0,
+                     *       "validFrom": "2026-11-06T09:00:00+07:00",
+                     *       "validTo": "2026-11-06T18:00:00+07:00",
+                     *       "visitorKind": "guest",
+                     *       "visitorName": "คุณแม่"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VisitInviteDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `visit_invite.not_active` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.gatePolicies.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                unitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Policy */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "action": "guard_calls",
+                     *       "custom": false,
+                     *       "deliverySkipApproval": null,
+                     *       "householdNote": null,
+                     *       "timeoutSeconds": 180
+                     *     }
+                     */
+                    "application/json": components["schemas"]["HousePolicyDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.gatePolicies.set": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                unitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HousePolicyUpdateDto"];
+            };
+        };
+        responses: {
+            /** @description Policy */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "action": "guard_calls",
+                     *       "custom": true,
+                     *       "deliverySkipApproval": null,
+                     *       "householdNote": null,
+                     *       "timeoutSeconds": 180
+                     *     }
+                     */
+                    "application/json": components["schemas"]["HousePolicyDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.gateVehicles.list": {
+        parameters: {
+            query?: {
+                propertyId?: string;
+                unitId?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cars */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "createdAt": "2026-11-01T00:15:00+07:00",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "label": "รถคุณแม่",
+                     *         "plate": {
+                     *           "category": "1กข",
+                     *           "number": "1234",
+                     *           "province": "กรุงเทพมหานคร"
+                     *         },
+                     *         "unitId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["ResidentVehicleDto"][];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.gateVisits.list": {
+        parameters: {
+            query: {
+                from?: string;
+                gateId?: string;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                propertyId?: string;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Why the log is read — required and audited (D-315 PDPA). */
+                reason: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                state?: components["schemas"]["VisitState"];
+                to?: string;
+                unitId?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "callMeAt": null,
+                     *           "cancelledAt": null,
+                     *           "clientRef": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "createdAt": "2026-11-05T18:00:00+07:00",
+                     *           "decidedAt": null,
+                     *           "decisionReason": null,
+                     *           "enteredAt": null,
+                     *           "entryBasis": null,
+                     *           "exitedAt": null,
+                     *           "exitedBy": null,
+                     *           "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "gateName": "ป้อมหน้า",
+                     *           "hasPhoto": false,
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "idLast4": "1234",
+                     *           "kind": "guest",
+                     *           "note": null,
+                     *           "plate": {
+                     *             "category": "1กข",
+                     *             "number": "1234",
+                     *             "province": "กรุงเทพมหานคร"
+                     *           },
+                     *           "recordedAt": null,
+                     *           "respondBy": "2026-11-05T18:03:00+07:00",
+                     *           "state": "exited",
+                     *           "timeoutAction": "guard_calls",
+                     *           "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "unitNo": "88/12",
+                     *           "visitorName": "สมชาย"
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["GuardVisitDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.gateVisits.get": {
+        parameters: {
+            query: {
+                reason: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                visitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Visit */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "callMeAt": null,
+                     *       "cancelledAt": null,
+                     *       "clientRef": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "createdAt": "2026-11-05T18:00:00+07:00",
+                     *       "decidedAt": null,
+                     *       "decisionReason": null,
+                     *       "enteredAt": null,
+                     *       "entryBasis": null,
+                     *       "events": [],
+                     *       "exitedAt": null,
+                     *       "exitedBy": null,
+                     *       "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "gateName": "ป้อมหน้า",
+                     *       "hasPhoto": false,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "idLast4": "1234",
+                     *       "kind": "guest",
+                     *       "note": null,
+                     *       "plate": {
+                     *         "category": "1กข",
+                     *         "number": "1234",
+                     *         "province": "กรุงเทพมหานคร"
+                     *       },
+                     *       "recordedAt": null,
+                     *       "respondBy": "2026-11-05T18:03:00+07:00",
+                     *       "state": "requested",
+                     *       "timeoutAction": "guard_calls",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "unitNo": "88/12",
+                     *       "visitorName": "สมชาย"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VisitLogDetailDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.gates.list": {
+        parameters: {
+            query?: {
+                propertyId?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Gates */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "barrier": false,
+                     *         "createdAt": "2026-11-01T00:15:00+07:00",
+                     *         "devices": 1,
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "kind": "main",
+                     *         "lpr": false,
+                     *         "name": "ป้อมหน้า",
+                     *         "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *         "state": "active"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["GateDto"][];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.gates.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Recommended client-generated uuid. When sent, a replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. Without it the request is not deduplicated. */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GateCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "barrier": false,
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "devices": 0,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "main",
+                     *       "lpr": false,
+                     *       "name": "ป้อมหน้า",
+                     *       "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "state": "active"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GateDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.conflict`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.gates.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                gateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Gate */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "barrier": false,
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "devices": 1,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "main",
+                     *       "lpr": false,
+                     *       "name": "ป้อมหน้า",
+                     *       "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "state": "active"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GateDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.gates.update": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                gateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GateUpdateDto"];
+            };
+        };
+        responses: {
+            /** @description Updated */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "barrier": false,
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "devices": 1,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "main",
+                     *       "lpr": false,
+                     *       "name": "ป้อมหน้า",
+                     *       "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "state": "active"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GateDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.conflict` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.gates.devices": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                gateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Tablets */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "channel": null,
+                     *         "edgeDeviceId": null,
+                     *         "enrolExpiresAt": "2026-11-06T18:00:00+07:00",
+                     *         "enrolledAt": null,
+                     *         "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "hwState": null,
+                     *         "hwStateAt": null,
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "kind": "guard_tablet",
+                     *         "lastSeenAt": null,
+                     *         "name": "แท็บเล็ตป้อมหน้า",
+                     *         "pulseMs": null,
+                     *         "revokedAt": null,
+                     *         "state": "pending"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["GateDeviceDto"][];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.gates.addDevice": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                gateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GateDeviceCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "channel": null,
+                     *       "edgeDeviceId": null,
+                     *       "enrolCode": "ABCD-EFGH-JKLM",
+                     *       "enrolExpiresAt": "2026-11-06T18:00:00+07:00",
+                     *       "enrolledAt": null,
+                     *       "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "hwState": null,
+                     *       "hwStateAt": null,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "guard_tablet",
+                     *       "lastSeenAt": null,
+                     *       "name": "แท็บเล็ตป้อมหน้า",
+                     *       "pulseMs": null,
+                     *       "revokedAt": null,
+                     *       "state": "pending"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GateDeviceCreatedDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.gates.revokeDevice": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                deviceId: string;
+                gateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RevokeReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Revoked */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "channel": null,
+                     *       "edgeDeviceId": null,
+                     *       "enrolExpiresAt": "2026-11-06T18:00:00+07:00",
+                     *       "enrolledAt": null,
+                     *       "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "hwState": null,
+                     *       "hwStateAt": null,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "guard_tablet",
+                     *       "lastSeenAt": null,
+                     *       "name": "แท็บเล็ตป้อมหน้า",
+                     *       "pulseMs": null,
+                     *       "revokedAt": null,
+                     *       "state": "revoked"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GateDeviceDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.gates.attachEdgeDevice": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                gateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EdgeDeviceAttachDto"];
+            };
+        };
+        responses: {
+            /** @description Attached */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "channel": "relay-1",
+                     *       "edgeDeviceId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "enrolExpiresAt": null,
+                     *       "enrolledAt": "2026-11-01T00:15:00+07:00",
+                     *       "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "hwState": null,
+                     *       "hwStateAt": null,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "barrier",
+                     *       "lastSeenAt": null,
+                     *       "name": "ไม้กั้นขาเข้า",
+                     *       "pulseMs": 800,
+                     *       "revokedAt": null,
+                     *       "state": "active"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GateDeviceDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `gate.channel_taken`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `gate.edge_device_invalid`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.gates.detachEdgeDevice": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                gateDeviceId: string;
+                gateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RevokeReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Detached */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "channel": "relay-1",
+                     *       "edgeDeviceId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "enrolExpiresAt": "2026-11-06T18:00:00+07:00",
+                     *       "enrolledAt": null,
+                     *       "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "hwState": null,
+                     *       "hwStateAt": null,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "barrier",
+                     *       "lastSeenAt": null,
+                     *       "name": "แท็บเล็ตป้อมหน้า",
+                     *       "pulseMs": null,
+                     *       "revokedAt": "2026-11-01T00:15:00+07:00",
+                     *       "state": "revoked"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GateDeviceDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.incidents.list": {
+        parameters: {
+            query: {
+                from?: string;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                propertyId?: string;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Why the log is read (audited). */
+                reason: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                state?: components["schemas"]["IncidentState"];
+                to?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "acknowledgedAt": null,
+                     *           "cancelledAt": null,
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "gate": null,
+                     *           "hasPhoto": false,
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "kind": "medical",
+                     *           "note": "คุณพ่อหมดสติ",
+                     *           "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *           "propertyName": "หมู่บ้านตัวอย่าง",
+                     *           "resolvedAt": null,
+                     *           "source": "resident_sos",
+                     *           "state": "open",
+                     *           "unit": {
+                     *             "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *             "unitNo": "A-101"
+                     *           },
+                     *           "visitCount": 2
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["IncidentDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.incidents.get": {
+        parameters: {
+            query: {
+                /** @description Why the record is read (audited). */
+                reason: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                incidentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Incident */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acknowledgedAt": null,
+                     *       "cancelledAt": null,
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "events": [
+                     *         {
+                     *           "actorKind": "resident",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "kind": "raised",
+                     *           "occurredAt": "2026-11-01T00:15:00+07:00"
+                     *         }
+                     *       ],
+                     *       "gate": null,
+                     *       "hasPhoto": false,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "medical",
+                     *       "note": "คุณพ่อหมดสติ",
+                     *       "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "propertyName": "หมู่บ้านตัวอย่าง",
+                     *       "resolvedAt": null,
+                     *       "source": "resident_sos",
+                     *       "state": "open",
+                     *       "unit": {
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "unitNo": "A-101"
+                     *       },
+                     *       "visitCount": 2,
+                     *       "visits": []
+                     *     }
+                     */
+                    "application/json": components["schemas"]["IncidentDetailDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.incidents.acknowledge": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                incidentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IncidentDecisionDto"];
+            };
+        };
+        responses: {
+            /** @description Acknowledged */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acknowledgedAt": "2026-11-01T00:15:00+07:00",
+                     *       "cancelledAt": null,
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "gate": null,
+                     *       "hasPhoto": false,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "medical",
+                     *       "note": "คุณพ่อหมดสติ",
+                     *       "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "propertyName": "หมู่บ้านตัวอย่าง",
+                     *       "resolvedAt": null,
+                     *       "source": "resident_sos",
+                     *       "state": "acknowledged",
+                     *       "unit": {
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "unitNo": "A-101"
+                     *       },
+                     *       "visitCount": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["IncidentDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `incident.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.incidents.resolve": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                incidentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["IncidentDecisionDto"];
+            };
+        };
+        responses: {
+            /** @description Resolved */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acknowledgedAt": "2026-11-01T00:15:00+07:00",
+                     *       "cancelledAt": null,
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "gate": null,
+                     *       "hasPhoto": false,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "medical",
+                     *       "note": "คุณพ่อหมดสติ",
+                     *       "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "propertyName": "หมู่บ้านตัวอย่าง",
+                     *       "resolvedAt": "2026-11-01T00:15:00+07:00",
+                     *       "source": "resident_sos",
+                     *       "state": "resolved",
+                     *       "unit": {
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "unitNo": "A-101"
+                     *       },
+                     *       "visitCount": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["IncidentDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `incident.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -153863,6 +164735,229 @@ export interface operations {
             };
         };
     };
+    "resident.gates.list": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Gates */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "enabled": true,
+                     *         "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "kind": "main",
+                     *         "name": "ป้อมหน้า",
+                     *         "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *         "propertyName": "หมู่บ้านตัวอย่าง",
+                     *         "requireGeofence": false,
+                     *         "vehicles": [
+                     *           {
+                     *             "createdAt": "2026-11-01T00:15:00+07:00",
+                     *             "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *             "label": "รถคุณแม่",
+                     *             "plate": {
+                     *               "category": "1กข",
+                     *               "number": "1234",
+                     *               "province": "กรุงเทพมหานคร"
+                     *             },
+                     *             "unitId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *           }
+                     *         ]
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["ResidentOpenableGateDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.gates.open": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Recommended client-generated uuid. When sent, a replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. Without it the request is not deduplicated. */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
+            };
+            path: {
+                gateId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResidentGateOpenDto"];
+            };
+        };
+        responses: {
+            /** @description Sent to the barrier. Nothing to poll. */
+            202: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "commands": [
+                     *         {
+                     *           "commandId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "expiresAt": "2026-11-05T18:00:30+07:00",
+                     *           "gateDeviceId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *         }
+                     *       ],
+                     *       "gateId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["GateOpenResultDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `gate.outside_geofence`, `gate.resident_open_disabled` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `gate.geofence_unavailable`, `gate.no_barrier`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `gate.open_rate_limited`, `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "resident.inspections.list": {
         parameters: {
             query?: {
@@ -163203,6 +174298,513 @@ export interface operations {
             };
         };
     };
+    "resident.sos.list": {
+        parameters: {
+            query?: {
+                unitId?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Incidents */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "acknowledgedAt": null,
+                     *         "cancellableUntil": "2026-11-05T18:00:30+07:00",
+                     *         "cancelledAt": null,
+                     *         "createdAt": "2026-11-01T00:15:00+07:00",
+                     *         "gate": null,
+                     *         "hasPhoto": false,
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "kind": "medical",
+                     *         "note": "คุณพ่อหมดสติ",
+                     *         "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *         "propertyName": "หมู่บ้านตัวอย่าง",
+                     *         "resolvedAt": null,
+                     *         "source": "resident_sos",
+                     *         "state": "open",
+                     *         "unit": {
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "unitNo": "A-101"
+                     *         },
+                     *         "visitCount": 2
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["ResidentIncidentDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.sos.create": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SosCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Raised (or the open one) */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acknowledgedAt": null,
+                     *       "cancellableUntil": "2026-11-05T18:00:30+07:00",
+                     *       "cancelledAt": null,
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "existing": false,
+                     *       "gate": null,
+                     *       "hasPhoto": false,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "medical",
+                     *       "note": "คุณพ่อหมดสติ",
+                     *       "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "propertyName": "หมู่บ้านตัวอย่าง",
+                     *       "resolvedAt": null,
+                     *       "source": "resident_sos",
+                     *       "state": "open",
+                     *       "unit": {
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "unitNo": "A-101"
+                     *       },
+                     *       "visitCount": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["SosCreatedDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests`, `incident.rate_limited` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.sos.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                incidentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Incident */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acknowledgedAt": null,
+                     *       "cancellableUntil": "2026-11-05T18:00:30+07:00",
+                     *       "cancelledAt": null,
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "gate": null,
+                     *       "hasPhoto": false,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "medical",
+                     *       "note": "คุณพ่อหมดสติ",
+                     *       "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "propertyName": "หมู่บ้านตัวอย่าง",
+                     *       "resolvedAt": null,
+                     *       "source": "resident_sos",
+                     *       "state": "open",
+                     *       "unit": {
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "unitNo": "A-101"
+                     *       },
+                     *       "visitCount": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ResidentIncidentDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.sos.cancel": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Recommended client-generated uuid. When sent, a replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. Without it the request is not deduplicated. */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
+            };
+            path: {
+                incidentId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SosCancelDto"];
+            };
+        };
+        responses: {
+            /** @description Cancelled */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acknowledgedAt": null,
+                     *       "cancellableUntil": null,
+                     *       "cancelledAt": "2026-11-01T00:15:00+07:00",
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "gate": null,
+                     *       "hasPhoto": false,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "medical",
+                     *       "note": "คุณพ่อหมดสติ",
+                     *       "propertyId": "7b9f1c2e-3d4a-4f5b-8c6d-9e0f1a2b3c4d",
+                     *       "propertyName": "หมู่บ้านตัวอย่าง",
+                     *       "resolvedAt": null,
+                     *       "source": "resident_sos",
+                     *       "state": "cancelled",
+                     *       "unit": {
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "unitNo": "A-101"
+                     *       },
+                     *       "visitCount": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ResidentIncidentDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `incident.cancel_window_passed`, `incident.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "resident.statements.list": {
         parameters: {
             query?: {
@@ -164504,6 +176106,248 @@ export interface operations {
             };
         };
     };
+    "resident.units.gate": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                unitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Gate view */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "canEdit": true,
+                     *       "gates": [
+                     *         {
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "kind": "main",
+                     *           "name": "ป้อมหน้า"
+                     *         }
+                     *       ],
+                     *       "policy": {
+                     *         "action": "guard_calls",
+                     *         "custom": false,
+                     *         "deliverySkipApproval": null,
+                     *         "householdNote": null,
+                     *         "timeoutSeconds": 180
+                     *       },
+                     *       "privacyNotice": {
+                     *         "en": "The juristic person records the plate, your name (optional), the last 4 digits of your ID (optional) …",
+                     *         "retentionDays": 90,
+                     *         "th": "นิติบุคคลเก็บทะเบียนรถ ชื่อ (ถ้าให้) เลขบัตร 4 ตัวท้าย (ถ้าให้) และรูปถ่าย (ถ้ามี) ของผู้มาติดต่อ …",
+                     *         "version": 1
+                     *       },
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "unitNo": "88/12"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ResidentGateDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.units.setGatePolicy": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                unitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["HousePolicyUpdateDto"];
+            };
+        };
+        responses: {
+            /** @description Gate view */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "canEdit": true,
+                     *       "gates": [],
+                     *       "policy": {
+                     *         "action": "guard_calls",
+                     *         "custom": true,
+                     *         "deliverySkipApproval": null,
+                     *         "householdNote": null,
+                     *         "timeoutSeconds": 180
+                     *       },
+                     *       "privacyNotice": {
+                     *         "en": "The juristic person records the plate, your name (optional), the last 4 digits of your ID (optional) …",
+                     *         "retentionDays": 90,
+                     *         "th": "นิติบุคคลเก็บทะเบียนรถ ชื่อ (ถ้าให้) เลขบัตร 4 ตัวท้าย (ถ้าให้) และรูปถ่าย (ถ้ามี) ของผู้มาติดต่อ …",
+                     *         "version": 1
+                     *       },
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "unitNo": "88/12"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ResidentGateDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "resident.units.paymentMandates": {
         parameters: {
             query?: never;
@@ -165323,6 +177167,332 @@ export interface operations {
             };
         };
     };
+    "resident.units.rememberedVehicles": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                unitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Vehicles */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "expiresAt": "2026-12-05T18:00:00+07:00",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "kind": "visitor",
+                     *         "label": "รถพี่สาว",
+                     *         "plate": {
+                     *           "category": "1กข",
+                     *           "number": "1234",
+                     *           "province": "กรุงเทพมหานคร"
+                     *         },
+                     *         "unitId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["RememberedVehicleDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.units.rememberVehicle": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Recommended client-generated uuid. When sent, a replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. Without it the request is not deduplicated. */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
+            };
+            path: {
+                unitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RememberedVehicleCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Remembered */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "expiresAt": "2026-12-05T18:00:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "visitor",
+                     *       "label": "รถพี่สาว",
+                     *       "plate": {
+                     *         "category": "1กข",
+                     *         "number": "1234",
+                     *         "province": "กรุงเทพมหานคร"
+                     *       },
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RememberedVehicleDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.units.forgetVehicle": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                unitId: string;
+                vehicleId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Forgotten */
+            204: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "resident.units.usage": {
         parameters: {
             query?: {
@@ -165452,6 +177622,711 @@ export interface operations {
             };
         };
     };
+    "resident.unitVehicles.list": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                unitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cars */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "createdAt": "2026-11-01T00:15:00+07:00",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "label": "รถคุณแม่",
+                     *         "plate": {
+                     *           "category": "1กข",
+                     *           "number": "1234",
+                     *           "province": "กรุงเทพมหานคร"
+                     *         },
+                     *         "unitId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["ResidentVehicleDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.unitVehicles.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Recommended client-generated uuid. When sent, a replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. Without it the request is not deduplicated. */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
+            };
+            path: {
+                unitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResidentVehicleCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Registered */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "label": "รถคุณแม่",
+                     *       "plate": {
+                     *         "category": "1กข",
+                     *         "number": "1234",
+                     *         "province": "กรุงเทพมหานคร"
+                     *       },
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ResidentVehicleDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.conflict`, `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.unitVehicles.delete": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                unitId: string;
+                vehicleId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Removed */
+            204: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.units.visitInvites": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                unitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Invites */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example [
+                     *       {
+                     *         "createdAt": "2026-11-01T00:15:00+07:00",
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "maxUses": 1,
+                     *         "note": null,
+                     *         "plate": null,
+                     *         "rejectReason": null,
+                     *         "state": "active",
+                     *         "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "unitNo": "88/12",
+                     *         "usage": "single",
+                     *         "uses": 0,
+                     *         "validFrom": "2026-11-06T09:00:00+07:00",
+                     *         "validTo": "2026-11-06T18:00:00+07:00",
+                     *         "visitorKind": "guest",
+                     *         "visitorName": "คุณแม่"
+                     *       }
+                     *     ]
+                     */
+                    "application/json": components["schemas"]["VisitInviteDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.units.createVisitInvite": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+            };
+            path: {
+                unitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VisitInviteCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Created; the token is shown once */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "maxUses": 1,
+                     *       "note": null,
+                     *       "plate": null,
+                     *       "rejectReason": null,
+                     *       "state": "active",
+                     *       "token": "gpv1.Zm9vYmFyYmF6cXV4cXV1eGNvcmdlZ3JhdWx0Z2FycGx5",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "unitNo": "88/12",
+                     *       "usage": "single",
+                     *       "uses": 0,
+                     *       "validFrom": "2026-11-06T09:00:00+07:00",
+                     *       "validTo": "2026-11-06T18:00:00+07:00",
+                     *       "visitorKind": "guest",
+                     *       "visitorName": "คุณแม่"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VisitInviteCreatedDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid`, `idempotency.key_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed`, `visit_invite.window_too_long` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.units.revokeVisitInvite": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Recommended client-generated uuid. When sent, a replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. Without it the request is not deduplicated. */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
+            };
+            path: {
+                inviteId: string;
+                unitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Revoked */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "maxUses": 1,
+                     *       "note": null,
+                     *       "plate": null,
+                     *       "rejectReason": null,
+                     *       "state": "revoked",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "unitNo": "88/12",
+                     *       "usage": "single",
+                     *       "uses": 0,
+                     *       "validFrom": "2026-11-06T09:00:00+07:00",
+                     *       "validTo": "2026-11-06T18:00:00+07:00",
+                     *       "visitorKind": "guest",
+                     *       "visitorName": "คุณแม่"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VisitInviteDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "resident.uploads.presign": {
         parameters: {
             query?: never;
@@ -165544,6 +178419,890 @@ export interface operations {
                 };
             };
             /** @description Problem: `document.type_not_allowed`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.visits.list": {
+        parameters: {
+            query?: {
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                state?: components["schemas"]["VisitState"];
+                unitId?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "callMeAt": null,
+                     *           "cancelledAt": null,
+                     *           "createdAt": "2026-11-05T18:00:00+07:00",
+                     *           "decidedAt": null,
+                     *           "decisionReason": null,
+                     *           "enteredAt": null,
+                     *           "entryBasis": null,
+                     *           "exitedAt": null,
+                     *           "exitedBy": null,
+                     *           "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "gateName": "ป้อมหน้า",
+                     *           "hasPhoto": false,
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "kind": "guest",
+                     *           "plate": {
+                     *             "category": "1กข",
+                     *             "number": "1234",
+                     *             "province": "กรุงเทพมหานคร"
+                     *           },
+                     *           "respondBy": "2026-11-05T18:03:00+07:00",
+                     *           "state": "requested",
+                     *           "timeoutAction": "guard_calls",
+                     *           "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "unitNo": "88/12",
+                     *           "visitorName": "สมชาย"
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["VisitDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.visits.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                visitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Visit */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "callMeAt": null,
+                     *       "cancelledAt": null,
+                     *       "createdAt": "2026-11-05T18:00:00+07:00",
+                     *       "decidedAt": null,
+                     *       "decidedByName": null,
+                     *       "decisionReason": null,
+                     *       "enteredAt": null,
+                     *       "entryBasis": null,
+                     *       "exitedAt": null,
+                     *       "exitedBy": null,
+                     *       "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "gateName": "ป้อมหน้า",
+                     *       "hasPhoto": false,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "guest",
+                     *       "photoUrl": null,
+                     *       "plate": {
+                     *         "category": "1กข",
+                     *         "number": "1234",
+                     *         "province": "กรุงเทพมหานคร"
+                     *       },
+                     *       "policy": {
+                     *         "action": "guard_calls",
+                     *         "custom": false,
+                     *         "deliverySkipApproval": null,
+                     *         "householdNote": null,
+                     *         "timeoutSeconds": 180
+                     *       },
+                     *       "respondBy": "2026-11-05T18:03:00+07:00",
+                     *       "state": "requested",
+                     *       "timeoutAction": "guard_calls",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "unitNo": "88/12",
+                     *       "visitorName": "สมชาย"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ResidentVisitDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.visits.approve": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Recommended client-generated uuid. When sent, a replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. Without it the request is not deduplicated. */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
+            };
+            path: {
+                visitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResidentVisitAnswerDto"];
+            };
+        };
+        responses: {
+            /** @description Answered */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "accepted": true,
+                     *       "visit": {
+                     *         "callMeAt": null,
+                     *         "cancelledAt": null,
+                     *         "createdAt": "2026-11-05T18:00:00+07:00",
+                     *         "decidedAt": null,
+                     *         "decidedByName": null,
+                     *         "decisionReason": null,
+                     *         "enteredAt": null,
+                     *         "entryBasis": null,
+                     *         "exitedAt": null,
+                     *         "exitedBy": null,
+                     *         "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "gateName": "ป้อมหน้า",
+                     *         "hasPhoto": false,
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "kind": "guest",
+                     *         "photoUrl": null,
+                     *         "plate": {
+                     *           "category": "1กข",
+                     *           "number": "1234",
+                     *           "province": "กรุงเทพมหานคร"
+                     *         },
+                     *         "policy": {
+                     *           "action": "guard_calls",
+                     *           "custom": false,
+                     *           "deliverySkipApproval": null,
+                     *           "householdNote": null,
+                     *           "timeoutSeconds": 180
+                     *         },
+                     *         "respondBy": "2026-11-05T18:03:00+07:00",
+                     *         "state": "approved",
+                     *         "timeoutAction": "guard_calls",
+                     *         "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "unitNo": "88/12",
+                     *         "visitorName": "สมชาย"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VisitAnswerResultDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.visits.callMe": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Recommended client-generated uuid. When sent, a replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. Without it the request is not deduplicated. */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
+            };
+            path: {
+                visitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Answered */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "accepted": true,
+                     *       "visit": {
+                     *         "callMeAt": "2026-11-01T00:15:00+07:00",
+                     *         "cancelledAt": null,
+                     *         "createdAt": "2026-11-05T18:00:00+07:00",
+                     *         "decidedAt": null,
+                     *         "decidedByName": null,
+                     *         "decisionReason": null,
+                     *         "enteredAt": null,
+                     *         "entryBasis": null,
+                     *         "exitedAt": null,
+                     *         "exitedBy": null,
+                     *         "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "gateName": "ป้อมหน้า",
+                     *         "hasPhoto": false,
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "kind": "guest",
+                     *         "photoUrl": null,
+                     *         "plate": {
+                     *           "category": "1กข",
+                     *           "number": "1234",
+                     *           "province": "กรุงเทพมหานคร"
+                     *         },
+                     *         "policy": {
+                     *           "action": "guard_calls",
+                     *           "custom": false,
+                     *           "deliverySkipApproval": null,
+                     *           "householdNote": null,
+                     *           "timeoutSeconds": 180
+                     *         },
+                     *         "respondBy": "2026-11-05T18:03:00+07:00",
+                     *         "state": "requested",
+                     *         "timeoutAction": "guard_calls",
+                     *         "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "unitNo": "88/12",
+                     *         "visitorName": "สมชาย"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VisitAnswerResultDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.visits.deny": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Recommended client-generated uuid. When sent, a replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. Without it the request is not deduplicated. */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
+            };
+            path: {
+                visitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Answered */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "accepted": true,
+                     *       "visit": {
+                     *         "callMeAt": null,
+                     *         "cancelledAt": null,
+                     *         "createdAt": "2026-11-05T18:00:00+07:00",
+                     *         "decidedAt": null,
+                     *         "decidedByName": null,
+                     *         "decisionReason": null,
+                     *         "enteredAt": null,
+                     *         "entryBasis": null,
+                     *         "exitedAt": null,
+                     *         "exitedBy": null,
+                     *         "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "gateName": "ป้อมหน้า",
+                     *         "hasPhoto": false,
+                     *         "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "kind": "guest",
+                     *         "photoUrl": null,
+                     *         "plate": {
+                     *           "category": "1กข",
+                     *           "number": "1234",
+                     *           "province": "กรุงเทพมหานคร"
+                     *         },
+                     *         "policy": {
+                     *           "action": "guard_calls",
+                     *           "custom": false,
+                     *           "deliverySkipApproval": null,
+                     *           "householdNote": null,
+                     *           "timeoutSeconds": 180
+                     *         },
+                     *         "respondBy": "2026-11-05T18:03:00+07:00",
+                     *         "state": "denied",
+                     *         "timeoutAction": "guard_calls",
+                     *         "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "unitNo": "88/12",
+                     *         "visitorName": "สมชาย"
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VisitAnswerResultDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.visits.exit": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Recommended client-generated uuid. When sent, a replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. Without it the request is not deduplicated. */
+                "Idempotency-Key"?: components["parameters"]["IdempotencyKeyOptional"];
+            };
+            path: {
+                visitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Exited */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "callMeAt": null,
+                     *       "cancelledAt": null,
+                     *       "createdAt": "2026-11-05T18:00:00+07:00",
+                     *       "decidedAt": null,
+                     *       "decidedByName": null,
+                     *       "decisionReason": null,
+                     *       "enteredAt": null,
+                     *       "entryBasis": null,
+                     *       "exitedAt": null,
+                     *       "exitedBy": null,
+                     *       "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "gateName": "ป้อมหน้า",
+                     *       "hasPhoto": false,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "guest",
+                     *       "photoUrl": null,
+                     *       "plate": {
+                     *         "category": "1กข",
+                     *         "number": "1234",
+                     *         "province": "กรุงเทพมหานคร"
+                     *       },
+                     *       "policy": {
+                     *         "action": "guard_calls",
+                     *         "custom": false,
+                     *         "deliverySkipApproval": null,
+                     *         "householdNote": null,
+                     *         "timeoutSeconds": 180
+                     *       },
+                     *       "respondBy": "2026-11-05T18:03:00+07:00",
+                     *       "state": "exited",
+                     *       "timeoutAction": "guard_calls",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "unitNo": "88/12",
+                     *       "visitorName": "สมชาย"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ResidentVisitDto"];
+                };
+            };
+            /** @description Problem: `idempotency.key_invalid` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `visit.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];

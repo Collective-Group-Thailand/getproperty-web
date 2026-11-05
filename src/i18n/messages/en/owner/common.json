@@ -60,7 +60,16 @@
     "structured": "Set",
     "allocationOldest": "Oldest bill first (its surcharge first)",
     "allocationSurcharge": "Every surcharge first, then the principal",
-    "instalments": "{count, plural, one {# instalment} other {# instalments}}"
+    "instalments": "{count, plural, one {# instalment} other {# instalments}}",
+    "seconds": "{count} s",
+    "milliseconds": "{count} ms",
+    "metres": "{count} m",
+    "times": "{count} times",
+    "gateAction": {
+      "allow_and_log": "Let in and record",
+      "deny": "Do not let in",
+      "guard_calls": "Guard calls the house"
+    }
   },
   "lineKind": {
     "internet": "Internet",

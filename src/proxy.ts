@@ -100,6 +100,11 @@ export function routeRequest(
     return { zone, kind: "rewrite", url: rewritten };
   }
 
+  // Owner: the gate tablet (JW4) has its own root layout outside `[locale]` (a kiosk document, 180 KB budget).
+  if (isGatePath(url.pathname)) {
+    rewritten.pathname = `/${GATE_SEGMENT}/${url.pathname.startsWith("/en/") || url.pathname === "/en/gate" ? "en" : routing.defaultLocale}`;
+    return { zone, kind: "rewrite", url: rewritten };
+  }
   // Owner: the BFF and the robots/sitemap files live at the app root, outside `[locale]`.
   if (url.pathname === "/bff" || url.pathname.startsWith("/bff/") || isRootFile(url.pathname)) {
     return { zone, kind: "asset", url: rewritten };
@@ -117,6 +122,14 @@ function marketingRoute(url: URL, site: MarketingSite): ZoneRoute {
   }
   return { zone, kind: "redirect", url: new URL(`${url.pathname}${url.search}`, site.ownerOrigin), marketing: true };
 }
+
+/** The gate tablet's page (`/gate`, `/en/gate`, JW4) — the one owner page that may use the camera. */
+export function isGatePath(pathname: string): boolean {
+  return /^\/(?:en\/)?gate\/?$/.test(pathname);
+}
+
+/** The internal root of the gate tablet (`src/app/gate-tablet/[locale]`); a reserved segment, never a public URL. */
+export const GATE_SEGMENT = "gate-tablet";
 
 function isRootFile(pathname: string): boolean {
   return pathname === "/robots.txt" || pathname === "/sitemap.xml" || pathname === "/llms.txt";
@@ -192,6 +205,7 @@ export async function proxy(request: NextRequest) {
       isMarketingPath(zone, request.nextUrl.pathname) &&
       (!env.MARKETING_HOST || route.marketing === true),
     hsts: env.NODE_ENV === "production",
+    camera: zone === "owner" && isGatePath(request.nextUrl.pathname),
   });
 
   const requestHeaders = new Headers(request.headers);

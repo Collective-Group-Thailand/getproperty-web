@@ -13,12 +13,25 @@ export function initialOf(name: string): string {
  * A person's initial in a round tile (members, the account menu): pale brand tint, never a stock photo. Decorative
  * beside the visible name, so it is hidden from assistive tech.
  */
-export function Avatar({ name, size = "md", className }: { name: string; size?: "sm" | "md"; className?: string }) {
+export function Avatar({
+  name,
+  size = "md",
+  className,
+}: {
+  name: string;
+  /** `lg` (56 px): the gate tablet's roster and PIN pad, read at arm's length. */
+  size?: "sm" | "md" | "lg";
+  className?: string;
+}) {
   return (
     <span
       aria-hidden="true"
       className={cn(
-        size === "sm" ? "size-7 rounded-full text-xs" : "size-9 rounded-full text-sm",
+        size === "sm"
+          ? "size-7 rounded-full text-xs"
+          : size === "lg"
+            ? "size-14 rounded-full text-xl"
+            : "size-9 rounded-full text-sm",
         "bg-primary-subtle text-primary-subtle-fg grid shrink-0 place-items-center font-semibold",
         className,
       )}

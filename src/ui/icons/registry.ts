@@ -123,6 +123,17 @@ import { IconSuspendServices } from "./glyphs/suspend-services";
 import { IconSms } from "./glyphs/sms";
 import { IconSend } from "./glyphs/send";
 import { IconRepeat } from "./glyphs/repeat";
+import { IconCar } from "./glyphs/car";
+import { IconTruck } from "./glyphs/truck";
+import { IconHammer } from "./glyphs/hammer";
+import { IconBellRing } from "./glyphs/bell-ring";
+import { IconSiren } from "./glyphs/siren";
+import { IconFlame } from "./glyphs/flame";
+import { IconHeartPulse } from "./glyphs/heart-pulse";
+import { IconShieldAlert } from "./glyphs/shield-alert";
+import { IconCctv } from "./glyphs/cctv";
+import { IconIdCard } from "./glyphs/id-card";
+import { IconLogIn } from "./glyphs/log-in";
 import { IconThemeSystem } from "./glyphs/theme-system";
 import { IconThemeLight } from "./glyphs/theme-light";
 import { IconThemeDark } from "./glyphs/theme-dark";
@@ -250,6 +261,17 @@ export const ICONS: { readonly [N in IconName]: IconGlyph<N> } = {
   sms: IconSms,
   send: IconSend,
   repeat: IconRepeat,
+  car: IconCar,
+  truck: IconTruck,
+  hammer: IconHammer,
+  "bell-ring": IconBellRing,
+  siren: IconSiren,
+  flame: IconFlame,
+  "heart-pulse": IconHeartPulse,
+  "shield-alert": IconShieldAlert,
+  cctv: IconCctv,
+  "id-card": IconIdCard,
+  "log-in": IconLogIn,
   "theme-system": IconThemeSystem,
   "theme-light": IconThemeLight,
   "theme-dark": IconThemeDark,

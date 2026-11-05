@@ -334,6 +334,10 @@ export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
   },
   // D-270: a landlord invites its condo's juristic office for its units in a stub building.
   juristic_workspace_invitations: { href: "/juristic-office", icon: IconMail, group: "operations" },
+  // JW4 (J4.1 / J4.2): the gate admin — gates and tablets, guards, house policies, blacklist, logs. `gate` is the same
+  // page for apartment / PM tenants behind the API's `module.gate` flag.
+  juristic_gate: { href: "/juristic/gate", icon: IconShield, group: "operations" },
+  gate: { href: "/juristic/gate", icon: IconShield, group: "operations" },
 };
 
 export const OWNER_MENU_GROUPS = ["operations", "money", "settings"] as const;
@@ -357,6 +361,7 @@ export const JURISTIC_MENU_ORDER: Readonly<Record<JuristicMenuGroup, readonly st
     "dashboard",
     "juristic_receivables",
     "juristic_register",
+    "juristic_gate",
     "service_requests",
     "buildings",
     "units",

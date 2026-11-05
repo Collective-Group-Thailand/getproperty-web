@@ -165,6 +165,18 @@ describe("proxy", () => {
     expect(response.status).toBe(404);
   });
 
+  it("rewrites the gate tablet onto its own root and grants it the camera (JW4)", async () => {
+    const th = await call("localhost:3000", "/gate");
+    expect(th.headers.get("x-middleware-rewrite")).toContain("/gate-tablet/th");
+    expect(th.headers.get("Permissions-Policy")).toContain("camera=(self)");
+    const en = await call("localhost:3000", "/en/gate");
+    expect(en.headers.get("x-middleware-rewrite")).toContain("/gate-tablet/en");
+    const direct = await call("localhost:3000", "/gate-tablet/th");
+    expect(direct.headers.get("x-middleware-rewrite") ?? "").not.toContain("/gate-tablet/th");
+    const console = await call("localhost:3000", "/juristic/gate");
+    expect(console.headers.get("Permissions-Policy")).toContain("camera=()");
+  });
+
   it("rewrites the staff host and sets the staff security headers", async () => {
     const response = await call("staff.localhost:3000", "/readings");
     expect(response.headers.get("x-middleware-rewrite")).toContain("/staff/readings");

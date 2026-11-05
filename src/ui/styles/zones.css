@@ -15,3 +15,29 @@
 [data-zone="staff"] main :is(button, a, [role="button"], input, select)[data-size="md"] {
   min-height: 3rem;
 }
+
+/*
+ * The gate tablet (JW4, J-DESIGN §1.4 "the gate is a tool"): `/gate` on the owner host sets
+ * `data-surface="gate"` on its frame. Read at arm's length, in sunlight and at night: 17-px body, 28-px plates in
+ * mono (2xl), a 32-px clock (3xl) and 40-px PIN digits (4xl). Main targets are 64 px (h-16), the rest ≥ 48 px.
+ */
+[data-surface="gate"] {
+  --text-2xs: 0.8125rem;
+  --text-2xs--line-height: 1.125rem;
+  --text-xs: 0.875rem;
+  --text-xs--line-height: 1.25rem;
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: 1.375rem;
+  --text-base: 1.0625rem;
+  --text-base--line-height: 1.625rem;
+  --text-lg: 1.25rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.5rem;
+  --text-xl--line-height: 2rem;
+  --text-2xl: 1.75rem;
+  --text-2xl--line-height: 2.25rem;
+  --text-3xl: 2rem;
+  --text-3xl--line-height: 2.5rem;
+  --text-4xl: 2.5rem;
+  --text-4xl--line-height: 3rem;
+}
