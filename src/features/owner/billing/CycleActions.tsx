@@ -41,6 +41,7 @@ export function CycleActions({
   totalLabel,
   members = [],
   missing = 0,
+  advance = false,
 }: {
   cycle: Pick<Schemas["BillingCycleDto"], "id" | "nextActions" | "propertyName" | "periodKey" | "status">;
   periodLabel: string;
@@ -50,6 +51,8 @@ export function CycleActions({
   members?: FieldMember[];
   /** Meters read by hand still missing in the round (shown in the dialog). */
   missing?: number;
+  /** An advance cycle (quarterly / half-yearly / yearly common fees, D-303): no meters, so "compute" is just that. */
+  advance?: boolean;
 }) {
   const t = useTranslations("owner.billing.actions");
   const reasons = useTranslations("owner.invoices.flag");
@@ -77,7 +80,7 @@ export function CycleActions({
             }
             data-testid="cycle-compute"
           >
-            {t("compute")}
+            {advance ? t("computeAdvance") : t("compute")}
           </Button>
         ) : null}
         {can("request-readings") ? (

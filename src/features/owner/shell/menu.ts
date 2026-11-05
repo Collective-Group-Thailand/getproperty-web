@@ -3,7 +3,10 @@ import type { Schemas } from "@/lib/api/types";
 import { IconBank } from "@/ui/icons/glyphs/bank";
 import { IconBell } from "@/ui/icons/glyphs/bell";
 import { IconBill } from "@/ui/icons/glyphs/bill";
+import { IconBook } from "@/ui/icons/glyphs/book";
 import { IconBuilding } from "@/ui/icons/glyphs/building";
+import { IconCalculator } from "@/ui/icons/glyphs/calculator";
+import { IconCalendar } from "@/ui/icons/glyphs/calendar";
 import { IconChart } from "@/ui/icons/glyphs/chart";
 import { IconChat } from "@/ui/icons/glyphs/chat";
 import { IconDashboard } from "@/ui/icons/glyphs/dashboard";
@@ -215,9 +218,120 @@ export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
   mandates: { href: "/mandates", icon: IconSign, group: "operations" },
   co_broke: { href: "/co-broke", icon: IconSwap, group: "operations" },
   deals: { href: "/deals", icon: IconPercent, group: "operations" },
+  // Pack J (JW1a): the juristic console — the co-owner register, the billing cycles of every frequency, budgets with
+  // the resolutions that adopt them (one section, J-DESIGN §5 "งบประมาณและมติ").
+  juristic_register: { href: "/juristic/register", icon: IconBook, group: "operations" },
+  juristic_cycles: { href: "/juristic/cycles", icon: IconCalendar, group: "money" },
+  juristic_budgets: {
+    href: "/juristic/budgets",
+    icon: IconCalculator,
+    group: "settings",
+    children: [
+      {
+        key: "budgets",
+        href: "/juristic/budgets",
+        label: "owner.juristic.nav.budgets",
+        testId: "juristic-nav-budgets",
+      },
+      {
+        key: "resolutions",
+        href: "/juristic/resolutions",
+        label: "owner.juristic.nav.resolutions",
+        testId: "juristic-nav-resolutions",
+      },
+    ],
+  },
+  // JW1b builds these screens; until then the keys open nothing (no entry that leads to a missing page).
+  juristic_receivables: null,
+  juristic_payment_plans: null,
+  juristic_debt_clearances: null,
+  juristic_statements: null,
+  juristic_collection_ladder: null,
+  juristic_workspace_invitations: null,
 };
 
 export const OWNER_MENU_GROUPS = ["operations", "money", "settings"] as const;
+
+/** Tenant types that run the juristic console (`condo_juristic` is the deprecated alias, D-302). */
+export function isJuristicTenant(type: string | null | undefined): boolean {
+  return type === "juristic" || type === "condo_juristic";
+}
+
+/**
+ * A juristic tenant's rail (J-DESIGN §5): four groups in the office's order — daily work, money, vendors, settings and
+ * system. Keys the API returns are placed by this table; the order inside a group is the table's. Keys not listed keep
+ * the end of the group their registry entry names (mapped below), so nothing the member may open disappears. The
+ * vendors group stays hidden until its keys exist (JW2).
+ */
+export const JURISTIC_MENU_GROUPS = ["daily", "finance", "vendors", "system"] as const;
+export type JuristicMenuGroup = (typeof JURISTIC_MENU_GROUPS)[number];
+
+export const JURISTIC_MENU_ORDER: Readonly<Record<JuristicMenuGroup, readonly string[]>> = {
+  daily: [
+    "dashboard",
+    "juristic_receivables",
+    "juristic_register",
+    "service_requests",
+    "buildings",
+    "units",
+    "parties",
+    "announcements",
+    "parcels",
+    "access",
+    "readings",
+    "devices",
+    "utility_loss",
+    "leases",
+    "deposits",
+  ],
+  finance: [
+    "juristic_cycles",
+    "juristic_debt_clearances",
+    "juristic_payment_plans",
+    "juristic_statements",
+    "invoices",
+    "payments",
+    "rate_plans",
+    "reports",
+  ],
+  vendors: [],
+  system: ["juristic_budgets", "juristic_collection_ladder", "settings", "subscription"],
+};
+
+/** Where an unlisted key goes in the juristic rail: the registry's own group, renamed. */
+const JURISTIC_GROUP_OF_OWNER_GROUP: Readonly<Record<string, JuristicMenuGroup>> = {
+  operations: "daily",
+  money: "finance",
+  settings: "system",
+};
+
+/** The juristic overview answers "เช้านี้" for a juristic office (J-DESIGN §1.1: money first). */
+const JURISTIC_HREF: Readonly<Record<string, string>> = { dashboard: "/juristic" };
+
+/**
+ * Re-groups and re-orders entitled items for a juristic tenant (pure: unit-tested). Items keep their labels and
+ * children; `dashboard` points at the juristic overview.
+ */
+export function juristicLayout<Item extends { key: string; href: string; group: string }>(
+  items: readonly Item[],
+  prefix: (href: string) => string = (href) => href,
+): Item[] {
+  const rank = new Map<string, [number, number]>();
+  JURISTIC_MENU_GROUPS.forEach((group, g) => JURISTIC_MENU_ORDER[group].forEach((key, k) => rank.set(key, [g, k])));
+  const placed = items.map((item, index) => {
+    const [group, position] = rank.get(item.key) ?? [
+      JURISTIC_MENU_GROUPS.indexOf(JURISTIC_GROUP_OF_OWNER_GROUP[item.group] ?? "daily"),
+      1000 + index,
+    ];
+    const href = JURISTIC_HREF[item.key];
+    return {
+      item: { ...item, group: JURISTIC_MENU_GROUPS[group]!, ...(href ? { href: prefix(href) } : {}) },
+      group,
+      position,
+    };
+  });
+  return placed.sort((a, b) => a.group - b.group || a.position - b.position).map(({ item }) => item);
+}
 
 /**
  * Menu keys that are sections of the settings frame (G6): its own section list carries them, so the rail shows one
@@ -243,6 +357,14 @@ export const OWNER_BOTTOM_NAV = [
   { key: "leads", labelKey: "leads" },
   { key: "dashboard", labelKey: "today" },
   { key: "units", labelKey: "units" },
+  { key: "invoices", labelKey: "invoices" },
+  { key: "payments", labelKey: "money" },
+] as const;
+
+/** A juristic office's phone bottom nav: this morning, the register, bills, money in (each when entitled). */
+export const JURISTIC_BOTTOM_NAV = [
+  { key: "dashboard", labelKey: "today" },
+  { key: "juristic_register", labelKey: "register" },
   { key: "invoices", labelKey: "invoices" },
   { key: "payments", labelKey: "money" },
 ] as const;

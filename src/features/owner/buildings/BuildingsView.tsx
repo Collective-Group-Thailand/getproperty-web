@@ -12,12 +12,16 @@ import { IconChevronRight } from "@/ui/icons/glyphs/chevron-right";
 import { ownerPath } from "../shared/links";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import type { OwnerContext } from "../shared/server";
-import { NewBuildingButton, NewPropertyButton } from "./forms";
+import { EditPropertyKindButton, NewBuildingButton, NewPropertyButton } from "./forms";
+import { isJuristicTenant } from "../shell/menu";
 
 /** Properties and their buildings (F2 2.1, D-151: property → building → floor → unit). */
 export async function BuildingsView({ context }: { context: OwnerContext }) {
   const t = await getTranslations("owner.buildings");
-  const { locale, properties, buildings } = context;
+  const { locale, properties, buildings, me } = context;
+  // A juristic office names each property's kind and each building's legal form (D-302).
+  const juristic = isJuristicTenant(me.currentTenant?.type);
+  const kinds = await getTranslations("owner.buildings.kind.name");
   return (
     <OwnerPage testId="buildings">
       <PageHeader
@@ -25,8 +29,11 @@ export async function BuildingsView({ context }: { context: OwnerContext }) {
         description={t("description")}
         actions={
           <>
-            <NewPropertyButton />
-            <NewBuildingButton properties={properties.map(({ id, name }) => ({ id, name }))} />
+            <NewPropertyButton juristic={juristic} />
+            <NewBuildingButton
+              properties={properties.map(({ id, name, kind }) => ({ id, name, kind }))}
+              juristic={juristic}
+            />
           </>
         }
       />
@@ -58,6 +65,12 @@ export async function BuildingsView({ context }: { context: OwnerContext }) {
                   {property.name}
                 </h2>
                 <span className="text-muted font-mono text-sm">{property.code}</span>
+                {juristic && property.kind ? (
+                  <span className="text-muted text-sm" data-testid="property-kind-label">
+                    {kinds(property.kind)}
+                  </span>
+                ) : null}
+                {juristic ? <EditPropertyKindButton property={property} /> : null}
                 {property.address ? (
                   <span className="text-muted text-sm">
                     {[property.address.line1, property.address.district, property.address.province]

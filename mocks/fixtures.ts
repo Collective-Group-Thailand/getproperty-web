@@ -93,6 +93,20 @@ export const TENANTS = {
     },
     subscription: { plan: null, state: "active", readOnly: false },
   },
+  /**
+   * A juristic person (pack J, D-302): a condominium run under the Condominium Act and a housing estate under the Land
+   * Allocation Act in one tenant — the JW1 console (register, budgets and resolutions, rates, cycles).
+   */
+  juristic: {
+    profile: {
+      id: "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c88",
+      displayName: "นิติบุคคล เดอะ ริเวอร์ไซด์",
+      type: "juristic",
+      status: "active",
+      role: "owner",
+    },
+    subscription: { plan: null, state: "active", readOnly: false },
+  },
 } as const satisfies Record<string, MockTenant>;
 
 export type TenantKey = keyof typeof TENANTS;
@@ -147,6 +161,112 @@ const OWNER_MENU_BY_ROLE: Record<Schemas["TenantRole"], string[]> = {
   ],
   accountant: ["dashboard", "invoices", "payments", "deposits", "reports"],
   staff: ["readings", "service_requests", "parcels"],
+  // D-320: juristic tenants only (their menu comes from `JURISTIC_MENU_BY_ROLE`).
+  committee: [],
+  auditor: [],
+};
+
+/**
+ * A juristic tenant's owner-console keys per role, in the API's order (`OWNER_MENU` of `src/core/rbac/menu.ts` at
+ * ed938f2, filtered by the role's permissions and the `juristic` tenant type).
+ */
+const JURISTIC_MENU_BY_ROLE: Record<Schemas["TenantRole"], string[]> = {
+  owner: [
+    "dashboard",
+    "buildings",
+    "units",
+    "parties",
+    "leases",
+    "readings",
+    "rate_plans",
+    "invoices",
+    "payments",
+    "reports",
+    "service_requests",
+    "juristic_register",
+    "juristic_cycles",
+    "juristic_budgets",
+    "juristic_payment_plans",
+    "juristic_debt_clearances",
+    "juristic_receivables",
+    "juristic_statements",
+    "juristic_collection_ladder",
+    "members",
+    "bank_accounts",
+    "settings",
+    "notifications",
+    "privacy",
+    "audit_log",
+    "subscription",
+  ],
+  manager: [
+    "dashboard",
+    "buildings",
+    "units",
+    "parties",
+    "invoices",
+    "payments",
+    "reports",
+    "juristic_register",
+    "juristic_cycles",
+    "juristic_budgets",
+    "juristic_payment_plans",
+    "juristic_debt_clearances",
+    "juristic_receivables",
+    "juristic_statements",
+    "juristic_collection_ladder",
+    "members",
+    "settings",
+  ],
+  accountant: [
+    "dashboard",
+    "invoices",
+    "payments",
+    "reports",
+    "juristic_register",
+    "juristic_cycles",
+    "juristic_budgets",
+  ],
+  staff: ["juristic_register"],
+  committee: [
+    "dashboard",
+    "buildings",
+    "units",
+    "parties",
+    "rate_plans",
+    "invoices",
+    "payments",
+    "reports",
+    "juristic_register",
+    "juristic_cycles",
+    "juristic_budgets",
+    "juristic_payment_plans",
+    "juristic_debt_clearances",
+    "juristic_receivables",
+    "juristic_statements",
+    "juristic_collection_ladder",
+    "settings",
+  ],
+  auditor: [
+    "dashboard",
+    "buildings",
+    "units",
+    "parties",
+    "rate_plans",
+    "invoices",
+    "payments",
+    "reports",
+    "juristic_register",
+    "juristic_cycles",
+    "juristic_budgets",
+    "juristic_payment_plans",
+    "juristic_debt_clearances",
+    "juristic_receivables",
+    "juristic_statements",
+    "juristic_collection_ladder",
+    "settings",
+    "audit_log",
+  ],
 };
 /** Staff PWA menu keys per role (`STAFF_MENU` of the API's `src/core/rbac/menu.ts`, D-180). */
 const STAFF_MENU_BY_ROLE: Record<Schemas["TenantRole"], Schemas["StaffMenuKey"][]> = {
@@ -154,6 +274,8 @@ const STAFF_MENU_BY_ROLE: Record<Schemas["TenantRole"], Schemas["StaffMenuKey"][
   manager: ["readings", "reading_rounds", "inspections", "installs", "service_requests", "parcels"],
   accountant: [],
   staff: ["readings", "reading_rounds", "inspections", "installs", "service_requests", "parcels"],
+  committee: [],
+  auditor: [],
 };
 
 /** Owner menu keys only building operators get (`BUILDING_OPERATORS` in the API's menu.ts, B7.1). */
@@ -173,6 +295,7 @@ export function menuFor(
   role: Schemas["TenantRole"],
   tenantType: Schemas["OperatorTenantDto"]["type"] = "apartment",
 ): string[] {
+  if (surface === "owner" && tenantType === "juristic") return JURISTIC_MENU_BY_ROLE[role];
   const menu = (surface === "owner" ? OWNER_MENU_BY_ROLE : STAFF_MENU_BY_ROLE)[role];
   if (surface !== "owner" || (tenantType !== "landlord" && tenantType !== "agency")) return menu;
   const rest = menu.filter((key) => !BUILDING_OPERATOR_ONLY.has(key));
@@ -308,6 +431,32 @@ export const OPERATORS: OperatorPersona[] = [
       lineLinked: false,
     },
     memberships: [{ tenant: "freshAgency", role: "owner" }],
+  },
+  {
+    // The juristic office's manager with the owner role (pack J, JW1): register, budgets, rates, cycles.
+    key: "juristic",
+    user: {
+      id: "3b241101-e2bb-4255-8caf-4136c566a910",
+      displayName: "วศิน ผู้จัดการนิติ",
+      phone: "+66810000010",
+      email: "juristic@example.com",
+      language: "th",
+      lineLinked: false,
+    },
+    memberships: [{ tenant: "juristic", role: "owner" }],
+  },
+  {
+    // A committee member (D-320): approves budgets and adopts resolutions, never moves money.
+    key: "committee",
+    user: {
+      id: "3b241101-e2bb-4255-8caf-4136c566a911",
+      displayName: "ประภา กรรมการ",
+      phone: "+66810000011",
+      email: null,
+      language: "th",
+      lineLinked: false,
+    },
+    memberships: [{ tenant: "juristic", role: "committee" }],
   },
 ];
 
@@ -510,8 +659,23 @@ const TENANT_KEYS = [
   "notification.route.manage",
   "privacy.manage",
   "tm30.manage",
+  // Pack J (D-320, rbac at api ed938f2).
+  "juristic.register.read",
+  "juristic.register.manage",
+  "juristic.budget.read",
+  "juristic.budget.manage",
+  "juristic.budget.approve",
+  "juristic.resolution.read",
+  "juristic.resolution.manage",
+  "juristic.resolution.adopt",
+  "juristic.collections.read",
+  "juristic.collections.manage",
+  "juristic.payment_plan.approve",
+  "juristic.collections.approve",
 ];
 const MANAGER_EXCLUDED = new Set([
+  "juristic.budget.approve",
+  "juristic.resolution.adopt",
   "tenant.update",
   "tenant.bank_account.manage",
   "tenant.billing_settings.update",
@@ -551,6 +715,8 @@ const TENANT_PERMISSIONS: Record<Schemas["TenantRole"], string[]> = {
     "parcel.manage",
     "community.read",
     "staff_task.read",
+    "juristic.register.read",
+    "juristic.collections.read",
   ],
   accountant: [
     "tenant.read",
@@ -571,6 +737,53 @@ const TENANT_PERMISSIONS: Record<Schemas["TenantRole"], string[]> = {
     "receipt.issue",
     "export.create",
     "report.read",
+    "juristic.register.read",
+    "juristic.budget.read",
+    "juristic.resolution.read",
+    "juristic.collections.read",
+  ],
+  committee: [
+    "tenant.read",
+    "tenant.settings.read",
+    "property.read",
+    "unit.read",
+    "party.read",
+    "document.read",
+    "lease.read",
+    "rate_plan.read",
+    "invoice.read",
+    "payment.read",
+    "report.read",
+    "service_request.read",
+    "juristic.register.read",
+    "juristic.budget.read",
+    "juristic.budget.approve",
+    "juristic.resolution.read",
+    "juristic.resolution.adopt",
+    "juristic.collections.read",
+    "juristic.payment_plan.approve",
+    "juristic.collections.approve",
+  ],
+  auditor: [
+    "tenant.read",
+    "tenant.settings.read",
+    "tenant.audit.read",
+    "property.read",
+    "unit.read",
+    "party.read",
+    "document.read",
+    "lease.read",
+    "deposit.read",
+    "reading.read",
+    "rate_plan.read",
+    "invoice.read",
+    "payment.read",
+    "report.read",
+    "service_request.read",
+    "juristic.register.read",
+    "juristic.budget.read",
+    "juristic.resolution.read",
+    "juristic.collections.read",
   ],
 };
 

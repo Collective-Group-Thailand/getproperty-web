@@ -17,14 +17,16 @@ and headers exactly as against the real backend, and lets the suite read what th
 - `fixtures.ts` — personas, typed against the generated schema. OTP and authenticator code `123456`,
   password `correct horse battery staple`:
 
-  | Persona   | Sign-in                             | Situation                                 |
-  | --------- | ----------------------------------- | ----------------------------------------- |
-  | owner     | `0810000001` or `owner@example.com` | one tenant (หอพักตัวอย่าง), Owner         |
-  | multi     | `0810000002`                        | two tenants → tenant picker / switcher    |
-  | suspended | `0810000003`                        | suspended subscription → read-only banner |
-  | staff     | `0810000004`                        | Staff role, English                       |
-  | totp      | `totp@example.com`                  | password + TOTP                           |
-  | admin     | `admin@example.com`                 | platform, TOTP enrolment at first sign-in |
-  | support   | `support@example.com`               | platform, already enrolled                |
+  | Persona   | Sign-in                                | Situation                                                |
+  | --------- | -------------------------------------- | -------------------------------------------------------- |
+  | owner     | `0810000001` or `owner@example.com`    | one tenant (หอพักตัวอย่าง), Owner                        |
+  | multi     | `0810000002`                           | two tenants → tenant picker / switcher                   |
+  | suspended | `0810000003`                           | suspended subscription → read-only banner                |
+  | staff     | `0810000004`                           | Staff role, English                                      |
+  | totp      | `totp@example.com`                     | password + TOTP                                          |
+  | admin     | `admin@example.com`                    | platform, TOTP enrolment at first sign-in                |
+  | support   | `support@example.com`                  | platform, already enrolled                               |
+  | juristic  | `0810000010` or `juristic@example.com` | juristic office (condo + housing estate), Owner (pack J) |
+  | committee | `0810000011`                           | the same juristic office, Committee (approves, adopts)   |
 
 - `state.ts` — the mock's memory; `server.ts` documents the `/__mock/*` control endpoints.

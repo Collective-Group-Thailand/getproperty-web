@@ -17,7 +17,8 @@ import { SimpleTable } from "@/ui/components/SimpleTable";
 
 import { ownerCan, param, readOnly, section, type OwnerContext } from "../shared/server";
 import { PLAN_KINDS } from "./constants";
-import { CreateRatePlan, NewRateVersion, RatePlanMenu } from "./RatePlanActions";
+import { CreateRatePlan, NewRateVersion, RatePlanMenu, type ResolutionOption } from "./RatePlanActions";
+import { isJuristicTenant } from "../shell/menu";
 import { describeTiers } from "./tiers";
 import { IconTag } from "@/ui/icons/glyphs/tag";
 import { ownerPath } from "../shared/links";
@@ -71,11 +72,26 @@ export async function RatePlansView({
 }) {
   const t = await getTranslations("owner.rates");
   const { api, locale, me, buildings } = context;
-  const [plans, settings, refs] = await Promise.all([
+  // A juristic office's common fee / fund versions name the adopted resolution that set them (D-304).
+  const juristic = isJuristicTenant(me.currentTenant?.type);
+  const [plans, settings, refs, resolutions] = await Promise.all([
     section(unwrap(api.GET("/v1/owner/rate-plans"))),
     section(unwrap(api.GET("/v1/owner/settings"))),
     capReferences(context),
+    juristic && ownerCan(me, "juristic.resolution.read")
+      ? section(
+          unwrap(api.GET("/v1/owner/juristic/resolutions", { params: { query: { state: "adopted", perPage: 100 } } })),
+        )
+      : Promise.resolve(null),
   ]);
+  const resolutionOptions: ResolutionOption[] | undefined = juristic
+    ? (resolutions?.data?.data ?? []).map((row) => ({
+        id: row.id,
+        buildingId: row.buildingId,
+        label: t("resolutionOption", { number: row.number, title: row.title }),
+      }))
+    : undefined;
+  const resolutionNumber = new Map((resolutions?.data?.data ?? []).map((row) => [row.id, row.number]));
   const caps = await Promise.all(
     refs.map(async (ref) => ({
       ref,
@@ -115,6 +131,8 @@ export async function RatePlansView({
       : null;
 
   const manage = ownerCan(me, "rate_plan.manage") && !readOnly(me);
+  // A juristic office without its own utility accounts bills common fees only: the utility reference has nothing to say.
+  const showCap = !(juristic && caps.length === 0);
   const unitShort = (utility: Schemas["Utility"]) => t(`unit.${utility === "electric" ? "kwh" : "m3"}`);
   const capHintFor = (kind: Schemas["RatePlanKind"]) => {
     const utility = kind === "power" ? "electric" : kind === "water" ? "water" : null;
@@ -151,7 +169,7 @@ export async function RatePlansView({
 
       {/* The owner's own rates are the subject (G3 revision): they lead; the utility's reference rates and the sample
           calculator sit in the right rail as reference. */}
-      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]">
+      <div className={showCap ? "grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_24rem]" : "flex flex-col gap-6"}>
         <div className="flex min-w-0 flex-col gap-6">
           {!plans.data ? (
             <SectionError error={plans.error} />
@@ -209,11 +227,22 @@ export async function RatePlansView({
                               ) : null}
                             </span>
                           }
-                          description={buildingName(plan.buildingId)}
+                          description={
+                            plan.frequency === "monthly"
+                              ? buildingName(plan.buildingId)
+                              : t("planScope", {
+                                  building: buildingName(plan.buildingId),
+                                  frequency: t(`frequencyName.${plan.frequency}`),
+                                })
+                          }
                           action={
                             manage ? (
                               <span className="flex flex-wrap gap-2">
-                                <NewRateVersion plan={plan} capHint={capHintFor(plan.kind)} />
+                                <NewRateVersion
+                                  plan={plan}
+                                  capHint={capHintFor(plan.kind)}
+                                  resolutions={resolutionOptions}
+                                />
                                 <RatePlanMenu plan={plan} />
                               </span>
                             ) : undefined
@@ -234,7 +263,10 @@ export async function RatePlansView({
                             columns={[
                               { key: "from", header: t("col.from") },
                               { key: "prices", header: t("col.prices") },
-                              { key: "cap", header: t("col.cap") },
+                              // The utility cap compares power and water only (D-021a).
+                              ...(plan.kind === "power" || plan.kind === "water"
+                                ? [{ key: "cap", header: t("col.cap") }]
+                                : []),
                               { key: "state", header: t("col.state") },
                             ]}
                             rows={versions.map((version) => {
@@ -252,12 +284,36 @@ export async function RatePlansView({
                                         <span key={line.label}>
                                           {line.label === "flat"
                                             ? t("flat")
-                                            : line.label === "fixed" || line.label === "budget"
+                                            : line.label === "fixed"
                                               ? t("fixed")
-                                              : line.label}
-                                          : <span className="font-mono">{line.price}</span>
+                                              : line.label === "budget" || line.label === "budgetYear"
+                                                ? t(line.label === "budgetYear" ? "budgetPerYear" : "budgetPerMonth")
+                                                : line.label}
+                                          :{" "}
+                                          {line.label === "budget" || line.label === "budgetYear" ? (
+                                            <span className="tabular-nums">{formatTHB(line.price, locale)}</span>
+                                          ) : (
+                                            <span className="font-mono">{line.price}</span>
+                                          )}
+                                          {line.splitBy ? (
+                                            <span className="text-muted">
+                                              {" "}
+                                              · {t(`splitByName.${line.splitBy as "per_unit"}`)}
+                                            </span>
+                                          ) : null}
                                         </span>
                                       ))}
+                                      {version.resolutionId ? (
+                                        <a
+                                          className="text-primary underline-offset-4 hover:underline"
+                                          href={ownerPath(locale, `/juristic/resolutions/${version.resolutionId}`)}
+                                          data-testid="version-resolution-link"
+                                        >
+                                          {t("resolutionRef", {
+                                            number: resolutionNumber.get(version.resolutionId) ?? "—",
+                                          })}
+                                        </a>
+                                      ) : null}
                                       {version.minimumCharge ? (
                                         <span>
                                           {t("minimum", { amount: formatTHB(version.minimumCharge, locale) })}
@@ -311,141 +367,147 @@ export async function RatePlansView({
             ))
           )}
         </div>
-        <Card as="section" aria-labelledby="rates-cap" data-testid="tariff-cap" className="xl:sticky xl:top-6">
-          <CardHeader title={<span id="rates-cap">{t("cap.title")}</span>} description={t("cap.description")} />
-          {caps.length === 0 ? (
-            <p className="text-muted">{t("cap.noAccounts")}</p>
-          ) : (
-            <ul className="grid gap-4">
-              {caps.map(({ ref, result }) => (
-                <li
-                  key={`${ref.utility}-${ref.provider}`}
-                  className="border-border rounded-card border p-4"
-                  data-testid="cap-ref"
-                  data-utility={ref.utility}
-                  data-provider={ref.provider}
-                >
-                  <p className="font-semibold">
-                    {t(`utility.${ref.utility}`)} · {t(`provider.${ref.provider}`)}
-                  </p>
-                  {!result.data ? (
-                    isApiError(result.error) && result.error.code === "tariff.not_found" ? (
-                      <p className="text-muted text-sm">{t("cap.notPublished")}</p>
+        {showCap ? (
+          <Card as="section" aria-labelledby="rates-cap" data-testid="tariff-cap" className="xl:sticky xl:top-6">
+            <CardHeader title={<span id="rates-cap">{t("cap.title")}</span>} description={t("cap.description")} />
+            {caps.length === 0 ? (
+              <p className="text-muted">{t("cap.noAccounts")}</p>
+            ) : (
+              <ul className="grid gap-4">
+                {caps.map(({ ref, result }) => (
+                  <li
+                    key={`${ref.utility}-${ref.provider}`}
+                    className="border-border rounded-card border p-4"
+                    data-testid="cap-ref"
+                    data-utility={ref.utility}
+                    data-provider={ref.provider}
+                  >
+                    <p className="font-semibold">
+                      {t(`utility.${ref.utility}`)} · {t(`provider.${ref.provider}`)}
+                    </p>
+                    {!result.data ? (
+                      isApiError(result.error) && result.error.code === "tariff.not_found" ? (
+                        <p className="text-muted text-sm">{t("cap.notPublished")}</p>
+                      ) : (
+                        <SectionError error={result.error} />
+                      )
                     ) : (
-                      <SectionError error={result.error} />
-                    )
-                  ) : (
-                    result.data.map((tariff) => (
-                      <div key={tariff.versionId} className="mt-2 flex flex-col gap-1 text-sm">
-                        <span>
-                          {tariff.nameTh} · {t("cap.since", { date: formatDate(tariff.effectiveFrom, locale) })}
-                        </span>
-                        {tariff.charge?.effectiveAverageRate ? (
-                          <span data-testid="cap-rate">
-                            {t("cap.average", {
-                              rate: formatDecimal(tariff.charge.effectiveAverageRate, locale, 4),
+                      result.data.map((tariff) => (
+                        <div key={tariff.versionId} className="mt-2 flex flex-col gap-1 text-sm">
+                          <span>
+                            {tariff.nameTh} · {t("cap.since", { date: formatDate(tariff.effectiveFrom, locale) })}
+                          </span>
+                          {tariff.charge?.effectiveAverageRate ? (
+                            <span data-testid="cap-rate">
+                              {t("cap.average", {
+                                rate: formatDecimal(tariff.charge.effectiveAverageRate, locale, 4),
+                                unit: unitShort(ref.utility),
+                                units: tariff.charge.units,
+                              })}
+                            </span>
+                          ) : null}
+                          <span className="text-muted">
+                            {t("cap.ceiling", {
+                              rate: formatDecimal(tariff.ceilingPerUnit, locale, 4),
                               unit: unitShort(ref.utility),
-                              units: tariff.charge.units,
                             })}
                           </span>
-                        ) : null}
-                        <span className="text-muted">
-                          {t("cap.ceiling", {
-                            rate: formatDecimal(tariff.ceilingPerUnit, locale, 4),
-                            unit: unitShort(ref.utility),
-                          })}
-                        </span>
+                          <a
+                            href={tariff.sourceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary text-xs underline-offset-4 hover:underline"
+                          >
+                            {t("cap.source")}
+                          </a>
+                        </div>
+                      ))
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {sampleRef ? (
+              <div className="mt-6 flex flex-col gap-3" data-testid="sample-bill">
+                <h3 className="font-semibold">{t("sample.title")}</h3>
+                <p className="text-muted text-sm">{t("sample.description")}</p>
+                <form method="get" className="flex flex-wrap items-end gap-3">
+                  <div className="flex flex-col gap-1 text-sm">
+                    <span>{t("sample.tariff")}</span>
+                    <span className="flex flex-wrap gap-2">
+                      {refs.map((ref) => (
                         <a
-                          href={tariff.sourceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary text-xs underline-offset-4 hover:underline"
+                          key={`${ref.utility}:${ref.provider}`}
+                          href={`?sampleUtility=${ref.utility}&sampleProvider=${ref.provider}${units ? `&units=${units}` : ""}`}
+                          aria-current={
+                            ref.utility === sampleRef.utility && ref.provider === sampleRef.provider
+                              ? "true"
+                              : undefined
+                          }
+                          className="border-border rounded-control aria-[current=true]:border-primary aria-[current=true]:bg-primary-subtle border px-2 py-1"
                         >
-                          {t("cap.source")}
+                          {t(`utility.${ref.utility}`)} · {t(`provider.${ref.provider}`)}
                         </a>
-                      </div>
-                    ))
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-          {sampleRef ? (
-            <div className="mt-6 flex flex-col gap-3" data-testid="sample-bill">
-              <h3 className="font-semibold">{t("sample.title")}</h3>
-              <p className="text-muted text-sm">{t("sample.description")}</p>
-              <form method="get" className="flex flex-wrap items-end gap-3">
-                <div className="flex flex-col gap-1 text-sm">
-                  <span>{t("sample.tariff")}</span>
-                  <span className="flex flex-wrap gap-2">
-                    {refs.map((ref) => (
-                      <a
-                        key={`${ref.utility}:${ref.provider}`}
-                        href={`?sampleUtility=${ref.utility}&sampleProvider=${ref.provider}${units ? `&units=${units}` : ""}`}
-                        aria-current={
-                          ref.utility === sampleRef.utility && ref.provider === sampleRef.provider ? "true" : undefined
-                        }
-                        className="border-border rounded-control aria-[current=true]:border-primary aria-[current=true]:bg-primary-subtle border px-2 py-1"
-                      >
-                        {t(`utility.${ref.utility}`)} · {t(`provider.${ref.provider}`)}
-                      </a>
-                    ))}
-                  </span>
-                </div>
-                <input type="hidden" name="sampleUtility" value={sampleRef.utility} />
-                <input type="hidden" name="sampleProvider" value={sampleRef.provider} />
-                <label className="flex flex-col gap-1 text-sm">
-                  {t("sample.units", { unit: unitShort(sampleRef.utility) })}
-                  <Input
-                    name="units"
-                    inputMode="decimal"
-                    inputSize="sm"
-                    defaultValue={units ?? ""}
-                    className="w-32"
-                    data-testid="sample-units"
-                  />
-                </label>
-                <Button type="submit" size="sm" variant="secondary">
-                  {t("sample.run")}
-                </Button>
-              </form>
-              {sample ? (
-                sample.data?.[0]?.charge ? (
-                  <div className="flex flex-col gap-2" data-testid="sample-result">
-                    <SimpleTable
-                      caption={t("sample.title")}
-                      minWidth="28rem"
-                      columns={[
-                        { key: "label", header: t("sample.col.line") },
-                        { key: "units", header: t("sample.col.units"), align: "end" },
-                        { key: "price", header: t("sample.col.price"), align: "end" },
-                        { key: "amount", header: t("sample.col.amount"), align: "end" },
-                      ]}
-                      rows={sample.data[0].charge.lines.map((line, index) => ({
-                        key: `${line.label}-${index}`,
-                        cells: {
-                          label: line.label,
-                          units: line.units ? formatDecimal(line.units, locale, 2) : "—",
-                          price: line.pricePerUnit ? formatDecimal(line.pricePerUnit, locale, 4) : "—",
-                          amount: formatTHB(line.amount, locale),
-                        },
-                      }))}
-                    />
-                    <p className="text-sm">
-                      {t("sample.total")}:{" "}
-                      <strong data-testid="sample-total">{formatTHB(sample.data[0].charge.totalExVat, locale)}</strong>
-                      {sample.data[0].charge.effectiveAverageRate
-                        ? ` · ${t("sample.average", { rate: formatDecimal(sample.data[0].charge.effectiveAverageRate, locale, 4), unit: unitShort(sampleRef.utility) })}`
-                        : ""}
-                    </p>
+                      ))}
+                    </span>
                   </div>
-                ) : (
-                  <SectionError error={sample.error} />
-                )
-              ) : null}
-            </div>
-          ) : null}
-        </Card>
+                  <input type="hidden" name="sampleUtility" value={sampleRef.utility} />
+                  <input type="hidden" name="sampleProvider" value={sampleRef.provider} />
+                  <label className="flex flex-col gap-1 text-sm">
+                    {t("sample.units", { unit: unitShort(sampleRef.utility) })}
+                    <Input
+                      name="units"
+                      inputMode="decimal"
+                      inputSize="sm"
+                      defaultValue={units ?? ""}
+                      className="w-32"
+                      data-testid="sample-units"
+                    />
+                  </label>
+                  <Button type="submit" size="sm" variant="secondary">
+                    {t("sample.run")}
+                  </Button>
+                </form>
+                {sample ? (
+                  sample.data?.[0]?.charge ? (
+                    <div className="flex flex-col gap-2" data-testid="sample-result">
+                      <SimpleTable
+                        caption={t("sample.title")}
+                        minWidth="28rem"
+                        columns={[
+                          { key: "label", header: t("sample.col.line") },
+                          { key: "units", header: t("sample.col.units"), align: "end" },
+                          { key: "price", header: t("sample.col.price"), align: "end" },
+                          { key: "amount", header: t("sample.col.amount"), align: "end" },
+                        ]}
+                        rows={sample.data[0].charge.lines.map((line, index) => ({
+                          key: `${line.label}-${index}`,
+                          cells: {
+                            label: line.label,
+                            units: line.units ? formatDecimal(line.units, locale, 2) : "—",
+                            price: line.pricePerUnit ? formatDecimal(line.pricePerUnit, locale, 4) : "—",
+                            amount: formatTHB(line.amount, locale),
+                          },
+                        }))}
+                      />
+                      <p className="text-sm">
+                        {t("sample.total")}:{" "}
+                        <strong data-testid="sample-total">
+                          {formatTHB(sample.data[0].charge.totalExVat, locale)}
+                        </strong>
+                        {sample.data[0].charge.effectiveAverageRate
+                          ? ` · ${t("sample.average", { rate: formatDecimal(sample.data[0].charge.effectiveAverageRate, locale, 4), unit: unitShort(sampleRef.utility) })}`
+                          : ""}
+                      </p>
+                    </div>
+                  ) : (
+                    <SectionError error={sample.error} />
+                  )
+                ) : null}
+              </div>
+            ) : null}
+          </Card>
+        ) : null}
       </div>
     </OwnerPage>
   );

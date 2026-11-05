@@ -41,10 +41,26 @@
     "invoices": "บิล",
     "money": "รับเงิน",
     "more": "เพิ่มเติม",
-    "mandatedUnits": "ห้องที่ดูแล"
+    "mandatedUnits": "ห้องที่ดูแล",
+    "register": "ทะเบียน"
   },
   "mandated_units": "ห้องที่ได้รับมอบหมาย",
   "mandates": "การมอบหมายนายหน้า",
   "co_broke": "Co-broke",
-  "deals": "ดีลที่ปิดแล้ว"
+  "deals": "ดีลที่ปิดแล้ว",
+  "juristic_register": "ทะเบียนเจ้าของร่วม",
+  "juristic_cycles": "รอบเรียกเก็บ",
+  "juristic_budgets": "งบประมาณและมติ",
+  "juristic_receivables": "ลูกหนี้ค่าส่วนกลาง",
+  "juristic_payment_plans": "แผนผ่อนชำระ",
+  "juristic_debt_clearances": "ใบปลอดหนี้",
+  "juristic_statements": "ใบแจ้งยอดเจ้าของร่วม",
+  "juristic_collection_ladder": "ขั้นตอนทวงถาม",
+  "juristic_workspace_invitations": "เชิญนิติบุคคล",
+  "juristicGroup": {
+    "daily": "งานประจำวัน",
+    "finance": "การเงิน",
+    "vendors": "ผู้ให้บริการ",
+    "system": "ตั้งค่าและระบบ"
+  }
 }

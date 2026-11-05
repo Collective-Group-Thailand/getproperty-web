@@ -289,7 +289,19 @@
     "removeMenu": "Remove from the team",
     "invitationMenu": "Invitation actions",
     "noInvitationsHint": "Invitations you send stay here until they are accepted or expire",
-    "sentVia": "Sent by {channel}"
+    "sentVia": "Sent by {channel}",
+    "accessUntil": "Access until",
+    "accessUntilHint": "Auditors read only, and their access ends by itself on this day.",
+    "accessUntilRequired": "Enter the day the auditor's access ends",
+    "roleUntil": "{role} · until {date}",
+    "roleHint": {
+      "owner": "Everything, including approving budgets and adopting resolutions",
+      "manager": "Runs the day; does not approve budgets or adopt resolutions",
+      "accountant": "Bills, payments and reports",
+      "staff": "Field work; reads the register",
+      "committee": "Approves budgets and adopts resolutions; reads reports; never moves money",
+      "auditor": "Read only, until a set day"
+    }
   },
   "notifications": {
     "title": "Notifications to residents",

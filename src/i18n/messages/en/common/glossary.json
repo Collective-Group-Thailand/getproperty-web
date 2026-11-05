@@ -4,13 +4,16 @@
     "condo_juristic": "Condominium juristic person",
     "pm_company": "Property management company",
     "landlord": "Landlord",
-    "agency": "Estate agency"
+    "agency": "Estate agency",
+    "juristic": "Juristic person"
   },
   "tenantRole": {
     "owner": "Owner",
     "manager": "Manager",
     "staff": "Staff",
-    "accountant": "Accountant"
+    "accountant": "Accountant",
+    "committee": "Committee",
+    "auditor": "Auditor"
   },
   "platformRole": {
     "platform_admin": "Platform admin",

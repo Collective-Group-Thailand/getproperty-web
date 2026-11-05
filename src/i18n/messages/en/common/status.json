@@ -487,5 +487,19 @@
     "rejected": "Rejected",
     "hidden": "Hidden by getproperty",
     "withdrawn": "Withdrawn by the author"
+  },
+  "resolution": {
+    "draft": "Draft",
+    "adopted": "Adopted",
+    "void": "Void"
+  },
+  "budget": {
+    "draft": "Draft",
+    "approved": "Approved",
+    "superseded": "Superseded"
+  },
+  "register": {
+    "complete": "Complete",
+    "incomplete": "Incomplete"
   }
 }

@@ -4,6 +4,7 @@ import type { AdminPermission } from "../shared/permissions";
 
 export type TenantTab =
   | "overview"
+  | "buildings"
   | "subscription"
   | "invoices"
   | "hardware"
@@ -22,7 +23,7 @@ const has = (me: Pick<AdminMe, "permissions">, permission: AdminPermission) => m
  * column (redesign G8: the tabs folded into the column). The API refuses the rest anyway.
  */
 export function tenantSections(me: Pick<AdminMe, "permissions">): TenantTab[] {
-  const tabs: TenantTab[] = ["overview"];
+  const tabs: TenantTab[] = ["overview", "buildings"];
   const business = has(me, "admin.subscription.manage");
   if (business) tabs.push("subscription", "invoices");
   if (business || has(me, "admin.device.manage")) tabs.push("hardware", "field-work");

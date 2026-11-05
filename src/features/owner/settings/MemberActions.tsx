@@ -5,7 +5,8 @@ import { useState } from "react";
 
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 import { ActionMenu } from "@/features/shared/console/ActionMenu";
-import { FormDialog, text } from "@/features/shared/console/FormDialog";
+import { DateField } from "@/features/shared/console/DateField";
+import { FormDialog, invalidField, text } from "@/features/shared/console/FormDialog";
 import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
@@ -24,6 +25,26 @@ import { IconRemove } from "@/ui/icons/glyphs/remove";
 import { IconXCircle } from "@/ui/icons/glyphs/x-circle";
 
 const ROLES: Schemas["TenantRole"][] = ["owner", "manager", "accountant", "staff"];
+/** D-320: a juristic tenant's committee (approves budgets, adopts resolutions) and time-boxed auditor. */
+const JURISTIC_ROLES: Schemas["TenantRole"][] = ["committee", "auditor"];
+const rolesFor = (juristic: boolean) => (juristic ? [...ROLES, ...JURISTIC_ROLES] : ROLES);
+
+/** The end of an auditor's access: the chosen day, to its last second in Bangkok (the API stores an instant). */
+export function accessUntilInstant(day: string | undefined): string | undefined {
+  return day && /^\d{4}-\d{2}-\d{2}$/.test(day) ? `${day}T23:59:59+07:00` : undefined;
+}
+
+/** An auditor's access end date (required, D-320; at most `juristic.auditor_max_days` ahead — the API checks). */
+function AccessUntilField({ defaultValue, error }: { defaultValue?: string | null; error?: string }) {
+  const t = useTranslations("owner.settings.members");
+  return (
+    <Field label={t("accessUntil")} hint={t("accessUntilHint")} required error={error}>
+      <div className="max-w-64" data-testid="access-until">
+        <DateField name="accessUntil" defaultValue={defaultValue ? defaultValue.slice(0, 10) : null} />
+      </div>
+    </Field>
+  );
+}
 const CHANNELS: Schemas["InvitationChannel"][] = ["sms", "email", "link", "line_qr"];
 
 function BuildingChoice({
@@ -62,14 +83,18 @@ export function InviteMember({
   buildings,
   testId = "invite-member",
   secondary = false,
+  juristic = false,
 }: {
   buildings: { id: string; name: string }[];
   testId?: string;
   /** Outlined, where the page head already carries the filled one. */
   secondary?: boolean;
+  /** A juristic tenant: committee and auditor roles too (D-320). */
+  juristic?: boolean;
 }) {
   const t = useTranslations("owner.settings.members");
   const roles = useTranslations("glossary.tenantRole");
+  const [role, setRole] = useState<Schemas["TenantRole"]>("staff");
   const [channel, setChannel] = useState<Schemas["InvitationChannel"]>("sms");
   const [created, setCreated] = useState<Schemas["InvitationCreatedDto"] | null>(null);
   const [phone, setPhone] = useState("");
@@ -87,10 +112,13 @@ export function InviteMember({
         onDone={(result) => setCreated(result as Schemas["InvitationCreatedDto"])}
         onSubmit={(data) => {
           const chosen = chosenBuildings(data, buildings);
+          const accessUntil = role === "auditor" ? accessUntilInstant(text(data, "accessUntil")) : undefined;
+          if (role === "auditor" && !accessUntil) invalidField("accessUntil", t("accessUntilRequired"));
           return unwrap(
             browserApi().POST("/v1/owner/invitations", {
               body: {
-                role: (text(data, "role") ?? "staff") as Schemas["TenantRole"],
+                role,
+                ...(accessUntil ? { accessUntil } : {}),
                 channel,
                 phone: channel === "sms" ? (toE164(phone) ?? undefined) : undefined,
                 email: channel === "email" ? text(data, "email") : undefined,
@@ -102,14 +130,16 @@ export function InviteMember({
       >
         {(errors) => (
           <>
-            <Field label={t("role")} required error={errors.role}>
+            <Field label={t("role")} hint={juristic ? t(`roleHint.${role}`) : undefined} required error={errors.role}>
               <NativeSelect
                 name="role"
-                defaultValue="staff"
-                options={ROLES.map((role) => ({ value: role, label: roles(role) }))}
+                value={role}
+                onChange={(event) => setRole(event.target.value as Schemas["TenantRole"])}
+                options={rolesFor(juristic).map((value) => ({ value, label: roles(value) }))}
                 data-testid="invite-role"
               />
             </Field>
+            {role === "auditor" ? <AccessUntilField error={errors.accessUntil} /> : null}
             <Field label={t("channel")} required error={errors.channel}>
               <NativeSelect
                 name="channel"
@@ -164,12 +194,15 @@ export function InviteMember({
 export function EditMember({
   member,
   buildings,
+  juristic = false,
 }: {
   member: Schemas["MemberDto"];
   buildings: { id: string; name: string }[];
+  juristic?: boolean;
 }) {
   const t = useTranslations("owner.settings.members");
   const roles = useTranslations("glossary.tenantRole");
+  const [role, setRole] = useState<Schemas["TenantRole"]>(member.role);
   return (
     <FormDialog
       label={t("edit")}
@@ -182,11 +215,14 @@ export function EditMember({
       successMessage={t("saved")}
       onSubmit={(data) => {
         const chosen = chosenBuildings(data, buildings);
+        const accessUntil = role === "auditor" ? accessUntilInstant(text(data, "accessUntil")) : undefined;
+        if (role === "auditor" && !accessUntil) invalidField("accessUntil", t("accessUntilRequired"));
         return unwrap(
           browserApi().PATCH("/v1/owner/members/{membershipId}", {
             params: { path: { membershipId: member.id } },
             body: {
-              role: text(data, "role") as Schemas["TenantRole"],
+              role,
+              ...(accessUntil ? { accessUntil } : {}),
               status: text(data, "status") as Schemas["MemberSettableStatus"],
               buildingIds: buildings.length < 2 ? undefined : chosen.length ? chosen : null,
             },
@@ -199,11 +235,18 @@ export function EditMember({
           <Field label={t("role")} required error={errors.role}>
             <NativeSelect
               name="role"
-              defaultValue={member.role}
-              options={ROLES.map((role) => ({ value: role, label: roles(role) }))}
+              value={role}
+              onChange={(event) => setRole(event.target.value as Schemas["TenantRole"])}
+              options={rolesFor(juristic || JURISTIC_ROLES.includes(member.role)).map((value) => ({
+                value,
+                label: roles(value),
+              }))}
               data-testid="member-role"
             />
           </Field>
+          {role === "auditor" ? (
+            <AccessUntilField defaultValue={member.accessUntil} error={errors.accessUntil} />
+          ) : null}
           <Field label={t("status")} error={errors.status}>
             <NativeSelect
               name="status"
@@ -276,14 +319,16 @@ export function RevokeInvitation({ invitation }: { invitation: Schemas["Invitati
 export function MemberMenu({
   member,
   buildings,
+  juristic = false,
 }: {
   member: Schemas["MemberDto"];
   buildings: { id: string; name: string }[];
+  juristic?: boolean;
 }) {
   const t = useTranslations("owner.settings.members");
   return (
     <ActionMenu label={t("menu", { name: member.displayName })} testId={`member-menu-${member.id}`}>
-      <EditMember member={member} buildings={buildings} />
+      <EditMember member={member} buildings={buildings} juristic={juristic} />
       <RemoveMember member={member} />
     </ActionMenu>
   );

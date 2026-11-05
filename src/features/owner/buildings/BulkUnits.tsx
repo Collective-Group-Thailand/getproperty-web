@@ -24,7 +24,7 @@ import { ProblemNotice, useApiAction } from "@/features/shared/console/useApiAct
 
 type Step = "floors" | "numbers" | "confirm" | "done";
 const STEPS: Step[] = ["floors", "numbers", "confirm", "done"];
-const TYPES: Schemas["UnitType"][] = ["room", "condo_unit", "house", "shop", "parking"];
+const TYPES: Schemas["UnitType"][] = ["room", "condo_unit", "house", "shop", "parking", "plot"];
 const MONEY = /^\d{1,9}(\.\d{1,2})?$/;
 
 /**

@@ -5,7 +5,7 @@ import { METER_HEALTH_STATUS } from "@/domain/status/meterHealth";
 import { READING_SOURCE_VALUES, type ReadingSource } from "@/domain/status/readingSource";
 import { ReadingSourceBadge } from "@/features/shared/status/ReadingSourceBadge";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
-import { formatDateTime, formatNumber, formatPeriodKey, formatTHB } from "@/i18n/format";
+import { formatDate, formatDateTime, formatNumber, formatPeriodKey, formatTHB } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
@@ -21,6 +21,7 @@ import { IconBill } from "@/ui/icons/glyphs/bill";
 import { IconChevronRight } from "@/ui/icons/glyphs/chevron-right";
 
 import { FilterBar, type FilterField } from "@/features/shared/console/FilterBar";
+import { enumParam } from "@/features/shared/console/params";
 import { ownerPath, withQuery } from "../shared/links";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { focusedBuilding, param, section, type OwnerContext } from "../shared/server";
@@ -31,6 +32,9 @@ import { DraftReview } from "./DraftReview";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 const STEPS: Schemas["BillingCycleStatus"][] = ["open", "readings_pending", "computed", "issued", "closed"];
+/** An advance cycle (quarterly, half-yearly, yearly — D-303) bills common fees and funds only: no meter readings. */
+const ADVANCE_STEPS: Schemas["BillingCycleStatus"][] = ["open", "computed", "issued", "closed"];
+const FREQUENCIES: Schemas["BillingFrequency"][] = ["monthly", "quarterly", "semiannual", "annual"];
 
 function stat(stats: Record<string, unknown>, key: string): number | null {
   const value = stats[key];
@@ -50,11 +54,17 @@ function isSource(value: string): value is ReadingSource {
 export async function BillingWorkspace({
   context,
   searchParams,
+  frequencies = false,
+  testId = "billing",
 }: {
   context: OwnerContext;
   searchParams: SearchParams;
+  /** The juristic cycles page (JW1a): a frequency filter, and period keys of every frequency. */
+  frequencies?: boolean;
+  testId?: string;
 }) {
   const t = await getTranslations("owner.billing");
+  const frequency = frequencies ? enumParam(searchParams.frequency, FREQUENCIES) : undefined;
   const { api, locale } = context;
   const building = focusedBuilding(context);
   const propertyId = param(searchParams.property) ?? building?.propertyId ?? context.properties[0]?.id;
@@ -72,14 +82,25 @@ export async function BillingWorkspace({
           },
         ]
       : [];
+  const frequencyField: FilterField[] = frequencies
+    ? [
+        {
+          name: "frequency",
+          label: t("frequency.label"),
+          type: "select",
+          placeholder: t("frequency.all"),
+          options: FREQUENCIES.map((value) => ({ value, label: t(`frequency.${value}`) })),
+        },
+      ]
+    : [];
   // Stitch G3 billing: the project and the month sit in the page head (right), not in rows of their own.
   const head = (periodField: FilterField[] = []) => (
     <PageHeader
-      title={t("title")}
-      description={t("description")}
+      title={frequencies ? t("juristicTitle") : t("title")}
+      description={frequencies ? t("juristicDescription") : t("description")}
       actions={
-        propertyField.length || periodField.length ? (
-          <FilterBar variant="toolbar" fields={[...propertyField, ...periodField]} />
+        propertyField.length || periodField.length || frequencyField.length ? (
+          <FilterBar variant="toolbar" fields={[...propertyField, ...frequencyField, ...periodField]} />
         ) : undefined
       }
     />
@@ -87,7 +108,7 @@ export async function BillingWorkspace({
   const header = head();
   if (!property) {
     return (
-      <OwnerPage testId="billing">
+      <OwnerPage testId={testId}>
         {header}
         <Card>
           <EmptyState
@@ -105,7 +126,9 @@ export async function BillingWorkspace({
   }
 
   const cycles = await unwrap(
-    api.GET("/v1/owner/billing-cycles", { params: { query: { propertyId: property.id, perPage: 12 } } }),
+    api.GET("/v1/owner/billing-cycles", {
+      params: { query: { propertyId: property.id, perPage: 12, ...(frequency ? { frequency } : {}) } },
+    }),
   );
   const chosen =
     cycles.data.find((cycle) => cycle.periodKey === param(searchParams.period)) ??
@@ -114,7 +137,7 @@ export async function BillingWorkspace({
     cycles.data[0];
   if (!chosen) {
     return (
-      <OwnerPage testId="billing">
+      <OwnerPage testId={testId}>
         {header}
         <Card>
           <EmptyState
@@ -150,10 +173,12 @@ export async function BillingWorkspace({
       ),
     );
   const autoIssue = (settings.data ?? []).find((setting) => setting.key === "billing.auto_issue");
-  const stepIndex = Math.max(0, STEPS.indexOf(cycle.status));
+  const advance = cycle.frequency !== "monthly";
+  const steps = advance ? ADVANCE_STEPS : STEPS;
+  const stepIndex = Math.max(0, steps.indexOf(cycle.status));
 
   return (
-    <OwnerPage testId="billing">
+    <OwnerPage testId={testId}>
       {head(
         cycles.data.length > 1
           ? [
@@ -177,6 +202,11 @@ export async function BillingWorkspace({
                   {t("cycleTitle", { property: cycle.propertyName, period: periodLabel })}
                 </h2>
                 <StatusBadgeOf map={BILLING_CYCLE_STATUS} value={cycle.status} />
+                {frequencies || advance ? (
+                  <Badge tone="neutral" data-testid="cycle-frequency">
+                    {t(`frequency.${cycle.frequency}`)}
+                  </Badge>
+                ) : null}
               </div>
               <CycleActions
                 cycle={cycle}
@@ -185,16 +215,17 @@ export async function BillingWorkspace({
                 totalLabel={totalLabel}
                 members={members}
                 missing={pending.filter(({ item }) => !item.iot).length}
+                advance={advance}
               />
             </div>
             {cycle.status !== "cancelled" ? (
               <Stepper
                 className="mt-6"
                 labelled
-                steps={STEPS.map((id) => ({ id, label: t(`step.${id}`) }))}
+                steps={steps.map((id) => ({ id, label: t(`step.${id}`) }))}
                 current={stepIndex}
                 label={t("steps")}
-                progressText={t("progress", { step: stepIndex + 1, total: STEPS.length })}
+                progressText={t("progress", { step: stepIndex + 1, total: steps.length })}
               />
             ) : null}
             {cycle.autoIssueAt ? (
@@ -216,7 +247,11 @@ export async function BillingWorkspace({
                   label: t("stats.billables"),
                   value: formatNumber(stat(stats, "billables") ?? cycle.invoices.length, locale),
                 },
-                { key: "drafts", label: t("stats.drafts"), value: formatNumber(drafts.length, locale) },
+                {
+                  key: "drafts",
+                  label: t("stats.drafts"),
+                  value: formatNumber(stat(stats, "drafts") ?? drafts.length, locale),
+                },
                 {
                   key: "needsReview",
                   label: t("stats.needsReview"),
@@ -227,99 +262,113 @@ export async function BillingWorkspace({
             />
           </div>
 
-          <Card as="section" aria-labelledby="readings-pending" data-testid="readings-pending">
-            <CardHeader
-              title={<span id="readings-pending">{t("pendingTitle")}</span>}
-              description={t("pendingHint", { cutoff: formatDateTime(cycle.cutOffAt, locale) })}
-            />
-            {pending.length ? (
-              <div className="relative overflow-x-auto">
-                <table className="w-full min-w-[40rem] text-sm">
-                  <caption className="sr-only">{t("pendingTitle")}</caption>
-                  <thead>
-                    <tr className="border-border text-muted border-b">
-                      <th scope="col" className="py-2 text-start font-medium">
-                        {t("unit")}
-                      </th>
-                      <th scope="col" className="py-2 text-start font-medium">
-                        {t("meter")}
-                      </th>
-                      <th scope="col" className="py-2 text-start font-medium">
-                        {t("lastReading")}
-                      </th>
-                      <th scope="col" className="py-2 text-start font-medium">
-                        {t("health")}
-                      </th>
-                      <th scope="col" className="py-2 text-start font-medium">
-                        {t("assigned")}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pending.map(({ round, item }) => (
-                      <tr key={item.meterAssignmentId} className="border-border border-b" data-testid="pending-row">
-                        <th scope="row" className="py-2 text-start font-normal">
-                          <span className="flex flex-col">
-                            <span className="font-mono font-semibold">{item.unitNo ?? "—"}</span>
-                            <span className="text-muted text-xs">{round.buildingName}</span>
-                          </span>
+          {advance ? (
+            <Card as="section" aria-labelledby="advance-title" data-testid="cycle-advance">
+              <CardHeader
+                title={<span id="advance-title">{t("advance.title")}</span>}
+                description={t("advance.body", {
+                  period: periodLabel,
+                  from: formatDate(cycle.periodStart, locale),
+                  to: formatDate(cycle.periodEnd, locale),
+                })}
+              />
+            </Card>
+          ) : null}
+          {advance ? null : (
+            <Card as="section" aria-labelledby="readings-pending" data-testid="readings-pending">
+              <CardHeader
+                title={<span id="readings-pending">{t("pendingTitle")}</span>}
+                description={t("pendingHint", { cutoff: formatDateTime(cycle.cutOffAt, locale) })}
+              />
+              {pending.length ? (
+                <div className="relative overflow-x-auto">
+                  <table className="w-full min-w-[40rem] text-sm">
+                    <caption className="sr-only">{t("pendingTitle")}</caption>
+                    <thead>
+                      <tr className="border-border text-muted border-b">
+                        <th scope="col" className="py-2 text-start font-medium">
+                          {t("unit")}
                         </th>
-                        <td className="py-2">
-                          <a
-                            className="font-mono underline-offset-4 hover:underline"
-                            href={ownerPath(locale, `/meters/${item.assetItemId}`)}
-                          >
-                            {item.code}
-                          </a>{" "}
-                          <span className="text-muted">{t(`utility.${item.utility}`)}</span>
-                        </td>
-                        <td className="py-2">
-                          {item.lastReading ? (
-                            <span className="flex flex-wrap items-center gap-2">
-                              <span className="font-mono tabular-nums">{item.lastReading.register}</span>
-                              {isSource(item.lastReading.source) ? (
-                                <ReadingSourceBadge source={item.lastReading.source} />
-                              ) : null}
-                              <span className="text-muted">{formatDateTime(item.lastReading.readAt, locale)}</span>
-                            </span>
-                          ) : (
-                            <span className="text-muted">{t("never")}</span>
-                          )}
-                        </td>
-                        <td className="py-2">
-                          {item.health ? (
-                            <StatusBadgeOf map={METER_HEALTH_STATUS} value={item.health} size="sm" />
-                          ) : null}
-                        </td>
-                        <td className="py-2" data-testid="pending-assignee">
-                          {item.assignee ? (
-                            <span className="flex flex-wrap items-center gap-2">
-                              <span>{item.assignee.displayName}</span>
-                              {item.requested ? (
-                                <Badge tone="info" size="sm">
-                                  {t("requested")}
-                                </Badge>
-                              ) : null}
-                            </span>
-                          ) : item.requested ? (
-                            <Badge tone="info" size="sm">
-                              {t("requestedAnyone")}
-                            </Badge>
-                          ) : (
-                            <span className="text-muted">{item.iot ? t("assignedIot") : t("assignedStaff")}</span>
-                          )}
-                        </td>
+                        <th scope="col" className="py-2 text-start font-medium">
+                          {t("meter")}
+                        </th>
+                        <th scope="col" className="py-2 text-start font-medium">
+                          {t("lastReading")}
+                        </th>
+                        <th scope="col" className="py-2 text-start font-medium">
+                          {t("health")}
+                        </th>
+                        <th scope="col" className="py-2 text-start font-medium">
+                          {t("assigned")}
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-muted text-sm" data-testid="no-pending">
-                {t("noPending")}
-              </p>
-            )}
-          </Card>
+                    </thead>
+                    <tbody>
+                      {pending.map(({ round, item }) => (
+                        <tr key={item.meterAssignmentId} className="border-border border-b" data-testid="pending-row">
+                          <th scope="row" className="py-2 text-start font-normal">
+                            <span className="flex flex-col">
+                              <span className="font-mono font-semibold">{item.unitNo ?? "—"}</span>
+                              <span className="text-muted text-xs">{round.buildingName}</span>
+                            </span>
+                          </th>
+                          <td className="py-2">
+                            <a
+                              className="font-mono underline-offset-4 hover:underline"
+                              href={ownerPath(locale, `/meters/${item.assetItemId}`)}
+                            >
+                              {item.code}
+                            </a>{" "}
+                            <span className="text-muted">{t(`utility.${item.utility}`)}</span>
+                          </td>
+                          <td className="py-2">
+                            {item.lastReading ? (
+                              <span className="flex flex-wrap items-center gap-2">
+                                <span className="font-mono tabular-nums">{item.lastReading.register}</span>
+                                {isSource(item.lastReading.source) ? (
+                                  <ReadingSourceBadge source={item.lastReading.source} />
+                                ) : null}
+                                <span className="text-muted">{formatDateTime(item.lastReading.readAt, locale)}</span>
+                              </span>
+                            ) : (
+                              <span className="text-muted">{t("never")}</span>
+                            )}
+                          </td>
+                          <td className="py-2">
+                            {item.health ? (
+                              <StatusBadgeOf map={METER_HEALTH_STATUS} value={item.health} size="sm" />
+                            ) : null}
+                          </td>
+                          <td className="py-2" data-testid="pending-assignee">
+                            {item.assignee ? (
+                              <span className="flex flex-wrap items-center gap-2">
+                                <span>{item.assignee.displayName}</span>
+                                {item.requested ? (
+                                  <Badge tone="info" size="sm">
+                                    {t("requested")}
+                                  </Badge>
+                                ) : null}
+                              </span>
+                            ) : item.requested ? (
+                              <Badge tone="info" size="sm">
+                                {t("requestedAnyone")}
+                              </Badge>
+                            ) : (
+                              <span className="text-muted">{item.iot ? t("assignedIot") : t("assignedStaff")}</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-muted text-sm" data-testid="no-pending">
+                  {t("noPending")}
+                </p>
+              )}
+            </Card>
+          )}
 
           <Card as="section" aria-labelledby="drafts-title" data-testid="cycle-drafts">
             <CardHeader title={<span id="drafts-title">{t("draftsTitle")}</span>} description={t("draftsHint")} />
@@ -350,9 +399,24 @@ export async function BillingWorkspace({
             <DescriptionList
               columns={1}
               items={[
-                { id: "cutoff", term: t("cutoff"), description: formatDateTime(cycle.cutOffAt, locale) },
-                { id: "grace", term: t("grace"), description: formatDateTime(cycle.graceDeadlineAt, locale) },
-                { id: "estimate", term: t("estimatePolicy"), description: t(`estimate.${cycle.estimatePolicy}`) },
+                ...(advance
+                  ? [
+                      { id: "opens", term: t("advance.opens"), description: formatDateTime(cycle.cutOffAt, locale) },
+                      {
+                        id: "covers",
+                        term: t("advance.covers"),
+                        description: `${formatDate(cycle.periodStart, locale)} – ${formatDate(cycle.periodEnd, locale)}`,
+                      },
+                    ]
+                  : [
+                      { id: "cutoff", term: t("cutoff"), description: formatDateTime(cycle.cutOffAt, locale) },
+                      { id: "grace", term: t("grace"), description: formatDateTime(cycle.graceDeadlineAt, locale) },
+                      {
+                        id: "estimate",
+                        term: t("estimatePolicy"),
+                        description: t(`estimate.${cycle.estimatePolicy}`),
+                      },
+                    ]),
                 ...(autoIssue
                   ? [
                       {
@@ -377,11 +441,17 @@ export async function BillingWorkspace({
             <DescriptionList
               columns={1}
               items={[
-                {
-                  id: "requested",
-                  term: t("readingsRequested"),
-                  description: cycle.readingsRequestedAt ? formatDateTime(cycle.readingsRequestedAt, locale) : null,
-                },
+                ...(advance
+                  ? []
+                  : [
+                      {
+                        id: "requested",
+                        term: t("readingsRequested"),
+                        description: cycle.readingsRequestedAt
+                          ? formatDateTime(cycle.readingsRequestedAt, locale)
+                          : null,
+                      },
+                    ]),
                 {
                   id: "computed",
                   term: t("computedAt"),

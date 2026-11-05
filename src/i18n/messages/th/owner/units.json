@@ -27,7 +27,8 @@
     "condo_unit": "ห้องชุด",
     "house": "บ้าน",
     "shop": "ร้านค้า",
-    "parking": "ที่จอดรถ"
+    "parking": "ที่จอดรถ",
+    "plot": "แปลงที่ดิน"
   },
   "board": {
     "filter": {

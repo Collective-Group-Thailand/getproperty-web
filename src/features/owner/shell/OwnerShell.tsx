@@ -15,7 +15,16 @@ import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 
 import { BUILDING_COOKIE } from "@/features/shared/shell/building";
-import { OWNER_BOTTOM_NAV, OWNER_MENU, OWNER_MENU_GROUPS, SETTINGS_SECTION_KEYS } from "./menu";
+import {
+  isJuristicTenant,
+  JURISTIC_BOTTOM_NAV,
+  JURISTIC_MENU_GROUPS,
+  juristicLayout,
+  OWNER_BOTTOM_NAV,
+  OWNER_MENU,
+  OWNER_MENU_GROUPS,
+  SETTINGS_SECTION_KEYS,
+} from "./menu";
 import { OwnerShellFrame } from "./OwnerShellFrame";
 
 async function buildings(): Promise<Schemas["BuildingDto"][]> {
@@ -43,7 +52,7 @@ export async function OwnerShell({
   const prefix = (href: string) => getPathname({ href, locale });
   // One "ตั้งค่า" entry for the settings frame's sections (G6) when the member opens the settings at all.
   const menu = me.menu.includes("settings") ? me.menu.filter((key) => !SETTINGS_SECTION_KEYS.has(key)) : me.menu;
-  const items: ShellNavItem[] = entitledMenu(menu, OWNER_MENU).map((item) => ({
+  const entitled: ShellNavItem[] = entitledMenu(menu, OWNER_MENU).map((item) => ({
     ...item,
     href: prefix(item.href),
     label: t(`owner.nav.${item.key}`),
@@ -55,12 +64,21 @@ export async function OwnerShell({
       testId: child.testId,
     })),
   }));
-  const groups = groupItems(
-    items,
-    OWNER_MENU_GROUPS,
-    Object.fromEntries(OWNER_MENU_GROUPS.map((group) => [group, t(`owner.nav.group.${group}`)])),
-  );
-  const bottomNav = OWNER_BOTTOM_NAV.flatMap(({ key, labelKey }) => {
+  // A juristic office (pack J): the rail of J-DESIGN §5 — its own four groups, its order, the overview as "เช้านี้".
+  const juristic = isJuristicTenant(me.currentTenant.type);
+  const items = juristic ? juristicLayout(entitled, prefix) : entitled;
+  const groups = juristic
+    ? groupItems(
+        items,
+        JURISTIC_MENU_GROUPS,
+        Object.fromEntries(JURISTIC_MENU_GROUPS.map((group) => [group, t(`owner.nav.juristicGroup.${group}`)])),
+      )
+    : groupItems(
+        items,
+        OWNER_MENU_GROUPS,
+        Object.fromEntries(OWNER_MENU_GROUPS.map((group) => [group, t(`owner.nav.group.${group}`)])),
+      );
+  const bottomNav = (juristic ? JURISTIC_BOTTOM_NAV : OWNER_BOTTOM_NAV).flatMap(({ key, labelKey }) => {
     const item = items.find((candidate) => candidate.key === key);
     return item ? [{ item, label: t(`owner.nav.bottom.${labelKey}`) }] : [];
   });

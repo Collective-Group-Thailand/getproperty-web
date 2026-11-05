@@ -710,6 +710,7 @@ export function initialPlatformWorld(): PlatformWorld {
           status: "active",
           buildingIds: null,
           joinedAt: iso(-120),
+          accessUntil: null,
         },
         {
           id: "9a000000-0000-4000-8000-000000000004",
@@ -721,6 +722,7 @@ export function initialPlatformWorld(): PlatformWorld {
           status: "active",
           buildingIds: [BUILDINGS.sampleA],
           joinedAt: iso(-60),
+          accessUntil: null,
         },
       ],
       [TENANT_IDS.garden]: [
@@ -734,6 +736,7 @@ export function initialPlatformWorld(): PlatformWorld {
           status: "active",
           buildingIds: null,
           joinedAt: iso(-12),
+          accessUntil: null,
         },
       ],
     },

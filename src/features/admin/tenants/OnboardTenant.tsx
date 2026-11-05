@@ -15,7 +15,8 @@ import { NativeSelect } from "@/ui/components/NativeSelect";
 import { toE164 } from "@/ui/components/PhoneInput";
 import { IconAdd } from "@/ui/icons/glyphs/add";
 
-const TYPES: Schemas["TenantType"][] = ["apartment", "condo_juristic", "pm_company", "landlord"];
+// D-302: one juristic tenant type for every property kind (`condo_juristic` is the deprecated alias, never offered).
+const TYPES: Schemas["TenantType"][] = ["apartment", "juristic", "pm_company", "landlord"];
 const FORMS: Schemas["TenantLegalForm"][] = ["company", "person", "juristic_person"];
 
 /**

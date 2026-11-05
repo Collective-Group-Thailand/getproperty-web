@@ -6,6 +6,7 @@ import { SectionError } from "@/features/shared/console/SectionError";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { formatDate, formatDateTime, formatPhone } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
+import type { Schemas } from "@/lib/api/types";
 import { Avatar } from "@/ui/components/Avatar";
 import { EmptyState } from "@/ui/components/EmptyState";
 import { SimpleTable } from "@/ui/components/SimpleTable";
@@ -13,6 +14,7 @@ import { IconMail } from "@/ui/icons/glyphs/mail";
 
 import { ownerCan, readOnly, section, type OwnerContext } from "../shared/server";
 import { InvitationMenu, InviteMember, MemberMenu } from "./MemberActions";
+import { isJuristicTenant } from "../shell/menu";
 import { SettingsCard, SettingsFrame } from "./SettingsNav";
 
 /**
@@ -37,6 +39,10 @@ export async function MembersView({
   const invite = ownerCan(me, "tenant.member.invite") && writable;
   const manage = ownerCan(me, "tenant.member.manage") && writable;
   const options = buildings.map((building) => ({ id: building.id, name: building.name }));
+  // D-320: a juristic office invites its committee and a time-boxed auditor.
+  const juristic = isJuristicTenant(me.currentTenant?.type);
+  const roleLabel = (role: Schemas["TenantRole"], accessUntil: string | null) =>
+    accessUntil ? t("roleUntil", { role: roles(role), date: formatDate(accessUntil, locale) }) : roles(role);
   const buildingNames = (ids: unknown) =>
     Array.isArray(ids) && ids.length
       ? ids
@@ -51,7 +57,7 @@ export async function MembersView({
       current="/settings/members"
       title={t("title")}
       description={t("description")}
-      actions={invite ? <InviteMember buildings={options} /> : null}
+      actions={invite ? <InviteMember buildings={options} juristic={juristic} /> : null}
       testId="members"
     >
       <SettingsCard number={1} id="members-team" title={t("team")} description={t("teamHint")} flush>
@@ -99,12 +105,16 @@ export async function MembersView({
                       </span>
                     </span>
                   ),
-                  role: roles(member.role),
+                  role: <span data-testid="member-role-label">{roleLabel(member.role, member.accessUntil)}</span>,
                   buildings: buildingNames(member.buildingIds),
                   joined: member.joinedAt ? formatDate(member.joinedAt, locale) : "—",
                   status: <StatusBadgeOf map={MEMBERSHIP_STATUS} value={member.status} size="sm" />,
                   actions:
-                    manage && member.userId !== me.user.id ? <MemberMenu member={member} buildings={options} /> : "",
+                    manage && member.userId !== me.user.id ? (
+                      <MemberMenu member={member} buildings={options} juristic={juristic} />
+                    ) : (
+                      ""
+                    ),
                 },
               }))}
           />
@@ -127,7 +137,11 @@ export async function MembersView({
             icon={IconMail}
             title={t("noInvitations")}
             description={t("noInvitationsHint")}
-            action={invite ? <InviteMember buildings={options} testId="invite-member-empty" secondary /> : null}
+            action={
+              invite ? (
+                <InviteMember buildings={options} testId="invite-member-empty" secondary juristic={juristic} />
+              ) : null
+            }
           />
         ) : (
           <SimpleTable
@@ -163,7 +177,7 @@ export async function MembersView({
                     </span>
                   </span>
                 ),
-                role: roles(invitation.role),
+                role: roleLabel(invitation.role, invitation.accessUntil),
                 expires: formatDateTime(invitation.expiresAt, locale),
                 state: <StatusBadgeOf map={INVITATION_STATUS} value={invitation.state} size="sm" />,
                 actions:

@@ -421,6 +421,7 @@ const tariffHandlers: HttpHandler[] = [
       name: input.name.trim(),
       buildingId: input.buildingId ?? null,
       isDefault: input.isDefault ?? false,
+      frequency: input.frequency ?? "monthly",
       version: 1,
       versions: [],
     };
@@ -538,6 +539,7 @@ const tariffHandlers: HttpHandler[] = [
       aboveCap,
       capCheck: capCheck as Record<string, never> | null,
       complianceAcknowledgementId: acknowledgementId,
+      resolutionId: input.resolutionId ?? null,
     });
     plan.version += 1;
     return json(plan, 201, { etag: ratePlanEtag(plan) });
@@ -641,6 +643,7 @@ const memberHandlers: HttpHandler[] = [
       createdAt: iso(),
       expiresAt: iso(7),
       acceptedAt: null,
+      accessUntil: input.accessUntil ?? null,
       nextActions: ["revoke"],
       code,
       inviteUrl: `${new URL(request.url).origin.replace(/:\d+$/, "")}/join?code=${code}`,

@@ -41,10 +41,26 @@
     "invoices": "Invoices",
     "money": "Money",
     "more": "More",
-    "mandatedUnits": "Units"
+    "mandatedUnits": "Units",
+    "register": "Register"
   },
   "mandated_units": "Mandated units",
   "mandates": "Agency mandates",
   "co_broke": "Co-broke",
-  "deals": "Closed deals"
+  "deals": "Closed deals",
+  "juristic_register": "Co-owner register",
+  "juristic_cycles": "Billing cycles",
+  "juristic_budgets": "Budgets and resolutions",
+  "juristic_receivables": "Common-fee receivables",
+  "juristic_payment_plans": "Payment plans",
+  "juristic_debt_clearances": "Debt clearance",
+  "juristic_statements": "Owner statements",
+  "juristic_collection_ladder": "Collection steps",
+  "juristic_workspace_invitations": "Invite the juristic office",
+  "juristicGroup": {
+    "daily": "Daily work",
+    "finance": "Money",
+    "vendors": "Vendors",
+    "system": "Settings and system"
+  }
 }

@@ -78,7 +78,13 @@ export function confirmPayment(
     if (take <= 0) continue;
     target.paidTotal = baht(satang(target.paidTotal) + take);
     settleInvoice(target);
-    allocations.push({ invoiceId: target.id, invoiceNumber: target.number, amount: baht(take), reversedAt: null });
+    allocations.push({
+      invoiceId: target.id,
+      invoiceNumber: target.number,
+      amount: baht(take),
+      reversedAt: null,
+      surchargeAmount: "0.00",
+    });
     left -= take;
   }
   if (left > 0) {

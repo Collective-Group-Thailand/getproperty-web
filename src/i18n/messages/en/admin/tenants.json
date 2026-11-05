@@ -35,7 +35,8 @@
     "flags": "Feature flags",
     "support": "Support",
     "view": "View as tenant",
-    "credentials": "Credentials"
+    "credentials": "Credentials",
+    "buildings": "Buildings"
   },
   "onboard": {
     "open": "Onboard a tenant",
@@ -274,6 +275,73 @@
     "flags": "Feature flags as they apply to this customer.",
     "credentials": "Payment merchants, lock vendor accounts and e-Tax accounts of this customer.",
     "support": "Support access to this customer’s data — always granted by the customer and audited.",
-    "view": "The customer’s console, read-only, under an active support grant."
+    "view": "The customer’s console, read-only, under an active support grant.",
+    "buildings": "Buildings the tenant owns or operates; taking over a stub and changing the operator"
+  },
+  "buildings": {
+    "caption": "The tenant's buildings",
+    "col": {
+      "name": "Building",
+      "property": "Property",
+      "roles": "Role",
+      "units": "Units",
+      "actions": "Actions"
+    },
+    "role": {
+      "owner": "Owner",
+      "operator": "Operator"
+    },
+    "emptyTitle": "No building yet",
+    "empty": "The tenant adds its buildings in its console.",
+    "emptyJuristic": "A juristic person takes over the stub its landlords created, or adds buildings in its console.",
+    "backToTenant": "Back to the tenant",
+    "claim": "Take over a stub",
+    "claimTitle": "{name} takes over a building",
+    "claimHint": "The stub its landlords created moves to the juristic person; the landlords keep their units, leases and bills.",
+    "claimSubmit": "Take over",
+    "claimed": "Building taken over",
+    "buildingId": "Stub building id",
+    "buildingIdHint": "From the support team",
+    "buildingIdInvalid": "Not a building id",
+    "propertyKind": "Property kind",
+    "legalForm": "Managed under",
+    "legalFormHint": "Needed when the building has none",
+    "legalFormKeep": "Keep as it is",
+    "operator": "Operator",
+    "operatorHint": "The juristic person itself, or its management company",
+    "operatorSelf": "The juristic person",
+    "operatorPick": "Choose the operator",
+    "operatorRequired": "Choose the operator",
+    "changeOperator": "Change operator",
+    "changeTitle": "Change the operator of {name}",
+    "changeHint": "The data stays with the building; the new operator sees it from today.",
+    "changeSubmit": "Change operator",
+    "changed": "Operator changed",
+    "reason": "Reason",
+    "reasonName": {
+      "juristic_formed": "Juristic person formed",
+      "pm_contract_start": "Management contract starts",
+      "pm_contract_end": "Management contract ends",
+      "handover": "Developer handover",
+      "other": "Other"
+    },
+    "sourceRef": "Reference",
+    "sourceRefHint": "e.g. the management contract number",
+    "kindName": {
+      "condo": "Condominium",
+      "village": "Housing estate",
+      "community": "Community",
+      "office": "Office building",
+      "retail": "Retail",
+      "industrial": "Industrial",
+      "mixed": "Mixed use",
+      "apartment": "Apartment"
+    },
+    "legalFormName": {
+      "condo_act": "Condominium Act",
+      "land_allocation_act": "Land Allocation Act",
+      "voluntary": "Voluntary association",
+      "lease_contract": "Lease contract"
+    }
   }
 }

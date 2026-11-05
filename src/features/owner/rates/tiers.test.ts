@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { buildTiers, describeTiers } from "./tiers";
+import { buildBudgetTier, buildTiers, describeTiers } from "./tiers";
 
 describe("buildTiers", () => {
   it("builds a flat price with the utility's unit", () => {
@@ -74,5 +74,21 @@ describe("describeTiers", () => {
       { label: "150–∞", price: "5.0000" },
     ]);
     expect(describeTiers(null)).toEqual([]);
+  });
+});
+
+describe("budget tiers (pack J)", () => {
+  it("builds a yearly budget split by ownership ratio", () => {
+    expect(buildBudgetTier({ amount: "1234567.89", period: "year", splitBy: "ownership_ratio" })).toEqual({
+      tiers: { kind: "budget", amount: "1234567.89", period: "year", splitBy: "ownership_ratio" },
+    });
+    expect(buildBudgetTier({ amount: "12,000", period: "month" })).toEqual({ error: "amount" });
+  });
+  it("describes a budget tier with its period and split", () => {
+    expect(describeTiers({ kind: "budget", amount: "1200.00", period: "year", splitBy: "land_area_sqwa" })).toEqual([
+      { label: "budgetYear", price: "1200.00", splitBy: "land_area_sqwa" },
+    ]);
+    expect(describeTiers({ kind: "budget", amount: "100.00" })).toEqual([{ label: "budget", price: "100.00" }]);
+    expect(describeTiers({ kind: "fixed", amount: "50.00" })).toEqual([{ label: "fixed", price: "50.00" }]);
   });
 });
