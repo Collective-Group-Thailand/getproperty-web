@@ -22,6 +22,8 @@ type Schemas = components["schemas"];
  */
 
 export const JURISTIC_TENANT = TENANTS.juristic.profile.id;
+/** A part of a decimal string, rounded to satang (the mock is the API's side: it may compute). */
+const share = (amount: string, part: number) => (Math.round(Number(amount) * 100 * part) / 100).toFixed(2);
 const DAY = 86_400_000;
 const iso = (offsetDays = 0) => new Date(Date.now() + offsetDays * DAY).toISOString();
 const date = (offsetDays = 0) => new Date(Date.now() + 7 * 3600_000 + offsetDays * DAY).toISOString().slice(0, 10);
@@ -1799,16 +1801,21 @@ export const juristicHandlers: HttpHandler[] = [
       asOf: date(),
       budgetedIncome: budget.incomeTotal,
       incomeLines: budget.lines.filter((row) => row.kind === "income").map(({ label, amount }) => ({ label, amount })),
-      billed: "0.00",
-      billedByKind: [],
-      collected: "0.00",
-      billedVsBudgetPct: null,
-      collectedVsBilledPct: null,
+      // Two of the year's quarters billed so far, most of it collected (figures as the API would sum them).
+      billed: share(budget.incomeTotal, 0.5),
+      billedByKind: [
+        { kind: "common_fee", amount: share(budget.incomeTotal, 0.45) },
+        { kind: "fund", amount: share(budget.incomeTotal, 0.04) },
+        { kind: "surcharge", amount: share(budget.incomeTotal, 0.01) },
+      ],
+      collected: share(budget.incomeTotal, 0.43),
+      billedVsBudgetPct: "50.00",
+      collectedVsBilledPct: "86.00",
       expenseSideAvailable: false,
     } satisfies Schemas["BudgetActualIncomeDto"]);
   }),
 
-  // ── Read-only figures of the overview (J1.2a / J1.2b) ────────────────────────────────────────────────────────
+  // ── Read-only figures of the overview and the reports page (J1.2b; lists in owner/collections.ts) ────────────────────────────────────────────────────────
   http.get("*/v1/owner/juristic/reports/aging", ({ request }) => {
     const op = "owner.juristicReports.aging";
     const ok = owner(request, op);
@@ -1835,7 +1842,57 @@ export const juristicHandlers: HttpHandler[] = [
       buckets,
       overdue: { accounts: juristic ? 41 : 0, invoices: juristic ? 49 : 0, amount: juristic ? "1144320.00" : "0.00" },
     };
-    return json({ asOf: date(), bounds: [30, 90, 365], overall, buildings: [] } satisfies Schemas["JuristicAgingDto"]);
+    const building = (buildingId: string, name: string, counts: [number, string][], notDue: [number, string]) => ({
+      buildingId,
+      name,
+      buckets: counts.map(([accounts, amount], index) =>
+        bucket(buckets[index]!.key, buckets[index]!.fromDays, buckets[index]!.toDays, accounts, amount),
+      ),
+      notDue: { accounts: notDue[0], invoices: notDue[0], amount: notDue[1] },
+      overdue: {
+        accounts: counts.reduce((total, [accounts]) => total + accounts, 0),
+        invoices: counts.reduce((total, [accounts]) => total + accounts + 1, 0),
+        amount: (counts.reduce((total, [, amount]) => total + Math.round(Number(amount) * 100), 0) / 100).toFixed(2),
+      },
+    });
+    const buildings = juristic
+      ? [
+          building(
+            J.buildingA,
+            "อาคาร A",
+            [
+              [14, "201600.00"],
+              [9, "268300.00"],
+              [7, "262020.00"],
+              [4, "298600.00"],
+            ],
+            [96, "601200.00"],
+          ),
+          building(
+            J.soi1,
+            "ซอย 1",
+            [
+              [3, "34300.00"],
+              [2, "44500.00"],
+              [1, "22500.00"],
+              [0, "0.00"],
+            ],
+            [16, "92100.00"],
+          ),
+          building(
+            J.soi2,
+            "ซอย 2",
+            [
+              [1, "12500.00"],
+              [0, "0.00"],
+              [0, "0.00"],
+              [0, "0.00"],
+            ],
+            [8, "49200.00"],
+          ),
+        ]
+      : [];
+    return json({ asOf: date(), bounds: [30, 90, 365], overall, buildings } satisfies Schemas["JuristicAgingDto"]);
   }),
   http.get("*/v1/owner/juristic/reports/collection-rate", ({ request }) => {
     const op = "owner.juristicReports.collectionRate";
@@ -1848,20 +1905,81 @@ export const juristicHandlers: HttpHandler[] = [
       kpiDays: 30,
       cycles: juristic
         ? [
-            {
-              billingCycleId: jid("c7c1a001", 2),
-              periodKey: "2026-Q4",
-              frequency: "quarterly",
-              periodStart: "2026-10-01",
-              propertyId: J.condo,
-              invoices: 15,
-              billed: "296250.00",
-              collected: "214780.00",
-              collectedWithinDays: "190110.00",
-              collectionRatePct: "72.50",
-              withinDaysRatePct: "64.17",
-            },
-          ]
+            [
+              "2026-Q4",
+              "quarterly",
+              "2026-10-01",
+              J.condo,
+              15,
+              "296250.00",
+              "214780.00",
+              "190110.00",
+              "72.50",
+              "64.17",
+            ],
+            [
+              "2026-Q3",
+              "quarterly",
+              "2026-07-01",
+              J.condo,
+              16,
+              "296250.00",
+              "281430.00",
+              "259120.00",
+              "95.00",
+              "87.47",
+            ],
+            [
+              "2026-Q2",
+              "quarterly",
+              "2026-04-01",
+              J.condo,
+              16,
+              "296250.00",
+              "290120.00",
+              "268850.00",
+              "97.93",
+              "90.75",
+            ],
+            [
+              "2026-H2",
+              "semiannual",
+              "2026-07-01",
+              J.village,
+              10,
+              "186000.00",
+              "171120.00",
+              "158200.00",
+              "92.00",
+              "85.05",
+            ],
+            [
+              "2026-H1",
+              "semiannual",
+              "2026-01-01",
+              J.village,
+              10,
+              "186000.00",
+              "183210.00",
+              "176700.00",
+              "98.50",
+              "95.00",
+            ],
+          ].map(
+            ([periodKey, frequency, periodStart, propertyId, invoices, billed, collected, within, rate, kpi], i) => ({
+              billingCycleId: jid("c7c1a001", 10 + i),
+              periodKey: periodKey as string,
+              frequency: frequency as string,
+              periodStart: periodStart as string,
+              propertyId: propertyId as string,
+              invoices: invoices as number,
+              billed: billed as string,
+              collected: collected as string,
+              collectedWithinDays: within as string,
+              collectionRatePct: rate as string,
+              withinDaysRatePct: kpi as string,
+            }),
+          )
         : [],
       total: {
         billed: juristic ? "8412600.00" : "0.00",
@@ -1872,28 +1990,6 @@ export const juristicHandlers: HttpHandler[] = [
         invoices: juristic ? 312 : 0,
       },
     } as Schemas["CollectionRateDto"]);
-  }),
-  http.get("*/v1/owner/juristic/payment-plans", ({ request }) => {
-    const ok = owner(request, "owner.juristicPaymentPlans.list");
-    if (ok instanceof Response) return ok;
-    const active = ok.tenantId === JURISTIC_TENANT && query(request).get("state") === "active" ? 6 : 0;
-    return json({ data: [], meta: { page: 1, perPage: 1, total: active } });
-  }),
-  http.get("*/v1/owner/juristic/debt-clearances", ({ request }) => {
-    const ok = owner(request, "owner.juristicDebtClearances.list");
-    if (ok instanceof Response) return ok;
-    const requested = ok.tenantId === JURISTIC_TENANT && query(request).get("state") === "requested" ? 2 : 0;
-    return json({ data: [], meta: { page: 1, perPage: 1, total: requested } });
-  }),
-  http.get("*/v1/owner/juristic/receivables", ({ request }) => {
-    const ok = owner(request, "owner.juristicReceivables.list");
-    if (ok instanceof Response) return ok;
-    const disputes = ok.tenantId === JURISTIC_TENANT && query(request).get("tab") === "dispute" ? 1 : 0;
-    return json({
-      data: [],
-      meta: { page: 1, perPage: 1, total: disputes },
-      totals: { outstanding: "0.00", surcharge: "0.00" },
-    } satisfies Schemas["ReceivablesPageDto"]);
   }),
 ];
 

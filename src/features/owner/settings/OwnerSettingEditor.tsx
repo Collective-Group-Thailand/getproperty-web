@@ -80,6 +80,9 @@ export const SETTING_UNIT: Record<string, "hours" | "days" | "minutes" | "percen
   "access.work_order_window_hours": "hours",
   "access.resident_visitor_max_hours": "hours",
   "deposit.refund_days": "days",
+  "payments.slip_max_age_days": "days",
+  "juristic.plan_default_days": "days",
+  "juristic.debt_clearance.validity_days": "days",
   "readings.round_window_days": "days",
   "analytics.csat_survey_interval_days": "days",
   "viewing.self.code_minutes": "minutes",
@@ -213,6 +216,20 @@ function StructuredFields({ setting, errors }: { setting: Schemas["SettingDto"];
               data-testid="setting-value"
             />
           </UnitInput>
+        </Field>
+      );
+    case "payments.allocation_policy":
+      return (
+        <Field label={common("value")} required error={errors.value}>
+          <NativeSelect
+            name="value"
+            defaultValue={String(value)}
+            options={[
+              { value: "oldest_first", label: t("allocationOldest") },
+              { value: "surcharge_first", label: t("allocationSurcharge") },
+            ]}
+            data-testid="setting-value"
+          />
         </Field>
       );
     case "billing.estimate_policy":

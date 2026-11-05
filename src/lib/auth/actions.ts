@@ -292,3 +292,57 @@ export async function signUpLandlord(
     return failure(error);
   }
 }
+
+/** D-270: an office accepting a landlord's invitation — a 6-digit SMS code to its phone (sign-up limits, D-255). */
+export async function requestWorkspaceOtp(
+  input: z.input<typeof otpRequestSchema>,
+): Promise<ActionResult<{ challengeId: string; expiresAt: string; resendAvailableAt: string }>> {
+  const parsed = otpRequestSchema.safeParse(input);
+  if (!parsed.success) return invalid(parsed.error);
+  try {
+    const lang = await language();
+    const api = await apiClient(lang);
+    const data = await unwrap(
+      api.POST("/v1/public/juristic-workspaces/otp", { body: { phone: parsed.data.phone, language: lang } }),
+    );
+    return { ok: true, data };
+  } catch (error) {
+    return failure(error);
+  }
+}
+
+/**
+ * D-270, step 2: the API verifies the office, links the juristic tenant it already owns (or creates its free workspace)
+ * and answers operator tokens — written to the httpOnly cookies here with that tenant as the current one.
+ */
+export async function acceptWorkspaceInvitation(
+  invitationCode: string,
+  input: z.input<typeof landlordSignUpSchema>,
+): Promise<ActionResult<{ created: boolean; tenantName: string }>> {
+  const parsed = landlordSignUpSchema.safeParse(input);
+  if (!parsed.success) return invalid(parsed.error);
+  const code = invitationCode.trim();
+  if (!/^[A-Za-z0-9-]{6,64}$/.test(code))
+    return { ok: false, problem: { code: "workspace.invitation_invalid", status: 404, title: "", detail: "" } };
+  try {
+    const lang = await language();
+    const api = await apiClient(lang);
+    const result = await unwrap(
+      api.POST("/v1/public/juristic-workspaces/accept", {
+        body: {
+          provider: "phone_otp",
+          code,
+          challengeId: parsed.data.challengeId,
+          code6: parsed.data.code,
+          displayName: parsed.data.displayName,
+          language: isLocale(lang) ? lang : "th",
+        },
+      }),
+    );
+    await writeSession(result.tokens);
+    await writeTenant(result.tenantId);
+    return { ok: true, data: { created: result.created, tenantName: result.tenantName } };
+  } catch (error) {
+    return failure(error);
+  }
+}

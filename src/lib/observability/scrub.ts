@@ -5,8 +5,11 @@
  * are bearer credentials — the getbuild invitation `/handoff/<token>` (review L4).
  */
 const SECRET_PARAMS = ["token", "code", "invitation", "next", "enrollmentToken", "refreshToken"];
-/** `/handoff/<token>` (with or without a locale prefix): the token lets a signed-in landlord claim the unit. */
-const SECRET_PATHS = /(\/handoff\/)[^/?#]+/g;
+/**
+ * `/handoff/<token>` (with or without a locale prefix): the token lets a signed-in landlord claim the unit;
+ * `/juristic/join/<code>` (D-270): the code lets an office take over a landlord's invitation.
+ */
+const SECRET_PATHS = /(\/handoff\/|\/juristic\/join\/)[^/?#]+/g;
 
 const scrubPath = (url: string) => url.replace(SECRET_PATHS, "$1[redacted]");
 

@@ -67,3 +67,5 @@ export { AgingStrip, type AgingTile } from "./AgingStrip";
 export { BasisPreview, type BasisPreviewRow } from "./BasisPreview";
 export { ErrorSummary, type ErrorSummaryItem } from "./ErrorSummary";
 export { ShareBar, type ShareSegment } from "./ShareBar";
+export { BulkBar } from "./BulkBar";
+export { GroupedTimeline, type TimelineGroup } from "./GroupedTimeline";

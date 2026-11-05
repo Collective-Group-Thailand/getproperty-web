@@ -58,7 +58,8 @@
     "paperKind": "บันทึกการรับเงิน",
     "payer": "ผู้ชำระ",
     "unit": "ห้อง",
-    "confirmedLine": "ยืนยันเมื่อ {date} · {via}"
+    "confirmedLine": "ยืนยันเมื่อ {date} · {via}",
+    "allocationSurcharge": "รวมเงินเพิ่ม {amount}"
   },
   "reverse": {
     "button": "กลับรายการ",
@@ -170,7 +171,18 @@
     "sectionMoney": "เงินที่ได้รับ",
     "sectionMoneyHint": "ช่องทาง จำนวน และเวลาที่ได้รับจริง",
     "sectionEvidence": "หลักฐานและหมายเหตุ",
-    "sectionEvidenceHint": "เลขอ้างอิง ภาษีหัก ณ ที่จ่าย และสลิปเมื่อเป็นเงินโอน"
+    "sectionEvidenceHint": "เลขอ้างอิง ภาษีหัก ณ ที่จ่าย และสลิปเมื่อเป็นเงินโอน",
+    "error": {
+      "amount": "ระบุยอดมากกว่า 0 ทศนิยมไม่เกิน 2 ตำแหน่ง",
+      "date": "ระบุวันที่รับเงิน",
+      "noteShort": "อย่างน้อย {min} ตัวอักษร บอกที่มาของเงิน",
+      "evidenceRequired": "แนบหลักฐานการรับเงิน"
+    },
+    "juristicNote": "ที่มาของเงิน",
+    "juristicNoteHint": "อย่างน้อย {min} ตัวอักษร เช่น ธนาคารผู้โอน หรือเลขอ้างอิง SWIFT",
+    "juristicEvidence": "นิติบุคคลต้องแนบหลักฐานทุกครั้ง ทั้งเงินสดและเงินโอน",
+    "surcharge": "เงินเพิ่ม",
+    "principal": "เงินต้น"
   },
   "credits": {
     "title": "เครดิตและคืนเงิน",

@@ -7,7 +7,7 @@ import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { formatDate, formatNumber, formatPercent, formatPeriodKey, formatTHB } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
-import { AgingStrip, type AgingTile } from "@/ui/components/AgingStrip";
+import { AgingStrip } from "@/ui/components/AgingStrip";
 import { Button } from "@/ui/components/Button";
 import { Card, CardHeader } from "@/ui/components/Card";
 import { EmptyState } from "@/ui/components/EmptyState";
@@ -23,6 +23,7 @@ import { IconReceipt } from "@/ui/icons/glyphs/receipt";
 import { IconRules } from "@/ui/icons/glyphs/rules";
 
 import { ownerPath, withQuery } from "../shared/links";
+import { agingTiles } from "./collections/aging";
 import { ownerCan, section, type OwnerContext } from "../shared/server";
 import { currentTime } from "@/features/shared/console/time";
 
@@ -41,8 +42,8 @@ const RAIL_INDEX: Record<Schemas["BillingCycleStatus"], number> = {
 /**
  * The juristic office's morning (JW1a, J-DESIGN §1.1 "money first, calmly"): what was billed and collected, the
  * money still owed (the one figure that needs attention), how old it is, where this cycle stands, and the few things
- * waiting for someone. Every figure is the API's (`reports/collection-rate`, `reports/aging`, list totals); the full
- * receivables page arrives with JW1b, so the counts here open only pages that exist.
+ * waiting for someone. Every figure is the API's (`reports/collection-rate`, `reports/aging`, list totals); the
+ * outstanding figure and the aging tiles open the receivables (JW1b).
  */
 export async function OverviewView({ context }: { context: OwnerContext }) {
   const t = await getTranslations("owner.juristic.overview");
@@ -120,6 +121,7 @@ export async function OverviewView({ context }: { context: OwnerContext }) {
       value: money(aging.data.overall.overdue.amount),
       hint: t("figures.outstandingHint"),
       testId: "figure-outstanding",
+      href: collections ? ownerPath(locale, "/juristic/receivables") : undefined,
     });
     figures.push({
       key: "accounts",
@@ -136,21 +138,21 @@ export async function OverviewView({ context }: { context: OwnerContext }) {
       value: count(plans.data),
       hint: t("figures.plansHint"),
       testId: "figure-plans",
+      href: ownerPath(locale, withQuery("/juristic/plans", { state: "active" })),
     });
   }
 
   const buckets = aging?.data?.overall.buckets ?? [];
-  const tiles: AgingTile[] = buckets.map((bucket, index) => ({
-    key: bucket.key,
-    label:
-      bucket.toDays === null
-        ? t("aging.over", { days: count(bucket.fromDays) })
-        : t("aging.range", { from: count(Math.max(1, bucket.fromDays)), to: count(bucket.toDays) }),
-    count: t("aging.accounts", { count: bucket.accounts }),
-    amount: money(bucket.amount),
-    badge:
-      index === buckets.length - 1 && bucket.toDays === null && bucket.accounts > 0 ? t("aging.oldest") : undefined,
-  }));
+  const tiles = agingTiles(buckets, {
+    range: (from, to) => t("aging.range", { from: count(from), to: count(to) }),
+    over: (from) => t("aging.over", { days: count(from) }),
+    accounts: (value) => t("aging.accounts", { count: value }),
+    money,
+    oldest: t("aging.oldest"),
+    href: collections
+      ? () => ownerPath(locale, withQuery("/juristic/receivables", { sort: "age", order: "desc" }))
+      : undefined,
+  });
 
   // This cycle per property: the newest cycle that is not closed, else the newest one.
   const byProperty = new Map<string, Schemas["BillingCycleDto"]>();
@@ -186,13 +188,14 @@ export async function OverviewView({ context }: { context: OwnerContext }) {
       count: incomplete?.data ?? 0,
       href: ownerPath(locale, withQuery("/juristic/register", { view: "incomplete" })),
     },
-    // Debt clearance requests and disputes are worked on the receivables pages (JW1b): counted here, no link yet.
+    // Debt clearance requests and disputes are worked on the collection pages (JW1b).
     {
       key: "clearances",
       icon: IconReceipt,
       title: t("tasks.clearances"),
       meta: t("tasks.clearancesHint"),
       count: clearances?.data ?? 0,
+      href: ownerPath(locale, withQuery("/juristic/debt-clearance", { state: "requested" })),
     },
     {
       key: "disputes",
@@ -200,6 +203,7 @@ export async function OverviewView({ context }: { context: OwnerContext }) {
       title: t("tasks.disputes"),
       meta: t("tasks.disputesHint"),
       count: disputes?.data ?? 0,
+      href: ownerPath(locale, withQuery("/juristic/receivables", { tab: "dispute" })),
     },
   ].filter((task) => task.count > 0);
 

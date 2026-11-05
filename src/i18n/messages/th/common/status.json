@@ -501,5 +501,49 @@
   "register": {
     "complete": "ครบ 100%",
     "incomplete": "ยังไม่ครบ"
+  },
+  "collectionCase": {
+    "open": "กำลังติดตาม",
+    "paused": "พักการติดตาม",
+    "resolved": "ชำระครบแล้ว"
+  },
+  "paymentPlan": {
+    "proposed": "รออนุมัติ",
+    "active": "กำลังผ่อน",
+    "completed": "ผ่อนครบแล้ว",
+    "defaulted": "ผิดนัด",
+    "cancelled": "ยกเลิกแล้ว",
+    "rejected": "ไม่อนุมัติ"
+  },
+  "planInstalment": {
+    "scheduled": "ยังไม่ถึงงวด",
+    "billed": "ออกบิลแล้ว",
+    "paid": "ชำระแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "debtClearance": {
+    "requested": "รอออก",
+    "issued": "ออกแล้ว",
+    "refused": "ปฏิเสธแล้ว"
+  },
+  "paymentMandate": {
+    "pending": "รอธนาคารยืนยัน",
+    "active": "ใช้งานอยู่",
+    "revoked": "ยกเลิกแล้ว",
+    "failed": "ไม่สำเร็จ"
+  },
+  "letterBatch": {
+    "queued": "กำลังจัดทำ",
+    "ready": "พร้อมพิมพ์",
+    "failed": "ทำไม่สำเร็จ"
+  },
+  "workspaceLink": {
+    "invited": "รอนิติบุคคลตอบรับ",
+    "active": "เชื่อมแล้ว",
+    "revoked": "ยกเลิกแล้ว"
+  },
+  "verifiedDocument": {
+    "valid": "ใช้ได้",
+    "expired": "หมดอายุ"
   }
 }

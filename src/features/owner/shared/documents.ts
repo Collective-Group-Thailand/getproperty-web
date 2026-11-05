@@ -22,7 +22,11 @@ export type DocumentRef =
   | { kind: "contract"; id: string }
   | { kind: "contractPreview"; id: string }
   | { kind: "contractTemplatePreview"; id: string }
-  | { kind: "file"; id: string; purpose?: string };
+  | { kind: "file"; id: string; purpose?: string }
+  /** Pack J (JW1b): an owner's monthly statement, a batch of printed letters, a debt clearance certificate. */
+  | { kind: "juristicStatement"; id: string }
+  | { kind: "letterBatch"; id: string }
+  | { kind: "debtClearance"; id: string };
 
 export interface ResolvedDocument {
   url: string;
@@ -99,6 +103,30 @@ export async function resolveDocument(ref: DocumentRef): Promise<ResolvedDocumen
         number: null,
         local: true,
       };
+    case "juristicStatement":
+      return signed(
+        await unwrap(
+          api.GET("/v1/owner/juristic/statements/{statementId}/document", {
+            params: { path: { statementId: ref.id } },
+          }),
+        ),
+      );
+    case "letterBatch":
+      return signed(
+        await unwrap(
+          api.GET("/v1/owner/juristic/letter-batches/{letterBatchId}/document", {
+            params: { path: { letterBatchId: ref.id } },
+          }),
+        ),
+      );
+    case "debtClearance":
+      return signed(
+        await unwrap(
+          api.GET("/v1/owner/juristic/debt-clearances/{debtClearanceId}/document", {
+            params: { path: { debtClearanceId: ref.id } },
+          }),
+        ),
+      );
     case "file": {
       const file = await unwrap(
         api.GET("/v1/owner/files/{fileId}", {

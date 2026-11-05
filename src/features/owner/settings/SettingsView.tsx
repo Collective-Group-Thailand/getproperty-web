@@ -51,7 +51,7 @@ const messageId = (prefix: "key" | "desc", key: string) => `${prefix}.${key.repl
  * words with its unit, then "เปลี่ยน" (a new effective-dated version with a reason) and its history. A key this page
  * has no name for is left out rather than shown as a code.
  */
-async function SettingRows({
+export async function SettingRows({
   settings,
   context,
   propertyId,

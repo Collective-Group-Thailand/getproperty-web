@@ -62,5 +62,8 @@
     "finance": "Money",
     "vendors": "Vendors",
     "system": "Settings and system"
+  },
+  "juristicLabel": {
+    "parties": "People & companies"
   }
 }

@@ -78,7 +78,13 @@
     "viewing_self_code_minutes": "Viewing code valid after the slot starts",
     "viewing_self_code_early_minutes": "Viewing code valid before the slot starts",
     "viewing_self_overstay_minutes": "Overstay alert after",
-    "compliance_tariff_cap_representative_units": "Usage a new rate is checked at"
+    "compliance_tariff_cap_representative_units": "Usage a new rate is checked at",
+    "payments_allocation_policy": "Payment allocation",
+    "payments_slip_max_age_days": "Slip age accepted automatically",
+    "juristic_plan_default_days": "A plan defaults after",
+    "juristic_plan_max_instalments": "Most instalments per plan",
+    "juristic_debt_clearance_fee": "Debt clearance certificate fee",
+    "juristic_debt_clearance_validity_days": "Debt clearance certificate validity"
   },
   "property": {
     "title": "Building settings",
@@ -108,7 +114,9 @@
     "estimateAllow": "Allow estimates when a reading is missing",
     "estimateBlock": "Wait for a real reading",
     "vatRate": "VAT rate",
-    "vatRateHint": "As a percentage, e.g. 7"
+    "vatRateHint": "As a percentage, e.g. 7",
+    "allocationOldest": "Oldest bill first (its surcharge first)",
+    "allocationSurcharge": "Every surcharge first, then the principal"
   },
   "history": {
     "open": "History",
@@ -845,7 +853,13 @@
     "tm30_notify_within_hours": "Notify Immigration within this time of a foreign resident's arrival",
     "compliance_tariff_cap_severity": "When a price is above the legal cap: warn, or refuse it",
     "compliance_tariff_cap_representative_units": "Used for the sample bill when a new price is set",
-    "tenant_subject_to_ocpb_2568": "Apply the Contract Committee's notification rules"
+    "tenant_subject_to_ocpb_2568": "Apply the Contract Committee's notification rules",
+    "payments_allocation_policy": "Which bills money received pays first; anything above them is the payer's credit.",
+    "payments_slip_max_age_days": "A slip dated earlier than this (or more than a day ahead) waits for the team to check.",
+    "juristic_plan_default_days": "A billed instalment still unpaid this many days after its due date defaults the plan; the rest is billed at once.",
+    "juristic_plan_max_instalments": "The most monthly instalments a plan may have (at least 2).",
+    "juristic_debt_clearance_fee": "0.00 = issued at once when nothing is owed; with a fee, issued once the fee is paid.",
+    "juristic_debt_clearance_validity_days": "From the day it is issued; shown on the document and the check page."
   },
   "unit": {
     "hours": "hours",

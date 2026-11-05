@@ -303,7 +303,9 @@ export function menuFor(
   const listingRole = role === "owner" || role === "manager";
   if (tenantType === "agency")
     return listingRole ? ["mandated_units", "listings", "leads", "mandates", "co_broke", "deals", ...rest] : rest;
-  return ["portfolio", "listings", "leads", ...(listingRole ? ["mandates", "deals"] : []), ...rest];
+  // D-270 (J1.2b): a landlord with `tenant.grant.manage` invites its condo's juristic office.
+  const invite = rest.includes("access_grants") ? ["juristic_workspace_invitations"] : [];
+  return ["portfolio", "listings", "leads", ...(listingRole ? ["mandates", "deals"] : []), ...invite, ...rest];
 }
 
 export interface OperatorPersona {

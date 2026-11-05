@@ -58,7 +58,8 @@
     "paperKind": "Payment record",
     "payer": "Payer",
     "unit": "Unit",
-    "confirmedLine": "Confirmed {date} · {via}"
+    "confirmedLine": "Confirmed {date} · {via}",
+    "allocationSurcharge": "includes {amount} surcharge"
   },
   "reverse": {
     "button": "Reverse",
@@ -170,7 +171,18 @@
     "sectionMoney": "Money received",
     "sectionMoneyHint": "How much, how and when it was received.",
     "sectionEvidence": "Evidence and notes",
-    "sectionEvidenceHint": "Reference, withholding tax and the slip for a transfer."
+    "sectionEvidenceHint": "Reference, withholding tax and the slip for a transfer.",
+    "error": {
+      "amount": "An amount above 0 with at most 2 decimals",
+      "date": "When the money was received",
+      "noteShort": "At least {min} characters saying where the money came from",
+      "evidenceRequired": "Attach the evidence"
+    },
+    "juristicNote": "Where the money came from",
+    "juristicNoteHint": "At least {min} characters, e.g. the sender's bank or a SWIFT reference",
+    "juristicEvidence": "Juristic offices attach evidence every time, cash and transfers alike",
+    "surcharge": "Surcharge",
+    "principal": "Principal"
   },
   "credits": {
     "title": "Credits & refunds",

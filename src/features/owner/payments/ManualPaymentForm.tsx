@@ -21,8 +21,8 @@ import { IconPayment } from "@/ui/icons/glyphs/payment";
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 import { DateField } from "@/features/shared/console/DateField";
 import { uploadOwnerFile } from "../shared/upload";
+import { JURISTIC_NOTE_MIN, manualPaymentErrors, MONEY } from "./manualPayment";
 
-const MONEY = /^\d{1,9}(\.\d{1,2})?$/;
 const TIME = /^\d{2}:\d{2}$/;
 const MAX_BYTES = 10 * 1024 * 1024;
 
@@ -49,9 +49,12 @@ function bangkokToday(): { date: string; time: string } {
 export function ManualPaymentForm({
   invoices,
   initialInvoiceId,
+  juristic = false,
 }: {
   invoices: Schemas["InvoiceSummaryDto"][];
   initialInvoiceId?: string;
+  /** A juristic office (J1.2a §2): cash and transfers both need the evidence and a note of five characters. */
+  juristic?: boolean;
 }) {
   const t = useTranslations("owner.payments.manual");
   const locale = useLocale() as Locale;
@@ -70,15 +73,20 @@ export function ManualPaymentForm({
   const [evidence, setEvidence] = useState<{ id: string; name: string } | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadFailed, setUploadFailed] = useState(false);
+  const [touched, setTouched] = useState<Partial<Record<"amount" | "notes", boolean>>>({});
   const invoice = invoices.find((candidate) => candidate.id === invoiceId) ?? null;
+  const problems = manualPaymentErrors(
+    { method, amount, paidDate: date, notes, evidenceDocumentId: evidence?.id ?? null },
+    { juristic },
+  );
   const ready =
     invoice !== null &&
-    MONEY.test(amount) &&
-    Boolean(date) &&
+    Object.keys(problems).length === 0 &&
     TIME.test(time) &&
     (wht === "" || MONEY.test(wht)) &&
-    (method === "cash" || evidence !== null) &&
     !uploading;
+  const shown = (field: "amount" | "notes") =>
+    touched[field] && problems[field] ? t(`error.${problems[field]}`, { min: JURISTIC_NOTE_MIN }) : undefined;
 
   const record = (testId: string) => (
     <ConfirmAction
@@ -176,11 +184,12 @@ export function ManualPaymentForm({
             />
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
-            <Field label={t("amount")} required hint={t("amountHint")}>
+            <Field label={t("amount")} required hint={t("amountHint")} error={shown("amount")}>
               <Input
                 inputMode="decimal"
                 value={amount}
                 onChange={(event) => setAmount(event.target.value)}
+                onBlur={() => setTouched((current) => ({ ...current, amount: true }))}
                 data-testid="manual-amount"
               />
             </Field>
@@ -201,14 +210,25 @@ export function ManualPaymentForm({
               <Input inputMode="decimal" value={wht} onChange={(event) => setWht(event.target.value)} />
             </Field>
           </div>
-          <Field label={t("notes")}>
-            <Textarea rows={2} value={notes} onChange={(event) => setNotes(event.target.value)} />
+          <Field
+            label={juristic ? t("juristicNote") : t("notes")}
+            hint={juristic ? t("juristicNoteHint", { min: JURISTIC_NOTE_MIN }) : undefined}
+            required={juristic}
+            error={juristic ? shown("notes") : undefined}
+          >
+            <Textarea
+              rows={2}
+              value={notes}
+              onChange={(event) => setNotes(event.target.value)}
+              onBlur={() => setTouched((current) => ({ ...current, notes: true }))}
+              data-testid="manual-notes"
+            />
           </Field>
-          {method === "bank_transfer_manual" ? (
+          {juristic || method === "bank_transfer_manual" ? (
             <div className="flex flex-col gap-2">
               <FileDropzone
                 label={t("evidence")}
-                hint={t("evidenceHint")}
+                hint={juristic ? t("juristicEvidence") : t("evidenceHint")}
                 accept="image/*,application/pdf"
                 maxBytes={MAX_BYTES}
                 tooLargeText={t("tooLarge")}

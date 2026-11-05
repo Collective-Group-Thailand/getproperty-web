@@ -57,7 +57,10 @@
     "plusMinusPercent": "±{value}%",
     "months": "{count, plural, one {# month} other {# months}}",
     "minutes": "{count, plural, one {# minute} other {# minutes}}",
-    "structured": "Set"
+    "structured": "Set",
+    "allocationOldest": "Oldest bill first (its surcharge first)",
+    "allocationSurcharge": "Every surcharge first, then the principal",
+    "instalments": "{count, plural, one {# instalment} other {# instalments}}"
   },
   "lineKind": {
     "internet": "Internet",

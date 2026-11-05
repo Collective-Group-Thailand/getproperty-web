@@ -9,6 +9,7 @@ import { IconCalculator } from "@/ui/icons/glyphs/calculator";
 import { IconCalendar } from "@/ui/icons/glyphs/calendar";
 import { IconChart } from "@/ui/icons/glyphs/chart";
 import { IconChat } from "@/ui/icons/glyphs/chat";
+import { IconChecklist } from "@/ui/icons/glyphs/checklist";
 import { IconDashboard } from "@/ui/icons/glyphs/dashboard";
 import { IconGateway } from "@/ui/icons/glyphs/gateway";
 import { IconHistory } from "@/ui/icons/glyphs/history";
@@ -16,13 +17,17 @@ import { IconHome } from "@/ui/icons/glyphs/home";
 import { IconInbox } from "@/ui/icons/glyphs/inbox";
 import { IconKey } from "@/ui/icons/glyphs/key";
 import { IconLease } from "@/ui/icons/glyphs/lease";
+import { IconLetter } from "@/ui/icons/glyphs/letter";
 import { IconLock } from "@/ui/icons/glyphs/lock";
 import { IconLoss } from "@/ui/icons/glyphs/loss";
+import { IconMail } from "@/ui/icons/glyphs/mail";
 import { IconMegaphone } from "@/ui/icons/glyphs/megaphone";
 import { IconMeter } from "@/ui/icons/glyphs/meter";
 import { IconParcel } from "@/ui/icons/glyphs/parcel";
 import { IconPercent } from "@/ui/icons/glyphs/percent";
 import { IconPayment } from "@/ui/icons/glyphs/payment";
+import { IconReceipt } from "@/ui/icons/glyphs/receipt";
+import { IconRepeat } from "@/ui/icons/glyphs/repeat";
 import { IconResidents } from "@/ui/icons/glyphs/residents";
 import { IconRoom } from "@/ui/icons/glyphs/room";
 import { IconSettings } from "@/ui/icons/glyphs/settings";
@@ -220,7 +225,26 @@ export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
   deals: { href: "/deals", icon: IconPercent, group: "operations" },
   // Pack J (JW1a): the juristic console — the co-owner register, the billing cycles of every frequency, budgets with
   // the resolutions that adopt them (one section, J-DESIGN §5 "งบประมาณและมติ").
-  juristic_register: { href: "/juristic/register", icon: IconBook, group: "operations" },
+  // The register, and (D-270) the units landlords of stub condos linked to this office — one section.
+  juristic_register: {
+    href: "/juristic/register",
+    icon: IconBook,
+    group: "operations",
+    children: [
+      {
+        key: "register",
+        href: "/juristic/register",
+        label: "owner.juristic.nav.register",
+        testId: "juristic-nav-register",
+      },
+      {
+        key: "workspace",
+        href: "/juristic/workspace",
+        label: "owner.collections.nav.workspace",
+        testId: "juristic-nav-workspace",
+      },
+    ],
+  },
   juristic_cycles: { href: "/juristic/cycles", icon: IconCalendar, group: "money" },
   juristic_budgets: {
     href: "/juristic/budgets",
@@ -241,13 +265,75 @@ export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
       },
     ],
   },
-  // JW1b builds these screens; until then the keys open nothing (no entry that leads to a missing page).
-  juristic_receivables: null,
-  juristic_payment_plans: null,
-  juristic_debt_clearances: null,
-  juristic_statements: null,
-  juristic_collection_ladder: null,
-  juristic_workspace_invitations: null,
+  // JW1b (J1.2a / J1.2b): money collection. Reports and auto-pay mandates have no menu key of their own (contract
+  // request) and live under the receivables section; letters under statements; payment settings under the ladder.
+  juristic_receivables: {
+    href: "/juristic/receivables",
+    icon: IconWallet,
+    group: "operations",
+    children: [
+      {
+        key: "receivables",
+        href: "/juristic/receivables",
+        label: "owner.collections.nav.receivables",
+        testId: "juristic-nav-receivables",
+      },
+      {
+        key: "reports",
+        href: "/juristic/reports",
+        label: "owner.collections.nav.reports",
+        testId: "juristic-nav-reports",
+      },
+      {
+        key: "mandates",
+        href: "/juristic/payment-mandates",
+        label: "owner.collections.nav.mandates",
+        testId: "juristic-nav-mandates",
+      },
+    ],
+  },
+  juristic_payment_plans: { href: "/juristic/plans", icon: IconRepeat, group: "money" },
+  juristic_debt_clearances: { href: "/juristic/debt-clearance", icon: IconReceipt, group: "money" },
+  juristic_statements: {
+    href: "/juristic/statements",
+    icon: IconLetter,
+    group: "money",
+    children: [
+      {
+        key: "statements",
+        href: "/juristic/statements",
+        label: "owner.collections.nav.statements",
+        testId: "juristic-nav-statements",
+      },
+      {
+        key: "letters",
+        href: "/juristic/statements/letters",
+        label: "owner.collections.nav.letters",
+        testId: "juristic-nav-letters",
+      },
+    ],
+  },
+  juristic_collection_ladder: {
+    href: "/juristic/collections/settings",
+    icon: IconChecklist,
+    group: "settings",
+    children: [
+      {
+        key: "ladder",
+        href: "/juristic/collections/settings",
+        label: "owner.collections.nav.ladder",
+        testId: "juristic-nav-ladder",
+      },
+      {
+        key: "payments",
+        href: "/juristic/collections/payments",
+        label: "owner.collections.nav.paymentSettings",
+        testId: "juristic-nav-payment-settings",
+      },
+    ],
+  },
+  // D-270: a landlord invites its condo's juristic office for its units in a stub building.
+  juristic_workspace_invitations: { href: "/juristic-office", icon: IconMail, group: "operations" },
 };
 
 export const OWNER_MENU_GROUPS = ["operations", "money", "settings"] as const;
@@ -286,9 +372,9 @@ export const JURISTIC_MENU_ORDER: Readonly<Record<JuristicMenuGroup, readonly st
   ],
   finance: [
     "juristic_cycles",
+    "juristic_statements",
     "juristic_debt_clearances",
     "juristic_payment_plans",
-    "juristic_statements",
     "invoices",
     "payments",
     "rate_plans",
@@ -304,6 +390,12 @@ const JURISTIC_GROUP_OF_OWNER_GROUP: Readonly<Record<string, JuristicMenuGroup>>
   money: "finance",
   settings: "system",
 };
+
+/**
+ * Entries the API grants a juristic tenant that read in apartment words: named for the office instead (the API's
+ * `parties` are co-owners, payers and companies here, not "ผู้เช่าและคู่สัญญา"). Labels only — nothing is hidden.
+ */
+export const JURISTIC_LABEL_KEYS: ReadonlySet<string> = new Set(["parties"]);
 
 /** The juristic overview answers "เช้านี้" for a juristic office (J-DESIGN §1.1: money first). */
 const JURISTIC_HREF: Readonly<Record<string, string>> = { dashboard: "/juristic" };
