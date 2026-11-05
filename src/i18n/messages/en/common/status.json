@@ -576,5 +576,26 @@
     "active": "Active",
     "locked": "Locked for now",
     "revoked": "Revoked"
+  },
+  "expense": {
+    "draft": "Draft",
+    "submitted": "Awaiting approval",
+    "approved": "Approved · to pay",
+    "rejected": "Rejected",
+    "paid": "Paid",
+    "cancelled": "Cancelled"
+  },
+  "fundTransfer": {
+    "requested": "Awaiting approval",
+    "posted": "Posted",
+    "rejected": "Rejected",
+    "cancelled": "Cancelled"
+  },
+  "bankLine": {
+    "none": "To match",
+    "payment": "Matched to a payment",
+    "expense": "Matched to an expense",
+    "fund_transfer": "Matched to a fund transfer",
+    "ignored": "Ignored"
   }
 }

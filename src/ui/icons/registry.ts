@@ -134,6 +134,13 @@ import { IconShieldAlert } from "./glyphs/shield-alert";
 import { IconCctv } from "./glyphs/cctv";
 import { IconIdCard } from "./glyphs/id-card";
 import { IconLogIn } from "./glyphs/log-in";
+import { IconLedger } from "./glyphs/ledger";
+import { IconFund } from "./glyphs/fund";
+import { IconCoins } from "./glyphs/coins";
+import { IconExpense } from "./glyphs/expense";
+import { IconSpreadsheet } from "./glyphs/spreadsheet";
+import { IconUnlink } from "./glyphs/unlink";
+import { IconCertificate } from "./glyphs/certificate";
 import { IconThemeSystem } from "./glyphs/theme-system";
 import { IconThemeLight } from "./glyphs/theme-light";
 import { IconThemeDark } from "./glyphs/theme-dark";
@@ -272,6 +279,13 @@ export const ICONS: { readonly [N in IconName]: IconGlyph<N> } = {
   cctv: IconCctv,
   "id-card": IconIdCard,
   "log-in": IconLogIn,
+  ledger: IconLedger,
+  fund: IconFund,
+  coins: IconCoins,
+  expense: IconExpense,
+  spreadsheet: IconSpreadsheet,
+  unlink: IconUnlink,
+  certificate: IconCertificate,
   "theme-system": IconThemeSystem,
   "theme-light": IconThemeLight,
   "theme-dark": IconThemeDark,

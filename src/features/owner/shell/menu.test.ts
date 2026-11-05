@@ -112,4 +112,43 @@ describe("juristic rail (J-DESIGN §5)", () => {
     const budgets = items.find((item) => item.key === "juristic_budgets");
     expect(budgets?.children?.map((child) => child.href)).toEqual(["/juristic/budgets", "/juristic/resolutions"]);
   });
+
+  it("puts the light GL of JW2a in the finance group, after the plans, with its sub-pages", () => {
+    const withBooks = juristicLayout(
+      entitledMenu(
+        keys([
+          "dashboard",
+          "juristic_payment_plans",
+          "juristic_accounting",
+          "juristic_expenses",
+          "juristic_funds",
+          "juristic_bank_statements",
+          "invoices",
+        ]),
+        OWNER_MENU,
+      ),
+    );
+    const finance = withBooks.filter((item) => item.group === "finance").map((item) => item.key);
+    expect(finance).toEqual([
+      "juristic_payment_plans",
+      "juristic_accounting",
+      "juristic_funds",
+      "juristic_expenses",
+      "juristic_bank_statements",
+      "invoices",
+    ]);
+    const children = (key: string) => withBooks.find((item) => item.key === key)?.children?.map((child) => child.href);
+    expect(children("juristic_accounting")).toEqual([
+      "/juristic/accounting",
+      "/juristic/accounting/journals",
+      "/juristic/accounting/accounts",
+    ]);
+    expect(children("juristic_funds")).toEqual(["/juristic/funds", "/juristic/petty-cash"]);
+    expect(children("juristic_expenses")).toEqual([
+      "/juristic/expenses",
+      "/juristic/expenses/certificates",
+      "/juristic/expenses/settings",
+    ]);
+    expect(withBooks.find((item) => item.key === "juristic_bank_statements")?.href).toBe("/juristic/bank-statements");
+  });
 });

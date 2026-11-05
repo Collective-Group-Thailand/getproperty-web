@@ -18,6 +18,10 @@ const EXTENSION: Record<Schemas["ExportKind"], string> = {
   payroll_deduction: "csv",
   etax_monthly_xlsx: "xlsx",
   juristic_receivables_csv: "csv",
+  // J2.1: journals for the accountant's own software (Express is tab-separated text, FlowAccount a CSV).
+  juristic_journal_csv: "csv",
+  juristic_journal_express: "txt",
+  juristic_journal_flowaccount: "csv",
 };
 
 /** `income_expense-2026-10.xlsx`: kind, the period (or as-of date) the export covers, and its format. */

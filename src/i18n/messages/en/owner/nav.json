@@ -58,6 +58,10 @@
   "juristic_collection_ladder": "Collection steps",
   "juristic_workspace_invitations": "Invite the juristic office",
   "juristic_gate": "Gate and visitors",
+  "juristic_accounting": "Accounts and statements",
+  "juristic_funds": "Funds and petty cash",
+  "juristic_expenses": "Expenses and approvals",
+  "juristic_bank_statements": "Bank reconciliation",
   "gate": "Gate and visitors",
   "juristicGroup": {
     "daily": "Daily work",

@@ -83,6 +83,7 @@ export const SETTING_UNIT: Record<string, "hours" | "days" | "minutes" | "percen
   "payments.slip_max_age_days": "days",
   "juristic.plan_default_days": "days",
   "juristic.debt_clearance.validity_days": "days",
+  "juristic.bank_match_days": "days",
   "readings.round_window_days": "days",
   "analytics.csat_survey_interval_days": "days",
   "viewing.self.code_minutes": "minutes",

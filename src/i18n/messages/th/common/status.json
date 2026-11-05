@@ -576,5 +576,26 @@
     "active": "ใช้งาน",
     "locked": "ล็อกชั่วคราว",
     "revoked": "ยกเลิกแล้ว"
+  },
+  "expense": {
+    "draft": "ร่าง",
+    "submitted": "รออนุมัติ",
+    "approved": "อนุมัติแล้ว · รอจ่าย",
+    "rejected": "ไม่อนุมัติ",
+    "paid": "จ่ายแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "fundTransfer": {
+    "requested": "รออนุมัติ",
+    "posted": "ลงบัญชีแล้ว",
+    "rejected": "ไม่อนุมัติ",
+    "cancelled": "ยกเลิก"
+  },
+  "bankLine": {
+    "none": "รอจับคู่",
+    "payment": "จับคู่กับรับชำระ",
+    "expense": "จับคู่กับค่าใช้จ่าย",
+    "fund_transfer": "จับคู่กับโอนกองทุน",
+    "ignored": "ข้ามรายการ"
   }
 }
