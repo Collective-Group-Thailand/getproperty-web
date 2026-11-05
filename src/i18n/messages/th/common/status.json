@@ -545,5 +545,36 @@
   "verifiedDocument": {
     "valid": "ใช้ได้",
     "expired": "หมดอายุ"
+  },
+  "gateVisit": {
+    "requested": "รอบ้านตอบ",
+    "approved": "อนุญาตแล้ว",
+    "denied": "ไม่อนุญาต",
+    "timed_out": "ครบเวลา",
+    "entered": "อยู่ในโครงการ",
+    "exited": "ออกแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "incident": {
+    "open": "เกิดเหตุ",
+    "acknowledged": "รับทราบแล้ว",
+    "resolved": "ปิดเหตุแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "gateInvite": {
+    "pending_approval": "รอสำนักงานอนุมัติ",
+    "active": "ใช้ได้",
+    "rejected": "ไม่อนุมัติ",
+    "revoked": "ยกเลิกแล้ว"
+  },
+  "gateDevice": {
+    "pending": "รอลงทะเบียน",
+    "active": "ใช้งาน",
+    "revoked": "ถอดออกแล้ว"
+  },
+  "gateGuard": {
+    "active": "ใช้งาน",
+    "locked": "ล็อกชั่วคราว",
+    "revoked": "ยกเลิกแล้ว"
   }
 }

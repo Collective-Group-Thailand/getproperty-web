@@ -1,0 +1,404 @@
+{
+  "title": "Gate and visitors",
+  "lede": "Gates, tablets, guards, each house's rule and the estate's entry log",
+  "property": "Estate",
+  "sections": "Gate sections",
+  "tab": {
+    "gates": "Gates and tablets",
+    "guards": "Guards",
+    "policies": "House rules",
+    "blacklist": "Blacklist",
+    "invites": "Contractor invites",
+    "visits": "Visitor log",
+    "incidents": "Incidents and SOS",
+    "vehicles": "Registered cars",
+    "settings": "Settings"
+  },
+  "noProperty": {
+    "title": "No estate yet",
+    "body": "Add the estate and its buildings first, then set up its gates.",
+    "action": "Add a building"
+  },
+  "col": {
+    "name": "Name",
+    "state": "Status",
+    "lastSeen": "Last seen",
+    "action": "Actions",
+    "kind": "Type",
+    "edge": "Gateway · channel",
+    "hwState": "Device state",
+    "shift": "On shift",
+    "pinSet": "PIN set",
+    "plate": "Plate",
+    "reason": "Reason",
+    "since": "Since",
+    "unit": "House",
+    "visitor": "Visitor",
+    "window": "Window",
+    "label": "Label",
+    "gate": "Gate",
+    "when": "When",
+    "where": "Where"
+  },
+  "gates": {
+    "lede": "Each gate has its guards' tablet and may drive a barrier and a plate camera (LPR) through the estate's gateway.",
+    "new": "Add gate",
+    "newTitle": "Add a gate",
+    "create": "Add gate",
+    "created": "Gate added",
+    "edit": "Edit",
+    "editTitle": "Edit {name}",
+    "save": "Save",
+    "saved": "Saved",
+    "name": "Gate name",
+    "nameHint": "What guards and residents see, e.g. Gate 1 · Main entrance",
+    "kindLabel": "Gate type",
+    "stateLabel": "Status",
+    "kind": {
+      "main": "Main entrance",
+      "side": "Side gate",
+      "service": "Service entrance"
+    },
+    "state": {
+      "active": "In use",
+      "inactive": "Not in use"
+    },
+    "inactive": "Not in use",
+    "hasBarrier": "Barrier",
+    "hasLpr": "LPR camera",
+    "noHardware": "No barrier or camera yet",
+    "empty": {
+      "title": "No gates yet",
+      "body": "Add the first gate, then create a registration code for the guards' tablet."
+    },
+    "tablets": "Guard tablets",
+    "noTablets": "No tablet yet. Create a registration code to start.",
+    "codeUntil": "Code valid until {date}",
+    "hardware": "Barrier and camera",
+    "noHardwareLede": "No barrier or LPR camera connected to this gate.",
+    "hardwareKind": {
+      "barrier": "Barrier",
+      "lpr": "LPR camera"
+    },
+    "edgeGateway": "Gateway",
+    "pulse": "{ms} ms pulse",
+    "hw": {
+      "open": "Open",
+      "closed": "Closed",
+      "fault": "Fault",
+      "none": "No state yet"
+    },
+    "tabletHint": "On the tablet, open getproperty's {url} and enter the registration code.",
+    "newTablet": "Add tablet",
+    "newTabletTitle": "Add a tablet at {gate}",
+    "newTabletLede": "A one-time registration code is created and shown once.",
+    "createCode": "Create code",
+    "tabletName": "Tablet name",
+    "tabletNameHint": "e.g. Front gate tablet",
+    "tabletNameRequired": "Name the tablet",
+    "codeTitle": "Tablet registration code",
+    "codeLede": "Write it down or copy it now. It is not shown again once this window closes.",
+    "codeStep1": "On the tablet, open getproperty's /gate page",
+    "codeStep2": "Enter this code and tap Register tablet",
+    "codeStep3": "Guards pick their name and enter their PIN to start a shift",
+    "codeOnce": "The code works once, within the time the system allows. If it is lost, create a new one.",
+    "copy": "Copy code",
+    "copied": "Code copied",
+    "close": "Close",
+    "revokeTablet": "Remove tablet",
+    "revokeTabletTitle": "Remove {name} from the gate?",
+    "revokeTabletBody": "Any shift open on this tablet ends at once. It needs a new code to work again.",
+    "revokedTablet": "Tablet removed",
+    "attach": "Connect device",
+    "attachTitle": "Connect a barrier or LPR camera",
+    "attachLede": "Devices connect through the estate's gateway; a channel cannot be used twice on one gateway.",
+    "attachSubmit": "Connect",
+    "attached": "Device connected",
+    "hardwareKindLabel": "Device",
+    "hardwareName": "Device name",
+    "edgeHint": "A gateway installed at this estate",
+    "edgePick": "Choose a gateway",
+    "edgeRequired": "Choose a gateway",
+    "channel": "Gateway channel",
+    "channelHint": "e.g. relay1 or cam1 (letters, digits, _ . : -)",
+    "channelInvalid": "Letters, digits and _ . : - only, up to 32",
+    "pulseLabel": "Open pulse (ms)",
+    "pulseHint": "Leave empty for the estate's value",
+    "detach": "Disconnect",
+    "detachTitle": "Disconnect {name}?",
+    "detachBody": "The gate can no longer open the barrier or read plates with this device.",
+    "detached": "Device disconnected",
+    "edgeChannel": "{gateway} · {channel}"
+  },
+  "guards": {
+    "lede": "Guards sign in with their name and PIN on the gate's tablet only; they cannot sign in anywhere else.",
+    "empty": {
+      "title": "No guards yet",
+      "body": "Add each guard's name and PIN."
+    },
+    "lockedUntil": "until {time}",
+    "onShift": "On shift",
+    "add": "Add guard",
+    "addTitle": "Add a guard",
+    "addLede": "Tell the guard the PIN yourself; it is not shown again.",
+    "addSubmit": "Add",
+    "added": "Guard added",
+    "name": "Display name",
+    "nameHint": "The name the guard taps on the tablet",
+    "nameRequired": "Enter a name",
+    "pin": "PIN",
+    "newPin": "New PIN",
+    "pinHint": "4–6 digits",
+    "pinInvalid": "The PIN must be 4–6 digits",
+    "menu": "Actions for {name}",
+    "rename": "Rename",
+    "renameTitle": "Rename",
+    "save": "Save",
+    "saved": "Saved",
+    "resetPin": "Set a new PIN",
+    "resetPinTitle": "New PIN for {name}",
+    "resetPinLede": "Also unlocks a guard locked by wrong PINs.",
+    "pinReset": "New PIN set",
+    "revoke": "Revoke guard",
+    "revokeTitle": "Revoke {name}?",
+    "revokeBody": "Any open shift ends at once and the guard cannot start one again.",
+    "revoked": "Revoked"
+  },
+  "policies": {
+    "pick": "Choose a house",
+    "lede": "Each house sets how long it has to answer and what the guard does if nobody does.",
+    "none": {
+      "title": "Choose a house on the left",
+      "body": "See and change its rule. Houses without one use the estate's.",
+      "action": "Pick the first house"
+    },
+    "custom": "Set by the house",
+    "default": "Estate default",
+    "minutes": "Time to answer (minutes)",
+    "minutesHint": "1–15 minutes",
+    "minutesInvalid": "Enter 1–15 minutes",
+    "action": "If nobody answers",
+    "actions": {
+      "guard_calls": "Guard calls the house",
+      "allow_and_log": "Let in and record",
+      "deny": "Do not let in"
+    },
+    "delivery": "Deliveries",
+    "deliveryOption": {
+      "estate": "As the estate sets",
+      "skip": "Let in (notify the house only)",
+      "ask": "Ask the house every time"
+    },
+    "note": "House note to the guard",
+    "noteHint": "e.g. there is a dog · up to 300 characters",
+    "save": "Save rule",
+    "saved": "Rule saved"
+  },
+  "blacklist": {
+    "lede": "A plate on this list is refused at once. Every addition or removal needs a reason and is recorded.",
+    "empty": {
+      "title": "No blacklisted plates",
+      "body": "Add a plate only with a resolution or a clear reason."
+    },
+    "revokedOn": "Removed {date}",
+    "add": "Blacklist a plate",
+    "addTitle": "Blacklist a plate",
+    "addLede": "Guards see that the plate is refused, not why.",
+    "addSubmit": "Add",
+    "added": "Added",
+    "category": "Letters",
+    "number": "Number",
+    "province": "Province",
+    "reason": "Reason",
+    "reasonHint": "At least 5 characters, e.g. the resolution",
+    "categoryRequired": "Enter the letters",
+    "numberInvalid": "1–4 digits",
+    "provinceRequired": "Enter the province",
+    "reasonRequired": "Give a reason of at least 5 characters",
+    "revoke": "Remove",
+    "revokeTitle": "Remove {plate} from the blacklist?",
+    "revokeBody": "The plate enters as usual again. Give the reason for the record.",
+    "revoked": "Removed"
+  },
+  "invites": {
+    "lede": "Contractors a house invites need the office's approval before their QR works.",
+    "show": "Show invites",
+    "waiting": "Waiting",
+    "all": "All",
+    "empty": {
+      "title": "No invites waiting",
+      "body": "When a house invites a contractor, it shows here."
+    },
+    "kind": {
+      "guest": "Guest",
+      "delivery": "Delivery",
+      "contractor": "Contractor",
+      "other": "Other"
+    },
+    "uses": "Used {uses} of {max}",
+    "approve": "Approve",
+    "approveTitle": "Approve house {unit}'s invite?",
+    "approveBody": "{name} can enter with the QR within the house's window.",
+    "approved": "Approved",
+    "reject": "Reject",
+    "rejectTitle": "Reject house {unit}'s invite?",
+    "rejectBody": "The house is told, with the reason if you give one.",
+    "rejectReason": "Reason (optional)",
+    "rejected": "Rejected",
+    "range": "{from} – {to}"
+  },
+  "reason": {
+    "title": {
+      "visits": "Open the visitor log",
+      "incidents": "Open the incident log"
+    },
+    "lede": "This log holds personal data. Every opening is recorded with your reason and your name.",
+    "label": "Why you are opening it",
+    "placeholder": "e.g. house 99/11 asked about a car yesterday",
+    "hint": "At least 5 characters",
+    "open": "Open the log",
+    "using": "Opened for: “{reason}”",
+    "change": "Change reason",
+    "min": "At least {min} characters"
+  },
+  "log": {
+    "search": "Search",
+    "searchHint": "Plate, house or name",
+    "anyState": "Any status",
+    "anyGate": "Any gate",
+    "from": "From",
+    "to": "To",
+    "state": {
+      "requested": "Waiting for the house",
+      "approved": "Approved",
+      "denied": "Denied",
+      "timed_out": "Time up",
+      "entered": "Inside",
+      "exited": "Left",
+      "cancelled": "Cancelled"
+    },
+    "empty": {
+      "title": "Nothing found",
+      "body": "Try other filters. Records older than the estate keeps them are deleted."
+    },
+    "kind": {
+      "guest": "Guest",
+      "delivery": "Delivery",
+      "contractor": "Contractor",
+      "resident_vehicle": "Household car",
+      "other": "Other"
+    },
+    "basis": {
+      "approval": "House approved",
+      "invite": "Invite QR",
+      "remembered_vehicle": "Remembered car",
+      "delivery_drop_point": "Drop point",
+      "policy": "House rule",
+      "guard_override": "Guard let in",
+      "offline": "Recorded offline",
+      "resident_vehicle": "Household car"
+    },
+    "back": "Visitor log",
+    "recordTitle": "Visit",
+    "facts": "Visit details",
+    "entryBasis": "Let in because",
+    "visitorName": "Visitor's name",
+    "idLast4": "Last 4 ID digits",
+    "created": "Recorded",
+    "entered": "In",
+    "exited": "Out",
+    "photo": "Photo",
+    "photoKept": "Kept (deleted with the record)",
+    "noPhoto": "None",
+    "decisionReason": "Decision reason",
+    "note": "Note",
+    "timeline": "Timeline",
+    "event": {
+      "created": "Recorded at the gate",
+      "notified": "House notified",
+      "answered": "House answered",
+      "policy_applied": "Time up: house rule applied",
+      "entered": "Entered",
+      "exited": "Left",
+      "cancelled": "Cancelled",
+      "photo_added": "Photo added",
+      "overstayed": "Stayed too long",
+      "note": "Note",
+      "gate_opened": "Barrier opened"
+    },
+    "actor": {
+      "guard": "Guard",
+      "resident": "Resident",
+      "operator": "Office",
+      "system": "System",
+      "device": "Device"
+    },
+    "clear": "Clear filters"
+  },
+  "incident": {
+    "state": {
+      "open": "Open",
+      "acknowledged": "Acknowledged",
+      "resolved": "Resolved",
+      "cancelled": "Cancelled"
+    },
+    "empty": {
+      "title": "No incidents in this period",
+      "body": "When a resident or a guard raises an SOS it shows here."
+    },
+    "kind": {
+      "fire": "Fire",
+      "medical": "Medical emergency",
+      "intrusion": "Intrusion",
+      "other": "Other emergency"
+    },
+    "source": {
+      "resident_sos": "Raised by a resident",
+      "guard": "Raised by a guard",
+      "device": "Raised by a device"
+    },
+    "unit": "House {unit}",
+    "back": "Incidents and SOS",
+    "recordTitle": "Incident",
+    "note": "What the reporter wrote",
+    "visits": "Vehicles inside at the time ({count})",
+    "visitsLede": "Vehicles in before the SOS and not out, or out shortly before it, as the system counts them.",
+    "noVisits": "No vehicles at the time",
+    "stillInside": "Still inside",
+    "event": {
+      "raised": "Raised",
+      "acknowledged": "Acknowledged",
+      "resolved": "Resolved",
+      "cancelled": "Cancelled by the reporter",
+      "note": "Note"
+    },
+    "acknowledge": "Acknowledge",
+    "acknowledgeTitle": "Acknowledge this incident?",
+    "acknowledgeBody": "The reporter sees that the office has it.",
+    "acknowledged": "Acknowledged",
+    "resolve": "Resolve",
+    "resolveTitle": "Resolve this incident?",
+    "resolveBody": "Only once it is over.",
+    "resolved": "Resolved",
+    "noteLabel": "Note (optional)"
+  },
+  "vehicles": {
+    "lede": "Cars households register in the LINE app. The LPR camera lets them in without asking. Read-only for the office.",
+    "empty": {
+      "title": "No registered cars",
+      "body": "Residents add their household's cars in the LINE app."
+    }
+  },
+  "settings": {
+    "retention": "How long visitor records are kept",
+    "retentionHint": "Photos, plates, names and the last 4 ID digits are deleted when the time is up · in force since {since} · set by the platform under data protection law",
+    "group": {
+      "visitors": "Visitors and house rules",
+      "tablet": "Tablets and PINs",
+      "hardware": "Barrier, LPR camera and opening from LINE",
+      "sos": "SOS"
+    }
+  },
+  "backToday": "Back to Today",
+  "toVisits": "Open the visitor log"
+}

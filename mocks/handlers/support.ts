@@ -52,7 +52,8 @@ export type Authenticated =
   | { ok: false; code: "auth.unauthenticated" | "auth.wrong_audience" };
 
 /** Bearer check with the contract's audience rule: a token works on its own surface only (contract §2). */
-export function authenticate(request: Request, audience: Audience): Authenticated {
+/** Operator and platform tokens; guard tokens are checked by the gate mock against the open shift (owner/gate.ts). */
+export function authenticate(request: Request, audience: Exclude<Audience, "guard">): Authenticated {
   const header = request.headers.get("authorization") ?? "";
   const token = header.startsWith("Bearer ") ? header.slice(7) : "";
   const grant = state.access.get(token);

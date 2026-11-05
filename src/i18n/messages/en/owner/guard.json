@@ -1,0 +1,323 @@
+{
+  "title": "Gate",
+  "brand": "getproperty · Gate",
+  "close": "Close",
+  "cancel": "Cancel",
+  "back": "Back",
+  "retry": "Try again",
+  "requestId": "Request {id}",
+  "enrol": {
+    "title": "Register this tablet with a gate",
+    "lede": "Ask the juristic office for a registration code (Gate and visitors › Gates and tablets). A code works once, within 24 hours.",
+    "code": "Registration code",
+    "codeHint": "Letters and digits as the office gave them",
+    "name": "Tablet name (optional)",
+    "namePlaceholder": "e.g. Front gate tablet",
+    "submit": "Register tablet",
+    "codeRequired": "Enter the registration code",
+    "revoked": "This tablet was removed from its gate. Register it again with a code from the office.",
+    "done": "Registered with {gate}"
+  },
+  "roster": {
+    "title": "Who is on shift?",
+    "lede": "Tap your name, then enter your PIN",
+    "locked": "Locked for now",
+    "empty": "No guards for this estate yet. Ask the office to add names and PINs first.",
+    "forget": "Remove this tablet from the gate",
+    "forgetConfirm": "Remove this tablet? It needs a new registration code from the office to work again.",
+    "forgetAction": "Remove tablet",
+    "where": "{gate} · {property}"
+  },
+  "pin": {
+    "title": "PIN for {name}",
+    "entered": "{count} digits entered",
+    "backspace": "Delete one digit",
+    "submit": "Start shift",
+    "unlock": "Unlock",
+    "invalid": "Wrong PIN. Try again.",
+    "locked": "Too many wrong PINs. Try again in {time}, or ask the office to set a new PIN.",
+    "unavailable": "Cannot reach the system. Check the internet and try again.",
+    "otherGuard": "Someone else",
+    "lockedScreen": "Screen locked",
+    "lockedLede": "No activity for {minutes} minutes. Enter your PIN to continue.",
+    "submitting": "Checking"
+  },
+  "header": {
+    "gate": "{gate}",
+    "online": "Online",
+    "offline": "Offline",
+    "offlineQueue": "Offline · will send when back online ({count})",
+    "syncing": "Sending ({count})",
+    "reconnecting": "Reconnecting",
+    "shiftSince": "On shift since {time}",
+    "switchShift": "Switch shift",
+    "switchConfirmTitle": "End {name}'s shift?",
+    "switchConfirm": "End shift",
+    "switchLede": "Anything not sent yet goes when the next guard signs in.",
+    "lock": "Lock screen",
+    "clock": "Time now",
+    "barrier": {
+      "open": "Barrier open",
+      "closed": "Barrier closed",
+      "fault": "Barrier fault",
+      "unknown": "Barrier · no state yet"
+    },
+    "openBarrier": "Open barrier"
+  },
+  "open": {
+    "title": "Open the barrier",
+    "lede": "Pick a reason. Every opening is recorded.",
+    "reason": {
+      "visit": "Visitor",
+      "resident": "Household car",
+      "delivery": "Delivery",
+      "service": "Service vehicle",
+      "emergency": "Emergency",
+      "other": "Other"
+    },
+    "note": "Details",
+    "noteRequired": "Give a short reason",
+    "submit": "Open barrier",
+    "sent": "Open command sent",
+    "tooSoon": "Just opened. Wait {seconds} seconds.",
+    "noBarrier": "This gate has no barrier connected yet"
+  },
+  "entry": {
+    "title": "Record a visitor",
+    "lpr": {
+      "ready": "LPR camera ready",
+      "offline": "LPR camera not answering"
+    },
+    "plate": "Licence plate",
+    "plateOptional": "(if any)",
+    "category": "Letters",
+    "number": "Number",
+    "province": "Province",
+    "provinceEmpty": "Choose province",
+    "photo": "Photo",
+    "photoTake": "Take photo",
+    "photoRetake": "Retake",
+    "photoRemove": "Remove photo",
+    "photoAlt": "Photo taken",
+    "photoTooLarge": "The photo is too large. Take it again.",
+    "kind": "Visit type",
+    "kindRequired": "Choose the visit type",
+    "destination": "Destination",
+    "destinationRequired": "Choose the house being visited",
+    "destinationSearch": "Search house number or pick a soi",
+    "destinationChange": "Change",
+    "destinationNotNeeded": "No house needed for Other",
+    "lineLinked": "Household on LINE",
+    "lineNotLinked": "Nobody in this house is on LINE yet",
+    "hasArrears": "Has arrears",
+    "visitorName": "Visitor's name",
+    "optional": "(optional)",
+    "idLast4": "Last 4 digits of ID",
+    "idLast4Invalid": "Exactly 4 digits",
+    "privacy": "Kept for {days} days, then deleted automatically",
+    "notify": "Notify the house",
+    "recordOffline": "Let in and record (offline)",
+    "recordOfflineHint": "Offline: the house cannot be asked. The visit is recorded as let in and sent when back online.",
+    "scan": "Scan invite QR",
+    "clear": "Clear form",
+    "errors": "Check the form",
+    "plateErrors": {
+      "categoryInvalid": "1–4 characters with at least one Thai letter",
+      "numberInvalid": "1–4 digits",
+      "provinceMissing": "Choose the province on the plate"
+    },
+    "result": {
+      "requested": "Sent to house {unit} · waiting for an answer",
+      "entered": "Let in · house {unit} was told",
+      "approved": "House {unit} approved",
+      "denied": "Not allowed in",
+      "timed_out": "Time is up: follow the house's rule",
+      "queued": "Recorded. Will send when back online.",
+      "replayed": "This visit was already recorded",
+      "blacklisted": "This plate is on the estate's blacklist",
+      "conflict": "Could not send"
+    }
+  },
+  "kind": {
+    "guest": "Guest",
+    "delivery": "Delivery / food",
+    "contractor": "Contractor",
+    "resident_vehicle": "Household car",
+    "other": "Other",
+    "invite": "Invite QR"
+  },
+  "keypad": {
+    "title": "Licence plate",
+    "letters": "Letters",
+    "digits": "Digits",
+    "backspace": "Delete",
+    "next": "Next",
+    "done": "Done",
+    "group": {
+      "mid": "Middle class",
+      "high": "High class",
+      "lowPaired": "Low class (paired)",
+      "lowSingle": "Low class (single)"
+    },
+    "provinceSearch": "Search province",
+    "recent": "Recent",
+    "all": "All provinces",
+    "noProvince": "No such province"
+  },
+  "units": {
+    "title": "Choose the destination",
+    "search": "House number",
+    "searching": "Searching",
+    "empty": "No house matches “{query}”",
+    "hint": "Type at least 1 character",
+    "policy": {
+      "allow_and_log": "No answer in {minutes} min → let in and record",
+      "deny": "No answer in {minutes} min → do not let in",
+      "guard_calls": "No answer in {minutes} min → guard calls"
+    },
+    "deliverySkip": "Deliveries go straight in",
+    "note": "House note: {note}",
+    "group": "Soi / building",
+    "allGroups": "All",
+    "offline": "Offline · showing the houses this tablet remembers"
+  },
+  "waiting": {
+    "title": "Waiting for the house",
+    "count": "{count}",
+    "empty": "Nobody waiting",
+    "emptyLede": "When you notify a house, the visit shows here with a running timer.",
+    "timer": "Waiting {time}",
+    "remaining": "{time} left",
+    "policyLine": "Time this house gives to answer",
+    "policy": {
+      "allow_and_log": "After {minutes} min → let in and record",
+      "deny": "After {minutes} min → do not let in",
+      "guard_calls": "After {minutes} min → guard calls"
+    },
+    "state": {
+      "requested": "Waiting",
+      "approved": "Approved",
+      "denied": "Denied",
+      "timed_out": "Time up"
+    },
+    "timedOut": {
+      "allow_and_log": "Time up · may let in and record",
+      "deny": "Time up · do not let in",
+      "guard_calls": "Time up · call the house"
+    },
+    "callBack": "The house asked you to call back",
+    "callBackName": "{name} asked you to call back",
+    "approvedAt": "Approved at {time}",
+    "deniedLede": "The house said no. Tell the visitor.",
+    "letIn": "Open barrier",
+    "letInNoBarrier": "Let in",
+    "manage": "Options",
+    "dismiss": "OK",
+    "manageTitle": "{plate} · house {unit}",
+    "override": "Let in without waiting",
+    "overrideReason": "Why you let them in",
+    "overrideHint": "Kept in the house's history, e.g. the owner phoned the gate",
+    "overrideRequired": "At least 5 characters",
+    "cancelVisit": "Cancel visit",
+    "cancelReason": "Reason (optional)",
+    "cancelHint": "e.g. the visitor left",
+    "queued": "To send",
+    "conflict": "Could not send",
+    "discard": "Remove this entry",
+    "noUnit": "No house"
+  },
+  "inside": {
+    "title": "Inside the estate",
+    "count": "{count}",
+    "sort": "Latest entry first",
+    "empty": "Nobody inside right now",
+    "enteredAt": "In at {time}",
+    "ago": "({minutes} min ago)",
+    "agoHours": "({hours} h {minutes} min)",
+    "overstayed": "Stayed longer than allowed",
+    "exit": "Record exit",
+    "exited": "Exit recorded",
+    "queued": "To send",
+    "unit": "House {unit}",
+    "basis": {
+      "approval": "House approved",
+      "invite": "Invite QR",
+      "remembered_vehicle": "Remembered car",
+      "delivery_drop_point": "Drop point",
+      "policy": "House rule",
+      "guard_override": "Guard let in",
+      "offline": "Recorded offline",
+      "resident_vehicle": "Household car"
+    }
+  },
+  "lpr": {
+    "title": "LPR camera read",
+    "confidence": "{percent}% sure",
+    "match": {
+      "none": "Not a registered car",
+      "low_confidence": "Unclear read: check the plate",
+      "ambiguous": "Matches several houses",
+      "blacklisted": "On the blacklist",
+      "resident_vehicle": "Household car",
+      "remembered_vehicle": "Remembered car"
+    },
+    "claim": "Use in form",
+    "dismiss": "Not entering",
+    "claimed": "Plate filled from the camera. Check it and choose the house.",
+    "taken": "Another guard already took this one",
+    "at": "at {time}"
+  },
+  "scan": {
+    "title": "Scan invite QR",
+    "aim": "Hold the visitor's phone so the QR fits the frame",
+    "starting": "Starting the camera",
+    "noCamera": "The camera did not start. Allow the camera in the browser, or type the code under the QR.",
+    "manual": "Code under the QR",
+    "manualSubmit": "Use this code",
+    "checking": "Checking the QR",
+    "plateNote": "The plate typed in the form is checked against the QR too",
+    "ok": "Valid QR · let in",
+    "okUnit": "Invited by house {unit}",
+    "again": "Scan another",
+    "queued": "Offline · QR kept, checked when back online"
+  },
+  "sos": {
+    "button": "Report / SOS",
+    "title": "Report an emergency",
+    "lede": "The office and every gate of the estate are told at once.",
+    "kind": "What happened",
+    "kinds": {
+      "fire": "Fire",
+      "medical": "Medical",
+      "intrusion": "Intrusion",
+      "other": "Other"
+    },
+    "note": "Details (optional)",
+    "submit": "Send report",
+    "sent": "Report sent",
+    "kindRequired": "Choose what happened"
+  },
+  "incident": {
+    "title": "SOS · {kind}",
+    "titleUnit": "SOS · {kind} · house {unit}",
+    "source": {
+      "resident_sos": "Raised by a resident",
+      "guard": "Raised by a guard",
+      "device": "Raised by a device"
+    },
+    "meta": "{source} · {time} ({minutes} min ago)",
+    "visits": "{count} vehicles inside at the time",
+    "acknowledge": "Acknowledge",
+    "acknowledged": "Acknowledged · being handled",
+    "resolve": "Close",
+    "resolveTitle": "Close this incident?",
+    "resolveNote": "Short summary (optional)",
+    "more": "{count} more",
+    "metaJustNow": "{source} · {time} (just now)"
+  },
+  "problem": {
+    "generic": "That did not work. Try again.",
+    "offline": "Offline. Try again when back online."
+  },
+  "lastSync": "Last updated {time}"
+}

@@ -191,6 +191,7 @@ const JURISTIC_MENU_BY_ROLE: Record<Schemas["TenantRole"], string[]> = {
     "juristic_receivables",
     "juristic_statements",
     "juristic_collection_ladder",
+    "juristic_gate",
     "members",
     "bank_accounts",
     "settings",
@@ -215,6 +216,7 @@ const JURISTIC_MENU_BY_ROLE: Record<Schemas["TenantRole"], string[]> = {
     "juristic_receivables",
     "juristic_statements",
     "juristic_collection_ladder",
+    "juristic_gate",
     "members",
     "settings",
   ],
@@ -227,7 +229,7 @@ const JURISTIC_MENU_BY_ROLE: Record<Schemas["TenantRole"], string[]> = {
     "juristic_cycles",
     "juristic_budgets",
   ],
-  staff: ["juristic_register"],
+  staff: ["juristic_register", "juristic_gate"],
   committee: [
     "dashboard",
     "buildings",
@@ -245,6 +247,7 @@ const JURISTIC_MENU_BY_ROLE: Record<Schemas["TenantRole"], string[]> = {
     "juristic_receivables",
     "juristic_statements",
     "juristic_collection_ladder",
+    "juristic_gate",
     "settings",
   ],
   auditor: [
@@ -674,6 +677,13 @@ const TENANT_KEYS = [
   "juristic.collections.manage",
   "juristic.payment_plan.approve",
   "juristic.collections.approve",
+  "gate.read",
+  "gate.manage",
+  "gate.guard.manage",
+  "gate.log.read",
+  "gate.invite.approve",
+  "gate.incident.read",
+  "gate.incident.manage",
 ];
 const MANAGER_EXCLUDED = new Set([
   "juristic.budget.approve",
@@ -765,6 +775,10 @@ const TENANT_PERMISSIONS: Record<Schemas["TenantRole"], string[]> = {
     "juristic.collections.read",
     "juristic.payment_plan.approve",
     "juristic.collections.approve",
+    "gate.read",
+    "gate.log.read",
+    "gate.invite.approve",
+    "gate.incident.read",
   ],
   auditor: [
     "tenant.read",

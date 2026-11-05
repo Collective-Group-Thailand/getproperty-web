@@ -57,6 +57,8 @@
   "juristic_statements": "ใบแจ้งยอดเจ้าของร่วม",
   "juristic_collection_ladder": "ขั้นตอนทวงถาม",
   "juristic_workspace_invitations": "เชิญนิติบุคคล",
+  "juristic_gate": "ป้อมและผู้มาติดต่อ",
+  "gate": "ป้อมและผู้มาติดต่อ",
   "juristicGroup": {
     "daily": "งานประจำวัน",
     "finance": "การเงิน",
