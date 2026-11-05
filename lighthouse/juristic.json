@@ -1,6 +1,6 @@
 {
   "extends": "./shared.json",
-  "$comment": "Juristic console (pack J, JW1a): the owner budgets (D-179) — initial JS ≤ 260 KB gz on every URL, LCP ≤ 2.5 s as a warning — measured signed in as the mock's juristic office (scripts/lhci.ts, persona `juristic`): overview, register (condo floors, estate plots), a unit, the transfer wizard, invite codes, resolutions, budgets with the rate builder, the new-budget form, cycles, rate plans and members.",
+  "$comment": "Juristic console (pack J, JW1a): the owner budgets (D-179) — initial JS ≤ 260 KB gz on every URL, LCP ≤ 2.5 s as a warning — measured signed in as the mock's juristic office (scripts/lhci.ts, persona `juristic`): overview, register (condo floors, estate plots), a unit, the transfer wizard, invite codes, resolutions, budgets with the rate builder, the new-budget form, cycles, rate plans and members; JW1b: receivables, a collection case, the ladder editor, payment rules, statements (list + paper), letters, plans (list + record), debt clearance (queue + record), auto-pay mandates, collection reports and the D-270 workspace.",
   "ci": {
     "collect": {
       "url": [
@@ -17,7 +17,21 @@
         "http://localhost:3200/juristic/budgets/new",
         "http://localhost:3200/juristic/cycles",
         "http://localhost:3200/billing/rate-plans",
-        "http://localhost:3200/settings/members"
+        "http://localhost:3200/settings/members",
+        "http://localhost:3200/juristic/receivables",
+        "http://localhost:3200/juristic/receivables/ca5e0a01-0000-4000-8000-000000000001",
+        "http://localhost:3200/juristic/collections/settings",
+        "http://localhost:3200/juristic/collections/payments",
+        "http://localhost:3200/juristic/statements",
+        "http://localhost:3200/juristic/statements/57a70a01-0000-4000-8000-000000000044",
+        "http://localhost:3200/juristic/statements/letters",
+        "http://localhost:3200/juristic/plans",
+        "http://localhost:3200/juristic/plans/91a40a01-0000-4000-8000-000000000003",
+        "http://localhost:3200/juristic/debt-clearance",
+        "http://localhost:3200/juristic/debt-clearance/dc1a0a01-0000-4000-8000-000000000002",
+        "http://localhost:3200/juristic/payment-mandates",
+        "http://localhost:3200/juristic/reports",
+        "http://localhost:3200/juristic/workspace"
       ],
       "numberOfRuns": 1,
       "settings": {

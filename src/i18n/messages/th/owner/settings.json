@@ -78,7 +78,13 @@
     "viewing_self_code_minutes": "รหัสดูห้องใช้ได้หลังเวลานัด",
     "viewing_self_code_early_minutes": "รหัสดูห้องใช้ได้ก่อนเวลานัด",
     "viewing_self_overstay_minutes": "แจ้งเตือนเมื่ออยู่เกินเวลา",
-    "compliance_tariff_cap_representative_units": "หน่วยที่ใช้เทียบเพดานค่าน้ำค่าไฟ"
+    "compliance_tariff_cap_representative_units": "หน่วยที่ใช้เทียบเพดานค่าน้ำค่าไฟ",
+    "payments_allocation_policy": "การตัดชำระ",
+    "payments_slip_max_age_days": "อายุสลิปที่รับอัตโนมัติ",
+    "juristic_plan_default_days": "ผิดนัดแผนผ่อนเมื่อ",
+    "juristic_plan_max_instalments": "จำนวนงวดผ่อนสูงสุด",
+    "juristic_debt_clearance_fee": "ค่าธรรมเนียมหนังสือปลอดหนี้",
+    "juristic_debt_clearance_validity_days": "อายุหนังสือปลอดหนี้"
   },
   "property": {
     "title": "การตั้งค่าอาคาร",
@@ -108,7 +114,9 @@
     "estimateAllow": "ประมาณค่าได้เมื่อไม่มีค่าจด",
     "estimateBlock": "รอค่าจดจริง",
     "vatRate": "อัตรา VAT",
-    "vatRateHint": "เป็นเปอร์เซ็นต์ เช่น 7"
+    "vatRateHint": "เป็นเปอร์เซ็นต์ เช่น 7",
+    "allocationOldest": "บิลเก่าก่อน (เงินเพิ่มของแต่ละบิลก่อน)",
+    "allocationSurcharge": "เงินเพิ่มทุกบิลก่อน แล้วจึงเงินต้น"
   },
   "history": {
     "open": "ประวัติ",
@@ -845,7 +853,13 @@
     "tm30_notify_within_hours": "แจ้ง ตม. ภายในเวลานี้หลังผู้เช่าต่างชาติเข้าพัก",
     "compliance_tariff_cap_severity": "เมื่อราคาเกินเพดานตามกฎหมาย ให้เตือนหรือไม่ให้บันทึก",
     "compliance_tariff_cap_representative_units": "ใช้คำนวณบิลตัวอย่างเมื่อตั้งราคาใหม่",
-    "tenant_subject_to_ocpb_2568": "ใช้กติกาตามประกาศคณะกรรมการว่าด้วยสัญญา"
+    "tenant_subject_to_ocpb_2568": "ใช้กติกาตามประกาศคณะกรรมการว่าด้วยสัญญา",
+    "payments_allocation_policy": "เงินที่รับมาตัดชำระบิลไหนก่อน ส่วนที่เกินเป็นเครดิตของผู้ชำระ",
+    "payments_slip_max_age_days": "สลิปที่ลงวันที่เก่ากว่านี้ (หรือล่วงหน้าเกิน 1 วัน) จะรอให้ทีมตรวจเอง",
+    "juristic_plan_default_days": "งวดที่ออกบิลแล้วแต่ยังไม่ชำระเกินจำนวนวันนี้หลังครบกำหนด แผนจะผิดนัด งวดที่เหลือเรียกเก็บรวมครั้งเดียว",
+    "juristic_plan_max_instalments": "แผนผ่อนแต่ละแผนแบ่งได้ไม่เกินจำนวนงวดนี้ (อย่างน้อย 2 งวด)",
+    "juristic_debt_clearance_fee": "0.00 = ออกหนังสือทันทีเมื่อไม่มียอดค้าง ถ้ามีค่าธรรมเนียม จะออกหลังชำระค่าธรรมเนียมแล้ว",
+    "juristic_debt_clearance_validity_days": "นับจากวันออก แสดงในเอกสารและหน้าตรวจสอบ"
   },
   "unit": {
     "hours": "ชั่วโมง",

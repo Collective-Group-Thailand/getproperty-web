@@ -125,6 +125,15 @@ export const CURATED_ICONS = {
   // G9 (D-301): verified reviews, AI listing drafts
   star: "star",
   sparkles: "sparkles",
+  // J (JW1b): collections — a paused case, a dispute, a printed letter, legal measures, LINE / SMS channels, auto-pay
+  pause: "pause",
+  dispute: "scale",
+  letter: "file-text",
+  legal: "gavel",
+  "suspend-services": "ban",
+  sms: "message-square-text",
+  send: "send",
+  repeat: "repeat",
   // theme & language
   "theme-system": "monitor",
   "theme-light": "sun",

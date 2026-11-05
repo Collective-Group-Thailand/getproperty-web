@@ -501,5 +501,49 @@
   "register": {
     "complete": "Complete",
     "incomplete": "Incomplete"
+  },
+  "collectionCase": {
+    "open": "Following up",
+    "paused": "Paused",
+    "resolved": "Settled"
+  },
+  "paymentPlan": {
+    "proposed": "Awaiting approval",
+    "active": "Active",
+    "completed": "Completed",
+    "defaulted": "Defaulted",
+    "cancelled": "Cancelled",
+    "rejected": "Rejected"
+  },
+  "planInstalment": {
+    "scheduled": "Not due yet",
+    "billed": "Billed",
+    "paid": "Paid",
+    "cancelled": "Cancelled"
+  },
+  "debtClearance": {
+    "requested": "To issue",
+    "issued": "Issued",
+    "refused": "Refused"
+  },
+  "paymentMandate": {
+    "pending": "Awaiting bank",
+    "active": "Active",
+    "revoked": "Revoked",
+    "failed": "Failed"
+  },
+  "letterBatch": {
+    "queued": "Being prepared",
+    "ready": "Ready to print",
+    "failed": "Failed"
+  },
+  "workspaceLink": {
+    "invited": "Awaiting the office",
+    "active": "Linked",
+    "revoked": "Revoked"
+  },
+  "verifiedDocument": {
+    "valid": "Valid",
+    "expired": "Expired"
   }
 }

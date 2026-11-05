@@ -12,6 +12,9 @@ describe("Sentry scrubbing of /handoff/<token> (review L4)", () => {
       "https://getproperty.co/en/handoff/[redacted]?utm_source=line",
     );
     expect(scrubUrl(`/handoff/${TOKEN}`)).toBe("/handoff/[redacted]");
+    expect(scrubUrl("https://getproperty.co/en/juristic/join/JW7KQ2M9XA")).toBe(
+      "https://getproperty.co/en/juristic/join/[redacted]",
+    );
     expect(scrubUrl("/listings/handoffs/claim?token=abc")).toBe("/listings/handoffs/claim?token=%5Bredacted%5D");
   });
 

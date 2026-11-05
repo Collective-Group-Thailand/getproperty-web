@@ -14,6 +14,7 @@ import { initialBroadcastWorld, type MockBroadcastWorld } from "./owner/broadcas
 import { initialInsightWorld, type MockInsightWorld } from "./owner/insight";
 import { initialNetworkWorld, type MockNetworkWorld } from "./owner/network";
 import { initialJuristicWorld, type MockJuristicWorld } from "./owner/juristic";
+import { initialCollectionsWorld, type MockCollectionsWorld } from "./owner/collections";
 import {
   initialChannels,
   initialDevices,
@@ -190,6 +191,8 @@ export interface MockState {
   insight: MockInsightWorld;
   /** The juristic tenant's register, budgets, resolutions, rates and cycles (pack J, JW1a): see owner/juristic.ts. */
   juristic: MockJuristicWorld;
+  /** The juristic tenant's money collection, statements, plans, certificates, D-270 workspace (JW1b): see owner/collections.ts. */
+  collections: MockCollectionsWorld;
   webVitals: unknown[];
   log: LoggedRequest[];
   /** Access token lifetime; the suite shortens it to exercise refresh. */
@@ -245,6 +248,7 @@ function initial(): MockState {
     network: initialNetworkWorld(),
     insight: initialInsightWorld(),
     juristic: initialJuristicWorld(),
+    collections: initialCollectionsWorld(),
     webVitals: [],
     log: [],
     // 15 minutes like the API; a long Lighthouse run sets MOCK_ACCESS_TTL_MS so its fixed session cookie lasts.

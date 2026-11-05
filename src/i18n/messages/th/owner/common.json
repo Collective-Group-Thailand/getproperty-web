@@ -57,7 +57,10 @@
     "plusMinusPercent": "±{value}%",
     "months": "{count} เดือน",
     "minutes": "{count} นาที",
-    "structured": "ตั้งค่าแล้ว"
+    "structured": "ตั้งค่าแล้ว",
+    "allocationOldest": "บิลเก่าก่อน (เงินเพิ่มของแต่ละบิลก่อน)",
+    "allocationSurcharge": "เงินเพิ่มทุกบิลก่อน แล้วจึงเงินต้น",
+    "instalments": "{count, plural, other {# งวด}}"
   },
   "lineKind": {
     "internet": "อินเทอร์เน็ต",

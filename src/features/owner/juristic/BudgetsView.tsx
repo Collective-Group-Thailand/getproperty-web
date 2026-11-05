@@ -25,6 +25,7 @@ import { IconCalculator } from "@/ui/icons/glyphs/calculator";
 
 import { ownerPath, withQuery } from "../shared/links";
 import { ownerCan, pageParam, param, readOnly, section, type OwnerContext } from "../shared/server";
+import { BudgetActualCard } from "./collections/BudgetActualCard";
 import { ApproveBudgetButton } from "./BudgetActions";
 import { BudgetForm } from "./BudgetForm";
 import { RateBuilder } from "./RateBuilder";
@@ -330,6 +331,9 @@ export async function BudgetView({ context, budgetId }: { context: OwnerContext;
           <CardHeader title={<span id="lines-title">{t("linesTitle")}</span>} description={t("linesHint")} />
           <Statement caption={t("linesTitle")} lines={lines} />
         </Card>
+        {budget.state !== "draft" && ownerCan(me, "juristic.collections.read") ? (
+          <BudgetActualCard context={context} budgetId={budget.id} />
+        ) : null}
         <Card as="section" aria-labelledby="rate-builder" className="flex flex-col gap-4" id="rate-builder-card">
           <CardHeader title={<span id="rate-builder">{t("rateTitle")}</span>} description={t("rateHint")} />
           <RateBuilder

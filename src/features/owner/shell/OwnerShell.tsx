@@ -18,6 +18,7 @@ import { BUILDING_COOKIE } from "@/features/shared/shell/building";
 import {
   isJuristicTenant,
   JURISTIC_BOTTOM_NAV,
+  JURISTIC_LABEL_KEYS,
   JURISTIC_MENU_GROUPS,
   juristicLayout,
   OWNER_BOTTOM_NAV,
@@ -52,10 +53,15 @@ export async function OwnerShell({
   const prefix = (href: string) => getPathname({ href, locale });
   // One "ตั้งค่า" entry for the settings frame's sections (G6) when the member opens the settings at all.
   const menu = me.menu.includes("settings") ? me.menu.filter((key) => !SETTINGS_SECTION_KEYS.has(key)) : me.menu;
+  // A juristic office (pack J): the rail of J-DESIGN §5 — its own four groups, its order, the overview as "เช้านี้".
+  const juristic = isJuristicTenant(me.currentTenant.type);
   const entitled: ShellNavItem[] = entitledMenu(menu, OWNER_MENU).map((item) => ({
     ...item,
     href: prefix(item.href),
-    label: t(`owner.nav.${item.key}`),
+    label:
+      juristic && JURISTIC_LABEL_KEYS.has(item.key)
+        ? t(`owner.nav.juristicLabel.${item.key as "parties"}`)
+        : t(`owner.nav.${item.key}`),
     children: item.children?.map((child) => ({
       key: child.key,
       href: prefix(child.href),
@@ -64,8 +70,6 @@ export async function OwnerShell({
       testId: child.testId,
     })),
   }));
-  // A juristic office (pack J): the rail of J-DESIGN §5 — its own four groups, its order, the overview as "เช้านี้".
-  const juristic = isJuristicTenant(me.currentTenant.type);
   const items = juristic ? juristicLayout(entitled, prefix) : entitled;
   const groups = juristic
     ? groupItems(

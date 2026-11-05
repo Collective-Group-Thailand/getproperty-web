@@ -21,6 +21,7 @@ export const MESSAGE_FILES = {
     "broadcast",
     "buildings",
     "certificates",
+    "collections",
     "common",
     "community",
     "contracts",

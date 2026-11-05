@@ -132,11 +132,19 @@ export async function PaymentDetail({ context, paymentId }: { context: OwnerCont
                       >
                         {allocation.invoiceNumber ?? "—"}
                       </a>
-                      <span className="flex items-baseline gap-2 font-medium tabular-nums">
-                        {allocation.reversedAt ? (
-                          <span className="text-muted text-sm font-normal">{t("allocationReversed")}</span>
-                        ) : null}
-                        {formatTHB(allocation.amount, locale)}
+                      <span className="flex flex-col items-end gap-0.5">
+                        <span className="flex items-baseline gap-2 font-medium tabular-nums">
+                          {allocation.reversedAt ? (
+                            <span className="text-muted text-sm font-normal">{t("allocationReversed")}</span>
+                          ) : null}
+                          {formatTHB(allocation.amount, locale)}
+                        </span>
+                        {/* J1.2a: the part of the allocation that paid a surcharge (late fee), as the API recorded it. */}
+                        {/^0+(\.0+)?$/.test(allocation.surchargeAmount) ? null : (
+                          <span className="text-muted text-sm tabular-nums" data-testid="allocation-surcharge">
+                            {t("allocationSurcharge", { amount: formatTHB(allocation.surchargeAmount, locale) })}
+                          </span>
+                        )}
                       </span>
                     </li>
                   ))}

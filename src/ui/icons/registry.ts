@@ -115,6 +115,14 @@ import { IconGlobe } from "./glyphs/globe";
 import { IconPercent } from "./glyphs/percent";
 import { IconStar } from "./glyphs/star";
 import { IconSparkles } from "./glyphs/sparkles";
+import { IconPause } from "./glyphs/pause";
+import { IconDispute } from "./glyphs/dispute";
+import { IconLetter } from "./glyphs/letter";
+import { IconLegal } from "./glyphs/legal";
+import { IconSuspendServices } from "./glyphs/suspend-services";
+import { IconSms } from "./glyphs/sms";
+import { IconSend } from "./glyphs/send";
+import { IconRepeat } from "./glyphs/repeat";
 import { IconThemeSystem } from "./glyphs/theme-system";
 import { IconThemeLight } from "./glyphs/theme-light";
 import { IconThemeDark } from "./glyphs/theme-dark";
@@ -234,6 +242,14 @@ export const ICONS: { readonly [N in IconName]: IconGlyph<N> } = {
   percent: IconPercent,
   star: IconStar,
   sparkles: IconSparkles,
+  pause: IconPause,
+  dispute: IconDispute,
+  letter: IconLetter,
+  legal: IconLegal,
+  "suspend-services": IconSuspendServices,
+  sms: IconSms,
+  send: IconSend,
+  repeat: IconRepeat,
   "theme-system": IconThemeSystem,
   "theme-light": IconThemeLight,
   "theme-dark": IconThemeDark,

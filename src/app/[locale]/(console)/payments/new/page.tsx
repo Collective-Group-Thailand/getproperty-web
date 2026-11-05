@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { ManualPaymentForm } from "@/features/owner/payments/ManualPaymentForm";
+import { isJuristicTenant } from "@/features/owner/shell/menu";
 import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { focusedBuilding, ownerContext, param } from "@/features/owner/shared/server";
 import type { Locale } from "@/i18n/routing";
@@ -43,7 +44,11 @@ export default async function Page({
   return (
     <OwnerPage testId="payment-new">
       <PageHeader title={t("title")} description={t("description")} crumbs={[{ label: t("title") }]} />
-      <ManualPaymentForm invoices={lists.flat()} initialInvoiceId={param(query.invoice)} />
+      <ManualPaymentForm
+        invoices={lists.flat()}
+        initialInvoiceId={param(query.invoice)}
+        juristic={isJuristicTenant(context.me.currentTenant?.type)}
+      />
     </OwnerPage>
   );
 }

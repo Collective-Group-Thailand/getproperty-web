@@ -38,6 +38,12 @@ export function SettingValue({
         break;
       case "billing.estimate_policy":
         return value === "allow" ? t("estimateAllow") : t("estimateBlock");
+      case "payments.allocation_policy":
+        if (value === "oldest_first") return t("allocationOldest");
+        if (value === "surcharge_first") return t("allocationSurcharge");
+        break;
+      case "juristic.plan_max_instalments":
+        return t("instalments", { count: Number(value) });
       case "notifications.quiet_hours":
         if (record?.start && record.end)
           return t("quietHours", { start: String(record.start), end: String(record.end) });
@@ -70,6 +76,9 @@ export function SettingValue({
       case "billing.default_due_day":
         return t("dueDay", { day: Number(value) });
       case "deposit.refund_days":
+      case "payments.slip_max_age_days":
+      case "juristic.plan_default_days":
+      case "juristic.debt_clearance.validity_days":
       case "analytics.csat_survey_interval_days":
       case "readings.round_window_days":
         return t("days", { count: Number(value) });
