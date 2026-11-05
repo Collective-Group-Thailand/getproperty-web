@@ -146,6 +146,15 @@ export const CURATED_ICONS = {
   cctv: "cctv",
   "id-card": "id-card",
   "log-in": "log-in",
+  // J (JW2a): the light GL — ledger and journals, funds, petty cash, expense requests, bank statement files, unmatch,
+  // withholding-tax certificates
+  ledger: "book-text",
+  fund: "piggy-bank",
+  coins: "coins",
+  expense: "hand-coins",
+  spreadsheet: "file-spreadsheet",
+  unlink: "unlink-2",
+  certificate: "file-check-2",
   // theme & language
   "theme-system": "monitor",
   "theme-light": "sun",

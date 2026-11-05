@@ -34,12 +34,14 @@ import { initialInsightWorld, insightHandlers } from "./insight";
 import { initialNetworkWorld, networkHandlers } from "./network";
 import { juristicHandlers, resetJuristicWorld } from "./juristic";
 import { collectionsHandlers, resetCollectionsWorld } from "./collections";
+import { accountingHandlers, resetAccountingWorld } from "./accounting";
 import { gateHandlers, resetGateWorld } from "./gate";
 import { initialOwnerWorld, type OwnerWorld } from "./world";
 
 /** The owner surface's stateful handlers (F2); the contract-generated handlers answer what is not here. */
 export const ownerHandlers: HttpHandler[] = [
   // First: the juristic tenant's answers to generic endpoints fall through for every other tenant (pack J).
+  ...accountingHandlers,
   ...collectionsHandlers,
   ...gateHandlers,
   ...juristicHandlers,
@@ -176,6 +178,7 @@ export function resetOwnerWorld(part: string | null): boolean {
     // The juristic tenant's world (pack J, JW1a) and its money collection (JW1b) live beside the owner world.
     resetJuristicWorld();
     resetCollectionsWorld();
+    resetAccountingWorld();
     resetGateWorld();
     if (part) return true;
   }

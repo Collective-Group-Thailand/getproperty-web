@@ -15,6 +15,7 @@ import { initialInsightWorld, type MockInsightWorld } from "./owner/insight";
 import { initialNetworkWorld, type MockNetworkWorld } from "./owner/network";
 import { initialJuristicWorld, type MockJuristicWorld } from "./owner/juristic";
 import { initialCollectionsWorld, type MockCollectionsWorld } from "./owner/collections";
+import { initialAccountingWorld, type MockAccountingWorld } from "./owner/accounting";
 import { initialGateWorld, type MockGateWorld } from "./owner/gate";
 import {
   initialChannels,
@@ -194,6 +195,8 @@ export interface MockState {
   juristic: MockJuristicWorld;
   /** The juristic tenant's money collection, statements, plans, certificates, D-270 workspace (JW1b): see owner/collections.ts. */
   collections: MockCollectionsWorld;
+  /** The juristic light GL: chart, journals, expenses, funds, petty cash, bank statements (JW2a): see owner/accounting.ts. */
+  accounting: MockAccountingWorld;
   /** The juristic estate's gate: tablets, guards, visits, policies, incidents (JW4): see owner/gate.ts. */
   gate: MockGateWorld;
   webVitals: unknown[];
@@ -253,6 +256,7 @@ function initial(): MockState {
     insight: initialInsightWorld(),
     juristic,
     collections: initialCollectionsWorld(),
+    accounting: initialAccountingWorld(),
     gate: initialGateWorld(juristic),
     webVitals: [],
     log: [],

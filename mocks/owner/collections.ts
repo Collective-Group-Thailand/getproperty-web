@@ -5,6 +5,7 @@ import { MOCK_OTP_CODE, OPERATORS, TENANTS } from "../fixtures";
 import { issueTokens } from "../handlers/support";
 import { state } from "../state";
 import { initialJuristicWorld, JP, JURISTIC_TENANT, juristicUnitId, type MockJuristicWorld } from "./juristic";
+import { DEFAULT_BANDS, DEFAULT_WHT_RATES } from "./accounting-settings";
 import {
   allowed,
   body,
@@ -591,7 +592,63 @@ function settingsList(): Schemas["SettingDto"][] {
     s("juristic.plan_max_instalments", 12, "int", "The most monthly instalments of a plan (D-325)"),
     s("juristic.debt_clearance.fee", "200.00", "money", "Fee of a debt clearance certificate (D-306)", "tenant"),
     s("juristic.debt_clearance.validity_days", 30, "int", "Days a certificate stays valid (D-306)"),
+    s(
+      "juristic.approval_bands",
+      DEFAULT_BANDS,
+      "json",
+      "D-311 / D-329 (J2.1): expense approval bands — ascending `upTo` amounts (THB, the last null) → `roles` (owner · manager · committee) and the number of distinct `approvals` (1–5) needed; the requester never approves (maker-checker, D-091).",
+    ),
+    s(
+      "juristic.wht_rates",
+      DEFAULT_WHT_RATES,
+      "json",
+      "D-311 / D-329 (J2.1, ⚖ O-041): withholding-tax rates a juristic person applies when paying vendors — data (key, th / en label, income type printed on the 50 ทวิ, rate %, verified).",
+    ),
+    s(
+      "juristic.bank_match_days",
+      3,
+      "int",
+      "D-329 (J2.1): bank statement matching window — a statement line matches a payment / paid expense / fund transfer of the same amount booked within this many days.",
+    ),
   ];
+}
+
+/** The API's checks of the two J2.1 json settings (approval bands, WHT rates), enough for the console's editors. */
+function jsonSettingValid(key: string, value: unknown): boolean {
+  if (!Array.isArray(value)) return false;
+  if (key === "juristic.approval_bands") {
+    let previous = -1;
+    return (
+      value.length >= 1 &&
+      value.length <= 10 &&
+      value.every((band: { upTo: string | null; roles: string[]; approvals: number }, index) => {
+        const last = index === value.length - 1;
+        if (last ? band.upTo !== null : typeof band.upTo !== "string" || !MONEY.test(band.upTo)) return false;
+        if (!last) {
+          if (satang(band.upTo!) <= previous) return false;
+          previous = satang(band.upTo!);
+        }
+        return (
+          Array.isArray(band.roles) &&
+          band.roles.length > 0 &&
+          band.roles.every((role) => ["owner", "manager", "committee"].includes(role)) &&
+          Number.isInteger(band.approvals) &&
+          band.approvals >= 1 &&
+          band.approvals <= 5
+        );
+      })
+    );
+  }
+  if (key === "juristic.wht_rates")
+    return value.every(
+      (rate: Record<string, unknown>) =>
+        typeof rate.key === "string" &&
+        /^[a-z][a-z0-9_]{1,40}$/.test(rate.key) &&
+        typeof rate.ratePct === "string" &&
+        /^\d{1,3}(\.\d{1,2})?$/.test(rate.ratePct) &&
+        typeof rate.verified === "boolean",
+    );
+  return true;
 }
 
 function mandate(
@@ -1601,13 +1658,15 @@ const juristicMoneyHandlers: HttpHandler[] = [
     record(op, request, input);
     if (!input.reason?.trim()) return validation(op, "reason", "required");
     const valid =
-      setting.key === "payments.allocation_policy"
-        ? input.value === "oldest_first" || input.value === "surcharge_first"
-        : setting.valueType === "int"
-          ? Number.isInteger(input.value)
-          : setting.valueType === "bool"
-            ? typeof input.value === "boolean"
-            : typeof input.value === "string" && MONEY.test(input.value);
+      setting.valueType === "json"
+        ? jsonSettingValid(setting.key, input.value)
+        : setting.key === "payments.allocation_policy"
+          ? input.value === "oldest_first" || input.value === "surcharge_first"
+          : setting.valueType === "int"
+            ? Number.isInteger(input.value)
+            : setting.valueType === "bool"
+              ? typeof input.value === "boolean"
+              : typeof input.value === "string" && MONEY.test(input.value);
     if (!valid) return problem(op, "settings.invalid_value");
     Object.assign(setting, { value: input.value, scope: "tenant", effectiveFrom: iso() });
     return json({

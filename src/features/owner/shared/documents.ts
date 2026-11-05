@@ -26,7 +26,9 @@ export type DocumentRef =
   /** Pack J (JW1b): an owner's monthly statement, a batch of printed letters, a debt clearance certificate. */
   | { kind: "juristicStatement"; id: string }
   | { kind: "letterBatch"; id: string }
-  | { kind: "debtClearance"; id: string };
+  | { kind: "debtClearance"; id: string }
+  /** Pack J (JW2a): a 50 ทวิ withholding-tax certificate. */
+  | { kind: "whtCertificate"; id: string };
 
 export interface ResolvedDocument {
   url: string;
@@ -124,6 +126,14 @@ export async function resolveDocument(ref: DocumentRef): Promise<ResolvedDocumen
         await unwrap(
           api.GET("/v1/owner/juristic/debt-clearances/{debtClearanceId}/document", {
             params: { path: { debtClearanceId: ref.id } },
+          }),
+        ),
+      );
+    case "whtCertificate":
+      return signed(
+        await unwrap(
+          api.GET("/v1/owner/juristic/withholding-certificates/{certificateId}/document", {
+            params: { path: { certificateId: ref.id } },
           }),
         ),
       );

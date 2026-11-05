@@ -110,6 +110,7 @@ export {
   VERIFIED_DOCUMENT_STATUS,
   WORKSPACE_LINK_STATUS,
 } from "./collections";
+export { BANK_LINE_STATUS, EXPENSE_STATUS, FUND_TRANSFER_STATUS } from "./accounting";
 export {
   GATE_DEVICE_STATUS,
   GATE_GUARD_STATUS,
@@ -208,6 +209,7 @@ import {
   WORKSPACE_LINK_STATUS,
 } from "./collections";
 import { CONTRACT_DOCUMENT_STATUS, LEGAL_REVIEW_STATUS, RENEWAL_OFFER_STATUS } from "./contract";
+import { BANK_LINE_STATUS, EXPENSE_STATUS, FUND_TRANSFER_STATUS } from "./accounting";
 import { GATE_DEVICE_STATUS, GATE_GUARD_STATUS, GATE_INVITE_STATUS, GATE_VISIT_STATUS, INCIDENT_STATUS } from "./gate";
 import { LISTING_STATUS, LISTING_VERIFICATION_STATUS } from "./listing";
 
@@ -252,6 +254,9 @@ export const STATUS_MAPS = {
   gateInvite: GATE_INVITE_STATUS,
   gateDevice: GATE_DEVICE_STATUS,
   gateGuard: GATE_GUARD_STATUS,
+  expense: EXPENSE_STATUS,
+  fundTransfer: FUND_TRANSFER_STATUS,
+  bankLine: BANK_LINE_STATUS,
   contractDocument: CONTRACT_DOCUMENT_STATUS,
   legalReview: LEGAL_REVIEW_STATUS,
   renewalOffer: RENEWAL_OFFER_STATUS,

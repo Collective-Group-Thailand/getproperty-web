@@ -108,7 +108,8 @@
     "gate_barrier_pulse_ms": "Barrier open pulse",
     "gate_sos_cancel_seconds": "A resident may cancel an SOS within",
     "gate_sos_max_per_hour": "SOS per hour per person",
-    "gate_incident_visit_window_minutes": "Count cars that left up to (before an SOS)"
+    "gate_incident_visit_window_minutes": "Count cars that left up to (before an SOS)",
+    "juristic_bank_match_days": "Bank matching window"
   },
   "property": {
     "title": "Building settings",
@@ -889,7 +890,8 @@
     "gate_policy_action": "What the guard does when the time is up",
     "gate_delivery_drop_point": "e.g. the estate has a drop point; a house may set its own",
     "gate_remember_days": "A remembered car enters with a notice only",
-    "gate_lpr_min_confidence": "Below this the guard checks the plate"
+    "gate_lpr_min_confidence": "Below this the guard checks the plate",
+    "juristic_bank_match_days": "A bank statement line matches a payment, a paid expense or a fund transfer of the same amount within this many days."
   },
   "unit": {
     "hours": "hours",

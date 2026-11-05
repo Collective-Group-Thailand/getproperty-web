@@ -79,6 +79,7 @@ export function SettingValue({
       case "payments.slip_max_age_days":
       case "juristic.plan_default_days":
       case "juristic.debt_clearance.validity_days":
+      case "juristic.bank_match_days":
       case "analytics.csat_survey_interval_days":
       case "readings.round_window_days":
         return t("days", { count: Number(value) });

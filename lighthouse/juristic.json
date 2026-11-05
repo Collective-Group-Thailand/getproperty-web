@@ -1,6 +1,6 @@
 {
   "extends": "./shared.json",
-  "$comment": "Juristic console (pack J, JW1a): the owner budgets (D-179) \u2014 initial JS \u2264 260 KB gz on every URL, LCP \u2264 2.5 s as a warning \u2014 measured signed in as the mock's juristic office (scripts/lhci.ts, persona `juristic`): overview, register (condo floors, estate plots), a unit, the transfer wizard, invite codes, resolutions, budgets with the rate builder, the new-budget form, cycles, rate plans and members; JW1b: receivables, a collection case, the ladder editor, payment rules, statements (list + paper), letters, plans (list + record), debt clearance (queue + record), auto-pay mandates, collection reports and the D-270 workspace. JW4: the gate admin (gates and tablets, guards, the visitor log read with a reason, gate settings).",
+  "$comment": "Juristic console (pack J, JW1a): the owner budgets (D-179) — initial JS ≤ 260 KB gz on every URL, LCP ≤ 2.5 s as a warning — measured signed in as the mock's juristic office (scripts/lhci.ts, persona `juristic`): overview, register (condo floors, estate plots), a unit, the transfer wizard, invite codes, resolutions, budgets with the rate builder, the new-budget form, cycles, rate plans and members; JW1b: receivables, a collection case, the ladder editor, payment rules, statements (list + paper), letters, plans (list + record), debt clearance (queue + record), auto-pay mandates, collection reports and the D-270 workspace. JW4: the gate admin (gates and tablets, guards, the visitor log read with a reason, gate settings). JW2a: the light GL — statements (income, balance sheet), journal list / record / new, chart of accounts, expenses (list, new form, record, 50 ทวิ, approval and WHT settings), funds (list, ledger, transfer), petty cash, the bank matching queue.",
   "ci": {
     "collect": {
       "url": [
@@ -35,7 +35,23 @@
         "http://localhost:3200/juristic/gate",
         "http://localhost:3200/juristic/gate?tab=guards",
         "http://localhost:3200/juristic/gate?tab=visits&reason=lighthouse%20budget%20check",
-        "http://localhost:3200/juristic/gate?tab=settings"
+        "http://localhost:3200/juristic/gate?tab=settings",
+        "http://localhost:3200/juristic/accounting",
+        "http://localhost:3200/juristic/accounting?view=balance",
+        "http://localhost:3200/juristic/accounting/journals",
+        "http://localhost:3200/juristic/accounting/journals/10a0a001-0000-4000-8000-000000000001",
+        "http://localhost:3200/juristic/accounting/journals/new",
+        "http://localhost:3200/juristic/accounting/accounts",
+        "http://localhost:3200/juristic/expenses",
+        "http://localhost:3200/juristic/expenses/new",
+        "http://localhost:3200/juristic/expenses/e0e0a001-0000-4000-8000-000000000001",
+        "http://localhost:3200/juristic/expenses/certificates/c50a0a01-0000-4000-8000-000000000001",
+        "http://localhost:3200/juristic/expenses/settings",
+        "http://localhost:3200/juristic/funds",
+        "http://localhost:3200/juristic/funds/f0d0a001-0000-4000-8000-000000000001",
+        "http://localhost:3200/juristic/funds/transfers/f7a0a001-0000-4000-8000-000000000090",
+        "http://localhost:3200/juristic/petty-cash/9e770a01-0000-4000-8000-000000000001",
+        "http://localhost:3200/juristic/bank-statements/b5a7a001-0000-4000-8000-000000000001"
       ],
       "numberOfRuns": 1,
       "settings": {

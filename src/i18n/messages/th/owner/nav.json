@@ -58,6 +58,10 @@
   "juristic_collection_ladder": "ขั้นตอนทวงถาม",
   "juristic_workspace_invitations": "เชิญนิติบุคคล",
   "juristic_gate": "ป้อมและผู้มาติดต่อ",
+  "juristic_accounting": "บัญชีและงบการเงิน",
+  "juristic_funds": "กองทุนและเงินสดย่อย",
+  "juristic_expenses": "ค่าใช้จ่ายและอนุมัติ",
+  "juristic_bank_statements": "กระทบยอดธนาคาร",
   "gate": "ป้อมและผู้มาติดต่อ",
   "juristicGroup": {
     "daily": "งานประจำวัน",

@@ -11,12 +11,15 @@ import { IconChart } from "@/ui/icons/glyphs/chart";
 import { IconChat } from "@/ui/icons/glyphs/chat";
 import { IconChecklist } from "@/ui/icons/glyphs/checklist";
 import { IconDashboard } from "@/ui/icons/glyphs/dashboard";
+import { IconExpense } from "@/ui/icons/glyphs/expense";
+import { IconFund } from "@/ui/icons/glyphs/fund";
 import { IconGateway } from "@/ui/icons/glyphs/gateway";
 import { IconHistory } from "@/ui/icons/glyphs/history";
 import { IconHome } from "@/ui/icons/glyphs/home";
 import { IconInbox } from "@/ui/icons/glyphs/inbox";
 import { IconKey } from "@/ui/icons/glyphs/key";
 import { IconLease } from "@/ui/icons/glyphs/lease";
+import { IconLedger } from "@/ui/icons/glyphs/ledger";
 import { IconLetter } from "@/ui/icons/glyphs/letter";
 import { IconLock } from "@/ui/icons/glyphs/lock";
 import { IconLoss } from "@/ui/icons/glyphs/loss";
@@ -33,6 +36,7 @@ import { IconRoom } from "@/ui/icons/glyphs/room";
 import { IconSettings } from "@/ui/icons/glyphs/settings";
 import { IconShield } from "@/ui/icons/glyphs/shield";
 import { IconSign } from "@/ui/icons/glyphs/sign";
+import { IconSpreadsheet } from "@/ui/icons/glyphs/spreadsheet";
 import { IconStaff } from "@/ui/icons/glyphs/staff";
 import { IconSwap } from "@/ui/icons/glyphs/swap";
 import { IconTag } from "@/ui/icons/glyphs/tag";
@@ -332,6 +336,74 @@ export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
       },
     ],
   },
+  // JW2a (J2.1, D-329): the light GL. Statements, journals and the chart live under accounting; petty cash under funds
+  // (staff reach petty cash through `juristic_funds`, which the API grants for `juristic.petty_cash.spend`); 50 ทวิ
+  // certificates and the approval / WHT settings under expenses.
+  juristic_accounting: {
+    href: "/juristic/accounting",
+    icon: IconLedger,
+    group: "money",
+    children: [
+      {
+        key: "statements",
+        href: "/juristic/accounting",
+        label: "owner.accounting.nav.statements",
+        testId: "juristic-nav-accounting",
+      },
+      {
+        key: "journals",
+        href: "/juristic/accounting/journals",
+        label: "owner.accounting.nav.journals",
+        testId: "juristic-nav-journals",
+      },
+      {
+        key: "accounts",
+        href: "/juristic/accounting/accounts",
+        label: "owner.accounting.nav.accounts",
+        testId: "juristic-nav-accounts",
+      },
+    ],
+  },
+  juristic_funds: {
+    href: "/juristic/funds",
+    icon: IconFund,
+    group: "money",
+    children: [
+      { key: "funds", href: "/juristic/funds", label: "owner.accounting.nav.funds", testId: "juristic-nav-funds" },
+      {
+        key: "petty",
+        href: "/juristic/petty-cash",
+        label: "owner.accounting.nav.pettyCash",
+        testId: "juristic-nav-petty-cash",
+      },
+    ],
+  },
+  juristic_expenses: {
+    href: "/juristic/expenses",
+    icon: IconExpense,
+    group: "money",
+    children: [
+      {
+        key: "expenses",
+        href: "/juristic/expenses",
+        label: "owner.accounting.nav.expenses",
+        testId: "juristic-nav-expenses",
+      },
+      {
+        key: "certificates",
+        href: "/juristic/expenses/certificates",
+        label: "owner.accounting.nav.certificates",
+        testId: "juristic-nav-certificates",
+      },
+      {
+        key: "settings",
+        href: "/juristic/expenses/settings",
+        label: "owner.accounting.nav.expenseSettings",
+        testId: "juristic-nav-expense-settings",
+      },
+    ],
+  },
+  juristic_bank_statements: { href: "/juristic/bank-statements", icon: IconSpreadsheet, group: "money" },
   // D-270: a landlord invites its condo's juristic office for its units in a stub building.
   juristic_workspace_invitations: { href: "/juristic-office", icon: IconMail, group: "operations" },
   // JW4 (J4.1 / J4.2): the gate admin — gates and tablets, guards, house policies, blacklist, logs. `gate` is the same
@@ -380,6 +452,10 @@ export const JURISTIC_MENU_ORDER: Readonly<Record<JuristicMenuGroup, readonly st
     "juristic_statements",
     "juristic_debt_clearances",
     "juristic_payment_plans",
+    "juristic_accounting",
+    "juristic_funds",
+    "juristic_expenses",
+    "juristic_bank_statements",
     "invoices",
     "payments",
     "rate_plans",

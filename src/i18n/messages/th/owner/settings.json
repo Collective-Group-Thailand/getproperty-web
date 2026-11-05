@@ -108,7 +108,8 @@
     "gate_barrier_pulse_ms": "สัญญาณเปิดไม้กั้น",
     "gate_sos_cancel_seconds": "ผู้แจ้ง SOS ยกเลิกได้ภายใน",
     "gate_sos_max_per_hour": "แจ้ง SOS ได้ต่อชั่วโมง",
-    "gate_incident_visit_window_minutes": "รถที่ออกก่อนเกิดเหตุไม่เกิน (นับเข้าเหตุ)"
+    "gate_incident_visit_window_minutes": "รถที่ออกก่อนเกิดเหตุไม่เกิน (นับเข้าเหตุ)",
+    "juristic_bank_match_days": "ช่วงวันจับคู่รายการธนาคาร"
   },
   "property": {
     "title": "การตั้งค่าอาคาร",
@@ -889,7 +890,8 @@
     "gate_policy_action": "สิ่งที่ รปภ. ทำเมื่อครบเวลา",
     "gate_delivery_drop_point": "เช่น โครงการมีจุดรับของ บ้านตั้งเองได้",
     "gate_remember_days": "รถที่จำไว้เข้าได้โดยแจ้งบ้านอย่างเดียว",
-    "gate_lpr_min_confidence": "ต่ำกว่านี้ให้ รปภ. ตรวจป้ายเอง"
+    "gate_lpr_min_confidence": "ต่ำกว่านี้ให้ รปภ. ตรวจป้ายเอง",
+    "juristic_bank_match_days": "รายการเดินบัญชีจับคู่กับการรับชำระ ค่าใช้จ่ายที่จ่ายแล้ว หรือการโอนกองทุนที่ยอดเท่ากันภายในจำนวนวันนี้"
   },
   "unit": {
     "hours": "ชั่วโมง",

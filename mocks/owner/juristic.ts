@@ -435,6 +435,44 @@ export function initialJuristicWorld(): MockJuristicWorld {
       version: 2,
     },
   ];
+  // The current year's approved budget of Building A, its lines measured on accounts of the chart (JW2a, J2.1).
+  const thisYear = Number(date().slice(0, 4));
+  const acc = (n: number) => jid("acc0a001", n);
+  const measured = (
+    m: number,
+    kind: Schemas["BudgetLineKind"],
+    label: string,
+    amount: string,
+    accountId: string | null,
+  ) => ({
+    ...line(m, kind, label, amount),
+    accountId,
+  });
+  budgets.push({
+    id: jid("b0d6a001", 3),
+    buildingId: J.buildingA,
+    fiscalYear: thisYear,
+    name: `งบประมาณประจำปี ${thisYear + 543} · อาคาร A`,
+    periodStart: `${thisYear}-01-01`,
+    periodEnd: `${thisYear}-12-31`,
+    state: "approved",
+    resolutionId: jid("e5010a01", 1),
+    total: "2402400.00",
+    incomeTotal: "0.00",
+    lines: [
+      measured(21, "expense", "เงินเดือนและค่าตอบแทนบุคลากร", "504000.00", acc(16)),
+      measured(22, "expense", "ค่าไฟฟ้าและค่าน้ำประปาส่วนกลาง", "228000.00", acc(17)),
+      measured(23, "expense", "ค่าจ้างรักษาความปลอดภัยและทำความสะอาด", "702000.00", acc(19)),
+      measured(24, "expense", "ค่าซ่อมแซมและบำรุงรักษา", "180000.00", acc(18)),
+      measured(25, "expense", "เบี้ยประกันภัยอาคาร", "48000.00", acc(21)),
+      measured(26, "expense", "ค่าจัดประชุมใหญ่", "15000.00", acc(29)),
+      measured(27, "expense", "ค่าใช้จ่ายเบ็ดเตล็ด", "35400.00", null),
+      measured(28, "fund", "เงินสมทบกองทุนสำรอง", "190080.00", acc(25)),
+    ],
+    approvedAt: `${thisYear - 1}-12-15T10:00:00+07:00`,
+    nextActions: ["rate_preview", "create_rate_plan_draft"],
+    version: 2,
+  });
   const version = (
     m: number,
     basis: Schemas["RateBasis"],
@@ -613,6 +651,42 @@ export function initialJuristicWorld(): MockJuristicWorld {
       joinedAt: iso(-10),
       accessUntil: `${date(80)}T23:59:59+07:00`,
     },
+    {
+      id: jid("9a00a001", 4),
+      userId: jid("3b24a0a1", 4),
+      displayName: "สมชาย เจ้าหน้าที่อาคาร",
+      email: null,
+      phone: "+66810000014",
+      role: "staff",
+      status: "active",
+      buildingIds: null,
+      joinedAt: iso(-260),
+      accessUntil: null,
+    },
+    {
+      id: jid("9a00a001", 5),
+      userId: jid("3b24a0a1", 5),
+      displayName: "สุดา บัญชีดี",
+      email: "suda@example.com",
+      phone: "+66810000015",
+      role: "accountant",
+      status: "active",
+      buildingIds: null,
+      joinedAt: iso(-200),
+      accessUntil: null,
+    },
+    {
+      id: jid("9a00a001", 6),
+      userId: jid("3b24a0a1", 6),
+      displayName: "นพดล กรรมการ",
+      email: null,
+      phone: "+66810000016",
+      role: "committee",
+      status: "active",
+      buildingIds: null,
+      joinedAt: iso(-120),
+      accessUntil: null,
+    },
   ];
   return {
     properties,
@@ -733,7 +807,7 @@ function findUnit(unitId: unknown) {
 }
 
 /** A register party as a full `PartyDto` (the parties list the pickers read). */
-function partyDto(row: Schemas["RegisterPartyDto"]): Schemas["PartyDto"] {
+export function partyDto(row: Schemas["RegisterPartyDto"]): Schemas["PartyDto"] {
   return {
     id: row.id,
     type: row.type,
@@ -1811,7 +1885,11 @@ export const juristicHandlers: HttpHandler[] = [
       collected: share(budget.incomeTotal, 0.43),
       billedVsBudgetPct: "50.00",
       collectedVsBilledPct: "86.00",
+      // Answered with the expense side by owner/accounting.ts for the juristic tenant (J2.1).
       expenseSideAvailable: false,
+      budgetedExpense: "0.00",
+      actualExpense: "0.00",
+      expenseLines: [],
     } satisfies Schemas["BudgetActualIncomeDto"]);
   }),
 
