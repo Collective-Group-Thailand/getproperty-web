@@ -34,6 +34,7 @@ export const MESSAGE_FILES = {
     "gate",
     "growth",
     "guard",
+    "imports",
     "income",
     "insight",
     "insights",

@@ -35,6 +35,8 @@ export const J = {
   buildingA: jid("5c8e0a01", 1),
   soi1: jid("5c8e0a01", 2),
   soi2: jid("5c8e0a01", 3),
+  /** Tower B: onboarded (legal form set), units still in the legacy program — the import wizard's building (JW3a). */
+  buildingB: jid("5c8e0a01", 4),
 } as const;
 
 interface JuristicUnit {
@@ -200,6 +202,7 @@ export function initialJuristicWorld(): MockJuristicWorld {
     building(J.buildingA, "A", "อาคาร A", J.condo, "condo_act", "condo", 4),
     building(J.soi1, "S1", "ซอย 1", J.village, "land_allocation_act", "house_cluster", null),
     building(J.soi2, "S2", "ซอย 2", J.village, "land_allocation_act", "house_cluster", null),
+    building(J.buildingB, "B", "อาคาร B", J.condo, "condo_act", "condo", 8),
   ];
   const floors: Schemas["FloorDto"][] = [1, 2, 3, 4].map((level) => ({
     id: jid("f1a00a01", level),

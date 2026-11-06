@@ -38,6 +38,7 @@ import { IconShield } from "@/ui/icons/glyphs/shield";
 import { IconSign } from "@/ui/icons/glyphs/sign";
 import { IconSpreadsheet } from "@/ui/icons/glyphs/spreadsheet";
 import { IconContract } from "@/ui/icons/glyphs/contract";
+import { IconImport } from "@/ui/icons/glyphs/import";
 import { IconQuotation } from "@/ui/icons/glyphs/quotation";
 import { IconVendor } from "@/ui/icons/glyphs/vendor";
 import { IconStaff } from "@/ui/icons/glyphs/staff";
@@ -412,6 +413,8 @@ export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
   juristic_vendors: { href: "/juristic/vendors", icon: IconVendor, group: "operations" },
   juristic_vendor_contracts: { href: "/juristic/contracts", icon: IconContract, group: "operations" },
   juristic_quotations: { href: "/juristic/quotations", icon: IconQuotation, group: "operations" },
+  // JW3a (J3.1, D-332): the import wizard from a legacy system and the full export, under settings and system.
+  juristic_import: { href: "/juristic/import", icon: IconImport, group: "settings" },
   // D-270: a landlord invites its condo's juristic office for its units in a stub building.
   juristic_workspace_invitations: { href: "/juristic-office", icon: IconMail, group: "operations" },
   // JW4 (J4.1 / J4.2): the gate admin — gates and tablets, guards, house policies, blacklist, logs. `gate` is the same
@@ -470,7 +473,7 @@ export const JURISTIC_MENU_ORDER: Readonly<Record<JuristicMenuGroup, readonly st
     "reports",
   ],
   vendors: ["juristic_vendors", "juristic_vendor_contracts", "juristic_quotations"],
-  system: ["juristic_budgets", "juristic_collection_ladder", "settings", "subscription"],
+  system: ["juristic_budgets", "juristic_collection_ladder", "juristic_import", "settings", "subscription"],
 };
 
 /** Where an unlisted key goes in the juristic rail: the registry's own group, renamed. */

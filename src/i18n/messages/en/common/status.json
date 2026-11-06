@@ -623,5 +623,19 @@
     "improving": "Improving",
     "steady": "Steady",
     "declining": "Declining"
+  },
+  "importJob": {
+    "draft": "Draft",
+    "validated": "Data checked",
+    "reconciled": "Reconciled",
+    "committed": "Imported, not live yet",
+    "live": "Live",
+    "rolled_back": "Rolled back",
+    "cancelled": "Cancelled"
+  },
+  "reconcile": {
+    "match": "Matches",
+    "mismatch": "Difference to explain",
+    "no_statement": "No statement"
   }
 }

@@ -118,6 +118,7 @@ export {
   VENDOR_CONTRACT_STATUS,
   VENDOR_STATUS,
 } from "./vendors";
+export { IMPORT_STATUS, RECONCILE_STATUS } from "./imports";
 export {
   GATE_DEVICE_STATUS,
   GATE_GUARD_STATUS,
@@ -224,6 +225,7 @@ import {
   VENDOR_CONTRACT_STATUS,
   VENDOR_STATUS,
 } from "./vendors";
+import { IMPORT_STATUS, RECONCILE_STATUS } from "./imports";
 import { GATE_DEVICE_STATUS, GATE_GUARD_STATUS, GATE_INVITE_STATUS, GATE_VISIT_STATUS, INCIDENT_STATUS } from "./gate";
 import { LISTING_STATUS, LISTING_VERIFICATION_STATUS } from "./listing";
 
@@ -276,6 +278,8 @@ export const STATUS_MAPS = {
   quotationRound: QUOTATION_ROUND_STATUS,
   contractInstalment: CONTRACT_INSTALMENT_STATUS,
   evaluationTrend: EVALUATION_TREND_STATUS,
+  importJob: IMPORT_STATUS,
+  reconcile: RECONCILE_STATUS,
   contractDocument: CONTRACT_DOCUMENT_STATUS,
   legalReview: LEGAL_REVIEW_STATUS,
   renewalOffer: RENEWAL_OFFER_STATUS,

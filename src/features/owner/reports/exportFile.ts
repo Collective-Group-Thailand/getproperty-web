@@ -22,6 +22,8 @@ const EXTENSION: Record<Schemas["ExportKind"], string> = {
   juristic_journal_csv: "csv",
   juristic_journal_express: "txt",
   juristic_journal_flowaccount: "csv",
+  // J3.1: every juristic table, the register and the billing tables, one CSV each (D-332 (11)).
+  juristic_full_export: "zip",
 };
 
 /** `income_expense-2026-10.xlsx`: kind, the period (or as-of date) the export covers, and its format. */

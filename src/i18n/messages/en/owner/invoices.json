@@ -31,7 +31,9 @@
     "pro_rata": "Pro rata",
     "first_month": "First month",
     "last_month": "Last month",
-    "not_ready": "Not ready"
+    "not_ready": "Not ready",
+    "import_go_live_pending": "This building's import is not live yet, so no bill is issued",
+    "opening_balance_pending_go_live": "Opening balance from the legacy system, issued at go-live"
   },
   "method": {
     "qr": "PromptPay QR",

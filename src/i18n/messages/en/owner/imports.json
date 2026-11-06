@@ -1,0 +1,589 @@
+{
+  "list": {
+    "title": "Import from a legacy system",
+    "lede": "Move the co-owner register, opening balances and bank balances from your old program or Excel into getproperty, one building at a time",
+    "empty": {
+      "title": "No imports yet",
+      "buildingTitle": "No imports for {building} yet",
+      "body": "Start with the co-owner register and the opening balances; payment history and bank balances can follow. Every row is checked before anything is saved"
+    },
+    "col": {
+      "job": "Import",
+      "asOf": "As of",
+      "files": "Files",
+      "step": "Step",
+      "state": "State"
+    },
+    "jobName": "#{number} · {building}",
+    "startedAt": "Started {date}",
+    "filesRows": "{files, plural, =0 {No files} one {# file} other {# files}} · {rows, plural, one {# row} other {# rows}}",
+    "closed": {
+      "live": "Live since {date}",
+      "rolled_back": "Rolled back {date}",
+      "cancelled": "Cancelled {date}"
+    },
+    "stepOf": "Step {index} of {total} · {step}",
+    "export": {
+      "title": "Export everything",
+      "body": "A ZIP of every juristic table, the unit and owner register, bills and payments — one CSV per table with a manifest"
+    }
+  },
+  "track": {
+    "label": "Import steps",
+    "step": {
+      "upload": "Upload files",
+      "validate": "Check data",
+      "reconcile": "Reconcile",
+      "commit": "Confirm import",
+      "golive": "Go live"
+    },
+    "line": {
+      "upcoming": "Not reached yet",
+      "files": "{files, plural, one {# file} other {# files}} · {rows, plural, one {# row} other {# rows}}",
+      "missing": "{count, plural, one {# required file} other {# required files}} missing",
+      "units": "{count, plural, one {# unit} other {# units}} passed",
+      "errors": "{count, plural, one {# row} other {# rows}} to fix",
+      "checking": "Checking the data",
+      "matched": "Totals match · {count, plural, one {# unit} other {# units}} in arrears",
+      "explained": "Difference explained",
+      "explain": "Difference to explain",
+      "declare": "Enter the legacy total",
+      "committed": "{count, plural, one {# unit} other {# units}} imported",
+      "ready": "{count, plural, one {# unit} other {# units}} ready",
+      "live": "Live",
+      "rolledBack": "Rolled back",
+      "cancelled": "Cancelled",
+      "differences": "{count, plural, one {# unit} other {# units}} to explain",
+      "compared": "Compared, ready to go live",
+      "parallel": "Compare a cycle with the legacy system"
+    }
+  },
+  "wizard": {
+    "title": "Import from a legacy system",
+    "lede": "{building} · balances as of {date}",
+    "back": "Data import",
+    "dataset": "Dataset #{number} · {files, plural, one {# file} other {# files}}"
+  },
+  "summary": {
+    "title": "Import summary",
+    "units": "Units in the building",
+    "unitsValue": "{count, plural, one {# unit} other {# units}}",
+    "owners": "Co-owners and payers",
+    "ownersValue": "{count, plural, one {# person} other {# people}}",
+    "arrears": "Units with opening balances",
+    "arrearsValue": "{count, plural, one {# unit} other {# units}}",
+    "receivables": "Opening balances",
+    "history": "Payment history",
+    "historyValue": "{count, plural, one {# payment} other {# payments}}",
+    "files": "Required files",
+    "filesValue": "{count} of {total}"
+  },
+  "panel": {
+    "title": {
+      "upload": "Upload the legacy files",
+      "validate": "Fix the rows first",
+      "reconcile": "Reconcile before confirming",
+      "commit": "Ready to import",
+      "golive": "Parallel cycle and go-live"
+    },
+    "body": {
+      "upload": "Upload the co-owner register and the opening balances; every upload re-checks all files",
+      "validate": "Fix the rows in your file and upload it again, or download only the wrong rows, fix them and send them back",
+      "reconcile": "Receivables and bank balances must match the legacy system on the cut-off date, or the difference is explained with evidence",
+      "commit": "Review what will be created, then confirm. Opening balances stay drafts until go-live",
+      "golive": "Compare one billing cycle with the legacy system, explain differences per unit, then go live"
+    },
+    "reason": {
+      "missing_sheets": "Upload {count, plural, one {# more required file} other {# more required files}} to check the data",
+      "row_errors": "Fix {count, plural, one {# row} other {# rows}} to continue",
+      "reconcile_first": "Enter the legacy total and reconcile first",
+      "explain_difference": "Explain the difference with evidence to continue",
+      "golive_reconcile": "Reconciliation is not complete",
+      "golive_parallel": "Compare a parallel cycle before going live",
+      "golive_differences": "Explain every unit's difference before going live"
+    },
+    "next": {
+      "validate": "Continue to data check",
+      "reconcile": "Continue to reconcile",
+      "commit": "Continue to confirm"
+    },
+    "toCurrent": "Back to the current step: {step}",
+    "badRows": "Download wrong rows (.xlsx)",
+    "reversible": "Everything can be rolled back until go-live. Imported balances are not billed or sent to owners before the last step",
+    "pending": "Until go-live, {building} issues no bills in the new system; the legacy system keeps billing",
+    "readOnly": "You can view this import; only the office's owner and managers can run it",
+    "closedTitle": {
+      "live": "Live",
+      "rolled_back": "Rolled back",
+      "cancelled": "Cancelled"
+    },
+    "closed": {
+      "live": "Live since {date}. Opening balances were issued as invoices; this can no longer be rolled back",
+      "rolled_back": "Rolled back {date}. Everything it created was removed; a new import of this building can start",
+      "cancelled": "Cancelled {date}. Nothing was created; a new import of this building can start"
+    }
+  },
+  "created": {
+    "item": "{entity} {count}",
+    "entity": {
+      "floor": "floors",
+      "unit": "units",
+      "party": "people and companies",
+      "unit_ownership": "ownerships",
+      "bill_to": "payers on behalf",
+      "invoice": "opening balances",
+      "legacy_payment": "payment history"
+    }
+  },
+  "sheet": {
+    "register": {
+      "name": "Unit and co-owner register",
+      "body": "One row per unit and owner: unit no., floor, area, ownership ratio, owner, share, payer on behalf — ID numbers as the last 4 digits only"
+    },
+    "opening_balance": {
+      "name": "Opening balances",
+      "body": "What each unit owed per period on the cut-off date, principal and surcharge apart; leave out units that owe nothing"
+    },
+    "payment_history": {
+      "name": "Payment history",
+      "body": "Payments of up to the last 12 months, kept as history for owners only — no receipts are issued again"
+    },
+    "bank_balance": {
+      "name": "Bank balances",
+      "body": "Operating and fund account balances on the cut-off date, reconciled with the bank statements"
+    },
+    "legacy_bills": {
+      "name": "Legacy bills",
+      "body": "What the legacy system billed per unit in the compared cycle"
+    }
+  },
+  "upload": {
+    "title": "Files from the legacy system",
+    "lede": "Use each file's template; every amount is as of the cut-off date {date}",
+    "required": "Required",
+    "optional": "Optional",
+    "template": "Template",
+    "privacyTitle": "Personal data",
+    "privacy": "Only the last 4 digits of an ID are kept; a row with a full ID number is refused and never stored. The import's row data is deleted 90 days after go-live",
+    "checking": "Uploading and checking all files…",
+    "rows": "{count, plural, one {# row} other {# rows}}",
+    "errors": "{count, plural, one {# wrong row} other {# wrong rows}}",
+    "clean": "No errors",
+    "warnings": "{count} warnings",
+    "replace": "Replace",
+    "remove": "Remove",
+    "removeLabel": "Remove the {sheet} file",
+    "sending": "Uploading {name}…",
+    "drop": "Drop the {sheet} file here",
+    "dropHint": "Excel (.xlsx) or CSV, up to 5 MB and 5,000 rows",
+    "tooLarge": "The file is over 5 MB; remove unused columns and try again",
+    "choose": "Choose a file",
+    "none": "No file yet",
+    "excel": "Excel",
+    "csv": "CSV"
+  },
+  "validate": {
+    "rows": "Rows checked",
+    "errors": "Rows to fix",
+    "warnings": "Rows with warnings",
+    "units": "Units",
+    "passedTitle": "The data passed",
+    "passed": "Every row is valid, ready to reconcile {units, plural, one {# unit} other {# units}}{warnings, plural, =0 {} one { · # warning that does not block the import} other { · # warnings that do not block the import}}",
+    "title": "Rows to fix",
+    "count": "{count, plural, one {# row} other {# rows}}",
+    "lede": "Fix the data in your file as listed, then upload that file again; every file is re-checked",
+    "sheets": "Checked files",
+    "ok": "OK",
+    "show": "Show rows",
+    "errorsOnly": "Wrong rows only",
+    "allRows": "All rows",
+    "badRows": "Download wrong rows",
+    "again": "Check again",
+    "noFiles": "No files to check yet",
+    "noFilesBody": "Upload the register and the opening balances in step 1",
+    "sheetClean": "{sheet} has no rows to fix",
+    "sheetCleanBody": "Show all rows to review what the system read",
+    "sheetEmpty": "This file has no data rows",
+    "sheetEmptyBody": "Check that you used the latest template and kept the header row",
+    "fixInFile": "Fix the data in the original file or in the wrong-rows file, then upload it to replace the old one.",
+    "toUpload": "Go to upload"
+  },
+  "reconcile": {
+    "title": "Totals must match before going live",
+    "lede": "Check receivables and bank balances against the legacy system on the cut-off date before anything is saved",
+    "cutoff": "Cut-off {date}",
+    "fromFile": "Receivables in the file",
+    "inFile": "In the import file",
+    "declared": "Legacy system total",
+    "statement": "Statement balance",
+    "difference": "Difference",
+    "differenceToExplain": "Difference to explain",
+    "receivablesTitle": "Common-fee receivables brought forward",
+    "receivablesLede": "Principal and surcharge from the opening balances file against the legacy system's own total",
+    "bankTitle": "Operating account {account}",
+    "fundTitle": "Fund account {account}",
+    "bankLede": "The file's balance against the last statement balance on the cut-off date",
+    "noStatement": "No statement of this account covers the cut-off date yet; import it on the bank reconciliation page, or explain with evidence",
+    "notRun": "Not reconciled yet — enter the legacy system's total of receivables below",
+    "explainedTitle": "Difference explained {date}",
+    "openAttachment": "Open evidence",
+    "attachmentTitle": "Reconciliation evidence"
+  },
+  "reconcileForm": {
+    "summaryTitle": "Cannot reconcile yet",
+    "problem": {
+      "declared_missing": "Enter the legacy system's total of receivables",
+      "declared_invalid": "Enter a non-negative amount with up to 2 decimals",
+      "note": "Give the reason for the difference",
+      "note_short": "The reason is too short — at least 10 characters",
+      "note_long": "The reason is over {max} characters",
+      "attachment": "Attach evidence, such as the statement or the legacy report"
+    },
+    "declared": "Legacy system total of receivables (THB)",
+    "declaredHint": "Principal plus surcharge on the cut-off date, from the legacy aged-receivables report",
+    "note": "Reconciliation note",
+    "noteHint": "Explain where the difference comes from, for the auditor — e.g. an uncleared cheque, transfer fees",
+    "attachment": "Evidence",
+    "attach": "Attach evidence",
+    "attachAnother": "Change file",
+    "kept": "Evidence already attached",
+    "removeAttachment": "Remove evidence",
+    "attachHint": "PDF or image, up to 10 MB",
+    "heading": "Legacy system figures",
+    "submit": "Reconcile",
+    "again": "Reconcile again",
+    "submitExplained": "Save explanation and reconcile",
+    "rerunHint": "You can reconcile again until the import is confirmed"
+  },
+  "commit": {
+    "button": "Confirm import",
+    "title": "Confirm the import of {building}",
+    "body": "The register of {units, plural, one {# unit} other {# units}} and {invoices, plural, one {# opening balance} other {# opening balances}} are created as drafts — not sent to owners, and reversible until go-live",
+    "confirm": "Confirm import",
+    "done": "Imported — next, compare a parallel cycle",
+    "consentBody": "The register names a payer on behalf of the owner for {count, plural, one {# unit} other {# units}}; attach the owners' signed consents (one scan may hold them all)",
+    "consent": "Payer consent document",
+    "consentHint": "PDF or image, up to 10 MB",
+    "consentTooLarge": "The file is over 10 MB",
+    "consentChoose": "Choose a file",
+    "consentRemove": "Remove the document"
+  },
+  "commitStep": {
+    "emptyTotals": "No check results yet",
+    "emptyTotalsBody": "Pass the data check to see what will be created",
+    "toValidate": "Go to the data check",
+    "title": "What will be created",
+    "createdTitle": "What was created",
+    "lede": "Figures of the last check; the import re-checks against the building when you confirm",
+    "register": "Register",
+    "money": "Money",
+    "floors": "New floors",
+    "units": "Units",
+    "newAttached": "New {created} · existing {attached}",
+    "parties": "Co-owners and payers",
+    "partiesNote": "A person with the same name and phone or e-mail as one already registered is reused, not duplicated",
+    "ownerships": "Ownerships",
+    "incomplete": "{count, plural, one {# unit’s} other {# units’}} shares add up to under 100%; the register shows them as incomplete",
+    "billTos": "Payers on behalf of owners",
+    "billTosNote": "The consent document is attached when you confirm",
+    "openingInvoices": "Opening balances",
+    "openingNote": "Created as drafts and issued as invoices at go-live",
+    "principal": "Principal brought forward",
+    "surcharge": "Surcharge brought forward",
+    "receivables": "Total brought forward",
+    "history": "Payment history",
+    "historyValue": "{count, plural, one {# payment} other {# payments}} · {amount}",
+    "historyNote": "Kept as history only; no receipts, since the opening balances already net these payments",
+    "bankOperating": "Operating account",
+    "bankFund": "Fund account",
+    "bankNote": "Booked as opening balances at go-live",
+    "committedTitle": "Imported {date}",
+    "nothingCreated": "Nothing new was created",
+    "openingsTitle": "Opening balances by unit",
+    "openingsLede": "Largest first · {count, plural, one {# unit} other {# units}}",
+    "col": {
+      "unit": "Unit",
+      "billed": "Billed to",
+      "period": "Period",
+      "total": "Opening balance"
+    },
+    "onBehalf": "for {owner}",
+    "period": "{from} – {to} · {lines, plural, one {# line} other {# lines}}",
+    "openingsMore": "The first 50 units are shown; all of them appear in receivables after the import",
+    "beforeTitle": "Before you confirm",
+    "before1": "The unit and owner register enters the system at once; opening balances are drafts, not sent and not booked",
+    "before2": "Until go-live, {building} cannot issue bills in the new system; the legacy system bills this cycle, so nothing is billed twice",
+    "before3": "Everything can be rolled back until go-live; after go-live it cannot"
+  },
+  "cancel": {
+    "button": "Cancel import",
+    "title": "Cancel import #{number}",
+    "body": "This import's files will not be used and nothing has been created in {building}; you can start a new import later",
+    "confirm": "Cancel import",
+    "done": "Import cancelled"
+  },
+  "rollback": {
+    "button": "Roll back import",
+    "title": "Roll back the import of {building}",
+    "body": "Deletes everything this import created ({created}), including bill drafts computed during the parallel cycle; nothing else is touched",
+    "confirm": "Roll back",
+    "done": "Rolled back",
+    "reason": "Reason",
+    "reasonHint": "5–1000 characters, kept with the import"
+  },
+  "golive": {
+    "button": "Go live",
+    "title": "Go live with {building}",
+    "body": "{invoices, plural, one {# opening balance is} other {# opening balances are}} issued as invoices, bank balances are booked as opening balances, the building bills in the new system, and the import can no longer be rolled back",
+    "confirm": "Go live",
+    "done": "Live",
+    "notify": "Send the opening balances to owners by LINE and e-mail",
+    "notifyOn": "Owners are notified like a new bill, with the usual due date",
+    "notifyOff": "Invoices are issued without a notice; owners still see them in the app",
+    "acknowledge": "Acknowledge {count, plural, one {# unexplained difference} other {# unexplained differences}}",
+    "acknowledgeHint": "Your settings allow going live; your name and the time are recorded"
+  },
+  "parallel": {
+    "noCycle": "The project has no open billing cycle. Open one to compute the bills to compare; nothing is issued before go-live",
+    "openCycle": "Open this month's cycle",
+    "cycle": "Cycle to compare",
+    "cycleHint": "The same cycle the legacy system billed",
+    "cycleMissing": "Choose a cycle",
+    "computeFirst": "This cycle is not computed yet; compute it to compare",
+    "compute": "Compute this cycle",
+    "legacyFile": "Legacy bills of the same cycle",
+    "legacyDrop": "Drop the legacy bills file here",
+    "legacyHint": "Unit no. and amount per unit, Excel or CSV up to 5 MB",
+    "legacyMissing": "Choose the legacy bills file",
+    "removeFile": "Remove",
+    "tooLarge": "The file is over 5 MB",
+    "choose": "Choose a file",
+    "compare": "Compare",
+    "compareAgain": "Compare again"
+  },
+  "explain": {
+    "button": "Explain",
+    "edit": "Edit explanation",
+    "title": "Explain the difference of {unit}",
+    "body": "The new system computed {computed}; the legacy system billed {legacy}",
+    "label": "Explanation",
+    "hint": "5–1000 characters, e.g. the legacy system included parking in the common fee",
+    "submit": "Save explanation",
+    "done": "Explanation saved",
+    "short": "At least 5 characters"
+  },
+  "export": {
+    "button": "Export ZIP"
+  },
+  "start": {
+    "button": "Start import",
+    "title": "Start an import",
+    "body": "One import per building; every amount in the files is as of one cut-off date",
+    "submit": "Start import",
+    "done": "Import created",
+    "building": "Building",
+    "buildingHint": "The building must already be set up; floors, units and owners are created from the files",
+    "buildingOpen": "{name} — import #{number} in progress",
+    "asOf": "Cut-off date",
+    "asOfHint": "The date of the legacy figures, e.g. the last day of the month before moving; today or earlier",
+    "note": "Note",
+    "noteHint": "e.g. which legacy program the files come from",
+    "error": {
+      "building": "Choose a building",
+      "open": "This building has import #{number} in progress",
+      "asOf": "Choose the cut-off date",
+      "future": "The cut-off date cannot be in the future"
+    }
+  },
+  "problem": {
+    "job_open": {
+      "title": "This building has an import in progress",
+      "body": "A building has one open import at a time. Finish, roll back or cancel it first",
+      "next": "Open the existing import"
+    },
+    "invalid_state": {
+      "title": "The import has moved on",
+      "body": "Someone already did this step or the state changed; reload to see the latest",
+      "next": "Reload"
+    },
+    "preview_stale": {
+      "title": "Data changed since the check",
+      "body": "The building or the files changed after the last check; check again before continuing",
+      "next": "Check again"
+    },
+    "reconciliation_unexplained": {
+      "title": "The difference is not explained",
+      "body": "Reconciliation found a difference; a reason and evidence are needed before confirming",
+      "next": "Explain the difference"
+    },
+    "bill_to_consent_required": {
+      "title": "Attach the payer consent",
+      "body": "The register names payers on behalf of owners; attach the owners' signed consent in the confirmation",
+      "next": "Go to confirm"
+    },
+    "rollback_blocked": {
+      "title": "Cannot roll back",
+      "body": "Other records now refer to what was imported — a payment, an issued document or a lease — so nothing was deleted. Undo those first, then try again",
+      "next": ""
+    },
+    "parallel_cycle_missing": {
+      "title": "No parallel cycle yet",
+      "body": "Your settings require comparing one billing cycle with the legacy system before going live",
+      "next": "Compare a cycle"
+    },
+    "differences_unexplained": {
+      "title": "Differences are not all explained",
+      "body": "Every unit whose bill differs from the legacy system needs an explanation before going live",
+      "next": "Show units to explain"
+    },
+    "go_live_pending": {
+      "title": "This building is not live yet",
+      "body": "The import is confirmed but not live, so no bills are issued — the legacy system still bills",
+      "next": ""
+    },
+    "file_invalid": {
+      "title": "The file cannot be read",
+      "body": "Use the template from the system, save it as .xlsx or UTF-8 CSV and try again",
+      "next": ""
+    },
+    "invalid_rows": {
+      "title": "The legacy bills file has wrong rows",
+      "body": "Check the unit numbers and amounts in the file and upload it again",
+      "next": "Go to the parallel cycle"
+    },
+    "scan_pending": {
+      "title": "The file is still being scanned",
+      "body": "Wait a moment and try again",
+      "next": ""
+    },
+    "infected": {
+      "title": "The file is unsafe",
+      "body": "A risk was found in the file, so it was refused. Export it from the legacy system again and retry",
+      "next": ""
+    },
+    "not_uploaded": {
+      "title": "The upload did not finish",
+      "body": "The transfer was interrupted; choose the file again",
+      "next": ""
+    },
+    "type_not_allowed": {
+      "title": "File type not supported",
+      "body": "Only Excel (.xlsx) or CSV",
+      "next": ""
+    }
+  },
+  "column": {
+    "floor": "Floor / soi",
+    "unit_no": "Unit",
+    "area_sqm": "Area",
+    "ownership_ratio": "Ratio",
+    "owner_code": "Owner code",
+    "owner_name": "Owner",
+    "owner_type": "Type",
+    "id_type": "ID type",
+    "id_last4": "ID last 4",
+    "phone": "Phone",
+    "email": "E-mail",
+    "share_pct": "Share %",
+    "bill_to_name": "Payer on behalf",
+    "bill_to_kind": "Payer kind",
+    "charge": "Charge",
+    "period": "Period",
+    "principal": "Principal",
+    "surcharge": "Surcharge",
+    "paid_on": "Paid on",
+    "amount": "Amount",
+    "method": "Method",
+    "reference": "Reference",
+    "account_type": "Account type",
+    "bank_account_last4": "Account last 4",
+    "fund_name": "Fund",
+    "balance": "Balance"
+  },
+  "rows": {
+    "caption": "File rows with the problems found",
+    "row": "Row",
+    "rowNo": "{row}",
+    "issues": "Problems",
+    "state": "State",
+    "wholeRow": "Whole row",
+    "needsFix": "To fix",
+    "warning": "Warning",
+    "ok": "OK"
+  },
+  "differences": {
+    "caption": "Per-unit bills, new system against the legacy system",
+    "unit": "Unit",
+    "computed": "New system",
+    "legacy": "Legacy",
+    "difference": "Difference",
+    "state": "State",
+    "action": "Action",
+    "match": "Matches",
+    "explained": "Explained",
+    "toExplain": "To explain"
+  },
+  "checklist": {
+    "reconcile": {
+      "title": "Reconciliation 100%",
+      "done": "{explained, select, 1 {A difference was explained with evidence} other {Receivables and bank balances match the legacy system}}",
+      "todo": "A difference is not explained yet"
+    },
+    "parallel": {
+      "title": "One parallel cycle compared",
+      "done": "{units, plural, one {# unit} other {# units}} compared",
+      "todo": "Not compared with the legacy bills yet",
+      "optional": "Not required by your settings, but recommended before going live"
+    },
+    "differences": {
+      "title": "Per-unit differences zero or explained",
+      "done": "{different, plural, =0 {Every unit matches} one {# difference, explained} other {# differences, all explained}}",
+      "todo": "{unexplained, plural, =0 {Waiting for the parallel cycle} one {# unit not explained yet} other {# units not explained yet}}",
+      "optional": "Nothing compared, so no differences to review",
+      "acknowledge": "{unexplained, plural, one {# unit} other {# units}} not explained; your settings allow acknowledging them when going live"
+    }
+  },
+  "goliveStep": {
+    "liveTitle": "Live since {date}",
+    "liveBody": "Opening balances were issued as invoices; {building} bills in the new system as usual, and collection steps count from the opening balances' due date",
+    "toReceivables": "Open receivables",
+    "toRegister": "Open the co-owner register",
+    "rolledBackTitle": "Rolled back {date}",
+    "rolledBackBody": "Everything this import created was deleted; start a new import of this building from the list",
+    "cancelledTitle": "This import was cancelled",
+    "cancelledBody": "Nothing was created; start a new import of this building from the list",
+    "parallelTitle": "Parallel cycle",
+    "parallelLede": "Compute one billing cycle in the new system and compare it unit by unit with the legacy system's bills of the same cycle; the new system does not issue it",
+    "parallelOptional": "Your settings do not require a parallel cycle, but comparing one catches a wrong rate or share before real bills go out",
+    "summary": {
+      "units": "Units compared",
+      "matching": "Matching",
+      "different": "Different",
+      "unexplained": "Not explained"
+    },
+    "ranAt": "Compared {date} · cycle {period} · new {computed} · legacy {legacy}",
+    "compareAgain": "Compare again with another file or cycle",
+    "legacyTemplate": "Legacy bills template:",
+    "excel": "Excel",
+    "csv": "CSV",
+    "differencesTitle": "Differences per unit",
+    "differencesLede": "Every unit that does not match needs an explanation before going live",
+    "filter": "Show units",
+    "filters": {
+      "unexplained": "To explain {count}",
+      "different": "Different {count}",
+      "all": "All {count}"
+    },
+    "empty": {
+      "unexplained": "Every difference is explained",
+      "different": "Every unit matches",
+      "all": "No units compared"
+    },
+    "emptyBody": "Show all units to review what the new system computed",
+    "showAll": "Show all units",
+    "toParallel": "Compare a cycle again",
+    "checklistTitle": "Before going live",
+    "checklistLede": "Go-live opens when every item is done",
+    "after": "At go-live the opening balances are issued as invoices in the OPB series, bank balances are booked, and the import can no longer be rolled back"
+  }
+}
