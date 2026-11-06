@@ -434,7 +434,13 @@
     "edit": "Edit",
     "editTitle": "Edit {title}",
     "dueIn": "In {days} days",
-    "dueToday": "Due today"
+    "dueToday": "Due today",
+    "contract": "Under contract",
+    "contractHint": "Work orders go to the contract's vendor and wait while the contract is not in force",
+    "noContracts": "No vendor contracts in this building yet",
+    "noContract": "Not under a contract",
+    "contractOption": "{title} · {vendor}",
+    "underContract": "Under contract with {vendor}"
   },
   "costs": {
     "title": "Who fixes, who pays",

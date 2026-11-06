@@ -58,6 +58,7 @@ export const MESSAGE_FILES = {
     "subscription",
     "tm30",
     "units",
+    "vendors",
     "viewings",
   ],
   staff: [

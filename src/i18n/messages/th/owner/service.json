@@ -434,7 +434,13 @@
     "edit": "แก้ไข",
     "editTitle": "แก้ไขแผน {title}",
     "dueIn": "อีก {days} วัน",
-    "dueToday": "ครบวันนี้"
+    "dueToday": "ครบวันนี้",
+    "contract": "ทำภายใต้สัญญา",
+    "contractHint": "ใบสั่งงานจะส่งถึงผู้ให้บริการของสัญญา และรอจนกว่าสัญญาจะมีผล",
+    "noContracts": "อาคารนี้ยังไม่มีสัญญาผู้ให้บริการ",
+    "noContract": "ไม่ผูกกับสัญญา",
+    "contractOption": "{title} · {vendor}",
+    "underContract": "ภายใต้สัญญา {vendor}"
   },
   "costs": {
     "title": "ใครซ่อม ใครจ่าย",

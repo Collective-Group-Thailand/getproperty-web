@@ -390,6 +390,10 @@ function expenseDto(input: {
   certificate?: Schemas["WhtCertificateRefDto"] | null;
   decisionReason?: string | null;
   cancelReason?: string | null;
+  vendorId?: string | null;
+  vendorName?: string | null;
+  vendorContractId?: string | null;
+  quotationRoundId?: string | null;
 }): Schemas["ExpenseRequestDto"] {
   const lines = input.lines.map((line, index): Schemas["ExpenseLineDto"] => {
     const vat = line.vat ?? 0;
@@ -427,6 +431,10 @@ function expenseDto(input: {
     pettyCashId: input.pettyCashId ?? null,
     fundId: input.fundId ?? null,
     resolutionId: input.resolutionId ?? null,
+    vendorId: input.vendorId ?? null,
+    vendorName: input.vendorName ?? null,
+    vendorContractId: input.vendorContractId ?? null,
+    quotationRoundId: input.quotationRoundId ?? null,
     state: input.state,
     amount: baht(amount),
     whtAmount: baht(wht),
@@ -486,6 +494,70 @@ function bandFor(amount: string): Schemas["ExpenseBandDto"] {
   }
   const last = list.at(-1)!;
   return { key: `gt:${previous ?? "0.00"}`, upTo: null, roles: last.roles, approvals: last.approvals };
+}
+
+/** The band an amount falls in (J2.2 award approvals use the same bands). */
+export function expenseBandFor(amount: string): Schemas["ExpenseBandDto"] {
+  return bandFor(amount);
+}
+
+/** J2.2: the WHT rate of a key as the expense line takes it. */
+function whtTuple(key: string | null | undefined): [string, string, string] | undefined {
+  const rate = key ? whtRates().find((candidate) => candidate.key === key) : undefined;
+  return rate ? [rate.key, rate.ratePct, rate.incomeType] : undefined;
+}
+
+/**
+ * J2.2 (D-331): an expense request made on the API's side — an instalment of an active vendor contract submitted by the
+ * `vendor-contracts` job, or the draft an awarded quotation round creates. One line on the given account.
+ */
+export function addVendorExpense(input: {
+  buildingId: string;
+  title: string;
+  payee: { partyId: string; name: string; taxId: string | null };
+  accountId: string;
+  description: string;
+  amount: string;
+  vatAmount?: string;
+  whtKey?: string | null;
+  requestedBy: string;
+  state: "draft" | "submitted";
+  vendorId: string;
+  vendorContractId?: string | null;
+  quotationRoundId?: string | null;
+  attachments?: Schemas["ExpenseAttachmentDto"][];
+}): Schemas["ExpenseRequestDto"] {
+  const world = state.accounting;
+  world.counter.expense += 1;
+  const n = 700 + world.counter.expense;
+  const year = date().slice(0, 4);
+  const created = expenseDto({
+    n,
+    number: input.state === "submitted" ? `EXP-${year}-${String(world.counter.expense).padStart(5, "0")}` : null,
+    buildingId: input.buildingId,
+    title: input.title,
+    payee: { id: input.payee.partyId, name: input.payee.name, type: "company", taxId: input.payee.taxId },
+    state: input.state,
+    lines: [
+      {
+        accountId: input.accountId,
+        description: input.description,
+        amount: satang(input.amount),
+        vat: input.vatAmount ? satang(input.vatAmount) : 0,
+        wht: whtTuple(input.whtKey),
+      },
+    ],
+    requestedBy: input.requestedBy,
+    createdAt: iso(),
+    submittedAt: input.state === "submitted" ? iso() : null,
+    attachments: input.attachments ?? [],
+    vendorId: input.vendorId,
+    vendorName: input.payee.name,
+    vendorContractId: input.vendorContractId ?? null,
+    quotationRoundId: input.quotationRoundId ?? null,
+  });
+  world.expenses.unshift(created);
+  return created;
 }
 
 const approval = (
@@ -1762,6 +1834,46 @@ function totals(expense: Schemas["ExpenseRequestDto"]) {
   expense.netAmount = baht(amount - wht);
 }
 
+/** `juristic.quotation_threshold` (J2.2) as the settings list holds it. */
+export function quotationThreshold(): string {
+  const setting = live()?.collections?.settings.find((s) => s.key === "juristic.quotation_threshold");
+  return typeof setting?.value === "string" ? setting.value : "50000.00";
+}
+
+/** J2.2: the vendor, contract and round an expense request names — checked as the API checks them. */
+function vendorLinks(
+  op: string,
+  vendorId: string | null | undefined,
+  contractId: string | null | undefined,
+  roundId: string | null | undefined,
+  buildingId: string,
+): { vendor: { id: string; partyId: string; name: string } | null } | Response {
+  if (!vendorId) {
+    if (contractId) return validation(op, "vendorContractId", "เลือกผู้ให้บริการของสัญญานี้ก่อน");
+    return { vendor: null };
+  }
+  const vendor = state.vendors?.vendors.find((candidate) => candidate.dto.id === vendorId);
+  if (!vendor) return validation(op, "vendorId", "ไม่พบผู้ให้บริการนี้");
+  if (vendor.dto.state === "blocked") return problem(op, "vendor.blocked");
+  if (contractId) {
+    const contract = state.vendors.contracts.find((candidate) => candidate.id === contractId);
+    if (
+      !contract ||
+      contract.vendorId !== vendorId ||
+      contract.buildingId !== buildingId ||
+      contract.state !== "active"
+    )
+      return validation(op, "vendorContractId", "ต้องเป็นสัญญาที่ใช้งานอยู่ของผู้ให้บริการนี้ในอาคารเดียวกัน");
+  }
+  if (roundId) {
+    const round = state.vendors.rounds.find((candidate) => candidate.id === roundId);
+    const awarded = round?.quotations.find((quotation) => quotation.id === round.awardedQuotationId);
+    if (!round || round.state !== "awarded" || awarded?.vendorId !== vendorId || round.buildingId !== buildingId)
+      return validation(op, "quotationRoundId", "ต้องเป็นรอบใบเสนอราคาที่ให้งานผู้ให้บริการนี้แล้ว");
+  }
+  return { vendor: { id: vendor.dto.id, partyId: vendor.dto.partyId, name: vendor.dto.name } };
+}
+
 function resolutionOk(resolutionId: string | undefined | null, buildingId: string) {
   const resolution = state.juristic.resolutions.find((r) => r.id === resolutionId);
   return Boolean(resolution && resolution.state === "adopted" && resolution.buildingId === buildingId);
@@ -2212,9 +2324,11 @@ const expenseHandlers: HttpHandler[] = [
     if (input.fundId && !input.resolutionId) return problem(op, "fund.resolution_required");
     if (input.resolutionId && !resolutionOk(input.resolutionId, input.buildingId))
       return problem(op, "fund.resolution_invalid");
+    const linked = vendorLinks(op, input.vendorId, input.vendorContractId, input.quotationRoundId, input.buildingId);
+    if (linked instanceof Response) return linked;
     const vendor = VENDORS.find((candidate) => candidate.id === input.payeePartyId);
     const party = state.juristic.parties.find((candidate) => candidate.id === input.payeePartyId);
-    const payeeName = input.payeeName?.trim() || vendor?.name || party?.displayName || "";
+    const payeeName = linked.vendor?.name || input.payeeName?.trim() || vendor?.name || party?.displayName || "";
     if (!payeeName) return validation(op, "payeeName", "ระบุผู้รับเงิน");
     w().counter.expense += 1;
     const created: Schemas["ExpenseRequestDto"] = {
@@ -2234,8 +2348,12 @@ const expenseHandlers: HttpHandler[] = [
         resolutionId: input.resolutionId ?? null,
         note: input.note?.trim() || null,
       }),
-      payeePartyId: input.payeePartyId ?? null,
+      payeePartyId: linked.vendor?.partyId ?? input.payeePartyId ?? null,
       buildingName: buildingName(input.buildingId),
+      vendorId: linked.vendor?.id ?? null,
+      vendorName: linked.vendor?.name ?? null,
+      vendorContractId: input.vendorContractId ?? null,
+      quotationRoundId: input.quotationRoundId ?? null,
       lines,
     };
     totals(created);
@@ -2266,6 +2384,21 @@ const expenseHandlers: HttpHandler[] = [
     if (input.fundId !== undefined) found.fundId = input.fundId;
     if (input.resolutionId !== undefined) found.resolutionId = input.resolutionId;
     if (found.fundId && !found.resolutionId) return problem(op, "fund.resolution_required");
+    if (input.vendorId !== undefined || input.vendorContractId !== undefined || input.quotationRoundId !== undefined) {
+      const vendorId = input.vendorId !== undefined ? input.vendorId : found.vendorId;
+      const contractId = input.vendorContractId !== undefined ? input.vendorContractId : found.vendorContractId;
+      const roundId = input.quotationRoundId !== undefined ? input.quotationRoundId : found.quotationRoundId;
+      const linked = vendorLinks(op, vendorId, contractId, roundId, found.buildingId);
+      if (linked instanceof Response) return linked;
+      found.vendorId = linked.vendor?.id ?? null;
+      found.vendorName = linked.vendor?.name ?? null;
+      found.vendorContractId = linked.vendor ? (contractId ?? null) : null;
+      found.quotationRoundId = linked.vendor ? (roundId ?? null) : null;
+      if (linked.vendor) {
+        found.payeePartyId = linked.vendor.partyId;
+        found.payeeName = linked.vendor.name;
+      }
+    }
     totals(found);
     found.version += 1;
     return json(view(found, ok));
@@ -2312,6 +2445,13 @@ const expenseHandlers: HttpHandler[] = [
       switch (action) {
         case "submit": {
           if (found.state !== "draft") return problem(op, "expense.invalid_state");
+          if (
+            found.vendorId &&
+            !found.vendorContractId &&
+            !found.quotationRoundId &&
+            satang(found.amount) > satang(quotationThreshold())
+          )
+            return problem(op, "expense.quotations_required");
           const year = date().slice(0, 4);
           w().counter.expense += 1;
           found.number = `EXP-${year}-${String(w().counter.expense).padStart(5, "0")}`;
@@ -2363,7 +2503,8 @@ const expenseHandlers: HttpHandler[] = [
           if (input.method === "fund" && !found.fundId) return validation(op, "method", "คำขอนี้ไม่ได้จ่ายจากกองทุน");
           const wht = satang(found.whtAmount);
           const vendor = VENDORS.find((candidate) => candidate.id === found.payeePartyId);
-          if (wht > 0 && !vendor?.taxId) return problem(op, "wht.payee_tax_id_missing");
+          const registered = state.vendors?.vendors.find((candidate) => candidate.dto.partyId === found.payeePartyId);
+          if (wht > 0 && !vendor?.taxId && !registered?.taxId) return problem(op, "wht.payee_tax_id_missing");
           const fund = found.fundId ? w().funds.find((candidate) => candidate.id === found.fundId) : undefined;
           const from =
             input.method === "cash"

@@ -37,6 +37,9 @@ import { IconSettings } from "@/ui/icons/glyphs/settings";
 import { IconShield } from "@/ui/icons/glyphs/shield";
 import { IconSign } from "@/ui/icons/glyphs/sign";
 import { IconSpreadsheet } from "@/ui/icons/glyphs/spreadsheet";
+import { IconContract } from "@/ui/icons/glyphs/contract";
+import { IconQuotation } from "@/ui/icons/glyphs/quotation";
+import { IconVendor } from "@/ui/icons/glyphs/vendor";
 import { IconStaff } from "@/ui/icons/glyphs/staff";
 import { IconSwap } from "@/ui/icons/glyphs/swap";
 import { IconTag } from "@/ui/icons/glyphs/tag";
@@ -404,6 +407,11 @@ export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
     ],
   },
   juristic_bank_statements: { href: "/juristic/bank-statements", icon: IconSpreadsheet, group: "money" },
+  // JW2b (J2.2, D-331): vendors, their service contracts (the renewal queue first) and quotation rounds. Preventive
+  // plans stay under repairs (`service_requests` › /maintenance); a contract lists the plans it runs.
+  juristic_vendors: { href: "/juristic/vendors", icon: IconVendor, group: "operations" },
+  juristic_vendor_contracts: { href: "/juristic/contracts", icon: IconContract, group: "operations" },
+  juristic_quotations: { href: "/juristic/quotations", icon: IconQuotation, group: "operations" },
   // D-270: a landlord invites its condo's juristic office for its units in a stub building.
   juristic_workspace_invitations: { href: "/juristic-office", icon: IconMail, group: "operations" },
   // JW4 (J4.1 / J4.2): the gate admin — gates and tablets, guards, house policies, blacklist, logs. `gate` is the same
@@ -423,7 +431,7 @@ export function isJuristicTenant(type: string | null | undefined): boolean {
  * A juristic tenant's rail (J-DESIGN §5): four groups in the office's order — daily work, money, vendors, settings and
  * system. Keys the API returns are placed by this table; the order inside a group is the table's. Keys not listed keep
  * the end of the group their registry entry names (mapped below), so nothing the member may open disappears. The
- * vendors group stays hidden until its keys exist (JW2).
+ * vendors group (JW2b) shows when the API grants any of its keys.
  */
 export const JURISTIC_MENU_GROUPS = ["daily", "finance", "vendors", "system"] as const;
 export type JuristicMenuGroup = (typeof JURISTIC_MENU_GROUPS)[number];
@@ -461,7 +469,7 @@ export const JURISTIC_MENU_ORDER: Readonly<Record<JuristicMenuGroup, readonly st
     "rate_plans",
     "reports",
   ],
-  vendors: [],
+  vendors: ["juristic_vendors", "juristic_vendor_contracts", "juristic_quotations"],
   system: ["juristic_budgets", "juristic_collection_ladder", "settings", "subscription"],
 };
 

@@ -62,6 +62,9 @@
   "juristic_funds": "กองทุนและเงินสดย่อย",
   "juristic_expenses": "ค่าใช้จ่ายและอนุมัติ",
   "juristic_bank_statements": "กระทบยอดธนาคาร",
+  "juristic_vendors": "ผู้ให้บริการ",
+  "juristic_vendor_contracts": "สัญญาผู้ให้บริการ",
+  "juristic_quotations": "ใบเสนอราคา",
   "gate": "ป้อมและผู้มาติดต่อ",
   "juristicGroup": {
     "daily": "งานประจำวัน",

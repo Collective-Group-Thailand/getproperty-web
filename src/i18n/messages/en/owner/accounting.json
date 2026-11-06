@@ -468,7 +468,14 @@
     "cancelled": "Why it was cancelled",
     "rejected": "Why it was rejected",
     "foot": "Totals, tax and the net amount are computed by the system when saved. Nobody approves their own request.",
-    "vatIncluded": "incl. VAT {amount}"
+    "vatIncluded": "incl. VAT {amount}",
+    "vendorLinks": "Vendor references",
+    "vendor": "Vendor",
+    "vendorContract": "Contract",
+    "openContract": "Open the contract",
+    "quotationRound": "Quotation round",
+    "openRound": "Open the round",
+    "payeeVendor": "Registered vendor"
   },
   "expenseAction": {
     "submit": "Send for approval",

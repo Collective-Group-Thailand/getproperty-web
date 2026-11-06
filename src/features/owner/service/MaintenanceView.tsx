@@ -16,6 +16,7 @@ import { IconClock } from "@/ui/icons/glyphs/clock";
 import { ownerPath } from "../shared/links";
 import { fieldMembers } from "../shared/members";
 import { focusedBuilding, ownerCan, readOnly, type OwnerContext } from "../shared/server";
+import { isJuristicTenant } from "../shell/menu";
 import { EditPlan, NewPlan, type AssetChoice } from "./MaintenanceActions";
 import { buildingUnits, serviceCategories } from "./server";
 import { bangkokToday } from "@/features/shared/console/time";
@@ -28,7 +29,9 @@ export async function MaintenanceView({ context }: { context: OwnerContext }) {
   const t = await getTranslations("owner.service.maintenance");
   const { api, locale, me } = context;
   const building = focusedBuilding(context);
-  const [plans, categories, members, items, units] = await Promise.all([
+  // J2.2 (D-331): a juristic office runs plans under a vendor contract (draft or active, of the building).
+  const juristic = isJuristicTenant(me.currentTenant?.type) && ownerCan(me, "juristic.vendor.read");
+  const [plans, categories, members, items, units, contractList] = await Promise.all([
     section(unwrap(api.GET("/v1/owner/maintenance-plans", { params: { query: { buildingId: building?.id } } }))),
     serviceCategories(api),
     fieldMembers(api, { permission: "service_request.handle", buildingId: building?.id }),
@@ -42,7 +45,22 @@ export async function MaintenanceView({ context }: { context: OwnerContext }) {
           .catch(() => [])
       : Promise.resolve([]),
     building ? buildingUnits(api, building.id) : Promise.resolve([]),
+    juristic && building
+      ? unwrap(
+          api.GET("/v1/owner/juristic/vendor-contracts", {
+            params: { query: { buildingId: building.id, perPage: 100 } },
+          }),
+        )
+          .then((list) => list.data.filter((contract) => contract.state === "draft" || contract.state === "active"))
+          .catch(() => [])
+      : Promise.resolve([]),
   ]);
+  const contracts = juristic
+    ? contractList.map((contract) => ({
+        value: contract.id,
+        label: t("contractOption", { title: contract.title, vendor: contract.vendorName }),
+      }))
+    : undefined;
   const canManage = ownerCan(me, "maintenance_plan.manage") && !readOnly(me);
   // Every active asset item of the building, in the API's order; the form narrows them by unit.
   const assets: AssetChoice[] = items.map((item) => ({
@@ -61,7 +79,13 @@ export async function MaintenanceView({ context }: { context: OwnerContext }) {
         description={t("description")}
         actions={
           canManage && building ? (
-            <NewPlan assets={assets} units={units} categories={categoryOptions} members={members} />
+            <NewPlan
+              assets={assets}
+              units={units}
+              categories={categoryOptions}
+              members={members}
+              contracts={contracts}
+            />
           ) : null
         }
       />
@@ -79,6 +103,7 @@ export async function MaintenanceView({ context }: { context: OwnerContext }) {
                 units={units}
                 categories={categoryOptions}
                 members={members}
+                contracts={contracts}
                 variant="secondary"
               />
             ) : (
@@ -143,6 +168,15 @@ export async function MaintenanceView({ context }: { context: OwnerContext }) {
                     <span className="flex flex-col gap-0.5">
                       <span className="font-medium">{plan.title}</span>
                       <span className="text-muted text-sm">{plan.assetItemName}</span>
+                      {plan.vendorContractId ? (
+                        <a
+                          className="text-muted text-sm underline-offset-4 hover:underline"
+                          href={ownerPath(locale, `/juristic/contracts/${plan.vendorContractId}`)}
+                          data-testid="plan-contract-link"
+                        >
+                          {t("underContract", { vendor: plan.vendorName ?? "" })}
+                        </a>
+                      ) : null}
                     </span>
                   ),
                   interval: (
@@ -158,7 +192,9 @@ export async function MaintenanceView({ context }: { context: OwnerContext }) {
                   ) : (
                     <span className="text-muted">—</span>
                   ),
-                  actions: canManage ? <EditPlan plan={plan} categories={categoryOptions} members={members} /> : null,
+                  actions: canManage ? (
+                    <EditPlan plan={plan} categories={categoryOptions} members={members} contracts={contracts} />
+                  ) : null,
                 },
               };
             })}

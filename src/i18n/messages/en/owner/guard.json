@@ -265,7 +265,12 @@
     "dismiss": "Not entering",
     "claimed": "Plate filled from the camera. Check it and choose the house.",
     "taken": "Another guard already took this one",
-    "at": "at {time}"
+    "at": "at {time}",
+    "late": {
+      "title": "Late reads",
+      "note": "The camera read these during an outage and they arrived late, so the barrier did not open and no entry was recorded.",
+      "when": "Read {read} · received {received}"
+    }
   },
   "scan": {
     "title": "Scan invite QR",

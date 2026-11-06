@@ -56,6 +56,21 @@ export interface PayeeOption {
   company: boolean;
 }
 
+/** J2.2 (D-331): a vendor the request may pay, with its active contracts and the rounds awarded to it. */
+export interface VendorOption {
+  id: string;
+  name: string;
+  taxIdHint: string | null;
+}
+
+export interface VendorLinks {
+  vendors: VendorOption[];
+  contracts: { id: string; vendorId: string; buildingId: string; label: string }[];
+  rounds: { id: string; vendorId: string; buildingId: string; label: string }[];
+  /** `juristic.quotation_threshold` (text for the note); null when the settings do not say. */
+  threshold: string | null;
+}
+
 /**
  * A new expense request — or a draft being edited — as a numbered form (J2.1 §3): 1 payee and building, 2 lines by
  * expense account (amount incl. VAT, the VAT part, a WHT rate from `juristic.wht_rates` with "อัตรารอยืนยัน" while a
@@ -73,6 +88,7 @@ export function ExpenseForm({
   resolutions,
   defaultBuildingId,
   draft,
+  links,
 }: {
   buildings: { id: string; name: string }[];
   accounts: { id: string; label: string }[];
@@ -83,8 +99,10 @@ export function ExpenseForm({
   resolutions: { id: string; buildingId: string; label: string }[];
   defaultBuildingId?: string;
   draft?: Schemas["ExpenseRequestDto"];
+  links?: VendorLinks;
 }) {
   const t = useTranslations("owner.accounting.expenseForm");
+  const vendorWords = useTranslations("owner.vendors.expense");
   const bandWords = useTranslations("owner.accounting.band");
   const kinds = useTranslations("owner.accounting.attachmentKind");
   const common = useTranslations("owner.accounting.common");
@@ -94,6 +112,9 @@ export function ExpenseForm({
   const [title, setTitle] = useState(draft?.title ?? "");
   const [payeeId, setPayeeId] = useState<string | null>(draft?.payeePartyId ?? null);
   const [payeeName, setPayeeName] = useState(draft && !draft.payeePartyId ? draft.payeeName : "");
+  const [vendorId, setVendorId] = useState<string | null>(draft?.vendorId ?? null);
+  const [contractId, setContractId] = useState(draft?.vendorContractId ?? "");
+  const [roundId, setRoundId] = useState(draft?.quotationRoundId ?? "");
   const [source, setSource] = useState<"operating" | "fund">(draft?.fundId ? "fund" : "operating");
   const [fundId, setFundId] = useState(draft?.fundId ?? "");
   const [resolutionId, setResolutionId] = useState(draft?.resolutionId ?? "");
@@ -120,9 +141,16 @@ export function ExpenseForm({
     : {};
   const errors = { ...apiErrors, ...local };
   const payee = payees.find((candidate) => candidate.id === payeeId) ?? null;
+  const vendor = links?.vendors.find((candidate) => candidate.id === vendorId) ?? null;
+  const vendorContracts = (links?.contracts ?? []).filter(
+    (contract) => contract.vendorId === vendorId && contract.buildingId === buildingId,
+  );
+  const vendorRounds = (links?.rounds ?? []).filter(
+    (round) => round.vendorId === vendorId && round.buildingId === buildingId,
+  );
   const usedRates = lines.map((line) => rates.find((rate) => rate.key === line.whtKey)).filter(Boolean) as WhtRate[];
   const unverified = usedRates.some((rate) => !rate.verified);
-  const needsTaxId = usedRates.length > 0 && (!payee || !payee.taxId);
+  const needsTaxId = usedRates.length > 0 && (vendor ? !vendor.taxIdHint : !payee || !payee.taxId);
   const buildingFunds = funds.filter((fund) => fund.buildingId === buildingId);
   const buildingResolutions = resolutions.filter((resolution) => resolution.buildingId === buildingId);
   const fieldId = (key: string, part: string) => `expense-${key}-${part}`;
@@ -141,7 +169,7 @@ export function ExpenseForm({
     const found: Record<string, string> = {};
     if (!buildingId) found["expense-building"] = t("error.building");
     if (!title.trim()) found["expense-title"] = t("error.title");
-    if (!payeeId && !payeeName.trim()) found["expense-payee"] = t("error.payee");
+    if (!vendor && !payeeId && !payeeName.trim()) found["expense-payee"] = t("error.payee");
     lines.forEach((line, index) => {
       if (!line.accountId) found[fieldId(line.key, "account")] = t("error.account", { n: index + 1 });
       if (!line.description.trim()) found[fieldId(line.key, "description")] = t("error.description", { n: index + 1 });
@@ -167,7 +195,7 @@ export function ExpenseForm({
     if (Object.keys(found).length) return;
     const body = {
       title: title.trim(),
-      ...(payeeId ? { payeePartyId: payeeId } : { payeeName: payeeName.trim() }),
+      ...(vendor ? {} : payeeId ? { payeePartyId: payeeId } : { payeeName: payeeName.trim() }),
       lines: lines.map((line) => ({
         accountId: line.accountId,
         description: line.description.trim(),
@@ -185,7 +213,14 @@ export function ExpenseForm({
                 params: { path: { expenseRequestId: draft.id } },
                 body: {
                   ...body,
-                  ...(payeeId ? { payeeName: payee?.name } : { payeePartyId: null }),
+                  ...(vendor ? {} : payeeId ? { payeeName: payee?.name } : { payeePartyId: null }),
+                  ...(links
+                    ? {
+                        vendorId: vendor?.id ?? null,
+                        vendorContractId: vendor && contractId ? contractId : null,
+                        quotationRoundId: vendor && roundId ? roundId : null,
+                      }
+                    : {}),
                   note: note.trim() || null,
                   fundId: source === "fund" ? fundId : null,
                   resolutionId: source === "fund" ? resolutionId : null,
@@ -200,6 +235,13 @@ export function ExpenseForm({
                   buildingId,
                   kind: "expense",
                   ...(source === "fund" ? { fundId, resolutionId } : {}),
+                  ...(vendor
+                    ? {
+                        vendorId: vendor.id,
+                        ...(contractId ? { vendorContractId: contractId } : {}),
+                        ...(roundId ? { quotationRoundId: roundId } : {}),
+                      }
+                    : {}),
                 },
               }),
             );
@@ -287,27 +329,94 @@ export function ExpenseForm({
                 data-testid="expense-building"
               />
             </Field>
-            <Field
-              label={t("payee")}
-              hint={t("payeeHint")}
-              required
-              error={errors["expense-payee"] ?? errors.payeeName}
-            >
-              <Combobox
-                options={payees.map((option) => ({
-                  value: option.id,
-                  label: option.name,
-                  description: option.taxId ? t("hasTaxId") : t("noTaxId"),
-                }))}
-                value={payeeId}
-                onChange={(value) => setPayeeId(value)}
-                placeholder={t("payeePlaceholder")}
-                emptyLabel={t("noPayee")}
-                listLabel={t("payee")}
-              />
-            </Field>
+            {links && links.vendors.length ? (
+              <Field label={vendorWords("vendor")} hint={vendorWords("vendorHint")} error={errors.vendorId}>
+                <Combobox
+                  options={links.vendors.map((option) => ({
+                    value: option.id,
+                    label: option.name,
+                    description: option.taxIdHint
+                      ? vendorWords("taxIdHint", { last: option.taxIdHint })
+                      : vendorWords("noTaxId"),
+                  }))}
+                  value={vendorId}
+                  onChange={(value) => {
+                    setVendorId(value);
+                    setContractId("");
+                    setRoundId("");
+                  }}
+                  placeholder={vendorWords("vendorPlaceholder")}
+                  emptyLabel={vendorWords("noVendor")}
+                  listLabel={vendorWords("vendor")}
+                />
+              </Field>
+            ) : null}
+            {vendor ? null : (
+              <Field
+                label={t("payee")}
+                hint={t("payeeHint")}
+                required
+                error={errors["expense-payee"] ?? errors.payeeName}
+              >
+                <Combobox
+                  options={payees.map((option) => ({
+                    value: option.id,
+                    label: option.name,
+                    description: option.taxId ? t("hasTaxId") : t("noTaxId"),
+                  }))}
+                  value={payeeId}
+                  onChange={(value) => setPayeeId(value)}
+                  placeholder={t("payeePlaceholder")}
+                  emptyLabel={t("noPayee")}
+                  listLabel={t("payee")}
+                />
+              </Field>
+            )}
           </div>
-          {payeeId ? null : (
+          {vendor ? (
+            <div className="flex flex-col gap-4" data-testid="expense-vendor-links">
+              <p className="text-muted m-0 text-sm">{vendorWords("payeeFromVendor", { vendor: vendor.name })}</p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field
+                  label={vendorWords("contract")}
+                  hint={vendorContracts.length ? vendorWords("contractHint") : vendorWords("noContracts")}
+                  error={errors.vendorContractId}
+                >
+                  <NativeSelect
+                    value={contractId}
+                    onChange={(event) => setContractId(event.target.value)}
+                    placeholder={vendorWords("noContract")}
+                    options={vendorContracts.map((contract) => ({ value: contract.id, label: contract.label }))}
+                    data-testid="expense-contract"
+                  />
+                </Field>
+                <Field
+                  label={vendorWords("round")}
+                  hint={vendorRounds.length ? vendorWords("roundHint") : vendorWords("noRounds")}
+                  error={errors.quotationRoundId}
+                >
+                  <NativeSelect
+                    value={roundId}
+                    onChange={(event) => setRoundId(event.target.value)}
+                    placeholder={vendorWords("noRound")}
+                    options={vendorRounds.map((round) => ({ value: round.id, label: round.label }))}
+                    data-testid="expense-round"
+                  />
+                </Field>
+              </div>
+              {!contractId && !roundId && links?.threshold ? (
+                <div data-testid="expense-quotation-rule">
+                  <Callout
+                    tone="info"
+                    title={vendorWords("ruleTitle", { threshold: formatTHB(links.threshold, locale) })}
+                  >
+                    {vendorWords("ruleBody")}
+                  </Callout>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+          {vendor || payeeId ? null : (
             <Field label={t("payeeName")} hint={t("payeeNameHint")}>
               <Input
                 id="expense-payee"

@@ -9593,7 +9593,7 @@ export interface paths {
         put?: never;
         /**
          * Submit for approval
-         * @description Gives the gapless number `EXP-YYYY-NNNNN` and snapshots the approval band of `juristic.approval_bands` for the amount (roles + approvals needed); the band’s roles hear `juristic.expense.approval_required` (in-app + LINE; the committee on the manager routes). Audited. Requires `Idempotency-Key` (D-311, D-329).
+         * @description Gives the gapless number `EXP-YYYY-NNNNN` and snapshots the approval band of `juristic.approval_bands` for the amount (roles + approvals needed); a vendor purchase (`vendorId`, no contract) above `juristic.quotation_threshold` needs an awarded `quotationRoundId` of that vendor (422 `expense.quotations_required`, D-310 / D-331); the band’s roles hear `juristic.expense.approval_required` (in-app + LINE; the committee on the manager routes). Audited. Requires `Idempotency-Key` (D-311, D-329).
          *
          *     Implements: D-311, D-329.
          */
@@ -10212,6 +10212,166 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/owner/juristic/quotation-rounds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Quotation rounds
+         * @description Newest first; filters state, building and `awaitingMe` (awards my role may approve that I did not ask for) (D-310, D-331).
+         *
+         *     Implements: D-310, D-331.
+         */
+        get: operations["owner.juristicQuotations.list"];
+        put?: never;
+        /**
+         * Open a quotation round
+         * @description A purchase or a service to compare quotations for, in a building of the tenant. Above `juristic.quotation_threshold` the award needs 3 quotations or a recorded reason (D-310). Audited (D-310, D-331).
+         *
+         *     Implements: D-310, D-331.
+         */
+        post: operations["owner.juristicQuotations.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/quotation-rounds/{roundId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * A quotation round
+         * @description Quotations (cheapest first), the award, its approvals and outcome (D-310, D-331).
+         *
+         *     Implements: D-310, D-331.
+         */
+        get: operations["owner.juristicQuotations.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/quotation-rounds/{roundId}/actions/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Approve the award
+         * @description One approval by a user whose role is in the award’s band (403 `quotation.not_in_band`), never the one who asked for the award (403 `quotation.maker_checker`; the database refuses it too), once per user and award request (409 `quotation.already_decided`); enough approvals → `awarded` and the contract / expense request draft is created. Audited. Requires `Idempotency-Key` (D-091, D-310, D-331).
+         *
+         *     Implements: D-091, D-310, D-331.
+         */
+        post: operations["owner.juristicQuotations.approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/quotation-rounds/{roundId}/actions/award": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Select the winning quotation
+         * @description A valid quotation of the round (422 `quotation.expired`), the outcome (`contract`: a contract draft for the vendor at the quoted amount over `startsOn`–`endsOn`; `expense`: an expense request draft on `accountId` with the quotation attached) and the basis: `resolution` (an adopted resolution of the building — awarded at once) or `approval` (the band of `juristic.approval_bands` for the amount; band-role users other than the requester approve — maker-checker). Above `juristic.quotation_threshold` with fewer than 3 quotations `fewerQuotationsReason` is required (422 `quotation.minimum_not_met`, D-310). Audited. Requires `Idempotency-Key` (D-091, D-310, D-331).
+         *
+         *     Implements: D-091, D-310, D-331.
+         */
+        post: operations["owner.juristicQuotations.award"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/quotation-rounds/{roundId}/actions/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel the round
+         * @description An open round or one awaiting approval is cancelled with a reason. Audited. Requires `Idempotency-Key` (D-310, D-331).
+         *
+         *     Implements: D-310, D-331.
+         */
+        post: operations["owner.juristicQuotations.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/quotation-rounds/{roundId}/actions/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reject the award
+         * @description A band approver (not the requester) rejects with a reason: the round reopens for another selection (a new award request needs fresh approvals). Audited. Requires `Idempotency-Key` (D-091, D-310, D-331).
+         *
+         *     Implements: D-091, D-310, D-331.
+         */
+        post: operations["owner.juristicQuotations.reject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/quotation-rounds/{roundId}/quotations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record a quotation
+         * @description One per vendor and round (409 `quotation.exists`), only while open; the quotation document is required; a blocked vendor is 422 `vendor.blocked`. Append-only. Audited (D-310, D-331).
+         *
+         *     Implements: D-310, D-331.
+         */
+        post: operations["owner.juristicQuotations.addQuotation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/owner/juristic/receivables": {
         parameters: {
             query?: never;
@@ -10784,6 +10944,256 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/vendor-contracts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Vendor contracts
+         * @description By end date; filters vendor, building, state and `endingWithinDays` (active contracts ending within N days — the renewal queue) (D-310, D-331).
+         *
+         *     Implements: D-310, D-331.
+         */
+        get: operations["owner.juristicVendorContracts.list"];
+        put?: never;
+        /**
+         * Draft a vendor contract
+         * @description Scope, SLA terms (response / resolve hours per priority), term, renewal notice days, value, the expense account and WHT key of the instalment requests, the instalment plan (frequency, due day, amount, VAT), penalty clauses, the quotation round awarded to the vendor and / or a resolution. A blocked vendor is 422 `vendor.blocked`. Audited (D-310, D-331).
+         *
+         *     Implements: D-310, D-331.
+         */
+        post: operations["owner.juristicVendorContracts.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/vendor-contracts/{contractId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * A vendor contract
+         * @description Terms, instalments with their expense requests, documents, monthly evaluations with the trend of the last 6 (for the renewal decision), preventive plans run under it, expiry alerts sent and the caller’s next actions (D-310, D-331).
+         *
+         *     Implements: D-310, D-331.
+         */
+        get: operations["owner.juristicVendorContracts.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Edit a draft contract
+         * @description Drafts only (409 `vendor_contract.invalid_state`); `version` → 412 when changed meanwhile. Audited (D-310, D-331).
+         *
+         *     Implements: D-310, D-331.
+         */
+        patch: operations["owner.juristicVendorContracts.update"];
+        trace?: never;
+    };
+    "/v1/owner/juristic/vendor-contracts/{contractId}/actions/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Bring the contract into force
+         * @description Draft → active. Above `juristic.quotation_threshold` the contract must come from a quotation round awarded to the vendor — or, for a renewal, carry an adopted resolution (422 `vendor_contract.quotations_required`, D-310). The instalment plan is scheduled inside the term (Σ ≤ value, else 422 `vendor_contract.schedule_invalid`); the hourly job `vendor-contracts` submits each instalment as an expense request `juristic.contract_instalment_lead_days` before it is due (the activating user is its requester — maker-checker). Audited. Requires `Idempotency-Key` (D-310, D-331).
+         *
+         *     Implements: D-310, D-331.
+         */
+        post: operations["owner.juristicVendorContracts.activate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/vendor-contracts/{contractId}/actions/renew": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Draft the renewal
+         * @description An active or expired contract gets one successor draft with the same terms for the new period (from the day after its end unless given; value and plan optional; `resolutionId` lets a renewal above the threshold activate without a new round). Returns the renewal draft; 409 `vendor_contract.already_renewed` for a second one. Audited. Requires `Idempotency-Key` (D-310, D-331).
+         *
+         *     Implements: D-310, D-331.
+         */
+        post: operations["owner.juristicVendorContracts.renew"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/vendor-contracts/{contractId}/actions/terminate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Terminate the contract
+         * @description Active → terminated with a reason, effective today or a later day up to the end: instalments due on / after it are cancelled (requests already made stay — cancel them separately), preventive plans run under it stop. Audited. Requires `Idempotency-Key` (D-310, D-331).
+         *
+         *     Implements: D-310, D-331.
+         */
+        post: operations["owner.juristicVendorContracts.terminate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/vendor-contracts/{contractId}/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Attach a contract document
+         * @description The signed contract, an amendment, insurance, a guarantee or another uploaded document (`POST /v1/owner/files/presign` first); attaching the same document again changes nothing. Audited (D-310, D-331).
+         *
+         *     Implements: D-310, D-331.
+         */
+        post: operations["owner.juristicVendorContracts.attach"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/vendor-contracts/{contractId}/evaluations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Evaluations of a contract
+         * @description Monthly evaluations, oldest first (D-310, D-331).
+         *
+         *     Implements: D-310, D-331.
+         */
+        get: operations["owner.juristicVendorContracts.evaluations"];
+        put?: never;
+        /**
+         * Evaluate a month
+         * @description One evaluation per contract and month (a month of the term, not in the future; 409 `vendor_evaluation.exists`): a 1–5 score for every criterion of `juristic.vendor_evaluation_criteria`, incidents, notes; the SLA breaches of the month are pulled from the vendor’s work orders and service requests and snapshotted; the score is the average. Immutable. Audited. Requires `Idempotency-Key` (D-310, D-331).
+         *
+         *     Implements: D-310, D-331.
+         */
+        post: operations["owner.juristicVendorContracts.evaluate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/vendor-contracts/{contractId}/sla-breaches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * SLA breaches of a month
+         * @description What an evaluation of the month pulls: the month’s work orders of the building assigned to the vendor’s party or opened by a preventive plan of the contract — response (accepted / checked in − assigned) and resolve (completed − the request’s creation) above the contract’s hours for the priority, unfinished ones counted until now, plus the linked service requests whose own SLA breached (D-310, D-331).
+         *
+         *     Implements: D-310, D-331.
+         */
+        get: operations["owner.juristicVendorContracts.slaBreaches"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/vendors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Vendors
+         * @description The juristic tenant’s vendors by name; filters state, category and part of the name. Tax id and bank account are shown masked (last 4) (D-310, D-331).
+         *
+         *     Implements: D-310, D-331.
+         */
+        get: operations["owner.juristicVendors.list"];
+        put?: never;
+        /**
+         * Register a vendor
+         * @description A vendor is a party of the tenant: an existing one (`partyId`) or one created from the name, type and contact. The 13-digit tax id (check digit verified) is kept on the party — the 50 ทวิ of the vendor’s payments prints it (D-329). Only the last 4 digits of the bank account are stored. A party registered twice is 409 `vendor.exists`. Audited (D-310, D-331).
+         *
+         *     Implements: D-310, D-331.
+         */
+        post: operations["owner.juristicVendors.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/vendors/{vendorId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * A vendor
+         * @description Another tenant’s vendor is 404 (D-310, D-331).
+         *
+         *     Implements: D-310, D-331.
+         */
+        get: operations["owner.juristicVendors.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Edit or block a vendor
+         * @description Name, tax id (on the party), categories, contact, masked bank account; `state: blocked` with a reason stops new contracts, quotations and expense requests (existing contracts run on). `version` → 412 when changed meanwhile. Audited (D-310, D-331).
+         *
+         *     Implements: D-310, D-331.
+         */
+        patch: operations["owner.juristicVendors.update"];
         trace?: never;
     };
     "/v1/owner/juristic/withholding-certificates": {
@@ -12327,9 +12737,9 @@ export interface paths {
         put?: never;
         /**
          * Plan preventive maintenance of equipment
-         * @description Every `intervalDays` from `nextDueOn`: the worker opens a preventive work order `leadDays` before (assigned to the plan’s staff member or technician when set).
+         * @description Every `intervalDays` from `nextDueOn`: the worker opens a preventive work order `leadDays` before (assigned to the plan’s staff member or technician when set). J2.2: `vendorContractId` runs the plan under a vendor contract of the building (lift, pumps, fire system) — work orders wait while the contract is not active and go to the vendor when the plan has no assignee; another tenant’s contract is 404 (D-072, D-331).
          *
-         *     Implements: D-072.
+         *     Implements: D-072, D-331.
          */
         post: operations["owner.maintenancePlans.create"];
         delete?: never;
@@ -12359,9 +12769,9 @@ export interface paths {
         head?: never;
         /**
          * Change a maintenance plan
-         * @description Interval, lead days, next due date, assignee; `isActive=false` pauses it.
+         * @description Interval, lead days, next due date, assignee, vendor contract (J2.2, `null` detaches it); `isActive=false` pauses it (D-072, D-331).
          *
-         *     Implements: D-072.
+         *     Implements: D-072, D-331.
          */
         patch: operations["owner.maintenancePlans.update"];
         trace?: never;
@@ -24107,6 +24517,10 @@ export interface components {
             /** @example 15:00 */
             to?: string;
         };
+        /** @enum {string} */
+        AwardBasis: "resolution" | "approval";
+        /** @enum {string} */
+        AwardOutcome: "contract" | "expense";
         BackPostResultDto: {
             /**
              * @description Documents posted that had no journal yet.
@@ -26741,6 +27155,20 @@ export interface components {
             /** @example 0 */
             sortOrder?: number;
         };
+        ContractAlertDto: {
+            /** @example 90 */
+            daysBefore: number;
+            /**
+             * Format: date
+             * @example 2027-12-31
+             */
+            endsOn: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            sentAt: string;
+        };
         ContractCreateDto: {
             /**
              * Format: uuid
@@ -26781,6 +27209,32 @@ export interface components {
             /** @description Values typed by the user; everything else is filled from the unit, lease, mandate or agreement. Unknown keys → `contract.unknown_variable`. */
             variables?: components["schemas"]["ContractVariablesDto"];
         };
+        ContractDocumentAttachDto: {
+            /**
+             * Format: uuid
+             * @description An uploaded document of the tenant.
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            documentId: string;
+            /** @example contract */
+            kind: components["schemas"]["ContractDocumentKind"];
+        };
+        ContractDocumentDto: {
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            documentId: string;
+            /** @example contract */
+            kind: components["schemas"]["ContractDocumentKind"];
+        };
+        /** @enum {string} */
+        ContractDocumentKind: "contract" | "amendment" | "insurance" | "guarantee" | "other";
         /** @enum {string} */
         ContractDocumentState: "draft" | "pending_signature" | "signed" | "cancelled";
         ContractDownloadDto: {
@@ -26899,6 +27353,66 @@ export interface components {
             /** @description The values typed when it was drafted. */
             variables: components["schemas"]["ContractVariablesDto"];
         };
+        ContractExpenseRefDto: {
+            /**
+             * @description Amount of the request. Unit: THB, decimal string (D-046).
+             * @example 16050.00
+             */
+            amount: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example EXP-2027-00001 */
+            number: string | null;
+            /** @example submitted */
+            state: components["schemas"]["ExpenseState"];
+        };
+        ContractInstalmentDto: {
+            /**
+             * @description Incl. VAT. Unit: THB, decimal string (D-046).
+             * @example 16050.00
+             */
+            amount: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            cancelledAt: string | null;
+            /** @example สัญญาบำรุงรักษาลิฟต์ 2570 งวดที่ 1/12 */
+            description: string;
+            /**
+             * Format: date
+             * @example 2027-01-05
+             */
+            dueOn: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            expenseRequestId: string | null;
+            /** @example EXP-2027-00001 */
+            expenseRequestNumber: string | null;
+            /** @example submitted */
+            expenseRequestState: components["schemas"]["ExpenseState"] | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            requestedAt: string | null;
+            /** @example 1 */
+            seq: number;
+            /** @example requested */
+            state: components["schemas"]["ContractInstalmentState"];
+            /**
+             * @description VAT part. Unit: THB, decimal string (D-046).
+             * @example 1050.00
+             */
+            vatAmount: string;
+        };
+        /** @enum {string} */
+        ContractInstalmentState: "scheduled" | "requested" | "cancelled";
         /** @enum {string} */
         ContractKind: "lease_apartment_ocpb" | "lease_condo_private" | "lease_house" | "lease_room" | "reservation" | "brokerage_mandate" | "co_broke" | "addendum" | "notice_termination" | "notice_renewal";
         ContractLibraryDto: {
@@ -26917,6 +27431,38 @@ export interface components {
              * @example iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==
              */
             signaturePng: string;
+        };
+        ContractPlanDto: {
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            assetItemId: string;
+            /** @example ลิฟต์โดยสาร L1 */
+            assetItemName: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example 30 */
+            intervalDays: number;
+            /** @example true */
+            isActive: boolean;
+            /**
+             * Format: uuid
+             * @example null
+             */
+            lastWorkOrderId: string | null;
+            /** @example null */
+            lastWorkOrderStatus: components["schemas"]["WorkOrderStatus"] | null;
+            /**
+             * Format: date
+             * @example 2027-02-01
+             */
+            nextDueOn: string;
+            /** @example ตรวจเช็กลิฟต์ประจำเดือน */
+            title: string;
         };
         ContractsDto: {
             data: components["schemas"]["ContractDto"][];
@@ -29223,6 +29769,51 @@ export interface components {
             /** @example T01 */
             typeCode: string;
         };
+        EvaluationScoreDto: {
+            /** @example quality */
+            criterion: string;
+            /** @example Quality of work */
+            labelEn: string;
+            /** @example คุณภาพงาน */
+            labelTh: string;
+            /** @example 4 */
+            score: number;
+        };
+        EvaluationScoreInputDto: {
+            /**
+             * @description A key of `juristic.vendor_evaluation_criteria`.
+             * @example quality
+             */
+            criterion: string;
+            /** @example 4 */
+            score: number;
+        };
+        EvaluationSummaryDto: {
+            /** @example 3.92 */
+            averageScore: string | null;
+            /**
+             * @description Evaluations counted (the last 6).
+             * @example 6
+             */
+            count: number;
+            /** @example 4.25 */
+            lastScore: string | null;
+            /**
+             * @description SLA breaches over those evaluations.
+             * @example 3
+             */
+            slaBreaches: number;
+            /**
+             * @description Last score vs the average before it (±0.25); null with fewer than 2.
+             * @example improving
+             */
+            trend: components["schemas"]["EvaluationTrend"] | null;
+        };
+        /**
+         * @description Last score vs the average before it (±0.25); null with fewer than 2.
+         * @enum {string}
+         */
+        EvaluationTrend: "improving" | "declining" | "steady";
         EventConsumptionDto: {
             /** @example 8 */
             attempts: number;
@@ -29353,11 +29944,26 @@ export interface components {
             pettyCashId?: string;
             /**
              * Format: uuid
+             * @description J2.2: a quotation round of the building awarded to the vendor.
+             */
+            quotationRoundId?: string;
+            /**
+             * Format: uuid
              * @description Adopted resolution of the building.
              */
             resolutionId?: string;
             /** @example ค่ารักษาความปลอดภัย มกราคม 2570 */
             title: string;
+            /**
+             * Format: uuid
+             * @description J2.2: an active contract of the vendor for the building.
+             */
+            vendorContractId?: string;
+            /**
+             * Format: uuid
+             * @description J2.2 (D-331): the vendor paid — the payee party (its tax id goes on the 50 ทวิ) and the payee name come from it; a blocked vendor is refused (422 `vendor.blocked`). Above `juristic.quotation_threshold` a vendor purchase not under a contract is submitted only with `quotationRoundId` (422 `expense.quotations_required`).
+             */
+            vendorId?: string;
         };
         /** @enum {string} */
         ExpenseDecision: "approved" | "rejected";
@@ -29562,6 +30168,11 @@ export interface components {
              */
             pettyCashId: string | null;
             /**
+             * Format: uuid
+             * @example null
+             */
+            quotationRoundId: string | null;
+            /**
              * Format: date-time
              * @example null
              */
@@ -29586,6 +30197,20 @@ export interface components {
             submittedAt: string | null;
             /** @example ค่ารักษาความปลอดภัย มกราคม 2570 */
             title: string;
+            /**
+             * Format: uuid
+             * @description J2.2: the vendor contract (instalment requests carry it).
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            vendorContractId: string | null;
+            /**
+             * Format: uuid
+             * @description J2.2 (D-331): the vendor paid.
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            vendorId: string | null;
+            /** @example บริษัท รักษาความปลอดภัย จำกัด */
+            vendorName: string | null;
             /** @example 2 */
             version: number;
             /**
@@ -29612,9 +30237,18 @@ export interface components {
             /** Format: uuid */
             payeePartyId?: string | null;
             /** Format: uuid */
+            quotationRoundId?: string | null;
+            /** Format: uuid */
             resolutionId?: string | null;
             /** @example ค่ารักษาความปลอดภัย มกราคม 2570 */
             title?: string;
+            /** Format: uuid */
+            vendorContractId?: string | null;
+            /**
+             * Format: uuid
+             * @description J2.2 (D-331): the vendor paid (payee from the vendor).
+             */
+            vendorId?: string | null;
             /**
              * @description Optimistic lock: 412 when changed meanwhile.
              * @example 1
@@ -32714,6 +33348,54 @@ export interface components {
         /** @enum {string} */
         InstallOrderState: "open" | "in_progress" | "done" | "cancelled";
         /** @enum {string} */
+        InstalmentFrequency: "monthly" | "quarterly" | "semiannual" | "annual" | "once";
+        InstalmentPlanDto: {
+            /**
+             * @description Each instalment incl. VAT. Unit: THB, decimal string (D-046).
+             * @example 16050.00
+             */
+            amount: string;
+            /**
+             * @description Due day of the month.
+             * @example 5
+             */
+            dueDay: number;
+            /**
+             * Format: date
+             * @description First due date (default: the first due day on / after the contract start).
+             * @example 2027-01-05
+             */
+            firstDueOn?: string;
+            /** @example monthly */
+            frequency: components["schemas"]["InstalmentFrequency"];
+            /**
+             * @description VAT part of each instalment. Unit: THB, decimal string (D-046).
+             * @example 1050.00
+             */
+            vatAmount?: string;
+        };
+        InstalmentPlanViewDto: {
+            /**
+             * @description Each instalment incl. VAT. Unit: THB, decimal string (D-046).
+             * @example 16050.00
+             */
+            amount: string;
+            /** @example 5 */
+            dueDay: number;
+            /**
+             * Format: date
+             * @example null
+             */
+            firstDueOn: string | null;
+            /** @example monthly */
+            frequency: components["schemas"]["InstalmentFrequency"];
+            /**
+             * @description VAT part of each instalment. Unit: THB, decimal string (D-046).
+             * @example 1050.00
+             */
+            vatAmount: string;
+        };
+        /** @enum {string} */
         InstalmentState: "scheduled" | "billed" | "paid" | "cancelled";
         /** @enum {string} */
         IntegrationDirection: "inbound" | "outbound";
@@ -35805,6 +36487,11 @@ export interface components {
             nextDueOn?: string;
             /** @example ล้างและตรวจปั๊มน้ำ */
             title?: string;
+            /**
+             * Format: uuid
+             * @description J2.2 (D-331): a vendor contract (draft or active) of the plan’s building — e.g. the lift, pump or fire-system maintenance contract.
+             */
+            vendorContractId?: string | null;
         };
         MaintenancePlanDto: {
             /**
@@ -35859,6 +36546,17 @@ export interface components {
             nextDueOn: string;
             /** @example ล้างและตรวจปั๊มน้ำ */
             title: string;
+            /**
+             * Format: uuid
+             * @description J2.2 (D-331): the vendor contract the work is done under — work orders wait while the contract is not active and go to the vendor when the plan has no assignee of its own.
+             * @example null
+             */
+            vendorContractId: string | null;
+            /**
+             * @description The contract vendor’s name (J2.2).
+             * @example null
+             */
+            vendorName: string | null;
             /** @example 1 */
             version: number;
         };
@@ -35886,6 +36584,11 @@ export interface components {
             nextDueOn?: string;
             /** @example ล้างและตรวจปั๊มน้ำ */
             title?: string;
+            /**
+             * Format: uuid
+             * @description J2.2 (D-331): a vendor contract (draft or active) of the plan’s building — e.g. the lift, pump or fire-system maintenance contract.
+             */
+            vendorContractId?: string | null;
         };
         MandateDto: {
             /**
@@ -38107,7 +38810,7 @@ export interface components {
          * @description Menu entitlements of the owner console (keys of the web routes).
          * @enum {string}
          */
-        OwnerMenuKey: "portfolio" | "listings" | "leads" | "mandated_units" | "mandates" | "co_broke" | "deals" | "dashboard" | "buildings" | "units" | "parties" | "leases" | "deposits" | "readings" | "devices" | "rate_plans" | "invoices" | "payments" | "reports" | "utility_loss" | "service_requests" | "access" | "parcels" | "announcements" | "juristic_register" | "juristic_cycles" | "juristic_budgets" | "juristic_payment_plans" | "juristic_debt_clearances" | "juristic_receivables" | "juristic_statements" | "juristic_collection_ladder" | "juristic_accounting" | "juristic_expenses" | "juristic_funds" | "juristic_bank_statements" | "juristic_workspace_invitations" | "juristic_gate" | "gate" | "members" | "bank_accounts" | "settings" | "notifications" | "privacy" | "access_grants" | "support_access" | "audit_log" | "subscription";
+        OwnerMenuKey: "portfolio" | "listings" | "leads" | "mandated_units" | "mandates" | "co_broke" | "deals" | "dashboard" | "buildings" | "units" | "parties" | "leases" | "deposits" | "readings" | "devices" | "rate_plans" | "invoices" | "payments" | "reports" | "utility_loss" | "service_requests" | "access" | "parcels" | "announcements" | "juristic_register" | "juristic_cycles" | "juristic_budgets" | "juristic_payment_plans" | "juristic_debt_clearances" | "juristic_receivables" | "juristic_statements" | "juristic_collection_ladder" | "juristic_accounting" | "juristic_expenses" | "juristic_funds" | "juristic_bank_statements" | "juristic_vendors" | "juristic_vendor_contracts" | "juristic_quotations" | "juristic_workspace_invitations" | "juristic_gate" | "gate" | "members" | "bank_accounts" | "settings" | "notifications" | "privacy" | "access_grants" | "support_access" | "audit_log" | "subscription";
         OwnerReviewDto: {
             body: string | null;
             /** Format: uuid */
@@ -39705,7 +40408,10 @@ export interface components {
              * @example 2026-11-01T00:15:00+07:00
              */
             receivedAt: string;
-            /** @example pending */
+            /**
+             * @description `historical` (D-330, edge CR-017): the read reached the cloud more than gate.lpr.max_event_age_seconds after the camera read it (queued during an outage) — kept as a past read only: no entry, no barrier open, not claimable.
+             * @example pending
+             */
             state: components["schemas"]["PlateDetectionState"];
             /**
              * @description The unit of the matched car (also for low-confidence matches).
@@ -39719,8 +40425,11 @@ export interface components {
              */
             visitId: string | null;
         };
-        /** @enum {string} */
-        PlateDetectionState: "pending" | "matched" | "claimed" | "dismissed" | "expired" | "ignored";
+        /**
+         * @description `historical` (D-330, edge CR-017): the read reached the cloud more than gate.lpr.max_event_age_seconds after the camera read it (queued during an outage) — kept as a past read only: no entry, no barrier open, not claimable.
+         * @enum {string}
+         */
+        PlateDetectionState: "pending" | "matched" | "claimed" | "dismissed" | "expired" | "ignored" | "historical";
         /** @enum {string} */
         PlateDetectionView: "pending" | "recent";
         PlateDto: {
@@ -41505,6 +42214,264 @@ export interface components {
             /** @example Asia/Bangkok */
             timezone: string;
         };
+        QuotationAwardDto: {
+            /**
+             * Format: uuid
+             * @description outcome `expense`: the expense account.
+             */
+            accountId?: string;
+            /** @example approval */
+            basis: components["schemas"]["AwardBasis"];
+            /**
+             * Format: date
+             * @description outcome `contract`: end of the contract draft.
+             */
+            endsOn?: string;
+            /**
+             * @description Required above the threshold with fewer than 3 quotations (D-310).
+             * @example มีผู้ให้บริการลิฟต์ยี่ห้อนี้ในพื้นที่เพียง 2 ราย
+             */
+            fewerQuotationsReason?: string;
+            /** @example contract */
+            outcome: components["schemas"]["AwardOutcome"];
+            /**
+             * Format: uuid
+             * @description A quotation of the round, still valid.
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            quotationId: string;
+            /**
+             * Format: uuid
+             * @description basis `resolution`: an adopted resolution of the building.
+             */
+            resolutionId?: string;
+            /**
+             * Format: date
+             * @description outcome `contract`: start of the contract draft.
+             */
+            startsOn?: string;
+            /**
+             * @description outcome `expense`: WHT key.
+             * @example service
+             */
+            whtKey?: string;
+        };
+        QuotationCreateDto: {
+            /**
+             * @description Quoted amount incl. VAT. Unit: THB, decimal string (D-046).
+             * @example 192600.00
+             */
+            amount: string;
+            /**
+             * Format: uuid
+             * @description The quotation document (required).
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            documentId: string;
+            note?: string;
+            /**
+             * Format: date
+             * @description Default today; never in the future.
+             */
+            receivedOn?: string;
+            /**
+             * Format: date
+             * @example 2027-02-28
+             */
+            validUntil: string;
+            /**
+             * @description VAT part. Unit: THB, decimal string (D-046).
+             * @example 12600.00
+             */
+            vatAmount?: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            vendorId: string;
+        };
+        QuotationDto: {
+            /**
+             * @description Quoted amount incl. VAT. Unit: THB, decimal string (D-046).
+             * @example 192600.00
+             */
+            amount: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            documentId: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example null */
+            note: string | null;
+            /**
+             * Format: date
+             * @example 2026-12-10
+             */
+            receivedOn: string;
+            /**
+             * Format: date
+             * @example 2027-02-28
+             */
+            validUntil: string;
+            /**
+             * @description VAT part. Unit: THB, decimal string (D-046).
+             * @example 12600.00
+             */
+            vatAmount: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            vendorId: string;
+            /** @example บริษัท ลิฟต์ไทย เซอร์วิส จำกัด */
+            vendorName: string;
+        };
+        QuotationRoundCreateDto: {
+            /**
+             * Format: uuid
+             * @example 5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c
+             */
+            buildingId: string;
+            category?: components["schemas"]["VendorCategory"];
+            description?: string;
+            /**
+             * @description Estimate (optional). Unit: THB, decimal string (D-046).
+             * @example 200000.00
+             */
+            estimatedAmount?: string;
+            /** @example จ้างบำรุงรักษาลิฟต์ 2570 */
+            title: string;
+        };
+        QuotationRoundDto: {
+            /**
+             * @description At the award.
+             * @example true
+             */
+            aboveThreshold: boolean | null;
+            /** @description Every decision (all award requests). */
+            approvals: components["schemas"]["ExpenseApprovalDto"][];
+            /**
+             * @description Approvals given to the current award request.
+             * @example 1
+             */
+            approvalsGiven: number;
+            /** @example 2 */
+            approvalsRequired: number | null;
+            /**
+             * @example [
+             *       "owner"
+             *     ]
+             */
+            approverRoles: components["schemas"]["ExpenseApproverRole"][];
+            /**
+             * Format: date-time
+             * @example null
+             */
+            awardedAt: string | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            awardedQuotationId: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            awardRequestedAt: string | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            awardRequestedBy: string | null;
+            /** @example approval */
+            basis: components["schemas"]["AwardBasis"] | null;
+            /**
+             * Format: uuid
+             * @example 5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c
+             */
+            buildingId: string;
+            /** @example อาคาร A */
+            buildingName: string;
+            /**
+             * Format: date-time
+             * @example null
+             */
+            cancelledAt: string | null;
+            /** @example null */
+            cancelReason: string | null;
+            /** @example lift */
+            category: components["schemas"]["VendorCategory"] | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            createdAt: string;
+            /** @example null */
+            description: string | null;
+            /**
+             * @description Estimate. Unit: THB, decimal string (D-046).
+             * @example 200000.00
+             */
+            estimatedAmount: string | null;
+            /** @example null */
+            fewerQuotationsReason: string | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /**
+             * @description Quotations needed above the threshold (fewer only with a recorded reason, D-310).
+             * @example 3
+             */
+            minimumQuotations: number;
+            /**
+             * @description add_quotation · award · approve · reject · cancel — for the caller.
+             * @example [
+             *       "approve",
+             *       "reject",
+             *       "cancel"
+             *     ]
+             */
+            nextActions: string[];
+            /** @example contract */
+            outcome: components["schemas"]["AwardOutcome"] | null;
+            /**
+             * Format: uuid
+             * @example null
+             */
+            outcomeContractId: string | null;
+            /**
+             * Format: uuid
+             * @example null
+             */
+            outcomeExpenseRequestId: string | null;
+            /** @description Cheapest first. */
+            quotations: components["schemas"]["QuotationDto"][];
+            /**
+             * Format: uuid
+             * @example null
+             */
+            resolutionId: string | null;
+            /** @example awaiting_approval */
+            state: components["schemas"]["QuotationRoundState"];
+            /**
+             * @description Threshold of `juristic.quotation_threshold` today. Unit: THB, decimal string (D-046).
+             * @example 50000.00
+             */
+            threshold: string;
+            /** @example จ้างบำรุงรักษาลิฟต์ 2570 */
+            title: string;
+            /** @example 3 */
+            version: number;
+        };
+        /** @enum {string} */
+        QuotationRoundState: "open" | "awaiting_approval" | "awarded" | "cancelled";
         /** @enum {string} */
         RateBasis: "per_unit" | "per_sqm" | "per_ownership_ratio" | "fixed" | "per_sqwa" | "budget_split";
         RateDraftCreateDto: {
@@ -46661,6 +47628,60 @@ export interface components {
         };
         /** @enum {string} */
         SiteSurveyState: "requested" | "scheduled" | "done" | "cancelled";
+        SlaBreachDto: {
+            /**
+             * @description Hours it took (or has taken).
+             * @example 5.5
+             */
+            actualHours: number | null;
+            /**
+             * @description Hours the contract allows.
+             * @example 2
+             */
+            allowedHours: number | null;
+            /** @example response */
+            kind: components["schemas"]["SlaBreachKind"];
+            /** @example urgent */
+            priority: components["schemas"]["ServicePriority"];
+            /**
+             * Format: uuid
+             * @example null
+             */
+            serviceRequestId: string | null;
+            /** @example ลิฟต์ L2 ค้าง */
+            title: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            workOrderId: string;
+        };
+        /** @enum {string} */
+        SlaBreachKind: "response" | "resolve" | "request_sla";
+        SlaMonthDto: {
+            breaches: components["schemas"]["SlaBreachDto"][];
+            /** @example 2027-03 */
+            month: string;
+            /**
+             * @description Work orders of the vendor in the month.
+             * @example 6
+             */
+            workOrders: number;
+        };
+        SlaTermDto: {
+            /** @example urgent */
+            priority: components["schemas"]["ServicePriority"];
+            /**
+             * @description Hours to resolve.
+             * @example 24
+             */
+            resolveHours: number;
+            /**
+             * @description Hours to respond.
+             * @example 2
+             */
+            responseHours: number;
+        };
         /** @enum {string} */
         SlipDecision: "approve" | "reject";
         SlipDecisionDto: {
@@ -50582,6 +51603,539 @@ export interface components {
              * @example BFakeVapidPublicKeyForDevelopmentOnly0000000000000000000000000000000000000000000000000
              */
             publicKey: string;
+        };
+        /** @enum {string} */
+        VendorCategory: "security" | "cleaning" | "gardening" | "lift" | "pump" | "fire_system" | "electrical" | "plumbing" | "pest_control" | "pool" | "cctv" | "waste" | "building_works" | "professional" | "insurance" | "other";
+        VendorContractCreateDto: {
+            /**
+             * Format: uuid
+             * @example 5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c
+             */
+            buildingId: string;
+            /** @example lift */
+            category?: components["schemas"]["VendorCategory"];
+            /**
+             * Format: date
+             * @example 2027-12-31
+             */
+            endsOn: string;
+            /**
+             * Format: uuid
+             * @description Expense account the instalment requests post to.
+             */
+            expenseAccountId?: string;
+            instalmentPlan?: components["schemas"]["InstalmentPlanDto"];
+            note?: string;
+            /** @example ปรับวันละ 500 บาท หากไม่เข้าซ่อมภายในเวลาที่กำหนด */
+            penaltyClauses?: string;
+            /**
+             * Format: uuid
+             * @description The quotation round awarded to the vendor.
+             */
+            quotationRoundId?: string;
+            /** @example 60 */
+            renewalNoticeDays?: number;
+            /**
+             * Format: uuid
+             * @description An adopted resolution of the building.
+             */
+            resolutionId?: string;
+            /** @example ตรวจเช็กลิฟต์ 4 ตัว เดือนละครั้ง เปลี่ยนอะไหล่สิ้นเปลือง */
+            scope?: string;
+            /** @description Response / resolve hours per priority. */
+            slaTerms?: components["schemas"]["SlaTermDto"][];
+            /**
+             * Format: date
+             * @example 2027-01-01
+             */
+            startsOn: string;
+            /** @example สัญญาบำรุงรักษาลิฟต์ 2570 */
+            title: string;
+            /**
+             * @description Contract value incl. VAT. Unit: THB, decimal string (D-046).
+             * @example 192600.00
+             */
+            value: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            vendorId: string;
+            /**
+             * @description WHT key of `juristic.wht_rates` (⚖ O-041).
+             * @example service
+             */
+            whtKey?: string;
+        };
+        VendorContractDetailDto: {
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            activatedAt: string | null;
+            alerts: components["schemas"]["ContractAlertDto"][];
+            /**
+             * Format: uuid
+             * @example 5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c
+             */
+            buildingId: string;
+            /** @example อาคาร A */
+            buildingName: string;
+            /** @example lift */
+            category: components["schemas"]["VendorCategory"] | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            createdAt: string;
+            /**
+             * @description Days until the end (Bangkok); negative after it.
+             * @example 120
+             */
+            daysLeft: number;
+            documents: components["schemas"]["ContractDocumentDto"][];
+            /**
+             * Format: date
+             * @example 2027-12-31
+             */
+            endsOn: string;
+            /** @description Monthly evaluations, oldest first. */
+            evaluations: components["schemas"]["VendorEvaluationDto"][];
+            /** @description Trend over the last 6 — for the renewal decision. */
+            evaluationSummary: components["schemas"]["EvaluationSummaryDto"];
+            /** @example 5300 */
+            expenseAccountCode: string | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            expenseAccountId: string | null;
+            /** @description Expense requests of the contract (newest 50). */
+            expenseRequests: components["schemas"]["ContractExpenseRefDto"][];
+            /**
+             * Format: date-time
+             * @example null
+             */
+            expiredAt: string | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            instalmentPlan: components["schemas"]["InstalmentPlanViewDto"] | null;
+            instalments: components["schemas"]["ContractInstalmentDto"][];
+            /**
+             * @description Σ instalments not cancelled. Unit: THB, decimal string (D-046).
+             * @example 192600.00
+             */
+            instalmentsTotal: string;
+            /** @description Preventive maintenance plans run under the contract. */
+            maintenancePlans: components["schemas"]["ContractPlanDto"][];
+            /**
+             * @description edit · activate · renew · terminate · attach · evaluate — for the caller.
+             * @example [
+             *       "renew",
+             *       "terminate",
+             *       "attach",
+             *       "evaluate"
+             *     ]
+             */
+            nextActions: string[];
+            /** @example null */
+            note: string | null;
+            /**
+             * Format: date
+             * @description Last day to give notice (end − notice days).
+             * @example 2027-11-01
+             */
+            noticeBy: string;
+            /** @example null */
+            penaltyClauses: string | null;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            quotationRoundId: string | null;
+            /**
+             * Format: uuid
+             * @description Its renewal draft.
+             * @example null
+             */
+            renewalId: string | null;
+            /** @example 60 */
+            renewalNoticeDays: number;
+            /**
+             * Format: uuid
+             * @example null
+             */
+            renewsContractId: string | null;
+            /**
+             * Format: uuid
+             * @example null
+             */
+            resolutionId: string | null;
+            /** @example ตรวจเช็กลิฟต์ 4 ตัว เดือนละครั้ง */
+            scope: string | null;
+            slaTerms: components["schemas"]["SlaTermDto"][];
+            /**
+             * Format: date
+             * @example 2027-01-01
+             */
+            startsOn: string;
+            /** @example active */
+            state: components["schemas"]["VendorContractState"];
+            /**
+             * Format: date
+             * @example null
+             */
+            terminatedOn: string | null;
+            /** @example null */
+            terminationReason: string | null;
+            /** @example สัญญาบำรุงรักษาลิฟต์ 2570 */
+            title: string;
+            /**
+             * @description Contract value incl. VAT. Unit: THB, decimal string (D-046).
+             * @example 192600.00
+             */
+            value: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            vendorId: string;
+            /** @example บริษัท ลิฟต์ไทย เซอร์วิส จำกัด */
+            vendorName: string;
+            /** @example 2 */
+            version: number;
+            /** @example service */
+            whtKey: string | null;
+        };
+        VendorContractDto: {
+            /**
+             * Format: uuid
+             * @example 5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c
+             */
+            buildingId: string;
+            /** @example อาคาร A */
+            buildingName: string;
+            /** @example lift */
+            category: components["schemas"]["VendorCategory"] | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            createdAt: string;
+            /**
+             * @description Days until the end (Bangkok); negative after it.
+             * @example 120
+             */
+            daysLeft: number;
+            /**
+             * Format: date
+             * @example 2027-12-31
+             */
+            endsOn: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /**
+             * Format: date
+             * @description Last day to give notice (end − notice days).
+             * @example 2027-11-01
+             */
+            noticeBy: string;
+            /**
+             * Format: uuid
+             * @description Its renewal draft.
+             * @example null
+             */
+            renewalId: string | null;
+            /** @example 60 */
+            renewalNoticeDays: number;
+            /**
+             * Format: uuid
+             * @example null
+             */
+            renewsContractId: string | null;
+            /**
+             * Format: date
+             * @example 2027-01-01
+             */
+            startsOn: string;
+            /** @example active */
+            state: components["schemas"]["VendorContractState"];
+            /** @example สัญญาบำรุงรักษาลิฟต์ 2570 */
+            title: string;
+            /**
+             * @description Contract value incl. VAT. Unit: THB, decimal string (D-046).
+             * @example 192600.00
+             */
+            value: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            vendorId: string;
+            /** @example บริษัท ลิฟต์ไทย เซอร์วิส จำกัด */
+            vendorName: string;
+            /** @example 2 */
+            version: number;
+        };
+        VendorContractRenewDto: {
+            /**
+             * Format: date
+             * @example 2028-12-31
+             */
+            endsOn: string;
+            /** @description Default: the current plan. */
+            instalmentPlan?: components["schemas"]["InstalmentPlanDto"] | null;
+            /**
+             * Format: uuid
+             * @description An adopted resolution to renew the same vendor — lets a renewal above the threshold activate without a new quotation round.
+             */
+            resolutionId?: string;
+            /**
+             * Format: date
+             * @description Default: the day after the current end.
+             */
+            startsOn?: string;
+            /**
+             * @description New value (default: unchanged). Unit: THB, decimal string (D-046).
+             * @example 198000.00
+             */
+            value?: string;
+        };
+        /** @enum {string} */
+        VendorContractState: "draft" | "active" | "expired" | "terminated";
+        VendorContractTerminateDto: {
+            /**
+             * Format: date
+             * @description Today (default) … the contract end.
+             */
+            effectiveOn?: string;
+            /** @example ผู้รับจ้างผิดสัญญา ไม่เข้าซ่อมตามเวลาที่กำหนด */
+            reason: string;
+        };
+        VendorContractUpdateDto: {
+            category?: components["schemas"]["VendorCategory"] | null;
+            /** Format: date */
+            endsOn?: string;
+            /** Format: uuid */
+            expenseAccountId?: string | null;
+            instalmentPlan?: components["schemas"]["InstalmentPlanDto"] | null;
+            note?: string | null;
+            penaltyClauses?: string | null;
+            /** Format: uuid */
+            quotationRoundId?: string | null;
+            renewalNoticeDays?: number;
+            /** Format: uuid */
+            resolutionId?: string | null;
+            scope?: string | null;
+            slaTerms?: components["schemas"]["SlaTermDto"][];
+            /** Format: date */
+            startsOn?: string;
+            title?: string;
+            /**
+             * @description Contract value incl. VAT. Unit: THB, decimal string (D-046).
+             * @example 192600.00
+             */
+            value?: string;
+            /**
+             * @description Optimistic concurrency (412 when stale).
+             * @example 1
+             */
+            version?: number;
+            whtKey?: string | null;
+        };
+        VendorCreateDto: {
+            /**
+             * @description Last 4 digits only.
+             * @example 8812
+             */
+            bankAccountLast4?: string;
+            /** @example บจก. ลิฟต์ไทย เซอร์วิส */
+            bankAccountName?: string;
+            /** @example กสิกรไทย */
+            bankName?: string;
+            /**
+             * @example [
+             *       "lift"
+             *     ]
+             */
+            categories?: components["schemas"]["VendorCategory"][];
+            /** @example test@example.com */
+            contactEmail?: string;
+            /** @example Somchai Test */
+            contactName?: string;
+            /** @example 081-000-1234 */
+            contactPhone?: string;
+            /** @example บริษัท ลิฟต์ไทย เซอร์วิส จำกัด */
+            name: string;
+            note?: string;
+            /**
+             * Format: uuid
+             * @description An existing party of the tenant; without it the party is created from the fields below.
+             */
+            partyId?: string;
+            /**
+             * @description 13-digit tax id (check digit verified), kept on the party: the 50 ทวิ needs it (D-329).
+             * @example 0000000000002
+             */
+            taxId?: string;
+            /** @example company */
+            type?: components["schemas"]["PartyType"];
+        };
+        VendorDto: {
+            /**
+             * @description Active contracts.
+             * @example 1
+             */
+            activeContracts: number;
+            /**
+             * @description Last 4 digits only — the full account number is never stored.
+             * @example 8812
+             */
+            bankAccountLast4: string | null;
+            /** @example บจก. ลิฟต์ไทย เซอร์วิส */
+            bankAccountName: string | null;
+            /** @example กสิกรไทย */
+            bankName: string | null;
+            /** @example null */
+            blockedReason: string | null;
+            /**
+             * @example [
+             *       "lift"
+             *     ]
+             */
+            categories: components["schemas"]["VendorCategory"][];
+            /** @example test@example.com */
+            contactEmail: string | null;
+            /** @example Somchai Test */
+            contactName: string | null;
+            /** @example +66810001234 */
+            contactPhone: string | null;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example บริษัท ลิฟต์ไทย เซอร์วิส จำกัด */
+            name: string;
+            /** @example null */
+            note: string | null;
+            /**
+             * Format: uuid
+             * @description The party paid (expense requests, 50 ทวิ).
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            partyId: string;
+            /** @example company */
+            partyType: components["schemas"]["PartyType"];
+            /** @example active */
+            state: components["schemas"]["VendorState"];
+            /**
+             * @description Last 4 digits of the tax id on the party (the full id is printed only on the 50 ทวิ).
+             * @example 4321
+             */
+            taxIdHint: string | null;
+            /** @example 1 */
+            version: number;
+        };
+        VendorEvaluationCreateDto: {
+            incidentNote?: string;
+            /** @example 0 */
+            incidents?: number;
+            /**
+             * @description YYYY-MM, within the term, not in the future.
+             * @example 2027-03
+             */
+            month: string;
+            note?: string;
+            /** @description Every criterion once. */
+            scores: components["schemas"]["EvaluationScoreInputDto"][];
+        };
+        VendorEvaluationDto: {
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            contractId: string;
+            /**
+             * Format: date-time
+             * @example 2026-11-01T00:15:00+07:00
+             */
+            createdAt: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            evaluatedBy: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            id: string;
+            /** @example null */
+            incidentNote: string | null;
+            /** @example 0 */
+            incidents: number;
+            /** @example 2027-03 */
+            month: string;
+            /** @example null */
+            note: string | null;
+            /**
+             * @description Average of the scores (2 decimals).
+             * @example 3.75
+             */
+            score: string;
+            scores: components["schemas"]["EvaluationScoreDto"][];
+            /**
+             * @description Pulled from the vendor’s work orders (D-310).
+             * @example 1
+             */
+            slaBreaches: number;
+            slaItems: components["schemas"]["SlaBreachDto"][];
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            vendorId: string;
+            /** @example 6 */
+            workOrders: number;
+        };
+        VendorEvaluationListDto: {
+            data: components["schemas"]["VendorEvaluationDto"][];
+        };
+        /** @enum {string} */
+        VendorState: "active" | "blocked";
+        VendorUpdateDto: {
+            bankAccountLast4?: string | null;
+            bankAccountName?: string | null;
+            bankName?: string | null;
+            /** @example ส่งงานล่าช้าซ้ำหลายครั้ง */
+            blockedReason?: string;
+            categories?: components["schemas"]["VendorCategory"][];
+            contactEmail?: string | null;
+            contactName?: string | null;
+            contactPhone?: string | null;
+            name?: string;
+            note?: string | null;
+            /** @description `blocked` needs `blockedReason` and stops new contracts, quotations and expense requests. */
+            state?: components["schemas"]["VendorState"];
+            /** @description 13-digit tax id; null clears it. */
+            taxId?: string | null;
+            /**
+             * @description Optimistic concurrency (412 when stale).
+             * @example 1
+             */
+            version?: number;
         };
         VerificationDecisionDto: {
             /** @example true */
@@ -113314,12 +114868,16 @@ export interface operations {
                      *           "paymentMethod": null,
                      *           "paymentReference": null,
                      *           "pettyCashId": null,
+                     *           "quotationRoundId": null,
                      *           "rejectedAt": null,
                      *           "requestedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *           "resolutionId": null,
                      *           "state": "submitted",
                      *           "submittedAt": "2026-11-01T00:15:00+07:00",
                      *           "title": "ค่ารักษาความปลอดภัย มกราคม 2570",
+                     *           "vendorContractId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "vendorName": "บริษัท รักษาความปลอดภัย จำกัด",
                      *           "version": 3,
                      *           "whtAmount": "1200.00"
                      *         }
@@ -113496,12 +115054,16 @@ export interface operations {
                      *       "paymentMethod": null,
                      *       "paymentReference": null,
                      *       "pettyCashId": null,
+                     *       "quotationRoundId": null,
                      *       "rejectedAt": null,
                      *       "requestedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "resolutionId": null,
                      *       "state": "draft",
                      *       "submittedAt": null,
                      *       "title": "ค่ารักษาความปลอดภัย มกราคม 2570",
+                     *       "vendorContractId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "vendorName": "บริษัท รักษาความปลอดภัย จำกัด",
                      *       "version": 1,
                      *       "whtAmount": "1200.00"
                      *     }
@@ -113549,7 +115111,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `fund.resolution_invalid`, `fund.resolution_required`, `validation.failed` */
+            /** @description Problem: `fund.resolution_invalid`, `fund.resolution_required`, `validation.failed`, `vendor.blocked` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -113681,12 +115243,16 @@ export interface operations {
                      *       "paymentMethod": null,
                      *       "paymentReference": null,
                      *       "pettyCashId": null,
+                     *       "quotationRoundId": null,
                      *       "rejectedAt": null,
                      *       "requestedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "resolutionId": null,
                      *       "state": "submitted",
                      *       "submittedAt": "2026-11-01T00:15:00+07:00",
                      *       "title": "ค่ารักษาความปลอดภัย มกราคม 2570",
+                     *       "vendorContractId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "vendorName": "บริษัท รักษาความปลอดภัย จำกัด",
                      *       "version": 3,
                      *       "whtAmount": "1200.00"
                      *     }
@@ -113870,12 +115436,16 @@ export interface operations {
                      *       "paymentMethod": null,
                      *       "paymentReference": null,
                      *       "pettyCashId": null,
+                     *       "quotationRoundId": null,
                      *       "rejectedAt": null,
                      *       "requestedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "resolutionId": null,
                      *       "state": "draft",
                      *       "submittedAt": "2026-11-01T00:15:00+07:00",
                      *       "title": "ค่ารักษาความปลอดภัย มกราคม 2570",
+                     *       "vendorContractId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "vendorName": "บริษัท รักษาความปลอดภัย จำกัด",
                      *       "version": 3,
                      *       "whtAmount": "1200.00"
                      *     }
@@ -113943,7 +115513,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `fund.resolution_invalid`, `fund.resolution_required`, `validation.failed` */
+            /** @description Problem: `fund.resolution_invalid`, `fund.resolution_required`, `validation.failed`, `vendor.blocked` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -114083,12 +115653,16 @@ export interface operations {
                      *       "paymentMethod": null,
                      *       "paymentReference": null,
                      *       "pettyCashId": null,
+                     *       "quotationRoundId": null,
                      *       "rejectedAt": null,
                      *       "requestedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "resolutionId": null,
                      *       "state": "approved",
                      *       "submittedAt": "2026-11-01T00:15:00+07:00",
                      *       "title": "ค่ารักษาความปลอดภัย มกราคม 2570",
+                     *       "vendorContractId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "vendorName": "บริษัท รักษาความปลอดภัย จำกัด",
                      *       "version": 3,
                      *       "whtAmount": "1200.00"
                      *     }
@@ -114282,12 +115856,16 @@ export interface operations {
                      *       "paymentMethod": null,
                      *       "paymentReference": null,
                      *       "pettyCashId": null,
+                     *       "quotationRoundId": null,
                      *       "rejectedAt": null,
                      *       "requestedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "resolutionId": null,
                      *       "state": "cancelled",
                      *       "submittedAt": "2026-11-01T00:15:00+07:00",
                      *       "title": "ค่ารักษาความปลอดภัย มกราคม 2570",
+                     *       "vendorContractId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "vendorName": "บริษัท รักษาความปลอดภัย จำกัด",
                      *       "version": 3,
                      *       "whtAmount": "1200.00"
                      *     }
@@ -114488,12 +116066,16 @@ export interface operations {
                      *       "paymentMethod": "bank_transfer",
                      *       "paymentReference": "KBank 0205-8812",
                      *       "pettyCashId": null,
+                     *       "quotationRoundId": null,
                      *       "rejectedAt": null,
                      *       "requestedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "resolutionId": null,
                      *       "state": "paid",
                      *       "submittedAt": "2026-11-01T00:15:00+07:00",
                      *       "title": "ค่ารักษาความปลอดภัย มกราคม 2570",
+                     *       "vendorContractId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "vendorName": "บริษัท รักษาความปลอดภัย จำกัด",
                      *       "version": 3,
                      *       "whtAmount": "1200.00"
                      *     }
@@ -114687,12 +116269,16 @@ export interface operations {
                      *       "paymentMethod": null,
                      *       "paymentReference": null,
                      *       "pettyCashId": null,
+                     *       "quotationRoundId": null,
                      *       "rejectedAt": null,
                      *       "requestedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "resolutionId": null,
                      *       "state": "rejected",
                      *       "submittedAt": "2026-11-01T00:15:00+07:00",
                      *       "title": "ค่ารักษาความปลอดภัย มกราคม 2570",
+                     *       "vendorContractId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "vendorName": "บริษัท รักษาความปลอดภัย จำกัด",
                      *       "version": 3,
                      *       "whtAmount": "1200.00"
                      *     }
@@ -114877,12 +116463,16 @@ export interface operations {
                      *       "paymentMethod": null,
                      *       "paymentReference": null,
                      *       "pettyCashId": null,
+                     *       "quotationRoundId": null,
                      *       "rejectedAt": null,
                      *       "requestedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "resolutionId": null,
                      *       "state": "submitted",
                      *       "submittedAt": "2026-11-01T00:15:00+07:00",
                      *       "title": "ค่ารักษาความปลอดภัย มกราคม 2570",
+                     *       "vendorContractId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "vendorName": "บริษัท รักษาความปลอดภัย จำกัด",
                      *       "version": 3,
                      *       "whtAmount": "1200.00"
                      *     }
@@ -114940,7 +116530,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            /** @description Problem: `expense.quotations_required`, `idempotency.key_reused`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -115076,12 +116666,16 @@ export interface operations {
                      *       "paymentMethod": null,
                      *       "paymentReference": null,
                      *       "pettyCashId": null,
+                     *       "quotationRoundId": null,
                      *       "rejectedAt": null,
                      *       "requestedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "resolutionId": null,
                      *       "state": "submitted",
                      *       "submittedAt": "2026-11-01T00:15:00+07:00",
                      *       "title": "ค่ารักษาความปลอดภัย มกราคม 2570",
+                     *       "vendorContractId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "vendorName": "บริษัท รักษาความปลอดภัย จำกัด",
                      *       "version": 3,
                      *       "whtAmount": "1200.00"
                      *     }
@@ -119712,6 +121306,1392 @@ export interface operations {
             };
         };
     };
+    "owner.juristicQuotations.list": {
+        parameters: {
+            query?: {
+                /** @description true = awards waiting for my role that I did not ask for. */
+                awaitingMe?: boolean;
+                buildingId?: string;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                state?: components["schemas"]["QuotationRoundState"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "aboveThreshold": true,
+                     *           "approvals": [
+                     *             {
+                     *               "approverUserId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *               "createdAt": "2026-11-01T00:15:00+07:00",
+                     *               "decision": "approved",
+                     *               "reason": null,
+                     *               "role": "committee"
+                     *             }
+                     *           ],
+                     *           "approvalsGiven": 1,
+                     *           "approvalsRequired": 3,
+                     *           "approverRoles": [
+                     *             "owner",
+                     *             "committee"
+                     *           ],
+                     *           "awardRequestedAt": "2026-11-01T00:15:00+07:00",
+                     *           "awardRequestedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "awardedAt": null,
+                     *           "awardedQuotationId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "basis": "approval",
+                     *           "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *           "buildingName": "อาคาร A",
+                     *           "cancelReason": null,
+                     *           "cancelledAt": null,
+                     *           "category": "lift",
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "description": null,
+                     *           "estimatedAmount": "200000.00",
+                     *           "fewerQuotationsReason": "มีผู้ให้บริการลิฟต์ยี่ห้อนี้ในพื้นที่เพียงรายเดียว",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "minimumQuotations": 3,
+                     *           "nextActions": [
+                     *             "approve",
+                     *             "reject",
+                     *             "cancel"
+                     *           ],
+                     *           "outcome": "contract",
+                     *           "outcomeContractId": null,
+                     *           "outcomeExpenseRequestId": null,
+                     *           "quotations": [
+                     *             {
+                     *               "amount": "192600.00",
+                     *               "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *               "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *               "note": null,
+                     *               "receivedOn": "2026-12-10",
+                     *               "validUntil": "2027-02-28",
+                     *               "vatAmount": "12600.00",
+                     *               "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *               "vendorName": "บริษัท ลิฟต์ไทย เซอร์วิส จำกัด"
+                     *             }
+                     *           ],
+                     *           "resolutionId": null,
+                     *           "state": "awaiting_approval",
+                     *           "threshold": "50000.00",
+                     *           "title": "จ้างบำรุงรักษาลิฟต์ 2570",
+                     *           "version": 3
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["QuotationRoundDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicQuotations.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuotationRoundCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Open */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "aboveThreshold": null,
+                     *       "approvals": [],
+                     *       "approvalsGiven": 0,
+                     *       "approvalsRequired": null,
+                     *       "approverRoles": [],
+                     *       "awardRequestedAt": null,
+                     *       "awardRequestedBy": null,
+                     *       "awardedAt": null,
+                     *       "awardedQuotationId": null,
+                     *       "basis": null,
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "cancelReason": null,
+                     *       "cancelledAt": null,
+                     *       "category": "lift",
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "description": null,
+                     *       "estimatedAmount": "200000.00",
+                     *       "fewerQuotationsReason": null,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "minimumQuotations": 3,
+                     *       "nextActions": [
+                     *         "add_quotation",
+                     *         "cancel"
+                     *       ],
+                     *       "outcome": null,
+                     *       "outcomeContractId": null,
+                     *       "outcomeExpenseRequestId": null,
+                     *       "quotations": [],
+                     *       "resolutionId": null,
+                     *       "state": "open",
+                     *       "threshold": "50000.00",
+                     *       "title": "จ้างบำรุงรักษาลิฟต์ 2570",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["QuotationRoundDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicQuotations.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                roundId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Round */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "aboveThreshold": true,
+                     *       "approvals": [
+                     *         {
+                     *           "approverUserId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "decision": "approved",
+                     *           "reason": null,
+                     *           "role": "committee"
+                     *         }
+                     *       ],
+                     *       "approvalsGiven": 1,
+                     *       "approvalsRequired": 3,
+                     *       "approverRoles": [
+                     *         "owner",
+                     *         "committee"
+                     *       ],
+                     *       "awardRequestedAt": "2026-11-01T00:15:00+07:00",
+                     *       "awardRequestedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "awardedAt": null,
+                     *       "awardedQuotationId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "basis": "approval",
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "cancelReason": null,
+                     *       "cancelledAt": null,
+                     *       "category": "lift",
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "description": null,
+                     *       "estimatedAmount": "200000.00",
+                     *       "fewerQuotationsReason": "มีผู้ให้บริการลิฟต์ยี่ห้อนี้ในพื้นที่เพียงรายเดียว",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "minimumQuotations": 3,
+                     *       "nextActions": [
+                     *         "approve",
+                     *         "reject",
+                     *         "cancel"
+                     *       ],
+                     *       "outcome": "contract",
+                     *       "outcomeContractId": null,
+                     *       "outcomeExpenseRequestId": null,
+                     *       "quotations": [
+                     *         {
+                     *           "amount": "192600.00",
+                     *           "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "note": null,
+                     *           "receivedOn": "2026-12-10",
+                     *           "validUntil": "2027-02-28",
+                     *           "vatAmount": "12600.00",
+                     *           "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "vendorName": "บริษัท ลิฟต์ไทย เซอร์วิส จำกัด"
+                     *         }
+                     *       ],
+                     *       "resolutionId": null,
+                     *       "state": "awaiting_approval",
+                     *       "threshold": "50000.00",
+                     *       "title": "จ้างบำรุงรักษาลิฟต์ 2570",
+                     *       "version": 3
+                     *     }
+                     */
+                    "application/json": components["schemas"]["QuotationRoundDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicQuotations.approve": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                roundId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StepDecisionDto"];
+            };
+        };
+        responses: {
+            /** @description Approval recorded */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "aboveThreshold": true,
+                     *       "approvals": [
+                     *         {
+                     *           "approverUserId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "decision": "approved",
+                     *           "reason": null,
+                     *           "role": "committee"
+                     *         }
+                     *       ],
+                     *       "approvalsGiven": 3,
+                     *       "approvalsRequired": 3,
+                     *       "approverRoles": [
+                     *         "owner",
+                     *         "committee"
+                     *       ],
+                     *       "awardRequestedAt": "2026-11-01T00:15:00+07:00",
+                     *       "awardRequestedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "awardedAt": "2026-11-01T00:15:00+07:00",
+                     *       "awardedQuotationId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "basis": "approval",
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "cancelReason": null,
+                     *       "cancelledAt": null,
+                     *       "category": "lift",
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "description": null,
+                     *       "estimatedAmount": "200000.00",
+                     *       "fewerQuotationsReason": "มีผู้ให้บริการลิฟต์ยี่ห้อนี้ในพื้นที่เพียงรายเดียว",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "minimumQuotations": 3,
+                     *       "nextActions": [],
+                     *       "outcome": "contract",
+                     *       "outcomeContractId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "outcomeExpenseRequestId": null,
+                     *       "quotations": [
+                     *         {
+                     *           "amount": "192600.00",
+                     *           "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "note": null,
+                     *           "receivedOn": "2026-12-10",
+                     *           "validUntil": "2027-02-28",
+                     *           "vatAmount": "12600.00",
+                     *           "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "vendorName": "บริษัท ลิฟต์ไทย เซอร์วิส จำกัด"
+                     *         }
+                     *       ],
+                     *       "resolutionId": null,
+                     *       "state": "awarded",
+                     *       "threshold": "50000.00",
+                     *       "title": "จ้างบำรุงรักษาลิฟต์ 2570",
+                     *       "version": 3
+                     *     }
+                     */
+                    "application/json": components["schemas"]["QuotationRoundDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `quotation.maker_checker`, `quotation.not_in_band`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `quotation.already_decided`, `quotation_round.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicQuotations.award": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                roundId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuotationAwardDto"];
+            };
+        };
+        responses: {
+            /** @description Awaiting approval (or awarded) */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "aboveThreshold": true,
+                     *       "approvals": [
+                     *         {
+                     *           "approverUserId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "decision": "approved",
+                     *           "reason": null,
+                     *           "role": "committee"
+                     *         }
+                     *       ],
+                     *       "approvalsGiven": 1,
+                     *       "approvalsRequired": 3,
+                     *       "approverRoles": [
+                     *         "owner",
+                     *         "committee"
+                     *       ],
+                     *       "awardRequestedAt": "2026-11-01T00:15:00+07:00",
+                     *       "awardRequestedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "awardedAt": null,
+                     *       "awardedQuotationId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "basis": "approval",
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "cancelReason": null,
+                     *       "cancelledAt": null,
+                     *       "category": "lift",
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "description": null,
+                     *       "estimatedAmount": "200000.00",
+                     *       "fewerQuotationsReason": "มีผู้ให้บริการลิฟต์ยี่ห้อนี้ในพื้นที่เพียงรายเดียว",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "minimumQuotations": 3,
+                     *       "nextActions": [
+                     *         "approve",
+                     *         "reject",
+                     *         "cancel"
+                     *       ],
+                     *       "outcome": "contract",
+                     *       "outcomeContractId": null,
+                     *       "outcomeExpenseRequestId": null,
+                     *       "quotations": [
+                     *         {
+                     *           "amount": "192600.00",
+                     *           "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "note": null,
+                     *           "receivedOn": "2026-12-10",
+                     *           "validUntil": "2027-02-28",
+                     *           "vatAmount": "12600.00",
+                     *           "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "vendorName": "บริษัท ลิฟต์ไทย เซอร์วิส จำกัด"
+                     *         }
+                     *       ],
+                     *       "resolutionId": null,
+                     *       "state": "awaiting_approval",
+                     *       "threshold": "50000.00",
+                     *       "title": "จ้างบำรุงรักษาลิฟต์ 2570",
+                     *       "version": 3
+                     *     }
+                     */
+                    "application/json": components["schemas"]["QuotationRoundDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `quotation_round.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `fund.resolution_invalid`, `fund.resolution_required`, `idempotency.key_reused`, `quotation.expired`, `quotation.minimum_not_met`, `validation.failed`, `vendor.blocked` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicQuotations.cancel": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                roundId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaseReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Cancelled */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "aboveThreshold": true,
+                     *       "approvals": [
+                     *         {
+                     *           "approverUserId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "decision": "approved",
+                     *           "reason": null,
+                     *           "role": "committee"
+                     *         }
+                     *       ],
+                     *       "approvalsGiven": 1,
+                     *       "approvalsRequired": 3,
+                     *       "approverRoles": [
+                     *         "owner",
+                     *         "committee"
+                     *       ],
+                     *       "awardRequestedAt": "2026-11-01T00:15:00+07:00",
+                     *       "awardRequestedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "awardedAt": null,
+                     *       "awardedQuotationId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "basis": "approval",
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "cancelReason": null,
+                     *       "cancelledAt": "2026-11-01T00:15:00+07:00",
+                     *       "category": "lift",
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "description": null,
+                     *       "estimatedAmount": "200000.00",
+                     *       "fewerQuotationsReason": "มีผู้ให้บริการลิฟต์ยี่ห้อนี้ในพื้นที่เพียงรายเดียว",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "minimumQuotations": 3,
+                     *       "nextActions": [],
+                     *       "outcome": "contract",
+                     *       "outcomeContractId": null,
+                     *       "outcomeExpenseRequestId": null,
+                     *       "quotations": [
+                     *         {
+                     *           "amount": "192600.00",
+                     *           "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "note": null,
+                     *           "receivedOn": "2026-12-10",
+                     *           "validUntil": "2027-02-28",
+                     *           "vatAmount": "12600.00",
+                     *           "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "vendorName": "บริษัท ลิฟต์ไทย เซอร์วิส จำกัด"
+                     *         }
+                     *       ],
+                     *       "resolutionId": null,
+                     *       "state": "cancelled",
+                     *       "threshold": "50000.00",
+                     *       "title": "จ้างบำรุงรักษาลิฟต์ 2570",
+                     *       "version": 3
+                     *     }
+                     */
+                    "application/json": components["schemas"]["QuotationRoundDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `quotation_round.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicQuotations.reject": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                roundId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CaseReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Reopened */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "aboveThreshold": true,
+                     *       "approvals": [
+                     *         {
+                     *           "approverUserId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "decision": "approved",
+                     *           "reason": null,
+                     *           "role": "committee"
+                     *         }
+                     *       ],
+                     *       "approvalsGiven": 1,
+                     *       "approvalsRequired": 3,
+                     *       "approverRoles": [
+                     *         "owner",
+                     *         "committee"
+                     *       ],
+                     *       "awardRequestedAt": "2026-11-01T00:15:00+07:00",
+                     *       "awardRequestedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "awardedAt": null,
+                     *       "awardedQuotationId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "basis": "approval",
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "cancelReason": null,
+                     *       "cancelledAt": null,
+                     *       "category": "lift",
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "description": null,
+                     *       "estimatedAmount": "200000.00",
+                     *       "fewerQuotationsReason": "มีผู้ให้บริการลิฟต์ยี่ห้อนี้ในพื้นที่เพียงรายเดียว",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "minimumQuotations": 3,
+                     *       "nextActions": [
+                     *         "add_quotation",
+                     *         "award",
+                     *         "cancel"
+                     *       ],
+                     *       "outcome": "contract",
+                     *       "outcomeContractId": null,
+                     *       "outcomeExpenseRequestId": null,
+                     *       "quotations": [
+                     *         {
+                     *           "amount": "192600.00",
+                     *           "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "note": null,
+                     *           "receivedOn": "2026-12-10",
+                     *           "validUntil": "2027-02-28",
+                     *           "vatAmount": "12600.00",
+                     *           "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "vendorName": "บริษัท ลิฟต์ไทย เซอร์วิส จำกัด"
+                     *         }
+                     *       ],
+                     *       "resolutionId": null,
+                     *       "state": "open",
+                     *       "threshold": "50000.00",
+                     *       "title": "จ้างบำรุงรักษาลิฟต์ 2570",
+                     *       "version": 3
+                     *     }
+                     */
+                    "application/json": components["schemas"]["QuotationRoundDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `quotation.maker_checker`, `quotation.not_in_band`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `quotation.already_decided`, `quotation_round.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicQuotations.addQuotation": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                roundId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["QuotationCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Round */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "aboveThreshold": true,
+                     *       "approvals": [
+                     *         {
+                     *           "approverUserId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "decision": "approved",
+                     *           "reason": null,
+                     *           "role": "committee"
+                     *         }
+                     *       ],
+                     *       "approvalsGiven": 1,
+                     *       "approvalsRequired": 3,
+                     *       "approverRoles": [
+                     *         "owner",
+                     *         "committee"
+                     *       ],
+                     *       "awardRequestedAt": "2026-11-01T00:15:00+07:00",
+                     *       "awardRequestedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "awardedAt": null,
+                     *       "awardedQuotationId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "basis": "approval",
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "cancelReason": null,
+                     *       "cancelledAt": null,
+                     *       "category": "lift",
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "description": null,
+                     *       "estimatedAmount": "200000.00",
+                     *       "fewerQuotationsReason": "มีผู้ให้บริการลิฟต์ยี่ห้อนี้ในพื้นที่เพียงรายเดียว",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "minimumQuotations": 3,
+                     *       "nextActions": [
+                     *         "add_quotation",
+                     *         "award",
+                     *         "cancel"
+                     *       ],
+                     *       "outcome": "contract",
+                     *       "outcomeContractId": null,
+                     *       "outcomeExpenseRequestId": null,
+                     *       "quotations": [
+                     *         {
+                     *           "amount": "192600.00",
+                     *           "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "note": null,
+                     *           "receivedOn": "2026-12-10",
+                     *           "validUntil": "2027-02-28",
+                     *           "vatAmount": "12600.00",
+                     *           "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "vendorName": "บริษัท ลิฟต์ไทย เซอร์วิส จำกัด"
+                     *         }
+                     *       ],
+                     *       "resolutionId": null,
+                     *       "state": "open",
+                     *       "threshold": "50000.00",
+                     *       "title": "จ้างบำรุงรักษาลิฟต์ 2570",
+                     *       "version": 3
+                     *     }
+                     */
+                    "application/json": components["schemas"]["QuotationRoundDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `quotation.exists`, `quotation_round.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed`, `vendor.blocked` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "owner.juristicReceivables.list": {
         parameters: {
             query?: {
@@ -124126,6 +127106,2854 @@ export interface operations {
                 };
             };
             /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicVendorContracts.list": {
+        parameters: {
+            query?: {
+                buildingId?: string;
+                /** @description Active contracts ending within this many days. */
+                endingWithinDays?: number;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                state?: components["schemas"]["VendorContractState"];
+                vendorId?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *           "buildingName": "อาคาร A",
+                     *           "category": "lift",
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "daysLeft": 120,
+                     *           "endsOn": "2027-12-31",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "noticeBy": "2027-11-01",
+                     *           "renewalId": null,
+                     *           "renewalNoticeDays": 60,
+                     *           "renewsContractId": null,
+                     *           "startsOn": "2027-01-01",
+                     *           "state": "active",
+                     *           "title": "สัญญาบำรุงรักษาลิฟต์ 2570",
+                     *           "value": "192600.00",
+                     *           "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "vendorName": "บริษัท ลิฟต์ไทย เซอร์วิส จำกัด",
+                     *           "version": 2
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["VendorContractDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicVendorContracts.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VendorContractCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Draft */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "activatedAt": null,
+                     *       "alerts": [],
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "category": "lift",
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "daysLeft": 120,
+                     *       "documents": [
+                     *         {
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "kind": "contract"
+                     *         }
+                     *       ],
+                     *       "endsOn": "2027-12-31",
+                     *       "evaluationSummary": {
+                     *         "averageScore": null,
+                     *         "count": 0,
+                     *         "lastScore": null,
+                     *         "slaBreaches": 0,
+                     *         "trend": null
+                     *       },
+                     *       "evaluations": [],
+                     *       "expenseAccountCode": "5300",
+                     *       "expenseAccountId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "expenseRequests": [],
+                     *       "expiredAt": null,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "instalmentPlan": {
+                     *         "amount": "16050.00",
+                     *         "dueDay": 5,
+                     *         "firstDueOn": null,
+                     *         "frequency": "monthly",
+                     *         "vatAmount": "1050.00"
+                     *       },
+                     *       "instalments": [],
+                     *       "instalmentsTotal": "0.00",
+                     *       "maintenancePlans": [
+                     *         {
+                     *           "assetItemId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "assetItemName": "ลิฟต์โดยสาร L1",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "intervalDays": 30,
+                     *           "isActive": true,
+                     *           "lastWorkOrderId": null,
+                     *           "lastWorkOrderStatus": null,
+                     *           "nextDueOn": "2027-02-01",
+                     *           "title": "ตรวจเช็กลิฟต์ประจำเดือน"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         "edit",
+                     *         "activate",
+                     *         "attach"
+                     *       ],
+                     *       "note": null,
+                     *       "noticeBy": "2027-11-01",
+                     *       "penaltyClauses": "ปรับวันละ 500 บาท หากไม่เข้าซ่อมภายในเวลาที่กำหนด",
+                     *       "quotationRoundId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "renewalId": null,
+                     *       "renewalNoticeDays": 60,
+                     *       "renewsContractId": null,
+                     *       "resolutionId": null,
+                     *       "scope": "ตรวจเช็กลิฟต์ 4 ตัว เดือนละครั้ง เปลี่ยนอะไหล่สิ้นเปลือง",
+                     *       "slaTerms": [
+                     *         {
+                     *           "priority": "urgent",
+                     *           "resolveHours": 24,
+                     *           "responseHours": 2
+                     *         },
+                     *         {
+                     *           "priority": "normal",
+                     *           "resolveHours": 72,
+                     *           "responseHours": 24
+                     *         }
+                     *       ],
+                     *       "startsOn": "2027-01-01",
+                     *       "state": "draft",
+                     *       "terminatedOn": null,
+                     *       "terminationReason": null,
+                     *       "title": "สัญญาบำรุงรักษาลิฟต์ 2570",
+                     *       "value": "192600.00",
+                     *       "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "vendorName": "บริษัท ลิฟต์ไทย เซอร์วิส จำกัด",
+                     *       "version": 1,
+                     *       "whtKey": "service"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VendorContractDetailDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `fund.resolution_invalid`, `validation.failed`, `vendor.blocked` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicVendorContracts.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                contractId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Contract */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "activatedAt": "2026-11-01T00:15:00+07:00",
+                     *       "alerts": [],
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "category": "lift",
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "daysLeft": 120,
+                     *       "documents": [
+                     *         {
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "kind": "contract"
+                     *         }
+                     *       ],
+                     *       "endsOn": "2027-12-31",
+                     *       "evaluationSummary": {
+                     *         "averageScore": "3.50",
+                     *         "count": 1,
+                     *         "lastScore": "3.50",
+                     *         "slaBreaches": 1,
+                     *         "trend": null
+                     *       },
+                     *       "evaluations": [
+                     *         {
+                     *           "contractId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "evaluatedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "incidentNote": null,
+                     *           "incidents": 0,
+                     *           "month": "2027-03",
+                     *           "note": null,
+                     *           "score": "3.50",
+                     *           "scores": [
+                     *             {
+                     *               "criterion": "quality",
+                     *               "labelEn": "Quality of work",
+                     *               "labelTh": "คุณภาพงาน",
+                     *               "score": 4
+                     *             },
+                     *             {
+                     *               "criterion": "timeliness",
+                     *               "labelEn": "Timeliness",
+                     *               "labelTh": "ความตรงต่อเวลา",
+                     *               "score": 3
+                     *             }
+                     *           ],
+                     *           "slaBreaches": 1,
+                     *           "slaItems": [
+                     *             {
+                     *               "actualHours": 5.5,
+                     *               "allowedHours": 2,
+                     *               "kind": "response",
+                     *               "priority": "urgent",
+                     *               "serviceRequestId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *               "title": "ลิฟต์ L2 ค้าง",
+                     *               "workOrderId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *             }
+                     *           ],
+                     *           "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "workOrders": 6
+                     *         }
+                     *       ],
+                     *       "expenseAccountCode": "5300",
+                     *       "expenseAccountId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "expenseRequests": [
+                     *         {
+                     *           "amount": "16050.00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "number": "EXP-2027-00001",
+                     *           "state": "submitted"
+                     *         }
+                     *       ],
+                     *       "expiredAt": null,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "instalmentPlan": {
+                     *         "amount": "16050.00",
+                     *         "dueDay": 5,
+                     *         "firstDueOn": null,
+                     *         "frequency": "monthly",
+                     *         "vatAmount": "1050.00"
+                     *       },
+                     *       "instalments": [
+                     *         {
+                     *           "amount": "16050.00",
+                     *           "cancelledAt": null,
+                     *           "description": "สัญญาบำรุงรักษาลิฟต์ 2570 งวดที่ 1/12",
+                     *           "dueOn": "2027-01-05",
+                     *           "expenseRequestId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "expenseRequestNumber": "EXP-2027-00001",
+                     *           "expenseRequestState": "submitted",
+                     *           "requestedAt": "2026-11-01T00:15:00+07:00",
+                     *           "seq": 1,
+                     *           "state": "requested",
+                     *           "vatAmount": "1050.00"
+                     *         }
+                     *       ],
+                     *       "instalmentsTotal": "192600.00",
+                     *       "maintenancePlans": [
+                     *         {
+                     *           "assetItemId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "assetItemName": "ลิฟต์โดยสาร L1",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "intervalDays": 30,
+                     *           "isActive": true,
+                     *           "lastWorkOrderId": null,
+                     *           "lastWorkOrderStatus": null,
+                     *           "nextDueOn": "2027-02-01",
+                     *           "title": "ตรวจเช็กลิฟต์ประจำเดือน"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         "renew",
+                     *         "terminate",
+                     *         "attach",
+                     *         "evaluate"
+                     *       ],
+                     *       "note": null,
+                     *       "noticeBy": "2027-11-01",
+                     *       "penaltyClauses": "ปรับวันละ 500 บาท หากไม่เข้าซ่อมภายในเวลาที่กำหนด",
+                     *       "quotationRoundId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "renewalId": null,
+                     *       "renewalNoticeDays": 60,
+                     *       "renewsContractId": null,
+                     *       "resolutionId": null,
+                     *       "scope": "ตรวจเช็กลิฟต์ 4 ตัว เดือนละครั้ง เปลี่ยนอะไหล่สิ้นเปลือง",
+                     *       "slaTerms": [
+                     *         {
+                     *           "priority": "urgent",
+                     *           "resolveHours": 24,
+                     *           "responseHours": 2
+                     *         },
+                     *         {
+                     *           "priority": "normal",
+                     *           "resolveHours": 72,
+                     *           "responseHours": 24
+                     *         }
+                     *       ],
+                     *       "startsOn": "2027-01-01",
+                     *       "state": "active",
+                     *       "terminatedOn": null,
+                     *       "terminationReason": null,
+                     *       "title": "สัญญาบำรุงรักษาลิฟต์ 2570",
+                     *       "value": "192600.00",
+                     *       "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "vendorName": "บริษัท ลิฟต์ไทย เซอร์วิส จำกัด",
+                     *       "version": 2,
+                     *       "whtKey": "service"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VendorContractDetailDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicVendorContracts.update": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                contractId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VendorContractUpdateDto"];
+            };
+        };
+        responses: {
+            /** @description Draft */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "activatedAt": "2026-11-01T00:15:00+07:00",
+                     *       "alerts": [],
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "category": "lift",
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "daysLeft": 120,
+                     *       "documents": [
+                     *         {
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "kind": "contract"
+                     *         }
+                     *       ],
+                     *       "endsOn": "2027-12-31",
+                     *       "evaluationSummary": {
+                     *         "averageScore": "3.50",
+                     *         "count": 1,
+                     *         "lastScore": "3.50",
+                     *         "slaBreaches": 1,
+                     *         "trend": null
+                     *       },
+                     *       "evaluations": [
+                     *         {
+                     *           "contractId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "evaluatedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "incidentNote": null,
+                     *           "incidents": 0,
+                     *           "month": "2027-03",
+                     *           "note": null,
+                     *           "score": "3.50",
+                     *           "scores": [
+                     *             {
+                     *               "criterion": "quality",
+                     *               "labelEn": "Quality of work",
+                     *               "labelTh": "คุณภาพงาน",
+                     *               "score": 4
+                     *             },
+                     *             {
+                     *               "criterion": "timeliness",
+                     *               "labelEn": "Timeliness",
+                     *               "labelTh": "ความตรงต่อเวลา",
+                     *               "score": 3
+                     *             }
+                     *           ],
+                     *           "slaBreaches": 1,
+                     *           "slaItems": [
+                     *             {
+                     *               "actualHours": 5.5,
+                     *               "allowedHours": 2,
+                     *               "kind": "response",
+                     *               "priority": "urgent",
+                     *               "serviceRequestId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *               "title": "ลิฟต์ L2 ค้าง",
+                     *               "workOrderId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *             }
+                     *           ],
+                     *           "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "workOrders": 6
+                     *         }
+                     *       ],
+                     *       "expenseAccountCode": "5300",
+                     *       "expenseAccountId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "expenseRequests": [
+                     *         {
+                     *           "amount": "16050.00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "number": "EXP-2027-00001",
+                     *           "state": "submitted"
+                     *         }
+                     *       ],
+                     *       "expiredAt": null,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "instalmentPlan": {
+                     *         "amount": "16050.00",
+                     *         "dueDay": 5,
+                     *         "firstDueOn": null,
+                     *         "frequency": "monthly",
+                     *         "vatAmount": "1050.00"
+                     *       },
+                     *       "instalments": [],
+                     *       "instalmentsTotal": "192600.00",
+                     *       "maintenancePlans": [
+                     *         {
+                     *           "assetItemId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "assetItemName": "ลิฟต์โดยสาร L1",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "intervalDays": 30,
+                     *           "isActive": true,
+                     *           "lastWorkOrderId": null,
+                     *           "lastWorkOrderStatus": null,
+                     *           "nextDueOn": "2027-02-01",
+                     *           "title": "ตรวจเช็กลิฟต์ประจำเดือน"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         "renew",
+                     *         "terminate",
+                     *         "attach",
+                     *         "evaluate"
+                     *       ],
+                     *       "note": null,
+                     *       "noticeBy": "2027-11-01",
+                     *       "penaltyClauses": "ปรับวันละ 500 บาท หากไม่เข้าซ่อมภายในเวลาที่กำหนด",
+                     *       "quotationRoundId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "renewalId": null,
+                     *       "renewalNoticeDays": 60,
+                     *       "renewsContractId": null,
+                     *       "resolutionId": null,
+                     *       "scope": "ตรวจเช็กลิฟต์ 4 ตัว เดือนละครั้ง เปลี่ยนอะไหล่สิ้นเปลือง",
+                     *       "slaTerms": [
+                     *         {
+                     *           "priority": "urgent",
+                     *           "resolveHours": 24,
+                     *           "responseHours": 2
+                     *         },
+                     *         {
+                     *           "priority": "normal",
+                     *           "resolveHours": 72,
+                     *           "responseHours": 24
+                     *         }
+                     *       ],
+                     *       "startsOn": "2027-01-01",
+                     *       "state": "draft",
+                     *       "terminatedOn": null,
+                     *       "terminationReason": null,
+                     *       "title": "สัญญาบำรุงรักษาลิฟต์ 2570",
+                     *       "value": "192600.00",
+                     *       "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "vendorName": "บริษัท ลิฟต์ไทย เซอร์วิส จำกัด",
+                     *       "version": 2,
+                     *       "whtKey": "service"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VendorContractDetailDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `vendor_contract.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed`, `vendor.blocked` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicVendorContracts.activate": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                contractId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Active */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "activatedAt": "2026-11-01T00:15:00+07:00",
+                     *       "alerts": [],
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "category": "lift",
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "daysLeft": 120,
+                     *       "documents": [
+                     *         {
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "kind": "contract"
+                     *         }
+                     *       ],
+                     *       "endsOn": "2027-12-31",
+                     *       "evaluationSummary": {
+                     *         "averageScore": "3.50",
+                     *         "count": 1,
+                     *         "lastScore": "3.50",
+                     *         "slaBreaches": 1,
+                     *         "trend": null
+                     *       },
+                     *       "evaluations": [
+                     *         {
+                     *           "contractId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "evaluatedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "incidentNote": null,
+                     *           "incidents": 0,
+                     *           "month": "2027-03",
+                     *           "note": null,
+                     *           "score": "3.50",
+                     *           "scores": [
+                     *             {
+                     *               "criterion": "quality",
+                     *               "labelEn": "Quality of work",
+                     *               "labelTh": "คุณภาพงาน",
+                     *               "score": 4
+                     *             },
+                     *             {
+                     *               "criterion": "timeliness",
+                     *               "labelEn": "Timeliness",
+                     *               "labelTh": "ความตรงต่อเวลา",
+                     *               "score": 3
+                     *             }
+                     *           ],
+                     *           "slaBreaches": 1,
+                     *           "slaItems": [
+                     *             {
+                     *               "actualHours": 5.5,
+                     *               "allowedHours": 2,
+                     *               "kind": "response",
+                     *               "priority": "urgent",
+                     *               "serviceRequestId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *               "title": "ลิฟต์ L2 ค้าง",
+                     *               "workOrderId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *             }
+                     *           ],
+                     *           "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "workOrders": 6
+                     *         }
+                     *       ],
+                     *       "expenseAccountCode": "5300",
+                     *       "expenseAccountId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "expenseRequests": [
+                     *         {
+                     *           "amount": "16050.00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "number": "EXP-2027-00001",
+                     *           "state": "submitted"
+                     *         }
+                     *       ],
+                     *       "expiredAt": null,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "instalmentPlan": {
+                     *         "amount": "16050.00",
+                     *         "dueDay": 5,
+                     *         "firstDueOn": null,
+                     *         "frequency": "monthly",
+                     *         "vatAmount": "1050.00"
+                     *       },
+                     *       "instalments": [
+                     *         {
+                     *           "amount": "16050.00",
+                     *           "cancelledAt": null,
+                     *           "description": "สัญญาบำรุงรักษาลิฟต์ 2570 งวดที่ 1/12",
+                     *           "dueOn": "2027-01-05",
+                     *           "expenseRequestId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "expenseRequestNumber": "EXP-2027-00001",
+                     *           "expenseRequestState": "submitted",
+                     *           "requestedAt": "2026-11-01T00:15:00+07:00",
+                     *           "seq": 1,
+                     *           "state": "requested",
+                     *           "vatAmount": "1050.00"
+                     *         }
+                     *       ],
+                     *       "instalmentsTotal": "192600.00",
+                     *       "maintenancePlans": [
+                     *         {
+                     *           "assetItemId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "assetItemName": "ลิฟต์โดยสาร L1",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "intervalDays": 30,
+                     *           "isActive": true,
+                     *           "lastWorkOrderId": null,
+                     *           "lastWorkOrderStatus": null,
+                     *           "nextDueOn": "2027-02-01",
+                     *           "title": "ตรวจเช็กลิฟต์ประจำเดือน"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         "renew",
+                     *         "terminate",
+                     *         "attach",
+                     *         "evaluate"
+                     *       ],
+                     *       "note": null,
+                     *       "noticeBy": "2027-11-01",
+                     *       "penaltyClauses": "ปรับวันละ 500 บาท หากไม่เข้าซ่อมภายในเวลาที่กำหนด",
+                     *       "quotationRoundId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "renewalId": null,
+                     *       "renewalNoticeDays": 60,
+                     *       "renewsContractId": null,
+                     *       "resolutionId": null,
+                     *       "scope": "ตรวจเช็กลิฟต์ 4 ตัว เดือนละครั้ง เปลี่ยนอะไหล่สิ้นเปลือง",
+                     *       "slaTerms": [
+                     *         {
+                     *           "priority": "urgent",
+                     *           "resolveHours": 24,
+                     *           "responseHours": 2
+                     *         },
+                     *         {
+                     *           "priority": "normal",
+                     *           "resolveHours": 72,
+                     *           "responseHours": 24
+                     *         }
+                     *       ],
+                     *       "startsOn": "2027-01-01",
+                     *       "state": "active",
+                     *       "terminatedOn": null,
+                     *       "terminationReason": null,
+                     *       "title": "สัญญาบำรุงรักษาลิฟต์ 2570",
+                     *       "value": "192600.00",
+                     *       "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "vendorName": "บริษัท ลิฟต์ไทย เซอร์วิส จำกัด",
+                     *       "version": 2,
+                     *       "whtKey": "service"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VendorContractDetailDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `vendor_contract.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed`, `vendor.blocked`, `vendor_contract.quotations_required`, `vendor_contract.schedule_invalid` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicVendorContracts.renew": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                contractId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VendorContractRenewDto"];
+            };
+        };
+        responses: {
+            /** @description Renewal draft */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "activatedAt": "2026-11-01T00:15:00+07:00",
+                     *       "alerts": [],
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "category": "lift",
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "daysLeft": 120,
+                     *       "documents": [
+                     *         {
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "kind": "contract"
+                     *         }
+                     *       ],
+                     *       "endsOn": "2028-12-31",
+                     *       "evaluationSummary": {
+                     *         "averageScore": "3.50",
+                     *         "count": 1,
+                     *         "lastScore": "3.50",
+                     *         "slaBreaches": 1,
+                     *         "trend": null
+                     *       },
+                     *       "evaluations": [],
+                     *       "expenseAccountCode": "5300",
+                     *       "expenseAccountId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "expenseRequests": [
+                     *         {
+                     *           "amount": "16050.00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "number": "EXP-2027-00001",
+                     *           "state": "submitted"
+                     *         }
+                     *       ],
+                     *       "expiredAt": null,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "instalmentPlan": {
+                     *         "amount": "16050.00",
+                     *         "dueDay": 5,
+                     *         "firstDueOn": null,
+                     *         "frequency": "monthly",
+                     *         "vatAmount": "1050.00"
+                     *       },
+                     *       "instalments": [],
+                     *       "instalmentsTotal": "192600.00",
+                     *       "maintenancePlans": [
+                     *         {
+                     *           "assetItemId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "assetItemName": "ลิฟต์โดยสาร L1",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "intervalDays": 30,
+                     *           "isActive": true,
+                     *           "lastWorkOrderId": null,
+                     *           "lastWorkOrderStatus": null,
+                     *           "nextDueOn": "2027-02-01",
+                     *           "title": "ตรวจเช็กลิฟต์ประจำเดือน"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         "edit",
+                     *         "activate",
+                     *         "attach"
+                     *       ],
+                     *       "note": null,
+                     *       "noticeBy": "2027-11-01",
+                     *       "penaltyClauses": "ปรับวันละ 500 บาท หากไม่เข้าซ่อมภายในเวลาที่กำหนด",
+                     *       "quotationRoundId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "renewalId": null,
+                     *       "renewalNoticeDays": 60,
+                     *       "renewsContractId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "resolutionId": null,
+                     *       "scope": "ตรวจเช็กลิฟต์ 4 ตัว เดือนละครั้ง เปลี่ยนอะไหล่สิ้นเปลือง",
+                     *       "slaTerms": [
+                     *         {
+                     *           "priority": "urgent",
+                     *           "resolveHours": 24,
+                     *           "responseHours": 2
+                     *         },
+                     *         {
+                     *           "priority": "normal",
+                     *           "resolveHours": 72,
+                     *           "responseHours": 24
+                     *         }
+                     *       ],
+                     *       "startsOn": "2028-01-01",
+                     *       "state": "draft",
+                     *       "terminatedOn": null,
+                     *       "terminationReason": null,
+                     *       "title": "สัญญาบำรุงรักษาลิฟต์ 2570",
+                     *       "value": "192600.00",
+                     *       "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "vendorName": "บริษัท ลิฟต์ไทย เซอร์วิส จำกัด",
+                     *       "version": 1,
+                     *       "whtKey": "service"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VendorContractDetailDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `vendor_contract.already_renewed`, `vendor_contract.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `fund.resolution_invalid`, `idempotency.key_reused`, `validation.failed`, `vendor.blocked` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicVendorContracts.terminate": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                contractId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VendorContractTerminateDto"];
+            };
+        };
+        responses: {
+            /** @description Terminated */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "activatedAt": "2026-11-01T00:15:00+07:00",
+                     *       "alerts": [],
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "category": "lift",
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "daysLeft": 120,
+                     *       "documents": [
+                     *         {
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "kind": "contract"
+                     *         }
+                     *       ],
+                     *       "endsOn": "2027-12-31",
+                     *       "evaluationSummary": {
+                     *         "averageScore": "3.50",
+                     *         "count": 1,
+                     *         "lastScore": "3.50",
+                     *         "slaBreaches": 1,
+                     *         "trend": null
+                     *       },
+                     *       "evaluations": [
+                     *         {
+                     *           "contractId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "evaluatedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "incidentNote": null,
+                     *           "incidents": 0,
+                     *           "month": "2027-03",
+                     *           "note": null,
+                     *           "score": "3.50",
+                     *           "scores": [
+                     *             {
+                     *               "criterion": "quality",
+                     *               "labelEn": "Quality of work",
+                     *               "labelTh": "คุณภาพงาน",
+                     *               "score": 4
+                     *             },
+                     *             {
+                     *               "criterion": "timeliness",
+                     *               "labelEn": "Timeliness",
+                     *               "labelTh": "ความตรงต่อเวลา",
+                     *               "score": 3
+                     *             }
+                     *           ],
+                     *           "slaBreaches": 1,
+                     *           "slaItems": [
+                     *             {
+                     *               "actualHours": 5.5,
+                     *               "allowedHours": 2,
+                     *               "kind": "response",
+                     *               "priority": "urgent",
+                     *               "serviceRequestId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *               "title": "ลิฟต์ L2 ค้าง",
+                     *               "workOrderId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *             }
+                     *           ],
+                     *           "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "workOrders": 6
+                     *         }
+                     *       ],
+                     *       "expenseAccountCode": "5300",
+                     *       "expenseAccountId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "expenseRequests": [
+                     *         {
+                     *           "amount": "16050.00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "number": "EXP-2027-00001",
+                     *           "state": "submitted"
+                     *         }
+                     *       ],
+                     *       "expiredAt": null,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "instalmentPlan": {
+                     *         "amount": "16050.00",
+                     *         "dueDay": 5,
+                     *         "firstDueOn": null,
+                     *         "frequency": "monthly",
+                     *         "vatAmount": "1050.00"
+                     *       },
+                     *       "instalments": [
+                     *         {
+                     *           "amount": "16050.00",
+                     *           "cancelledAt": null,
+                     *           "description": "สัญญาบำรุงรักษาลิฟต์ 2570 งวดที่ 1/12",
+                     *           "dueOn": "2027-01-05",
+                     *           "expenseRequestId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "expenseRequestNumber": "EXP-2027-00001",
+                     *           "expenseRequestState": "submitted",
+                     *           "requestedAt": "2026-11-01T00:15:00+07:00",
+                     *           "seq": 1,
+                     *           "state": "requested",
+                     *           "vatAmount": "1050.00"
+                     *         }
+                     *       ],
+                     *       "instalmentsTotal": "192600.00",
+                     *       "maintenancePlans": [
+                     *         {
+                     *           "assetItemId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "assetItemName": "ลิฟต์โดยสาร L1",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "intervalDays": 30,
+                     *           "isActive": true,
+                     *           "lastWorkOrderId": null,
+                     *           "lastWorkOrderStatus": null,
+                     *           "nextDueOn": "2027-02-01",
+                     *           "title": "ตรวจเช็กลิฟต์ประจำเดือน"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         "attach",
+                     *         "evaluate"
+                     *       ],
+                     *       "note": null,
+                     *       "noticeBy": "2027-11-01",
+                     *       "penaltyClauses": "ปรับวันละ 500 บาท หากไม่เข้าซ่อมภายในเวลาที่กำหนด",
+                     *       "quotationRoundId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "renewalId": null,
+                     *       "renewalNoticeDays": 60,
+                     *       "renewsContractId": null,
+                     *       "resolutionId": null,
+                     *       "scope": "ตรวจเช็กลิฟต์ 4 ตัว เดือนละครั้ง เปลี่ยนอะไหล่สิ้นเปลือง",
+                     *       "slaTerms": [
+                     *         {
+                     *           "priority": "urgent",
+                     *           "resolveHours": 24,
+                     *           "responseHours": 2
+                     *         },
+                     *         {
+                     *           "priority": "normal",
+                     *           "resolveHours": 72,
+                     *           "responseHours": 24
+                     *         }
+                     *       ],
+                     *       "startsOn": "2027-01-01",
+                     *       "state": "terminated",
+                     *       "terminatedOn": "2026-11-01",
+                     *       "terminationReason": "ผู้รับจ้างผิดสัญญา ไม่เข้าซ่อมตามเวลาที่กำหนด",
+                     *       "title": "สัญญาบำรุงรักษาลิฟต์ 2570",
+                     *       "value": "192600.00",
+                     *       "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "vendorName": "บริษัท ลิฟต์ไทย เซอร์วิส จำกัด",
+                     *       "version": 2,
+                     *       "whtKey": "service"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VendorContractDetailDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `vendor_contract.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicVendorContracts.attach": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                contractId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ContractDocumentAttachDto"];
+            };
+        };
+        responses: {
+            /** @description Contract */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "activatedAt": "2026-11-01T00:15:00+07:00",
+                     *       "alerts": [],
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "category": "lift",
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "daysLeft": 120,
+                     *       "documents": [
+                     *         {
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "kind": "contract"
+                     *         }
+                     *       ],
+                     *       "endsOn": "2027-12-31",
+                     *       "evaluationSummary": {
+                     *         "averageScore": "3.50",
+                     *         "count": 1,
+                     *         "lastScore": "3.50",
+                     *         "slaBreaches": 1,
+                     *         "trend": null
+                     *       },
+                     *       "evaluations": [
+                     *         {
+                     *           "contractId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "evaluatedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "incidentNote": null,
+                     *           "incidents": 0,
+                     *           "month": "2027-03",
+                     *           "note": null,
+                     *           "score": "3.50",
+                     *           "scores": [
+                     *             {
+                     *               "criterion": "quality",
+                     *               "labelEn": "Quality of work",
+                     *               "labelTh": "คุณภาพงาน",
+                     *               "score": 4
+                     *             },
+                     *             {
+                     *               "criterion": "timeliness",
+                     *               "labelEn": "Timeliness",
+                     *               "labelTh": "ความตรงต่อเวลา",
+                     *               "score": 3
+                     *             }
+                     *           ],
+                     *           "slaBreaches": 1,
+                     *           "slaItems": [
+                     *             {
+                     *               "actualHours": 5.5,
+                     *               "allowedHours": 2,
+                     *               "kind": "response",
+                     *               "priority": "urgent",
+                     *               "serviceRequestId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *               "title": "ลิฟต์ L2 ค้าง",
+                     *               "workOrderId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *             }
+                     *           ],
+                     *           "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "workOrders": 6
+                     *         }
+                     *       ],
+                     *       "expenseAccountCode": "5300",
+                     *       "expenseAccountId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "expenseRequests": [
+                     *         {
+                     *           "amount": "16050.00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "number": "EXP-2027-00001",
+                     *           "state": "submitted"
+                     *         }
+                     *       ],
+                     *       "expiredAt": null,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "instalmentPlan": {
+                     *         "amount": "16050.00",
+                     *         "dueDay": 5,
+                     *         "firstDueOn": null,
+                     *         "frequency": "monthly",
+                     *         "vatAmount": "1050.00"
+                     *       },
+                     *       "instalments": [
+                     *         {
+                     *           "amount": "16050.00",
+                     *           "cancelledAt": null,
+                     *           "description": "สัญญาบำรุงรักษาลิฟต์ 2570 งวดที่ 1/12",
+                     *           "dueOn": "2027-01-05",
+                     *           "expenseRequestId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "expenseRequestNumber": "EXP-2027-00001",
+                     *           "expenseRequestState": "submitted",
+                     *           "requestedAt": "2026-11-01T00:15:00+07:00",
+                     *           "seq": 1,
+                     *           "state": "requested",
+                     *           "vatAmount": "1050.00"
+                     *         }
+                     *       ],
+                     *       "instalmentsTotal": "192600.00",
+                     *       "maintenancePlans": [
+                     *         {
+                     *           "assetItemId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "assetItemName": "ลิฟต์โดยสาร L1",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "intervalDays": 30,
+                     *           "isActive": true,
+                     *           "lastWorkOrderId": null,
+                     *           "lastWorkOrderStatus": null,
+                     *           "nextDueOn": "2027-02-01",
+                     *           "title": "ตรวจเช็กลิฟต์ประจำเดือน"
+                     *         }
+                     *       ],
+                     *       "nextActions": [
+                     *         "renew",
+                     *         "terminate",
+                     *         "attach",
+                     *         "evaluate"
+                     *       ],
+                     *       "note": null,
+                     *       "noticeBy": "2027-11-01",
+                     *       "penaltyClauses": "ปรับวันละ 500 บาท หากไม่เข้าซ่อมภายในเวลาที่กำหนด",
+                     *       "quotationRoundId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "renewalId": null,
+                     *       "renewalNoticeDays": 60,
+                     *       "renewsContractId": null,
+                     *       "resolutionId": null,
+                     *       "scope": "ตรวจเช็กลิฟต์ 4 ตัว เดือนละครั้ง เปลี่ยนอะไหล่สิ้นเปลือง",
+                     *       "slaTerms": [
+                     *         {
+                     *           "priority": "urgent",
+                     *           "resolveHours": 24,
+                     *           "responseHours": 2
+                     *         },
+                     *         {
+                     *           "priority": "normal",
+                     *           "resolveHours": 72,
+                     *           "responseHours": 24
+                     *         }
+                     *       ],
+                     *       "startsOn": "2027-01-01",
+                     *       "state": "active",
+                     *       "terminatedOn": null,
+                     *       "terminationReason": null,
+                     *       "title": "สัญญาบำรุงรักษาลิฟต์ 2570",
+                     *       "value": "192600.00",
+                     *       "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "vendorName": "บริษัท ลิฟต์ไทย เซอร์วิส จำกัด",
+                     *       "version": 2,
+                     *       "whtKey": "service"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VendorContractDetailDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicVendorContracts.evaluations": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                contractId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Evaluations */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "contractId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "evaluatedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "incidentNote": null,
+                     *           "incidents": 0,
+                     *           "month": "2027-03",
+                     *           "note": null,
+                     *           "score": "3.50",
+                     *           "scores": [
+                     *             {
+                     *               "criterion": "quality",
+                     *               "labelEn": "Quality of work",
+                     *               "labelTh": "คุณภาพงาน",
+                     *               "score": 4
+                     *             },
+                     *             {
+                     *               "criterion": "timeliness",
+                     *               "labelEn": "Timeliness",
+                     *               "labelTh": "ความตรงต่อเวลา",
+                     *               "score": 3
+                     *             }
+                     *           ],
+                     *           "slaBreaches": 1,
+                     *           "slaItems": [
+                     *             {
+                     *               "actualHours": 5.5,
+                     *               "allowedHours": 2,
+                     *               "kind": "response",
+                     *               "priority": "urgent",
+                     *               "serviceRequestId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *               "title": "ลิฟต์ L2 ค้าง",
+                     *               "workOrderId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *             }
+                     *           ],
+                     *           "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "workOrders": 6
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VendorEvaluationListDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicVendorContracts.evaluate": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                contractId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VendorEvaluationCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Recorded */
+            201: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "contractId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "evaluatedBy": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "incidentNote": null,
+                     *       "incidents": 0,
+                     *       "month": "2027-03",
+                     *       "note": null,
+                     *       "score": "3.50",
+                     *       "scores": [
+                     *         {
+                     *           "criterion": "quality",
+                     *           "labelEn": "Quality of work",
+                     *           "labelTh": "คุณภาพงาน",
+                     *           "score": 4
+                     *         },
+                     *         {
+                     *           "criterion": "timeliness",
+                     *           "labelEn": "Timeliness",
+                     *           "labelTh": "ความตรงต่อเวลา",
+                     *           "score": 3
+                     *         }
+                     *       ],
+                     *       "slaBreaches": 1,
+                     *       "slaItems": [
+                     *         {
+                     *           "actualHours": 5.5,
+                     *           "allowedHours": 2,
+                     *           "kind": "response",
+                     *           "priority": "urgent",
+                     *           "serviceRequestId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "title": "ลิฟต์ L2 ค้าง",
+                     *           "workOrderId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *         }
+                     *       ],
+                     *       "vendorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "workOrders": 6
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VendorEvaluationDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `vendor_contract.invalid_state`, `vendor_evaluation.exists` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicVendorContracts.slaBreaches": {
+        parameters: {
+            query: {
+                /** @description YYYY-MM (Bangkok), within the contract term. */
+                month: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                contractId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Breaches */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "breaches": [
+                     *         {
+                     *           "actualHours": 5.5,
+                     *           "allowedHours": 2,
+                     *           "kind": "response",
+                     *           "priority": "urgent",
+                     *           "serviceRequestId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "title": "ลิฟต์ L2 ค้าง",
+                     *           "workOrderId": "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *         }
+                     *       ],
+                     *       "month": "2027-03",
+                     *       "workOrders": 6
+                     *     }
+                     */
+                    "application/json": components["schemas"]["SlaMonthDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicVendors.list": {
+        parameters: {
+            query?: {
+                category?: components["schemas"]["VendorCategory"];
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                state?: components["schemas"]["VendorState"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "activeContracts": 1,
+                     *           "bankAccountLast4": "8812",
+                     *           "bankAccountName": "บจก. ลิฟต์ไทย เซอร์วิส",
+                     *           "bankName": "กสิกรไทย",
+                     *           "blockedReason": null,
+                     *           "categories": [
+                     *             "lift"
+                     *           ],
+                     *           "contactEmail": "test@example.com",
+                     *           "contactName": "Somchai Test",
+                     *           "contactPhone": "+66810001234",
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "name": "บริษัท ลิฟต์ไทย เซอร์วิส จำกัด",
+                     *           "note": null,
+                     *           "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "partyType": "company",
+                     *           "state": "active",
+                     *           "taxIdHint": "0002",
+                     *           "version": 1
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["VendorDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicVendors.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VendorCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Registered */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "activeContracts": 1,
+                     *       "bankAccountLast4": "8812",
+                     *       "bankAccountName": "บจก. ลิฟต์ไทย เซอร์วิส",
+                     *       "bankName": "กสิกรไทย",
+                     *       "blockedReason": null,
+                     *       "categories": [
+                     *         "lift"
+                     *       ],
+                     *       "contactEmail": "test@example.com",
+                     *       "contactName": "Somchai Test",
+                     *       "contactPhone": "+66810001234",
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "name": "บริษัท ลิฟต์ไทย เซอร์วิส จำกัด",
+                     *       "note": null,
+                     *       "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "partyType": "company",
+                     *       "state": "active",
+                     *       "taxIdHint": "0002",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VendorDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `vendor.exists` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicVendors.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                vendorId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Vendor */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "activeContracts": 1,
+                     *       "bankAccountLast4": "8812",
+                     *       "bankAccountName": "บจก. ลิฟต์ไทย เซอร์วิส",
+                     *       "bankName": "กสิกรไทย",
+                     *       "blockedReason": null,
+                     *       "categories": [
+                     *         "lift"
+                     *       ],
+                     *       "contactEmail": "test@example.com",
+                     *       "contactName": "Somchai Test",
+                     *       "contactPhone": "+66810001234",
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "name": "บริษัท ลิฟต์ไทย เซอร์วิส จำกัด",
+                     *       "note": null,
+                     *       "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "partyType": "company",
+                     *       "state": "active",
+                     *       "taxIdHint": "0002",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VendorDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicVendors.update": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                vendorId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["VendorUpdateDto"];
+            };
+        };
+        responses: {
+            /** @description Vendor */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "activeContracts": 1,
+                     *       "bankAccountLast4": "8812",
+                     *       "bankAccountName": "บจก. ลิฟต์ไทย เซอร์วิส",
+                     *       "bankName": "กสิกรไทย",
+                     *       "blockedReason": null,
+                     *       "categories": [
+                     *         "lift"
+                     *       ],
+                     *       "contactEmail": "test@example.com",
+                     *       "contactName": "Somchai Test",
+                     *       "contactPhone": "+66810001234",
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "name": "บริษัท ลิฟต์ไทย เซอร์วิส จำกัด",
+                     *       "note": null,
+                     *       "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "partyType": "company",
+                     *       "state": "active",
+                     *       "taxIdHint": "0002",
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VendorDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `concurrency.stale` */
+            412: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -136628,6 +142456,8 @@ export interface operations {
                      *           "leadDays": 7,
                      *           "nextDueOn": "2026-11-01",
                      *           "title": "ล้างและตรวจปั๊มน้ำ",
+                     *           "vendorContractId": null,
+                     *           "vendorName": null,
                      *           "version": 1
                      *         }
                      *       ]
@@ -136743,6 +142573,8 @@ export interface operations {
                      *       "leadDays": 7,
                      *       "nextDueOn": "2026-11-01",
                      *       "title": "ล้างและตรวจปั๊มน้ำ",
+                     *       "vendorContractId": null,
+                     *       "vendorName": null,
                      *       "version": 1
                      *     }
                      */
@@ -136781,6 +142613,16 @@ export interface operations {
             };
             /** @description Problem: `http.not_found` */
             404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `vendor_contract.invalid_state` */
+            409: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -136865,6 +142707,8 @@ export interface operations {
                      *       "leadDays": 7,
                      *       "nextDueOn": "2026-11-01",
                      *       "title": "ล้างและตรวจปั๊มน้ำ",
+                     *       "vendorContractId": null,
+                     *       "vendorName": null,
                      *       "version": 1
                      *     }
                      */
@@ -136993,6 +142837,8 @@ export interface operations {
                      *       "leadDays": 7,
                      *       "nextDueOn": "2026-11-01",
                      *       "title": "ล้างและตรวจปั๊มน้ำ",
+                     *       "vendorContractId": null,
+                     *       "vendorName": null,
                      *       "version": 1
                      *     }
                      */
@@ -137031,6 +142877,16 @@ export interface operations {
             };
             /** @description Problem: `http.not_found` */
             404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `vendor_contract.invalid_state` */
+            409: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;

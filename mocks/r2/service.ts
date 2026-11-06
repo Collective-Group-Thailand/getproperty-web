@@ -849,6 +849,8 @@ const settingsHandlers: HttpHandler[] = [
       assigneeUserId: input.assigneeUserId ?? null,
       assigneePartyId: input.assigneePartyId ?? null,
       lastWorkOrderId: null,
+      vendorContractId: null,
+      vendorName: null,
       version: 1,
     };
     r2().plans.push(plan);

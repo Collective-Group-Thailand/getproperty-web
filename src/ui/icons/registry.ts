@@ -141,6 +141,14 @@ import { IconExpense } from "./glyphs/expense";
 import { IconSpreadsheet } from "./glyphs/spreadsheet";
 import { IconUnlink } from "./glyphs/unlink";
 import { IconCertificate } from "./glyphs/certificate";
+import { IconVendor } from "./glyphs/vendor";
+import { IconContract } from "./glyphs/contract";
+import { IconQuotation } from "./glyphs/quotation";
+import { IconEvaluation } from "./glyphs/evaluation";
+import { IconTrendUp } from "./glyphs/trend-up";
+import { IconTrendDown } from "./glyphs/trend-down";
+import { IconTrendSteady } from "./glyphs/trend-steady";
+import { IconBlock } from "./glyphs/block";
 import { IconThemeSystem } from "./glyphs/theme-system";
 import { IconThemeLight } from "./glyphs/theme-light";
 import { IconThemeDark } from "./glyphs/theme-dark";
@@ -286,6 +294,14 @@ export const ICONS: { readonly [N in IconName]: IconGlyph<N> } = {
   spreadsheet: IconSpreadsheet,
   unlink: IconUnlink,
   certificate: IconCertificate,
+  vendor: IconVendor,
+  contract: IconContract,
+  quotation: IconQuotation,
+  evaluation: IconEvaluation,
+  "trend-up": IconTrendUp,
+  "trend-down": IconTrendDown,
+  "trend-steady": IconTrendSteady,
+  block: IconBlock,
   "theme-system": IconThemeSystem,
   "theme-light": IconThemeLight,
   "theme-dark": IconThemeDark,

@@ -21,6 +21,11 @@ export interface ChartProps {
   /** What an empty series says ("ยังไม่มีข้อมูลช่วงนี้"). */
   emptyText: string;
   height?: number;
+  /**
+   * A fixed value axis (a 1–5 score) instead of one fitted to the data from zero: the plot spans `min`–`max` and the
+   * grid lines sit on `ticks` (default: four evenly spaced lines).
+   */
+  domain?: { min: number; max: number; ticks?: number[] };
   className?: string;
   "data-testid"?: string;
 }
@@ -51,14 +56,15 @@ export function Chart({
   table,
   emptyText,
   height = 220,
+  domain,
   className,
   "data-testid": testId,
 }: ChartProps) {
   const values = points.map((point) => (point.value === null ? null : Number.parseFloat(point.value)));
   const finite = values.filter((value): value is number => value !== null && Number.isFinite(value));
   const empty = finite.length === 0;
-  const max = empty ? 1 : Math.max(...finite, 0);
-  const min = empty ? 0 : Math.min(...finite, 0);
+  const max = domain ? domain.max : empty ? 1 : Math.max(...finite, 0);
+  const min = domain ? domain.min : empty ? 0 : Math.min(...finite, 0);
   const span = max - min || 1;
   // A line keeps a little air at both ends so its first and last points are not cut by the card.
   const inset = type === "line" ? 12 : 0;
@@ -68,7 +74,7 @@ export function Chart({
   const x = (index: number) =>
     inset + (type === "bar" ? step * index + step / 2 : points.length > 1 ? step * index : plotW / 2);
   const y = (value: number) => PAD.top + plotH - ((value - min) / span) * plotH;
-  const ticks = [0, 1, 2, 3].map((index) => min + (span * index) / 3);
+  const ticks = domain?.ticks ?? [0, 1, 2, 3].map((index) => min + (span * index) / 3);
   const labelEvery = Math.max(1, Math.ceil(points.length / 8));
   const tip = (index: number) => [points[index]!.label, formatValue(points[index]!.value!)].join(": ");
   const left = (value: number) => `${((value / WIDTH) * 100).toFixed(3)}%`;

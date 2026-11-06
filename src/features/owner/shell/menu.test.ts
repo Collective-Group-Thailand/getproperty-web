@@ -151,4 +151,32 @@ describe("juristic rail (J-DESIGN §5)", () => {
     ]);
     expect(withBooks.find((item) => item.key === "juristic_bank_statements")?.href).toBe("/juristic/bank-statements");
   });
+
+  it("shows the vendors group of JW2b between finance and settings, in the office's order", () => {
+    const withVendors = juristicLayout(
+      entitledMenu(
+        keys([
+          "dashboard",
+          "juristic_quotations",
+          "juristic_vendor_contracts",
+          "juristic_expenses",
+          "juristic_vendors",
+          "settings",
+        ]),
+        OWNER_MENU,
+      ),
+    );
+    expect(withVendors.map((item) => [item.key, item.group])).toEqual([
+      ["dashboard", "daily"],
+      ["juristic_expenses", "finance"],
+      ["juristic_vendors", "vendors"],
+      ["juristic_vendor_contracts", "vendors"],
+      ["juristic_quotations", "vendors"],
+      ["settings", "system"],
+    ]);
+    const href = (key: string) => withVendors.find((item) => item.key === key)?.href;
+    expect(href("juristic_vendors")).toBe("/juristic/vendors");
+    expect(href("juristic_vendor_contracts")).toBe("/juristic/contracts");
+    expect(href("juristic_quotations")).toBe("/juristic/quotations");
+  });
 });

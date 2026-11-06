@@ -597,5 +597,31 @@
     "expense": "Matched to an expense",
     "fund_transfer": "Matched to a fund transfer",
     "ignored": "Ignored"
+  },
+  "vendor": {
+    "active": "Active",
+    "blocked": "Blocked"
+  },
+  "vendorContract": {
+    "draft": "Draft",
+    "active": "In force",
+    "expired": "Expired",
+    "terminated": "Terminated"
+  },
+  "quotationRound": {
+    "open": "Taking quotations",
+    "awaiting_approval": "Award awaiting approval",
+    "awarded": "Awarded",
+    "cancelled": "Cancelled"
+  },
+  "contractInstalment": {
+    "scheduled": "Scheduled",
+    "requested": "Requested",
+    "cancelled": "Cancelled"
+  },
+  "evaluationTrend": {
+    "improving": "Improving",
+    "steady": "Steady",
+    "declining": "Declining"
   }
 }

@@ -155,6 +155,16 @@ export const CURATED_ICONS = {
   spreadsheet: "file-spreadsheet",
   unlink: "unlink-2",
   certificate: "file-check-2",
+  // J (JW2b): vendors, service contracts, quotation rounds (comparing quotes), monthly evaluations and their trend,
+  // blocking a vendor
+  vendor: "briefcase-business",
+  contract: "file-signature",
+  quotation: "scale",
+  evaluation: "clipboard-check",
+  "trend-up": "trending-up",
+  "trend-down": "trending-down",
+  "trend-steady": "move-right",
+  block: "ban",
   // theme & language
   "theme-system": "monitor",
   "theme-light": "sun",

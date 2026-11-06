@@ -597,5 +597,31 @@
     "expense": "จับคู่กับค่าใช้จ่าย",
     "fund_transfer": "จับคู่กับโอนกองทุน",
     "ignored": "ข้ามรายการ"
+  },
+  "vendor": {
+    "active": "ใช้งาน",
+    "blocked": "ระงับแล้ว"
+  },
+  "vendorContract": {
+    "draft": "ร่าง",
+    "active": "มีผลอยู่",
+    "expired": "หมดอายุ",
+    "terminated": "ยกเลิกแล้ว"
+  },
+  "quotationRound": {
+    "open": "เปิดรับใบเสนอราคา",
+    "awaiting_approval": "รออนุมัติผู้ได้งาน",
+    "awarded": "ให้งานแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "contractInstalment": {
+    "scheduled": "ตามกำหนด",
+    "requested": "ส่งเบิกแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "evaluationTrend": {
+    "improving": "ดีขึ้น",
+    "steady": "คงที่",
+    "declining": "แย่ลง"
   }
 }

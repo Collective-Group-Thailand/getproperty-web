@@ -33,9 +33,10 @@
  *   POST /__mock/owner/contracts/sample            a reservation sent for signature (capture data for one contract)
  *   POST /__mock/owner/link-requests?party=<id>  a phone sign-in matched the party: a pending link request (D-226)
  *   GET  /__mock/owner/received?op=  requests the owner world received (body, Idempotency-Key)
+ *   POST /__mock/owner/vendors/job  the hourly `vendor-contracts` job (JW2b); GET /__mock/owner/vendors: the world
  *   POST /__mock/gate/reset         reset the estate's gate (JW4); GET /__mock/gate: visits, incidents, received
  *   POST /__mock/gate/answer?visit=&answer=approve|deny|call-me   a house answers in LIFF (latest waiting visit)
- *   POST /__mock/gate/sos?kind=&unit=   a resident's SOS · POST /__mock/gate/lpr?category=&number=&match=  a camera read
+ *   POST /__mock/gate/sos?kind=&unit=   a resident's SOS · POST /__mock/gate/lpr?category=&number=&match=[&late=min]  a camera read
  *   POST /__mock/gate/barrier?state=open|closed|fault · /__mock/gate/overstay?visit= · /__mock/gate/streams/drop
  *   POST /__mock/owner/growth/price?product=<key>|all|addon   publish a growth price (G4/G5, O-027)
  *   POST /__mock/owner/growth/pay?boost=<id>|order=<id>        Finance records a boost / photo order payment
@@ -104,6 +105,7 @@ import { emit } from "./handlers/realtime";
 import { gatewayComesOnline, readUpload, storeUpload, UPLOAD_CORS } from "./handlers/staff";
 import { listingPhotoBytes } from "./owner/listing-photos";
 import { gateControl } from "./owner/gate";
+import { runVendorJob } from "./owner/vendors";
 import { BUILDING_A, BUILDING_B, buildingOf } from "./staff-world";
 import { expireAccessTokens, initialStaffWorld, resetState, state } from "./state";
 
@@ -262,6 +264,10 @@ function ownerControl(url: URL, req: IncomingMessage): { status: number; body: u
       ? { status: 200, body: { ok: true } }
       : { status: 400, body: { error: "unknown part" } };
   }
+  // JW2b: the hourly `vendor-contracts` job (instalments → submitted expense requests, expiry alerts, expiry).
+  if (req.method === "POST" && parts[0] === "vendors" && parts[1] === "job")
+    return { status: 200, body: runVendorJob() };
+  if (req.method === "GET" && parts[0] === "vendors" && parts.length === 1) return { status: 200, body: state.vendors };
   // G1 storage: the founder publishes a package price (O-022), Finance records a purchase's payment, the
   // platform admin overrides the sample tenant's free quota.
   if (req.method === "POST" && parts[0] === "storage" && parts[1] === "price") {

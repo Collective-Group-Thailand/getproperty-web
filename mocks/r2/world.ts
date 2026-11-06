@@ -737,6 +737,8 @@ export function initialR2World(): R2World {
         assigneeUserId: STAFF_USER.id,
         assigneePartyId: null,
         lastWorkOrderId: R2.wo.preventive,
+        vendorContractId: null,
+        vendorName: null,
         version: 1,
       },
       {
@@ -754,6 +756,8 @@ export function initialR2World(): R2World {
         assigneeUserId: null,
         assigneePartyId: TECHNICIAN.id,
         lastWorkOrderId: null,
+        vendorContractId: null,
+        vendorName: null,
         version: 1,
       },
     ],
