@@ -76,6 +76,8 @@ const CONTRACT_ENUM: Partial<Record<keyof typeof STATUS_MAPS, string>> = {
   quotationRound: "QuotationRoundState",
   contractInstalment: "ContractInstalmentState",
   evaluationTrend: "EvaluationTrend",
+  importJob: "ImportState",
+  reconcile: "ReconcileStatus",
   exportJob: "ExportStatus",
   reminder: "ReminderStatus",
   invoiceDelivery: "InvoiceDeliveryStatus",

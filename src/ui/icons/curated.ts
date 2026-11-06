@@ -165,6 +165,13 @@ export const CURATED_ICONS = {
   "trend-down": "trending-down",
   "trend-steady": "move-right",
   block: "ban",
+  // J (JW3a): the import wizard — the rail entry, a file chip, an attachment, the legacy-vs-new comparison, the
+  // archive of a full export
+  import: "file-input",
+  file: "file-text",
+  attachment: "paperclip",
+  compare: "git-compare",
+  "file-archive": "file-archive",
   // theme & language
   "theme-system": "monitor",
   "theme-light": "sun",

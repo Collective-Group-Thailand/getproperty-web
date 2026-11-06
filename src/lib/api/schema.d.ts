@@ -9626,6 +9626,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/owner/juristic/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Export everything (CSV ZIP)
+         * @description “You can leave any time”: queues export `juristic_full_export` — a ZIP with one CSV per table of the tenant: every table of schema `juristic` plus the register (property, building, floor, unit, party, ownership, occupancy) and billing tables (rate plans, cycles, invoices + lines, charges, notes, payments, allocations, receipts), and `manifest.csv`; encrypted / hashed columns are left out. Poll `GET /v1/owner/exports/{id}` for the link. Requires `Idempotency-Key` (D-313, D-332).
+         *
+         *     Implements: D-313, D-332.
+         */
+        post: operations["owner.juristicImports.fullExport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/owner/juristic/fund-transfers": {
         parameters: {
             query?: never;
@@ -9808,6 +9830,374 @@ export interface paths {
          *     Implements: D-311, D-329.
          */
         post: operations["owner.juristicFunds.requestTransfer"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/imports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Import jobs
+         * @description Newest first; filters building and state (D-313, D-332).
+         *
+         *     Implements: D-313, D-332.
+         */
+        get: operations["owner.juristicImports.list"];
+        put?: never;
+        /**
+         * Start an import from a legacy system
+         * @description One job per building the juristic tenant operates (another open or committed job of the building → 409 `import.job_open`) with the as-of date of the legacy figures (today or earlier). Audited (D-313, D-332).
+         *
+         *     Implements: D-313, D-332.
+         */
+        post: operations["owner.juristicImports.create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/imports/{importId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * An import job
+         * @description Files per sheet with row / error / warning counts, the totals of the last validation, the reconciliation, what the commit created per entity, the parallel cycle and the caller’s next actions (D-313, D-332).
+         *
+         *     Implements: D-313, D-332.
+         */
+        get: operations["owner.juristicImports.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/imports/{importId}/actions/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel an import before its commit
+         * @description Draft, validated or reconciled jobs; nothing was written. Audited (D-332).
+         *
+         *     Implements: D-332.
+         */
+        post: operations["owner.juristicImports.cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/imports/{importId}/actions/commit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Commit the import
+         * @description In one transaction, when the plan still equals the validated one (409 `import.preview_stale`) and the reconciliation is matched or explained (422 `import.reconciliation_unexplained`): floors / sois, units (existing ones attached unchanged), parties (matching ones attached), ownerships (source `import`), bill-to (needs `billToConsentDocumentId` — 422 `import.bill_to_consent_required`), one opening-balance **draft** per unit × billed party (lines `opening_balance` per period, surcharge as `late_fee`; not issuable before go-live) and the payment history as **history only** (no payment, receipt or journal). Every created id is recorded for the rollback. Until go-live the building issues no invoice (409 `import.go_live_pending`). Audited. Requires `Idempotency-Key` (D-313, D-332).
+         *
+         *     Implements: D-313, D-332.
+         */
+        post: operations["owner.juristicImports.commit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/imports/{importId}/actions/go-live": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Go live
+         * @description Committed jobs: needs the parallel cycle while `juristic.import.parallel_cycle_required` (409 `import.parallel_cycle_missing`) and every difference explained — or, where `juristic.import.allow_unexplained_differences` is true, `acknowledgeDifferences: true` (recorded) — else 409 `import.differences_unexplained`. Then, in one transaction: the opening-balance drafts are issued (series **OPB**, due date by the normal rules; sent to the billed party unless `notifyOpeningBalances` is false), the bank opening journals are posted (`opening`: bank / accumulated surplus; fund bank / fund equity), the job is live and the rollback window closes; the building issues normally and the collections ladder runs on overdue opening balances. Audited. Requires `Idempotency-Key` (D-313, D-332).
+         *
+         *     Implements: D-313, D-332.
+         */
+        post: operations["owner.juristicImports.goLive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/imports/{importId}/actions/reconcile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Reconcile the opening figures
+         * @description The opening receivables (Σ principal + surcharge) against `declaredReceivables`, and every bank row against the balance of the last bank-statement line (J2.1 import) on or before the as-of date of its account (`no_statement` when there is none). When an item does not match, the commit needs the explanation: `note` (10–2000) **and** `documentId` (the attachment); both or neither. A plan changed since the validation → 409 `import.preview_stale`. Audited (D-313, D-332).
+         *
+         *     Implements: D-313, D-332.
+         */
+        post: operations["owner.juristicImports.reconcile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/imports/{importId}/actions/rollback": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Roll the import back
+         * @description Committed jobs only (before go-live): deletes, newest first, exactly what the commit created — floors, units, parties, ownerships, bill-to, opening-balance drafts, payment history — and the drafts computed meanwhile for those units or parties; nothing else. When another record now refers to them (a payment, an issued document, a lease…) → 409 `import.rollback_blocked` (with the table) and nothing is deleted. Audited. Requires `Idempotency-Key` (D-313, D-332).
+         *
+         *     Implements: D-313, D-332.
+         */
+        post: operations["owner.juristicImports.rollback"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/imports/{importId}/actions/validate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Validate again
+         * @description Every file re-read and the plan recomputed against the building as it is now (after adding a bank account, a fund or fixing the register). Audited (D-313, D-332).
+         *
+         *     Implements: D-313, D-332.
+         */
+        post: operations["owner.juristicImports.validate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/imports/{importId}/bad-rows": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download the rows with errors
+         * @description The rows of a sheet that have errors with their file row number and an `errors` column (Thai or English), as XLSX or CSV — fix and upload again. Refused ID numbers are never written back (D-332).
+         *
+         *     Implements: D-332.
+         */
+        get: operations["owner.juristicImports.badRows"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/imports/{importId}/files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload the file of a sheet
+         * @description CSV (UTF-8, `,` `;` or tab) or XLSX, ≤ 5 MB and 5,000 rows, through `files/presign` (`fileId`, kind `other`) or inline (`fileName` + base64 `content`); headers by key, Thai or English label. Replaces the sheet’s previous file and re-validates the whole job row by row against the building (field and cross-file errors; a full ID number is refused and never stored). The job is `validated` when register and opening balances are present without errors, else `draft`; a changed plan clears the reconciliation. Audited (D-313, D-332).
+         *
+         *     Implements: D-313, D-332.
+         *
+         *     **Files:** upload first — `owner.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
+         */
+        post: operations["owner.juristicImports.upload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/imports/{importId}/files/{sheet}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Remove the file of a sheet
+         * @description Before the commit only; the job is re-validated. Audited (D-332).
+         *
+         *     Implements: D-332.
+         */
+        delete: operations["owner.juristicImports.removeFile"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/imports/{importId}/parallel-cycle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * The parallel-cycle differences
+         * @description Per unit: computed, legacy, difference and its explanation; the summary counts what is unexplained (D-313, D-332).
+         *
+         *     Implements: D-313, D-332.
+         */
+        get: operations["owner.juristicImports.parallelCycle"];
+        put?: never;
+        /**
+         * Compare a billing cycle with the legacy bills
+         * @description Committed jobs: a billing cycle of the building’s property (opened and computed by the cycle endpoints — its drafts are not issued before go-live) against the legacy bills file (unit_no, amount; CSV / XLSX) — per unit the computed amount (Σ non-void invoices of the cycle) and the legacy amount; replaces the previous run and clears an acknowledgement. Audited (D-313, D-332).
+         *
+         *     Implements: D-313, D-332.
+         *
+         *     **Files:** upload first — `owner.files.presign` → PUT the bytes to the returned URL → `…/actions/complete` — then send the `fileId` (contract §3).
+         */
+        post: operations["owner.juristicImports.compareParallelCycle"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/imports/{importId}/parallel-cycle/differences/{differenceId}/actions/explain": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Explain a per-unit difference
+         * @description A reason (5–1000) for a non-zero difference of a committed job’s parallel cycle. Audited (D-313, D-332).
+         *
+         *     Implements: D-313, D-332.
+         */
+        post: operations["owner.juristicImports.explainDifference"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/imports/{importId}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Preview what the commit would write
+         * @description Counts (units new / attached, floors / sois to create, parties new / attached, ownerships, units with shares under 100 %, bill-to), the opening balances (Σ principal, Σ surcharge, units in arrears, largest first), the payment history and the bank opening balances — recomputed now; open jobs only (409 `import.invalid_state`) (D-313, D-332).
+         *
+         *     Implements: D-313, D-332.
+         */
+        get: operations["owner.juristicImports.preview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/imports/{importId}/rows": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Rows of the import with their issues
+         * @description By sheet and row number; `errorsOnly` lists the rows to fix; each issue has its column, code and a message in Thai or English (`language`) (D-313, D-332).
+         *
+         *     Implements: D-313, D-332.
+         */
+        get: operations["owner.juristicImports.rows"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/imports/templates/{sheet}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Download an import template
+         * @description The template of a sheet — `register` (units, owners with ID type + last 4 only, shares, bill-to), `opening_balance` (principal and surcharge per unit, owner and period), `payment_history` (12 months), `bank_balance` (operating and fund accounts), `legacy_bills` (parallel cycle) — as XLSX (data sheet with two `#` example rows + an instructions sheet) or CSV (UTF-8 with BOM), headers and instructions in Thai or English (D-313, D-332).
+         *
+         *     Implements: D-313, D-332.
+         */
+        get: operations["owner.juristicImports.template"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -30311,7 +30701,7 @@ export interface components {
             version: number;
         };
         /** @enum {string} */
-        ExportKind: "invoices_xlsx" | "payments_xlsx" | "arrears_xlsx" | "flowaccount_csv" | "peak_csv" | "vat_pp30" | "income_expense" | "document_archive_zip" | "readings_csv" | "tm30" | "units_xlsx" | "tax_annual_summary" | "loss_report_csv" | "etax_monthly_xlsx" | "payroll_deduction" | "juristic_receivables_csv" | "juristic_journal_csv" | "juristic_journal_express" | "juristic_journal_flowaccount";
+        ExportKind: "invoices_xlsx" | "payments_xlsx" | "arrears_xlsx" | "flowaccount_csv" | "peak_csv" | "vat_pp30" | "income_expense" | "document_archive_zip" | "readings_csv" | "tm30" | "units_xlsx" | "tax_annual_summary" | "loss_report_csv" | "etax_monthly_xlsx" | "payroll_deduction" | "juristic_receivables_csv" | "juristic_journal_csv" | "juristic_journal_express" | "juristic_journal_flowaccount" | "juristic_full_export";
         ExportParamsDto: {
             /**
              * Format: date
@@ -32571,6 +32961,8 @@ export interface components {
             /** @example kind: one of gateway, electric_meter, … */
             message: string;
         };
+        /** @enum {string} */
+        ImportFormat: "xlsx" | "csv";
         ImportRowDto: {
             /** @example create */
             action: components["schemas"]["ImportAction"];
@@ -32614,6 +33006,8 @@ export interface components {
             /** @example ค่าเช่าต้องเป็นจำนวนเงิน เช่น 4500 หรือ 4500.00 */
             message: string;
         };
+        /** @enum {string} */
+        ImportSheet: "register" | "opening_balance" | "payment_history" | "bank_balance" | "legacy_bills";
         ImportSkippedDto: {
             /** @example 3 */
             line: number;
@@ -32622,6 +33016,8 @@ export interface components {
             /** @example GW-0001 */
             serial: string;
         };
+        /** @enum {string} */
+        ImportState: "draft" | "validated" | "reconciled" | "committed" | "live" | "rolled_back" | "cancelled";
         ImportSummaryDto: {
             /** @example 10 */
             create: number;
@@ -32639,6 +33035,8 @@ export interface components {
             /** @example 2 */
             update: number;
         };
+        /** @enum {string} */
+        ImportUploadSheet: "register" | "opening_balance" | "payment_history" | "bank_balance";
         InboxItemDto: {
             /** @example ทีมซัพพอร์ตขอสิทธิ์เข้าถึงข้อมูลชั่วคราว: ตรวจสอบปัญหาการแจ้งหนี้ */
             body: string;
@@ -34058,7 +34456,7 @@ export interface components {
             vatApplicable: boolean;
         };
         /** @enum {string} */
-        InvoiceLineKind: "rent" | "electricity" | "water" | "internet" | "parking" | "cleaning" | "furniture" | "common_fee" | "fund" | "water_minimum" | "other_fixed" | "one_off" | "late_fee" | "estimate_settlement" | "prior_balance" | "discount" | "deposit_offset" | "service_charge_work" | "plan_instalment";
+        InvoiceLineKind: "rent" | "electricity" | "water" | "internet" | "parking" | "cleaning" | "furniture" | "common_fee" | "fund" | "water_minimum" | "other_fixed" | "one_off" | "late_fee" | "estimate_settlement" | "prior_balance" | "discount" | "deposit_offset" | "service_charge_work" | "plan_instalment" | "opening_balance";
         /** @enum {string} */
         InvoiceLineSourceType: "rent" | "meter" | "common_fee" | "fund" | "penalty" | "service" | "deposit" | "adjustment";
         InvoiceRemindersDto: {
@@ -34433,14 +34831,406 @@ export interface components {
         };
         /** @enum {string} */
         JuristicChargeKind: "common_fee" | "fund";
+        JuristicCycleDifferenceDto: {
+            /**
+             * @description What the cycle computed for the unit. Unit: THB, decimal string (D-046).
+             * @example 1043.10
+             */
+            computed: string;
+            /**
+             * @description computed − legacy. Unit: THB, decimal string (D-046).
+             * @example 0.00
+             */
+            difference: string;
+            /** Format: date-time */
+            explainedAt: string | null;
+            /** @example null */
+            explanation: string | null;
+            /** Format: uuid */
+            id: string;
+            /**
+             * @description What the legacy system billed. Unit: THB, decimal string (D-046).
+             * @example 1043.10
+             */
+            legacy: string;
+            /** Format: uuid */
+            unitId: string | null;
+            /** @example A-1201 */
+            unitNo: string;
+        };
         /** @enum {string} */
         JuristicFundKind: "sinking" | "reserve" | "other";
+        JuristicImportCommitDto: {
+            /**
+             * Format: uuid
+             * @description The owners’ signed bill-to consents (one document for the batch); required when the register names a bill-to.
+             */
+            billToConsentDocumentId?: string | null;
+        };
+        JuristicImportCreateDto: {
+            /**
+             * Format: date
+             * @description The legacy cut-off (balances and bank balances are as of this Bangkok date; today or earlier).
+             * @example 2026-10-31
+             */
+            asOfDate: string;
+            /**
+             * Format: uuid
+             * @description A building the juristic tenant operates.
+             * @example 5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c
+             */
+            buildingId: string;
+            /** @example ย้ายจากโปรแกรมเดิม */
+            note?: string | null;
+        };
+        JuristicImportDifferenceExplainDto: {
+            /** @example ระบบเดิมคิดค่าที่จอดรถรวมในค่าส่วนกลาง */
+            explanation: string;
+        };
+        JuristicImportFileDto: {
+            /** Format: uuid */
+            documentId: string;
+            /** @example 0 */
+            errorCount: number;
+            /** @example register.xlsx */
+            fileName: string;
+            format: components["schemas"]["ImportFormat"];
+            /** @example 512 */
+            rowCount: number;
+            sheet: components["schemas"]["ImportSheet"];
+            /** Format: date-time */
+            uploadedAt: string;
+            /** @example 3 */
+            warningCount: number;
+        };
+        JuristicImportFileUploadDto: {
+            /**
+             * @description The file inline, base64 (≤ 5 MB decoded).
+             * @example 77u/dW5pdF9ubyxvd25lcl9uYW1lDQo=
+             */
+            content?: string;
+            /**
+             * Format: uuid
+             * @description A file uploaded through `files/presign` (kind `other`, CSV or XLSX); or give fileName + content.
+             */
+            fileId?: string;
+            /** @example register.csv */
+            fileName?: string;
+            /** @example register */
+            sheet: components["schemas"]["ImportUploadSheet"];
+        };
+        JuristicImportGoLiveDto: {
+            /**
+             * @description Go live with unexplained parallel-cycle differences — only where `juristic.import.allow_unexplained_differences` is true; recorded.
+             * @default false
+             */
+            acknowledgeDifferences: boolean;
+            /**
+             * @description Send each opening balance to the billed party like a new invoice (false: issued silently).
+             * @default true
+             */
+            notifyOpeningBalances: boolean;
+        };
+        JuristicImportJobDto: {
+            /**
+             * Format: date
+             * @example 2026-10-31
+             */
+            asOfDate: string;
+            /** Format: uuid */
+            buildingId: string;
+            /** @example อาคาร A */
+            buildingName: string;
+            /** Format: date-time */
+            cancelledAt: string | null;
+            /** Format: date-time */
+            committedAt: string | null;
+            /**
+             * @description What the commit created, per entity (empty before the commit).
+             * @example {
+             *       "floor": 25,
+             *       "invoice": 120,
+             *       "legacy_payment": 4800,
+             *       "party": 530,
+             *       "unit": 500,
+             *       "unit_ownership": 512
+             *     }
+             */
+            created: {
+                [key: string]: number;
+            };
+            /** Format: date-time */
+            createdAt: string;
+            files: components["schemas"]["JuristicImportFileDto"][];
+            /** Format: uuid */
+            id: string;
+            /** Format: date-time */
+            liveAt: string | null;
+            /**
+             * @description What the caller can do now: upload · validate · reconcile · commit · cancel · parallel_cycle · rollback · go_live · export.
+             * @example [
+             *       "upload",
+             *       "validate",
+             *       "reconcile",
+             *       "cancel"
+             *     ]
+             */
+            nextActions: string[];
+            /** @example null */
+            note: string | null;
+            /** @example 1 */
+            number: number;
+            /** Format: uuid */
+            parallelCycleId: string | null;
+            /** Format: date-time */
+            parallelRunAt: string | null;
+            reconciliation: components["schemas"]["JuristicImportReconciliationDto"] | null;
+            /** @example null */
+            rollbackReason: string | null;
+            /** Format: date-time */
+            rolledBackAt: string | null;
+            state: components["schemas"]["ImportState"];
+            /** @description Of the last validation (null before). */
+            totals: components["schemas"]["JuristicImportTotalsDto"] | null;
+            /** @example 3 */
+            version: number;
+        };
+        JuristicImportParallelCycleDto: {
+            /**
+             * Format: uuid
+             * @description A billing cycle of the building’s property (open or computed).
+             */
+            billingCycleId: string;
+            /**
+             * @description The file inline, base64.
+             * @example 77u/dW5pdF9ubyxhbW91bnQNCg==
+             */
+            content?: string;
+            /**
+             * Format: uuid
+             * @description The legacy bills file (`files/presign`), or fileName + content.
+             */
+            fileId?: string;
+            /** @example legacy-bills-2026-11.csv */
+            fileName?: string;
+        };
+        JuristicImportPreviewDto: {
+            floorsToCreate: components["schemas"]["JuristicImportPreviewFloorDto"][];
+            /** @description The opening balances, largest first (≤ 200). */
+            openingBalances: components["schemas"]["JuristicImportPreviewInvoiceDto"][];
+            totals: components["schemas"]["JuristicImportTotalsDto"];
+            /** @example false */
+            truncated: boolean;
+        };
+        JuristicImportPreviewFloorDto: {
+            /** @example 12 */
+            level: number;
+            /** @example ชั้น 12 */
+            name: string;
+        };
+        JuristicImportPreviewInvoiceDto: {
+            /** @example สมชาย ใจดี */
+            billedName: string;
+            /** @example 4 */
+            lines: number;
+            /** @example สมชาย ใจดี */
+            ownerName: string;
+            /**
+             * Format: date
+             * @example 2026-10-31
+             */
+            periodEnd: string;
+            /**
+             * Format: date
+             * @example 2026-07-01
+             */
+            periodStart: string;
+            /**
+             * @description The opening balance. Unit: THB, decimal string (D-046).
+             * @example 4197.40
+             */
+            total: string;
+            /** @example A-1201 */
+            unitNo: string;
+        };
+        JuristicImportReconcileDto: {
+            /**
+             * @description The legacy system’s total of receivables on the as-of date. Unit: THB, decimal string (D-046).
+             * @example 845210.50
+             */
+            declaredReceivables: string;
+            /**
+             * Format: uuid
+             * @description The supporting attachment (a document of the tenant).
+             */
+            documentId?: string | null;
+            /**
+             * @description Required (10–2000) with `documentId` when an item does not match.
+             * @example ส่วนต่าง 1,250.00 บาท คือเงินรับล่วงหน้าของห้อง A-1203 ที่ระบบเดิมหักไว้แล้ว
+             */
+            note?: string | null;
+        };
+        JuristicImportReconciliationDto: {
+            /**
+             * @description The declared receivables. Unit: THB, decimal string (D-046).
+             * @example 845210.50
+             */
+            declaredReceivables: string;
+            /**
+             * Format: uuid
+             * @example null
+             */
+            documentId: string | null;
+            /**
+             * @description An item does not match: the commit needs the note and the attachment.
+             * @example false
+             */
+            explanationRequired: boolean;
+            items: components["schemas"]["JuristicReconcileItemDto"][];
+            /** @example null */
+            note: string | null;
+            /** Format: date-time */
+            reconciledAt: string;
+        };
+        JuristicImportRollbackDto: {
+            /** @example ไฟล์ทะเบียนผิดชุด จะนำเข้าใหม่ */
+            reason: string;
+        };
+        JuristicImportRowDto: {
+            /**
+             * @description The normalised values (ID: the last 4 only; refused values are never kept).
+             * @example {
+             *       "id_last4": null,
+             *       "owner_name": "สมชาย ใจดี",
+             *       "unit_no": "A-1201"
+             *     }
+             */
+            data: {
+                [key: string]: string | null;
+            };
+            errors: components["schemas"]["ImportRowErrorDto"][];
+            /**
+             * @description Row number in the file (the header is row 1).
+             * @example 7
+             */
+            rowNo: number;
+            sheet: components["schemas"]["ImportSheet"];
+            warnings: components["schemas"]["ImportRowErrorDto"][];
+        };
+        JuristicImportTotalsDto: {
+            /**
+             * @description Σ fund bank opening balances. Unit: THB, decimal string (D-046).
+             * @example 880000.00
+             */
+            bankFund: string;
+            /**
+             * @description Σ operating bank opening balances. Unit: THB, decimal string (D-046).
+             * @example 152300.55
+             */
+            bankOperating: string;
+            /** @example 6 */
+            billTos: number;
+            /**
+             * @description Rows with errors.
+             * @example 0
+             */
+            errors: number;
+            /** @example 25 */
+            floorsNew: number;
+            /**
+             * @description Σ payment history. Unit: THB, decimal string (D-046).
+             * @example 5123400.00
+             */
+            historyAmount: string;
+            /** @example 4800 */
+            historyCount: number;
+            /** @example 120 */
+            openingInvoices: number;
+            /** @example 512 */
+            ownerships: number;
+            /** @example 530 */
+            parties: number;
+            /** @example 0 */
+            partiesAttached: number;
+            /** @example 530 */
+            partiesNew: number;
+            /**
+             * @description Σ principal brought forward. Unit: THB, decimal string (D-046).
+             * @example 812000.00
+             */
+            principal: string;
+            /**
+             * @description Σ principal + surcharge. Unit: THB, decimal string (D-046).
+             * @example 845210.50
+             */
+            receivables: string;
+            /**
+             * @description Σ surcharge brought forward. Unit: THB, decimal string (D-046).
+             * @example 33210.50
+             */
+            surcharge: string;
+            /** @example 500 */
+            units: number;
+            /** @example 0 */
+            unitsAttached: number;
+            /** @example 120 */
+            unitsInArrears: number;
+            /**
+             * @description Units whose shares sum to less than 100 %.
+             * @example 2
+             */
+            unitsIncomplete: number;
+            /** @example 500 */
+            unitsNew: number;
+            /**
+             * @description Rows with warnings.
+             * @example 3
+             */
+            warnings: number;
+        };
         /** @enum {string} */
         JuristicIncomeKind: "common_fee" | "fund" | "surcharge" | "other";
         /** @enum {string} */
         JuristicJournalExportFormat: "csv" | "express" | "flowaccount";
         /** @enum {string} */
         JuristicJournalSource: "invoice" | "invoice_void" | "credit_note" | "debit_note" | "payment" | "payment_reversal" | "refund" | "revenue_recognition" | "expense_payment" | "petty_cash" | "fund_transfer" | "manual" | "opening" | "reversal";
+        JuristicParallelCycleReportDto: {
+            /** Format: uuid */
+            billingCycleId: string | null;
+            differences: components["schemas"]["JuristicCycleDifferenceDto"][];
+            /** Format: uuid */
+            importJobId: string;
+            /** @example 2026-11 */
+            periodKey: string | null;
+            /** Format: date-time */
+            runAt: string | null;
+            summary: components["schemas"]["JuristicParallelCycleSummaryDto"];
+        };
+        JuristicParallelCycleSummaryDto: {
+            /**
+             * @description Σ computed. Unit: THB, decimal string (D-046).
+             * @example 521550.00
+             */
+            computedTotal: string;
+            /**
+             * @description Σ difference. Unit: THB, decimal string (D-046).
+             * @example -50.00
+             */
+            differenceTotal: string;
+            /** @example 2 */
+            different: number;
+            /**
+             * @description Σ legacy. Unit: THB, decimal string (D-046).
+             * @example 521600.00
+             */
+            legacyTotal: string;
+            /** @example 498 */
+            matching: number;
+            /** @example 1 */
+            unexplained: number;
+            /** @example 500 */
+            units: number;
+        };
         JuristicReceivableTotalsDto: {
             /**
              * @description Σ outstanding of every matching row. Unit: THB, decimal string (D-046).
@@ -34452,6 +35242,29 @@ export interface components {
              * @example 2210.40
              */
             surcharge: string;
+        };
+        JuristicReconcileItemDto: {
+            /**
+             * @description imported − reference. Unit: THB, decimal string (D-046).
+             * @example 0.00
+             */
+            difference: string | null;
+            /**
+             * @description What the import brings. Unit: THB, decimal string (D-046).
+             * @example 845210.50
+             */
+            imported: string;
+            /** @example receivables */
+            key: string;
+            kind: components["schemas"]["ReconcileKind"];
+            /** @example receivables */
+            label: string;
+            /**
+             * @description The declared total, or the bank statement balance (null: no statement). Unit: THB, decimal string (D-046).
+             * @example 845210.50
+             */
+            reference: string | null;
+            status: components["schemas"]["ReconcileStatus"];
         };
         JwkDto: {
             /** @example EdDSA */
@@ -38810,7 +39623,7 @@ export interface components {
          * @description Menu entitlements of the owner console (keys of the web routes).
          * @enum {string}
          */
-        OwnerMenuKey: "portfolio" | "listings" | "leads" | "mandated_units" | "mandates" | "co_broke" | "deals" | "dashboard" | "buildings" | "units" | "parties" | "leases" | "deposits" | "readings" | "devices" | "rate_plans" | "invoices" | "payments" | "reports" | "utility_loss" | "service_requests" | "access" | "parcels" | "announcements" | "juristic_register" | "juristic_cycles" | "juristic_budgets" | "juristic_payment_plans" | "juristic_debt_clearances" | "juristic_receivables" | "juristic_statements" | "juristic_collection_ladder" | "juristic_accounting" | "juristic_expenses" | "juristic_funds" | "juristic_bank_statements" | "juristic_vendors" | "juristic_vendor_contracts" | "juristic_quotations" | "juristic_workspace_invitations" | "juristic_gate" | "gate" | "members" | "bank_accounts" | "settings" | "notifications" | "privacy" | "access_grants" | "support_access" | "audit_log" | "subscription";
+        OwnerMenuKey: "portfolio" | "listings" | "leads" | "mandated_units" | "mandates" | "co_broke" | "deals" | "dashboard" | "buildings" | "units" | "parties" | "leases" | "deposits" | "readings" | "devices" | "rate_plans" | "invoices" | "payments" | "reports" | "utility_loss" | "service_requests" | "access" | "parcels" | "announcements" | "juristic_register" | "juristic_cycles" | "juristic_budgets" | "juristic_payment_plans" | "juristic_debt_clearances" | "juristic_receivables" | "juristic_statements" | "juristic_collection_ladder" | "juristic_accounting" | "juristic_expenses" | "juristic_funds" | "juristic_bank_statements" | "juristic_vendors" | "juristic_vendor_contracts" | "juristic_quotations" | "juristic_import" | "juristic_workspace_invitations" | "juristic_gate" | "gate" | "members" | "bank_accounts" | "settings" | "notifications" | "privacy" | "access_grants" | "support_access" | "audit_log" | "subscription";
         OwnerReviewDto: {
             body: string | null;
             /** Format: uuid */
@@ -43304,6 +44117,10 @@ export interface components {
             consentVersion?: number;
             preferences: components["schemas"]["AudiencePreferencesInputDto"];
         };
+        /** @enum {string} */
+        ReconcileKind: "receivables" | "bank";
+        /** @enum {string} */
+        ReconcileStatus: "match" | "mismatch" | "no_statement";
         RecordNoticeDto: {
             /** @example [] */
             acknowledgementIds?: string[];
@@ -116766,6 +117583,134 @@ export interface operations {
             };
         };
     };
+    "owner.juristicImports.fullExport": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Queued. Poll `owner.exports.get` until it completes. */
+            202: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "buildingId": null,
+                     *       "download": null,
+                     *       "error": null,
+                     *       "finishedAt": null,
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "kind": "juristic_full_export",
+                     *       "params": {},
+                     *       "requestedAt": "2026-11-01T00:15:00+07:00",
+                     *       "rowCount": null,
+                     *       "status": "queued",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["ExportJobDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "owner.juristicFundTransfers.list": {
         parameters: {
             query?: {
@@ -118101,6 +119046,3056 @@ export interface operations {
                 };
             };
             /** @description Problem: `fund.resolution_invalid`, `fund.resolution_required`, `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicImports.list": {
+        parameters: {
+            query?: {
+                buildingId?: string;
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+                state?: components["schemas"]["ImportState"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "asOfDate": "2026-10-31",
+                     *           "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *           "buildingName": "อาคาร A",
+                     *           "cancelledAt": null,
+                     *           "committedAt": null,
+                     *           "created": {},
+                     *           "createdAt": "2026-11-01T00:15:00+07:00",
+                     *           "files": [
+                     *             {
+                     *               "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *               "errorCount": 0,
+                     *               "fileName": "register.xlsx",
+                     *               "format": "xlsx",
+                     *               "rowCount": 512,
+                     *               "sheet": "register",
+                     *               "uploadedAt": "2026-11-01T00:15:00+07:00",
+                     *               "warningCount": 3
+                     *             }
+                     *           ],
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "liveAt": null,
+                     *           "nextActions": [
+                     *             "upload",
+                     *             "validate",
+                     *             "reconcile",
+                     *             "commit",
+                     *             "cancel"
+                     *           ],
+                     *           "note": null,
+                     *           "number": 1,
+                     *           "parallelCycleId": null,
+                     *           "parallelRunAt": null,
+                     *           "reconciliation": {
+                     *             "declaredReceivables": "845210.50",
+                     *             "documentId": null,
+                     *             "explanationRequired": false,
+                     *             "items": [
+                     *               {
+                     *                 "difference": "0.00",
+                     *                 "imported": "845210.50",
+                     *                 "key": "receivables",
+                     *                 "kind": "receivables",
+                     *                 "label": "receivables",
+                     *                 "reference": "845210.50",
+                     *                 "status": "match"
+                     *               }
+                     *             ],
+                     *             "note": null,
+                     *             "reconciledAt": "2026-11-01T00:15:00+07:00"
+                     *           },
+                     *           "rollbackReason": null,
+                     *           "rolledBackAt": null,
+                     *           "state": "reconciled",
+                     *           "totals": {
+                     *             "bankFund": "880000.00",
+                     *             "bankOperating": "152300.55",
+                     *             "billTos": 6,
+                     *             "errors": 0,
+                     *             "floorsNew": 25,
+                     *             "historyAmount": "5123400.00",
+                     *             "historyCount": 4800,
+                     *             "openingInvoices": 120,
+                     *             "ownerships": 512,
+                     *             "parties": 530,
+                     *             "partiesAttached": 0,
+                     *             "partiesNew": 530,
+                     *             "principal": "812000.00",
+                     *             "receivables": "845210.50",
+                     *             "surcharge": "33210.50",
+                     *             "units": 500,
+                     *             "unitsAttached": 0,
+                     *             "unitsInArrears": 120,
+                     *             "unitsIncomplete": 0,
+                     *             "unitsNew": 500,
+                     *             "warnings": 3
+                     *           },
+                     *           "version": 4
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["JuristicImportJobDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicImports.create": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JuristicImportCreateDto"];
+            };
+        };
+        responses: {
+            /** @description Job */
+            201: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "asOfDate": "2026-10-31",
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "cancelledAt": null,
+                     *       "committedAt": null,
+                     *       "created": {},
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "files": [],
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "liveAt": null,
+                     *       "nextActions": [
+                     *         "upload",
+                     *         "validate",
+                     *         "reconcile",
+                     *         "commit",
+                     *         "cancel"
+                     *       ],
+                     *       "note": null,
+                     *       "number": 1,
+                     *       "parallelCycleId": null,
+                     *       "parallelRunAt": null,
+                     *       "reconciliation": null,
+                     *       "rollbackReason": null,
+                     *       "rolledBackAt": null,
+                     *       "state": "draft",
+                     *       "totals": null,
+                     *       "version": 1
+                     *     }
+                     */
+                    "application/json": components["schemas"]["JuristicImportJobDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `import.job_open` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicImports.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                importId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Job */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "asOfDate": "2026-10-31",
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "cancelledAt": null,
+                     *       "committedAt": null,
+                     *       "created": {},
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "files": [
+                     *         {
+                     *           "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "errorCount": 0,
+                     *           "fileName": "register.xlsx",
+                     *           "format": "xlsx",
+                     *           "rowCount": 512,
+                     *           "sheet": "register",
+                     *           "uploadedAt": "2026-11-01T00:15:00+07:00",
+                     *           "warningCount": 3
+                     *         }
+                     *       ],
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "liveAt": null,
+                     *       "nextActions": [
+                     *         "upload",
+                     *         "validate",
+                     *         "reconcile",
+                     *         "commit",
+                     *         "cancel"
+                     *       ],
+                     *       "note": null,
+                     *       "number": 1,
+                     *       "parallelCycleId": null,
+                     *       "parallelRunAt": null,
+                     *       "reconciliation": {
+                     *         "declaredReceivables": "845210.50",
+                     *         "documentId": null,
+                     *         "explanationRequired": false,
+                     *         "items": [
+                     *           {
+                     *             "difference": "0.00",
+                     *             "imported": "845210.50",
+                     *             "key": "receivables",
+                     *             "kind": "receivables",
+                     *             "label": "receivables",
+                     *             "reference": "845210.50",
+                     *             "status": "match"
+                     *           }
+                     *         ],
+                     *         "note": null,
+                     *         "reconciledAt": "2026-11-01T00:15:00+07:00"
+                     *       },
+                     *       "rollbackReason": null,
+                     *       "rolledBackAt": null,
+                     *       "state": "reconciled",
+                     *       "totals": {
+                     *         "bankFund": "880000.00",
+                     *         "bankOperating": "152300.55",
+                     *         "billTos": 6,
+                     *         "errors": 0,
+                     *         "floorsNew": 25,
+                     *         "historyAmount": "5123400.00",
+                     *         "historyCount": 4800,
+                     *         "openingInvoices": 120,
+                     *         "ownerships": 512,
+                     *         "parties": 530,
+                     *         "partiesAttached": 0,
+                     *         "partiesNew": 530,
+                     *         "principal": "812000.00",
+                     *         "receivables": "845210.50",
+                     *         "surcharge": "33210.50",
+                     *         "units": 500,
+                     *         "unitsAttached": 0,
+                     *         "unitsInArrears": 120,
+                     *         "unitsIncomplete": 0,
+                     *         "unitsNew": 500,
+                     *         "warnings": 3
+                     *       },
+                     *       "version": 4
+                     *     }
+                     */
+                    "application/json": components["schemas"]["JuristicImportJobDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicImports.cancel": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                importId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Cancelled */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "asOfDate": "2026-10-31",
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "cancelledAt": "2026-11-01T00:15:00+07:00",
+                     *       "committedAt": null,
+                     *       "created": {},
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "files": [
+                     *         {
+                     *           "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "errorCount": 0,
+                     *           "fileName": "register.xlsx",
+                     *           "format": "xlsx",
+                     *           "rowCount": 512,
+                     *           "sheet": "register",
+                     *           "uploadedAt": "2026-11-01T00:15:00+07:00",
+                     *           "warningCount": 3
+                     *         }
+                     *       ],
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "liveAt": null,
+                     *       "nextActions": [],
+                     *       "note": null,
+                     *       "number": 1,
+                     *       "parallelCycleId": null,
+                     *       "parallelRunAt": null,
+                     *       "reconciliation": {
+                     *         "declaredReceivables": "845210.50",
+                     *         "documentId": null,
+                     *         "explanationRequired": false,
+                     *         "items": [
+                     *           {
+                     *             "difference": "0.00",
+                     *             "imported": "845210.50",
+                     *             "key": "receivables",
+                     *             "kind": "receivables",
+                     *             "label": "receivables",
+                     *             "reference": "845210.50",
+                     *             "status": "match"
+                     *           }
+                     *         ],
+                     *         "note": null,
+                     *         "reconciledAt": "2026-11-01T00:15:00+07:00"
+                     *       },
+                     *       "rollbackReason": null,
+                     *       "rolledBackAt": null,
+                     *       "state": "cancelled",
+                     *       "totals": {
+                     *         "bankFund": "880000.00",
+                     *         "bankOperating": "152300.55",
+                     *         "billTos": 6,
+                     *         "errors": 0,
+                     *         "floorsNew": 25,
+                     *         "historyAmount": "5123400.00",
+                     *         "historyCount": 4800,
+                     *         "openingInvoices": 120,
+                     *         "ownerships": 512,
+                     *         "parties": 530,
+                     *         "partiesAttached": 0,
+                     *         "partiesNew": 530,
+                     *         "principal": "812000.00",
+                     *         "receivables": "845210.50",
+                     *         "surcharge": "33210.50",
+                     *         "units": 500,
+                     *         "unitsAttached": 0,
+                     *         "unitsInArrears": 120,
+                     *         "unitsIncomplete": 0,
+                     *         "unitsNew": 500,
+                     *         "warnings": 3
+                     *       },
+                     *       "version": 4
+                     *     }
+                     */
+                    "application/json": components["schemas"]["JuristicImportJobDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `import.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicImports.commit": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                importId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JuristicImportCommitDto"];
+            };
+        };
+        responses: {
+            /** @description Committed */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "asOfDate": "2026-10-31",
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "cancelledAt": null,
+                     *       "committedAt": "2026-11-01T00:15:00+07:00",
+                     *       "created": {
+                     *         "bill_to": 6,
+                     *         "floor": 25,
+                     *         "invoice": 120,
+                     *         "legacy_payment": 4800,
+                     *         "party": 530,
+                     *         "unit": 500,
+                     *         "unit_ownership": 512
+                     *       },
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "files": [
+                     *         {
+                     *           "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "errorCount": 0,
+                     *           "fileName": "register.xlsx",
+                     *           "format": "xlsx",
+                     *           "rowCount": 512,
+                     *           "sheet": "register",
+                     *           "uploadedAt": "2026-11-01T00:15:00+07:00",
+                     *           "warningCount": 3
+                     *         }
+                     *       ],
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "liveAt": null,
+                     *       "nextActions": [
+                     *         "parallel_cycle",
+                     *         "rollback",
+                     *         "go_live"
+                     *       ],
+                     *       "note": null,
+                     *       "number": 1,
+                     *       "parallelCycleId": null,
+                     *       "parallelRunAt": null,
+                     *       "reconciliation": {
+                     *         "declaredReceivables": "845210.50",
+                     *         "documentId": null,
+                     *         "explanationRequired": false,
+                     *         "items": [
+                     *           {
+                     *             "difference": "0.00",
+                     *             "imported": "845210.50",
+                     *             "key": "receivables",
+                     *             "kind": "receivables",
+                     *             "label": "receivables",
+                     *             "reference": "845210.50",
+                     *             "status": "match"
+                     *           }
+                     *         ],
+                     *         "note": null,
+                     *         "reconciledAt": "2026-11-01T00:15:00+07:00"
+                     *       },
+                     *       "rollbackReason": null,
+                     *       "rolledBackAt": null,
+                     *       "state": "committed",
+                     *       "totals": {
+                     *         "bankFund": "880000.00",
+                     *         "bankOperating": "152300.55",
+                     *         "billTos": 6,
+                     *         "errors": 0,
+                     *         "floorsNew": 25,
+                     *         "historyAmount": "5123400.00",
+                     *         "historyCount": 4800,
+                     *         "openingInvoices": 120,
+                     *         "ownerships": 512,
+                     *         "parties": 530,
+                     *         "partiesAttached": 0,
+                     *         "partiesNew": 530,
+                     *         "principal": "812000.00",
+                     *         "receivables": "845210.50",
+                     *         "surcharge": "33210.50",
+                     *         "units": 500,
+                     *         "unitsAttached": 0,
+                     *         "unitsInArrears": 120,
+                     *         "unitsIncomplete": 0,
+                     *         "unitsNew": 500,
+                     *         "warnings": 3
+                     *       },
+                     *       "version": 5
+                     *     }
+                     */
+                    "application/json": components["schemas"]["JuristicImportJobDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `document.infected`, `document.not_uploaded`, `document.scan_pending`, `idempotency.in_progress`, `import.invalid_state`, `import.preview_stale` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `document.type_not_allowed`, `idempotency.key_reused`, `import.bill_to_consent_required`, `import.file_invalid`, `import.reconciliation_unexplained`, `register.shares_exceeded`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicImports.goLive": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                importId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JuristicImportGoLiveDto"];
+            };
+        };
+        responses: {
+            /** @description Live */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "asOfDate": "2026-10-31",
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "cancelledAt": null,
+                     *       "committedAt": "2026-11-01T00:15:00+07:00",
+                     *       "created": {
+                     *         "bill_to": 6,
+                     *         "floor": 25,
+                     *         "invoice": 120,
+                     *         "legacy_payment": 4800,
+                     *         "party": 530,
+                     *         "unit": 500,
+                     *         "unit_ownership": 512
+                     *       },
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "files": [
+                     *         {
+                     *           "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "errorCount": 0,
+                     *           "fileName": "register.xlsx",
+                     *           "format": "xlsx",
+                     *           "rowCount": 512,
+                     *           "sheet": "register",
+                     *           "uploadedAt": "2026-11-01T00:15:00+07:00",
+                     *           "warningCount": 3
+                     *         }
+                     *       ],
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "liveAt": "2026-11-01T00:15:00+07:00",
+                     *       "nextActions": [],
+                     *       "note": null,
+                     *       "number": 1,
+                     *       "parallelCycleId": null,
+                     *       "parallelRunAt": null,
+                     *       "reconciliation": {
+                     *         "declaredReceivables": "845210.50",
+                     *         "documentId": null,
+                     *         "explanationRequired": false,
+                     *         "items": [
+                     *           {
+                     *             "difference": "0.00",
+                     *             "imported": "845210.50",
+                     *             "key": "receivables",
+                     *             "kind": "receivables",
+                     *             "label": "receivables",
+                     *             "reference": "845210.50",
+                     *             "status": "match"
+                     *           }
+                     *         ],
+                     *         "note": null,
+                     *         "reconciledAt": "2026-11-01T00:15:00+07:00"
+                     *       },
+                     *       "rollbackReason": null,
+                     *       "rolledBackAt": null,
+                     *       "state": "live",
+                     *       "totals": {
+                     *         "bankFund": "880000.00",
+                     *         "bankOperating": "152300.55",
+                     *         "billTos": 6,
+                     *         "errors": 0,
+                     *         "floorsNew": 25,
+                     *         "historyAmount": "5123400.00",
+                     *         "historyCount": 4800,
+                     *         "openingInvoices": 120,
+                     *         "ownerships": 512,
+                     *         "parties": 530,
+                     *         "partiesAttached": 0,
+                     *         "partiesNew": 530,
+                     *         "principal": "812000.00",
+                     *         "receivables": "845210.50",
+                     *         "surcharge": "33210.50",
+                     *         "units": 500,
+                     *         "unitsAttached": 0,
+                     *         "unitsInArrears": 120,
+                     *         "unitsIncomplete": 0,
+                     *         "unitsNew": 500,
+                     *         "warnings": 3
+                     *       },
+                     *       "version": 5
+                     *     }
+                     */
+                    "application/json": components["schemas"]["JuristicImportJobDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `import.differences_unexplained`, `import.invalid_state`, `import.parallel_cycle_missing`, `invoice.not_ready` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicImports.reconcile": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                importId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JuristicImportReconcileDto"];
+            };
+        };
+        responses: {
+            /** @description Reconciled */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "asOfDate": "2026-10-31",
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "cancelledAt": null,
+                     *       "committedAt": null,
+                     *       "created": {},
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "files": [
+                     *         {
+                     *           "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "errorCount": 0,
+                     *           "fileName": "register.xlsx",
+                     *           "format": "xlsx",
+                     *           "rowCount": 512,
+                     *           "sheet": "register",
+                     *           "uploadedAt": "2026-11-01T00:15:00+07:00",
+                     *           "warningCount": 3
+                     *         }
+                     *       ],
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "liveAt": null,
+                     *       "nextActions": [
+                     *         "upload",
+                     *         "validate",
+                     *         "reconcile",
+                     *         "commit",
+                     *         "cancel"
+                     *       ],
+                     *       "note": null,
+                     *       "number": 1,
+                     *       "parallelCycleId": null,
+                     *       "parallelRunAt": null,
+                     *       "reconciliation": {
+                     *         "declaredReceivables": "845210.50",
+                     *         "documentId": null,
+                     *         "explanationRequired": false,
+                     *         "items": [
+                     *           {
+                     *             "difference": "0.00",
+                     *             "imported": "845210.50",
+                     *             "key": "receivables",
+                     *             "kind": "receivables",
+                     *             "label": "receivables",
+                     *             "reference": "845210.50",
+                     *             "status": "match"
+                     *           }
+                     *         ],
+                     *         "note": null,
+                     *         "reconciledAt": "2026-11-01T00:15:00+07:00"
+                     *       },
+                     *       "rollbackReason": null,
+                     *       "rolledBackAt": null,
+                     *       "state": "reconciled",
+                     *       "totals": {
+                     *         "bankFund": "880000.00",
+                     *         "bankOperating": "152300.55",
+                     *         "billTos": 6,
+                     *         "errors": 0,
+                     *         "floorsNew": 25,
+                     *         "historyAmount": "5123400.00",
+                     *         "historyCount": 4800,
+                     *         "openingInvoices": 120,
+                     *         "ownerships": 512,
+                     *         "parties": 530,
+                     *         "partiesAttached": 0,
+                     *         "partiesNew": 530,
+                     *         "principal": "812000.00",
+                     *         "receivables": "845210.50",
+                     *         "surcharge": "33210.50",
+                     *         "units": 500,
+                     *         "unitsAttached": 0,
+                     *         "unitsInArrears": 120,
+                     *         "unitsIncomplete": 0,
+                     *         "unitsNew": 500,
+                     *         "warnings": 3
+                     *       },
+                     *       "version": 4
+                     *     }
+                     */
+                    "application/json": components["schemas"]["JuristicImportJobDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `document.infected`, `document.not_uploaded`, `document.scan_pending`, `import.invalid_state`, `import.preview_stale` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `document.type_not_allowed`, `import.file_invalid`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicImports.rollback": {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Client-generated uuid for this operation. A replay with the same key and body within 24 h returns the original response with `Idempotent-Replayed: true`; the same key with a different body → 422 `idempotency.key_reused`; while the first request is still running → 409 `idempotency.in_progress`. A failed attempt releases the key. */
+                "Idempotency-Key": components["parameters"]["IdempotencyKey"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                importId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JuristicImportRollbackDto"];
+            };
+        };
+        responses: {
+            /** @description Rolled back */
+            200: {
+                headers: {
+                    "Idempotent-Replayed": components["headers"]["IdempotentReplayed"];
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "asOfDate": "2026-10-31",
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "cancelledAt": null,
+                     *       "committedAt": "2026-11-01T00:15:00+07:00",
+                     *       "created": {
+                     *         "bill_to": 6,
+                     *         "floor": 25,
+                     *         "invoice": 120,
+                     *         "legacy_payment": 4800,
+                     *         "party": 530,
+                     *         "unit": 500,
+                     *         "unit_ownership": 512
+                     *       },
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "files": [
+                     *         {
+                     *           "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "errorCount": 0,
+                     *           "fileName": "register.xlsx",
+                     *           "format": "xlsx",
+                     *           "rowCount": 512,
+                     *           "sheet": "register",
+                     *           "uploadedAt": "2026-11-01T00:15:00+07:00",
+                     *           "warningCount": 3
+                     *         }
+                     *       ],
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "liveAt": null,
+                     *       "nextActions": [],
+                     *       "note": null,
+                     *       "number": 1,
+                     *       "parallelCycleId": null,
+                     *       "parallelRunAt": null,
+                     *       "reconciliation": {
+                     *         "declaredReceivables": "845210.50",
+                     *         "documentId": null,
+                     *         "explanationRequired": false,
+                     *         "items": [
+                     *           {
+                     *             "difference": "0.00",
+                     *             "imported": "845210.50",
+                     *             "key": "receivables",
+                     *             "kind": "receivables",
+                     *             "label": "receivables",
+                     *             "reference": "845210.50",
+                     *             "status": "match"
+                     *           }
+                     *         ],
+                     *         "note": null,
+                     *         "reconciledAt": "2026-11-01T00:15:00+07:00"
+                     *       },
+                     *       "rollbackReason": null,
+                     *       "rolledBackAt": "2026-11-01T00:15:00+07:00",
+                     *       "state": "rolled_back",
+                     *       "totals": {
+                     *         "bankFund": "880000.00",
+                     *         "bankOperating": "152300.55",
+                     *         "billTos": 6,
+                     *         "errors": 0,
+                     *         "floorsNew": 25,
+                     *         "historyAmount": "5123400.00",
+                     *         "historyCount": 4800,
+                     *         "openingInvoices": 120,
+                     *         "ownerships": 512,
+                     *         "parties": 530,
+                     *         "partiesAttached": 0,
+                     *         "partiesNew": 530,
+                     *         "principal": "812000.00",
+                     *         "receivables": "845210.50",
+                     *         "surcharge": "33210.50",
+                     *         "units": 500,
+                     *         "unitsAttached": 0,
+                     *         "unitsInArrears": 120,
+                     *         "unitsIncomplete": 0,
+                     *         "unitsNew": 500,
+                     *         "warnings": 3
+                     *       },
+                     *       "version": 5
+                     *     }
+                     */
+                    "application/json": components["schemas"]["JuristicImportJobDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `idempotency.key_invalid`, `idempotency.key_required`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.in_progress`, `import.invalid_state`, `import.rollback_blocked` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `idempotency.key_reused`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicImports.validate": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                importId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Job, re-validated */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "asOfDate": "2026-10-31",
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "cancelledAt": null,
+                     *       "committedAt": null,
+                     *       "created": {},
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "files": [
+                     *         {
+                     *           "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "errorCount": 0,
+                     *           "fileName": "register.xlsx",
+                     *           "format": "xlsx",
+                     *           "rowCount": 512,
+                     *           "sheet": "register",
+                     *           "uploadedAt": "2026-11-01T00:15:00+07:00",
+                     *           "warningCount": 3
+                     *         }
+                     *       ],
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "liveAt": null,
+                     *       "nextActions": [
+                     *         "upload",
+                     *         "validate",
+                     *         "reconcile",
+                     *         "commit",
+                     *         "cancel"
+                     *       ],
+                     *       "note": null,
+                     *       "number": 1,
+                     *       "parallelCycleId": null,
+                     *       "parallelRunAt": null,
+                     *       "reconciliation": {
+                     *         "declaredReceivables": "845210.50",
+                     *         "documentId": null,
+                     *         "explanationRequired": false,
+                     *         "items": [
+                     *           {
+                     *             "difference": "0.00",
+                     *             "imported": "845210.50",
+                     *             "key": "receivables",
+                     *             "kind": "receivables",
+                     *             "label": "receivables",
+                     *             "reference": "845210.50",
+                     *             "status": "match"
+                     *           }
+                     *         ],
+                     *         "note": null,
+                     *         "reconciledAt": "2026-11-01T00:15:00+07:00"
+                     *       },
+                     *       "rollbackReason": null,
+                     *       "rolledBackAt": null,
+                     *       "state": "reconciled",
+                     *       "totals": {
+                     *         "bankFund": "880000.00",
+                     *         "bankOperating": "152300.55",
+                     *         "billTos": 6,
+                     *         "errors": 0,
+                     *         "floorsNew": 25,
+                     *         "historyAmount": "5123400.00",
+                     *         "historyCount": 4800,
+                     *         "openingInvoices": 120,
+                     *         "ownerships": 512,
+                     *         "parties": 530,
+                     *         "partiesAttached": 0,
+                     *         "partiesNew": 530,
+                     *         "principal": "812000.00",
+                     *         "receivables": "845210.50",
+                     *         "surcharge": "33210.50",
+                     *         "units": 500,
+                     *         "unitsAttached": 0,
+                     *         "unitsInArrears": 120,
+                     *         "unitsIncomplete": 0,
+                     *         "unitsNew": 500,
+                     *         "warnings": 3
+                     *       },
+                     *       "version": 4
+                     *     }
+                     */
+                    "application/json": components["schemas"]["JuristicImportJobDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `document.infected`, `document.not_uploaded`, `document.scan_pending`, `import.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `document.type_not_allowed`, `import.file_invalid`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicImports.badRows": {
+        parameters: {
+            query: {
+                format?: components["schemas"]["ImportFormat"];
+                language?: components["schemas"]["Language"];
+                sheet: components["schemas"]["ImportUploadSheet"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                importId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The rows with errors */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example UEsDBBQABgAIAAAAIQ… (xlsx bytes) */
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                    /** @example เลขที่ห้อง / แปลง (unit_no) *,ชื่อเจ้าของ (owner_name) * */
+                    "text/csv": string;
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicImports.upload": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                importId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JuristicImportFileUploadDto"];
+            };
+        };
+        responses: {
+            /** @description Job, re-validated */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "asOfDate": "2026-10-31",
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "cancelledAt": null,
+                     *       "committedAt": null,
+                     *       "created": {},
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "files": [
+                     *         {
+                     *           "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "errorCount": 0,
+                     *           "fileName": "register.xlsx",
+                     *           "format": "xlsx",
+                     *           "rowCount": 512,
+                     *           "sheet": "register",
+                     *           "uploadedAt": "2026-11-01T00:15:00+07:00",
+                     *           "warningCount": 3
+                     *         }
+                     *       ],
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "liveAt": null,
+                     *       "nextActions": [
+                     *         "upload",
+                     *         "validate",
+                     *         "reconcile",
+                     *         "commit",
+                     *         "cancel"
+                     *       ],
+                     *       "note": null,
+                     *       "number": 1,
+                     *       "parallelCycleId": null,
+                     *       "parallelRunAt": null,
+                     *       "reconciliation": {
+                     *         "declaredReceivables": "845210.50",
+                     *         "documentId": null,
+                     *         "explanationRequired": false,
+                     *         "items": [
+                     *           {
+                     *             "difference": "0.00",
+                     *             "imported": "845210.50",
+                     *             "key": "receivables",
+                     *             "kind": "receivables",
+                     *             "label": "receivables",
+                     *             "reference": "845210.50",
+                     *             "status": "match"
+                     *           }
+                     *         ],
+                     *         "note": null,
+                     *         "reconciledAt": "2026-11-01T00:15:00+07:00"
+                     *       },
+                     *       "rollbackReason": null,
+                     *       "rolledBackAt": null,
+                     *       "state": "reconciled",
+                     *       "totals": {
+                     *         "bankFund": "880000.00",
+                     *         "bankOperating": "152300.55",
+                     *         "billTos": 6,
+                     *         "errors": 0,
+                     *         "floorsNew": 25,
+                     *         "historyAmount": "5123400.00",
+                     *         "historyCount": 4800,
+                     *         "openingInvoices": 120,
+                     *         "ownerships": 512,
+                     *         "parties": 530,
+                     *         "partiesAttached": 0,
+                     *         "partiesNew": 530,
+                     *         "principal": "812000.00",
+                     *         "receivables": "845210.50",
+                     *         "surcharge": "33210.50",
+                     *         "units": 500,
+                     *         "unitsAttached": 0,
+                     *         "unitsInArrears": 120,
+                     *         "unitsIncomplete": 0,
+                     *         "unitsNew": 500,
+                     *         "warnings": 3
+                     *       },
+                     *       "version": 4
+                     *     }
+                     */
+                    "application/json": components["schemas"]["JuristicImportJobDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `document.infected`, `document.not_uploaded`, `document.scan_pending`, `import.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `document.type_not_allowed`, `import.file_invalid`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicImports.removeFile": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                importId: string;
+                sheet: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Job, re-validated */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "asOfDate": "2026-10-31",
+                     *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *       "buildingName": "อาคาร A",
+                     *       "cancelledAt": null,
+                     *       "committedAt": null,
+                     *       "created": {},
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "files": [
+                     *         {
+                     *           "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "errorCount": 0,
+                     *           "fileName": "register.xlsx",
+                     *           "format": "xlsx",
+                     *           "rowCount": 512,
+                     *           "sheet": "register",
+                     *           "uploadedAt": "2026-11-01T00:15:00+07:00",
+                     *           "warningCount": 3
+                     *         }
+                     *       ],
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "liveAt": null,
+                     *       "nextActions": [
+                     *         "upload",
+                     *         "validate",
+                     *         "reconcile",
+                     *         "commit",
+                     *         "cancel"
+                     *       ],
+                     *       "note": null,
+                     *       "number": 1,
+                     *       "parallelCycleId": null,
+                     *       "parallelRunAt": null,
+                     *       "reconciliation": {
+                     *         "declaredReceivables": "845210.50",
+                     *         "documentId": null,
+                     *         "explanationRequired": false,
+                     *         "items": [
+                     *           {
+                     *             "difference": "0.00",
+                     *             "imported": "845210.50",
+                     *             "key": "receivables",
+                     *             "kind": "receivables",
+                     *             "label": "receivables",
+                     *             "reference": "845210.50",
+                     *             "status": "match"
+                     *           }
+                     *         ],
+                     *         "note": null,
+                     *         "reconciledAt": "2026-11-01T00:15:00+07:00"
+                     *       },
+                     *       "rollbackReason": null,
+                     *       "rolledBackAt": null,
+                     *       "state": "reconciled",
+                     *       "totals": {
+                     *         "bankFund": "880000.00",
+                     *         "bankOperating": "152300.55",
+                     *         "billTos": 6,
+                     *         "errors": 0,
+                     *         "floorsNew": 25,
+                     *         "historyAmount": "5123400.00",
+                     *         "historyCount": 4800,
+                     *         "openingInvoices": 120,
+                     *         "ownerships": 512,
+                     *         "parties": 530,
+                     *         "partiesAttached": 0,
+                     *         "partiesNew": 530,
+                     *         "principal": "812000.00",
+                     *         "receivables": "845210.50",
+                     *         "surcharge": "33210.50",
+                     *         "units": 500,
+                     *         "unitsAttached": 0,
+                     *         "unitsInArrears": 120,
+                     *         "unitsIncomplete": 0,
+                     *         "unitsNew": 500,
+                     *         "warnings": 3
+                     *       },
+                     *       "version": 4
+                     *     }
+                     */
+                    "application/json": components["schemas"]["JuristicImportJobDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `document.infected`, `document.not_uploaded`, `document.scan_pending`, `import.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `document.type_not_allowed`, `import.file_invalid`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicImports.parallelCycle": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                importId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Differences */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "billingCycleId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "differences": [
+                     *         {
+                     *           "computed": "1043.10",
+                     *           "difference": "-50.00",
+                     *           "explainedAt": null,
+                     *           "explanation": null,
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "legacy": "1093.10",
+                     *           "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "unitNo": "A-1201"
+                     *         }
+                     *       ],
+                     *       "importJobId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "periodKey": "2026-11",
+                     *       "runAt": "2026-11-01T00:15:00+07:00",
+                     *       "summary": {
+                     *         "computedTotal": "521550.00",
+                     *         "differenceTotal": "-50.00",
+                     *         "different": 1,
+                     *         "legacyTotal": "521600.00",
+                     *         "matching": 499,
+                     *         "unexplained": 1,
+                     *         "units": 500
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["JuristicParallelCycleReportDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicImports.compareParallelCycle": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                importId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JuristicImportParallelCycleDto"];
+            };
+        };
+        responses: {
+            /** @description Differences */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "billingCycleId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "differences": [
+                     *         {
+                     *           "computed": "1043.10",
+                     *           "difference": "-50.00",
+                     *           "explainedAt": null,
+                     *           "explanation": null,
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "legacy": "1093.10",
+                     *           "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "unitNo": "A-1201"
+                     *         }
+                     *       ],
+                     *       "importJobId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "periodKey": "2026-11",
+                     *       "runAt": "2026-11-01T00:15:00+07:00",
+                     *       "summary": {
+                     *         "computedTotal": "521550.00",
+                     *         "differenceTotal": "-50.00",
+                     *         "different": 1,
+                     *         "legacyTotal": "521600.00",
+                     *         "matching": 499,
+                     *         "unexplained": 1,
+                     *         "units": 500
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["JuristicParallelCycleReportDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `document.infected`, `document.not_uploaded`, `document.scan_pending`, `import.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `document.type_not_allowed`, `import.file_invalid`, `import.invalid_rows`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicImports.explainDifference": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                differenceId: string;
+                importId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["JuristicImportDifferenceExplainDto"];
+            };
+        };
+        responses: {
+            /** @description Differences */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "billingCycleId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "differences": [
+                     *         {
+                     *           "computed": "1043.10",
+                     *           "difference": "-50.00",
+                     *           "explainedAt": null,
+                     *           "explanation": null,
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "legacy": "1093.10",
+                     *           "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "unitNo": "A-1201"
+                     *         }
+                     *       ],
+                     *       "importJobId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "periodKey": "2026-11",
+                     *       "runAt": "2026-11-01T00:15:00+07:00",
+                     *       "summary": {
+                     *         "computedTotal": "521550.00",
+                     *         "differenceTotal": "-50.00",
+                     *         "different": 1,
+                     *         "legacyTotal": "521600.00",
+                     *         "matching": 499,
+                     *         "unexplained": 1,
+                     *         "units": 500
+                     *       }
+                     *     }
+                     */
+                    "application/json": components["schemas"]["JuristicParallelCycleReportDto"];
+                };
+            };
+            /** @description Problem: `http.bad_request`, `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `import.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicImports.preview": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                importId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Preview */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "floorsToCreate": [
+                     *         {
+                     *           "level": 12,
+                     *           "name": "ชั้น 12"
+                     *         }
+                     *       ],
+                     *       "openingBalances": [
+                     *         {
+                     *           "billedName": "สมชาย ใจดี",
+                     *           "lines": 4,
+                     *           "ownerName": "สมชาย ใจดี",
+                     *           "periodEnd": "2026-10-31",
+                     *           "periodStart": "2026-07-01",
+                     *           "total": "4197.40",
+                     *           "unitNo": "A-1201"
+                     *         }
+                     *       ],
+                     *       "totals": {
+                     *         "bankFund": "880000.00",
+                     *         "bankOperating": "152300.55",
+                     *         "billTos": 6,
+                     *         "errors": 0,
+                     *         "floorsNew": 25,
+                     *         "historyAmount": "5123400.00",
+                     *         "historyCount": 4800,
+                     *         "openingInvoices": 120,
+                     *         "ownerships": 512,
+                     *         "parties": 530,
+                     *         "partiesAttached": 0,
+                     *         "partiesNew": 530,
+                     *         "principal": "812000.00",
+                     *         "receivables": "845210.50",
+                     *         "surcharge": "33210.50",
+                     *         "units": 500,
+                     *         "unitsAttached": 0,
+                     *         "unitsInArrears": 120,
+                     *         "unitsIncomplete": 0,
+                     *         "unitsNew": 500,
+                     *         "warnings": 3
+                     *       },
+                     *       "truncated": false
+                     *     }
+                     */
+                    "application/json": components["schemas"]["JuristicImportPreviewDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `document.infected`, `document.not_uploaded`, `document.scan_pending`, `import.invalid_state` */
+            409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `document.type_not_allowed`, `import.file_invalid`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicImports.rows": {
+        parameters: {
+            query?: {
+                /** @description Only rows with errors. */
+                errorsOnly?: boolean;
+                language?: components["schemas"]["Language"];
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                sheet?: components["schemas"]["ImportSheet"];
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                importId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "data": {
+                     *             "id_last4": null,
+                     *             "owner_name": "สมชาย ใจดี",
+                     *             "unit_no": "A-1201"
+                     *           },
+                     *           "errors": [
+                     *             {
+                     *               "code": "id_full_refused",
+                     *               "column": "id_last4",
+                     *               "message": "ไม่รับเลขบัตรเต็ม (PDPA) — ใส่เฉพาะ 4 หลักท้าย ข้อมูลนี้ไม่ถูกบันทึก"
+                     *             }
+                     *           ],
+                     *           "rowNo": 7,
+                     *           "sheet": "register",
+                     *           "warnings": []
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["JuristicImportRowDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicImports.template": {
+        parameters: {
+            query?: {
+                format?: components["schemas"]["ImportFormat"];
+                language?: components["schemas"]["Language"];
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                sheet: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The template */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /** @example UEsDBBQABgAIAAAAIQ… (xlsx bytes) */
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                    /** @example เลขที่ห้อง / แปลง (unit_no) *,ชื่อเจ้าของ (owner_name) * */
+                    "text/csv": string;
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];

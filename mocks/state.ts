@@ -17,6 +17,7 @@ import { initialJuristicWorld, type MockJuristicWorld } from "./owner/juristic";
 import { initialCollectionsWorld, type MockCollectionsWorld } from "./owner/collections";
 import { initialAccountingWorld, type MockAccountingWorld } from "./owner/accounting";
 import { initialVendorsWorld, type MockVendorsWorld } from "./owner/vendors";
+import { initialImportsWorld, type MockImportsWorld } from "./owner/imports";
 import { initialGateWorld, type MockGateWorld } from "./owner/gate";
 import {
   initialChannels,
@@ -200,6 +201,8 @@ export interface MockState {
   accounting: MockAccountingWorld;
   /** Vendors, contracts, quotation rounds, evaluations, PM plans under contracts (JW2b): see owner/vendors.ts. */
   vendors: MockVendorsWorld;
+  /** The import wizard's jobs (JW3a): see owner/imports.ts. */
+  imports: MockImportsWorld;
   /** The juristic estate's gate: tablets, guards, visits, policies, incidents (JW4): see owner/gate.ts. */
   gate: MockGateWorld;
   webVitals: unknown[];
@@ -262,6 +265,7 @@ function initial(): MockState {
     collections: initialCollectionsWorld(),
     accounting,
     vendors: initialVendorsWorld(accounting),
+    imports: initialImportsWorld(),
     gate: initialGateWorld(juristic),
     webVitals: [],
     log: [],

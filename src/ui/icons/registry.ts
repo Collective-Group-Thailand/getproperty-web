@@ -149,6 +149,11 @@ import { IconTrendUp } from "./glyphs/trend-up";
 import { IconTrendDown } from "./glyphs/trend-down";
 import { IconTrendSteady } from "./glyphs/trend-steady";
 import { IconBlock } from "./glyphs/block";
+import { IconImport } from "./glyphs/import";
+import { IconFile } from "./glyphs/file";
+import { IconAttachment } from "./glyphs/attachment";
+import { IconCompare } from "./glyphs/compare";
+import { IconFileArchive } from "./glyphs/file-archive";
 import { IconThemeSystem } from "./glyphs/theme-system";
 import { IconThemeLight } from "./glyphs/theme-light";
 import { IconThemeDark } from "./glyphs/theme-dark";
@@ -302,6 +307,11 @@ export const ICONS: { readonly [N in IconName]: IconGlyph<N> } = {
   "trend-down": IconTrendDown,
   "trend-steady": IconTrendSteady,
   block: IconBlock,
+  import: IconImport,
+  file: IconFile,
+  attachment: IconAttachment,
+  compare: IconCompare,
+  "file-archive": IconFileArchive,
   "theme-system": IconThemeSystem,
   "theme-light": IconThemeLight,
   "theme-dark": IconThemeDark,

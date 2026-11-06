@@ -623,5 +623,19 @@
     "improving": "ดีขึ้น",
     "steady": "คงที่",
     "declining": "แย่ลง"
+  },
+  "importJob": {
+    "draft": "ร่าง",
+    "validated": "ตรวจข้อมูลผ่าน",
+    "reconciled": "กระทบยอดแล้ว",
+    "committed": "นำเข้าแล้ว รอเริ่มใช้งาน",
+    "live": "ใช้งานจริงแล้ว",
+    "rolled_back": "ย้อนกลับแล้ว",
+    "cancelled": "ยกเลิก"
+  },
+  "reconcile": {
+    "match": "ตรงกัน",
+    "mismatch": "ต้องอธิบายส่วนต่าง",
+    "no_statement": "ไม่พบ statement"
   }
 }

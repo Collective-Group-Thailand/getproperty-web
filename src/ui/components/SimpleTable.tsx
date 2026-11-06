@@ -4,7 +4,7 @@ import { cn } from "@/ui/lib/cn";
  * Where a column goes when the table becomes rows on a phone (`stackOnPhones`): the `title` and the `figure` share the
  * first line, `meta` lines follow under the title, `status` sits under the figure, `hidden` is left out.
  */
-export type PhoneSlot = "title" | "figure" | "meta" | "status" | "hidden";
+export type PhoneSlot = "title" | "figure" | "meta" | "status" | "wide" | "hidden";
 
 export interface SimpleColumn {
   key: string;
@@ -37,6 +37,8 @@ const SLOT: Record<PhoneSlot, string> = {
   figure: "max-md:col-start-2 max-md:row-start-1 max-md:text-end max-md:font-medium",
   meta: "max-md:col-start-1 max-md:text-start max-md:text-sm max-md:text-muted",
   status: "max-md:col-start-2 max-md:row-start-2 max-md:justify-self-end max-md:text-end",
+  /** A long cell (a list of problems, a note) across the whole stacked row, under the details. */
+  wide: "max-md:col-span-2 max-md:text-start max-md:text-sm",
   hidden: "max-md:hidden",
 };
 

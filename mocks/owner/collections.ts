@@ -639,6 +639,20 @@ function settingsList(): Schemas["SettingDto"][] {
       "json",
       "D-331 (J2.2): criteria of the monthly vendor evaluation, each scored 1–5.",
     ),
+    s(
+      "juristic.import.parallel_cycle_required",
+      true,
+      "bool",
+      "D-313 / D-332 (J3.1): go-live needs one parallel billing cycle compared with the legacy system's bills.",
+      "tenant",
+    ),
+    s(
+      "juristic.import.allow_unexplained_differences",
+      false,
+      "bool",
+      "D-332 (J3.1): go-live may proceed with unexplained parallel-cycle differences when acknowledged.",
+      "tenant",
+    ),
   ];
 }
 

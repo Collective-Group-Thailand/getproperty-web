@@ -198,6 +198,7 @@ const JURISTIC_MENU_BY_ROLE: Record<Schemas["TenantRole"], string[]> = {
     "juristic_vendors",
     "juristic_vendor_contracts",
     "juristic_quotations",
+    "juristic_import",
     "juristic_gate",
     "members",
     "bank_accounts",
@@ -230,6 +231,7 @@ const JURISTIC_MENU_BY_ROLE: Record<Schemas["TenantRole"], string[]> = {
     "juristic_vendors",
     "juristic_vendor_contracts",
     "juristic_quotations",
+    "juristic_import",
     "juristic_gate",
     "members",
     "settings",
@@ -282,6 +284,7 @@ const JURISTIC_MENU_BY_ROLE: Record<Schemas["TenantRole"], string[]> = {
     "juristic_vendors",
     "juristic_vendor_contracts",
     "juristic_quotations",
+    "juristic_import",
     "juristic_gate",
     "settings",
   ],
@@ -308,6 +311,7 @@ const JURISTIC_MENU_BY_ROLE: Record<Schemas["TenantRole"], string[]> = {
     "juristic_vendors",
     "juristic_vendor_contracts",
     "juristic_quotations",
+    "juristic_import",
     "settings",
     "audit_log",
   ],
@@ -732,6 +736,10 @@ const TENANT_KEYS = [
   "juristic.vendor.read",
   "juristic.vendor.manage",
   "juristic.vendor.evaluate",
+  // J3.1 (D-332, rbac at api 0b426453).
+  "juristic.import.read",
+  "juristic.import.manage",
+  "juristic.export.run",
   "gate.read",
   "gate.manage",
   "gate.guard.manage",
@@ -851,6 +859,7 @@ const TENANT_PERMISSIONS: Record<Schemas["TenantRole"], string[]> = {
     "juristic.fund.approve",
     "juristic.vendor.read",
     "juristic.vendor.evaluate",
+    "juristic.import.read",
   ],
   auditor: [
     "tenant.read",
@@ -875,6 +884,7 @@ const TENANT_PERMISSIONS: Record<Schemas["TenantRole"], string[]> = {
     "juristic.accounting.read",
     "juristic.expense.read",
     "juristic.vendor.read",
+    "juristic.import.read",
   ],
 };
 
