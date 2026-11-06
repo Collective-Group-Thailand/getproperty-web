@@ -28,15 +28,24 @@ export interface AssetChoice {
 
 type Category = Pick<Schemas["ServiceCategoryDto"], "id" | "nameTh">;
 
+/** J2.2 (D-331): a vendor contract a plan may run under (draft or active, of the plan's building). */
+export interface ContractChoice {
+  value: string;
+  label: string;
+}
+
 function PlanFields({
   plan,
   categories,
   members,
+  contracts,
   errors,
 }: {
   plan?: Schemas["MaintenancePlanDto"];
   categories: Category[];
   members: FieldMember[];
+  /** Juristic tenants only; `undefined` hides the field. */
+  contracts?: ContractChoice[];
   errors: Record<string, string>;
 }) {
   const t = useTranslations("owner.service.maintenance");
@@ -74,6 +83,21 @@ function PlanFields({
           options={categories.map((category) => ({ value: category.id, label: category.nameTh }))}
         />
       </Field>
+      {contracts ? (
+        <Field
+          label={t("contract")}
+          hint={contracts.length ? t("contractHint") : t("noContracts")}
+          error={errors.vendorContractId}
+        >
+          <NativeSelect
+            name="vendorContractId"
+            defaultValue={plan?.vendorContractId ?? ""}
+            placeholder={t("noContract")}
+            options={contracts}
+            data-testid="plan-contract"
+          />
+        </Field>
+      ) : null}
       <AssigneeFields
         members={members}
         initial={
@@ -90,8 +114,9 @@ function PlanFields({
   );
 }
 
-function planBody(data: FormData) {
+function planBody(data: FormData, withContract: boolean) {
   return {
+    ...(withContract ? { vendorContractId: text(data, "vendorContractId") ?? null } : {}),
     title: text(data, "title"),
     description: text(data, "description") ?? null,
     intervalDays: integer(data, "intervalDays"),
@@ -115,12 +140,14 @@ export function NewPlan({
   units,
   categories,
   members,
+  contracts,
   variant = "primary",
 }: {
   assets: AssetChoice[];
   units: { id: string; unitNo: string }[];
   categories: Category[];
   members: FieldMember[];
+  contracts?: ContractChoice[];
   /** `secondary` as the next step of the empty page (the head keeps the filled one). */
   variant?: "primary" | "secondary";
 }) {
@@ -142,7 +169,7 @@ export function NewPlan({
         unwrap(
           browserApi().POST("/v1/owner/maintenance-plans", {
             body: {
-              ...planBody(data),
+              ...planBody(data, Boolean(contracts)),
               assetItemId: text(data, "assetItemId") ?? "",
               title: text(data, "title") ?? "",
               intervalDays: integer(data, "intervalDays") ?? 0,
@@ -173,7 +200,7 @@ export function NewPlan({
               />
             </Field>
           </div>
-          <PlanFields categories={categories} members={members} errors={errors} />
+          <PlanFields categories={categories} members={members} contracts={contracts} errors={errors} />
         </>
       )}
     </FormDialog>
@@ -185,10 +212,12 @@ export function EditPlan({
   plan,
   categories,
   members,
+  contracts,
 }: {
   plan: Schemas["MaintenancePlanDto"];
   categories: Category[];
   members: FieldMember[];
+  contracts?: ContractChoice[];
 }) {
   const t = useTranslations("owner.service.maintenance");
   return (
@@ -211,12 +240,14 @@ export function EditPlan({
         return unwrap(
           browserApi().PATCH("/v1/owner/maintenance-plans/{maintenancePlanId}", {
             params: { path: { maintenancePlanId: plan.id }, header: { "If-Match": etag ?? "*" } },
-            body: planBody(data),
+            body: planBody(data, Boolean(contracts)),
           }),
         );
       }}
     >
-      {(errors) => <PlanFields plan={plan} categories={categories} members={members} errors={errors} />}
+      {(errors) => (
+        <PlanFields plan={plan} categories={categories} members={members} contracts={contracts} errors={errors} />
+      )}
     </FormDialog>
   );
 }

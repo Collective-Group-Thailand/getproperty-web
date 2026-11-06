@@ -35,6 +35,7 @@ import { initialNetworkWorld, networkHandlers } from "./network";
 import { juristicHandlers, resetJuristicWorld } from "./juristic";
 import { collectionsHandlers, resetCollectionsWorld } from "./collections";
 import { accountingHandlers, resetAccountingWorld } from "./accounting";
+import { resetVendorsWorld, vendorsHandlers } from "./vendors";
 import { gateHandlers, resetGateWorld } from "./gate";
 import { initialOwnerWorld, type OwnerWorld } from "./world";
 
@@ -42,6 +43,7 @@ import { initialOwnerWorld, type OwnerWorld } from "./world";
 export const ownerHandlers: HttpHandler[] = [
   // First: the juristic tenant's answers to generic endpoints fall through for every other tenant (pack J).
   ...accountingHandlers,
+  ...vendorsHandlers,
   ...collectionsHandlers,
   ...gateHandlers,
   ...juristicHandlers,
@@ -179,6 +181,7 @@ export function resetOwnerWorld(part: string | null): boolean {
     resetJuristicWorld();
     resetCollectionsWorld();
     resetAccountingWorld();
+    resetVendorsWorld();
     resetGateWorld();
     if (part) return true;
   }

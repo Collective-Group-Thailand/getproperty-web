@@ -44,6 +44,7 @@ import { isZero } from "./money";
 import { ExpensesNav, memberName } from "./parts";
 import { ExpenseForm } from "./ExpenseForm";
 import { adoptedResolutions, chartOfAccounts, officeMembers } from "./shared";
+import { awardedRounds, contractChoices, vendorChoices, vendorSettings } from "../vendors/shared";
 import { lineWht, parseWhtRates, percentText } from "./wht";
 
 type SearchParams = Record<string, string | string[] | undefined>;
@@ -377,7 +378,7 @@ export async function ExpenseView({ context, expenseId }: { context: OwnerContex
                 key: "payee",
                 label: t("payee"),
                 value: expense.payeeName,
-                detail: expense.payeePartyId ? t("payeeParty") : t("payeeName"),
+                detail: expense.vendorId ? t("payeeVendor") : expense.payeePartyId ? t("payeeParty") : t("payeeName"),
               },
               {
                 key: "requester",
@@ -461,6 +462,46 @@ export async function ExpenseView({ context, expenseId }: { context: OwnerContex
               ]}
             />
           </PaperTotals>
+          {expense.vendorId || expense.vendorContractId || expense.quotationRoundId ? (
+            <PaperSection title={t("vendorLinks")}>
+              <ul className="m-0 flex list-none flex-col gap-1.5 p-0 text-sm" data-testid="expense-vendor-refs">
+                {expense.vendorId ? (
+                  <li className="flex flex-wrap justify-between gap-3">
+                    <span className="text-muted">{t("vendor")}</span>
+                    <a
+                      className="text-primary underline-offset-4 hover:underline"
+                      href={ownerPath(locale, `/juristic/vendors/${expense.vendorId}`)}
+                    >
+                      {expense.vendorName ?? expense.payeeName}
+                    </a>
+                  </li>
+                ) : null}
+                {expense.vendorContractId ? (
+                  <li className="flex flex-wrap justify-between gap-3">
+                    <span className="text-muted">{t("vendorContract")}</span>
+                    <a
+                      className="text-primary underline-offset-4 hover:underline"
+                      href={ownerPath(locale, `/juristic/contracts/${expense.vendorContractId}`)}
+                      data-testid="expense-contract-link"
+                    >
+                      {t("openContract")}
+                    </a>
+                  </li>
+                ) : null}
+                {expense.quotationRoundId ? (
+                  <li className="flex flex-wrap justify-between gap-3">
+                    <span className="text-muted">{t("quotationRound")}</span>
+                    <a
+                      className="text-primary underline-offset-4 hover:underline"
+                      href={ownerPath(locale, `/juristic/quotations/${expense.quotationRoundId}`)}
+                    >
+                      {t("openRound")}
+                    </a>
+                  </li>
+                ) : null}
+              </ul>
+            </PaperSection>
+          ) : null}
           {expense.note ? (
             <PaperSection title={t("note")}>
               <p className="m-0 whitespace-pre-line">{expense.note}</p>
@@ -540,18 +581,37 @@ export async function ExpenseView({ context, expenseId }: { context: OwnerContex
 async function formChoices(context: OwnerContext) {
   const t = await getTranslations("owner.accounting.expenseForm");
   const { api, locale } = context;
-  const [settings, accounts, parties, funds, resolutions] = await Promise.all([
-    expenseSettings(context),
-    chartOfAccounts(api),
-    unwrap(api.GET("/v1/owner/parties", { params: { query: { perPage: 100 } } }))
-      .then((list) => list.data)
-      .catch(() => [] as Schemas["PartyDto"][]),
-    unwrap(api.GET("/v1/owner/juristic/funds", { params: { query: {} } }))
-      .then((list) => list.data)
-      .catch(() => [] as Schemas["FundDto"][]),
-    adoptedResolutions(api, (row) => t("resolutionOption", { number: row.number, title: row.title })),
-  ]);
+  const vendorT = await getTranslations("owner.vendors.expense");
+  const [settings, accounts, parties, funds, resolutions, vendors, contracts, rounds, vendorConfig] = await Promise.all(
+    [
+      expenseSettings(context),
+      chartOfAccounts(api),
+      unwrap(api.GET("/v1/owner/parties", { params: { query: { perPage: 100 } } }))
+        .then((list) => list.data)
+        .catch(() => [] as Schemas["PartyDto"][]),
+      unwrap(api.GET("/v1/owner/juristic/funds", { params: { query: {} } }))
+        .then((list) => list.data)
+        .catch(() => [] as Schemas["FundDto"][]),
+      adoptedResolutions(api, (row) => t("resolutionOption", { number: row.number, title: row.title })),
+      // J2.2 (D-331): vendors, their active contracts and the rounds awarded to them.
+      vendorChoices(api, "active"),
+      contractChoices(api, { state: "active" }),
+      awardedRounds(api, (round) => vendorT("roundOption", { title: round.title })),
+      vendorSettings(context),
+    ],
+  );
   return {
+    links: {
+      vendors: vendors.map((vendor) => ({ id: vendor.id, name: vendor.name, taxIdHint: vendor.taxIdHint })),
+      contracts: contracts.map((contract) => ({
+        id: contract.id,
+        vendorId: contract.vendorId,
+        buildingId: contract.buildingId,
+        label: contract.title,
+      })),
+      rounds,
+      threshold: vendorConfig.threshold,
+    },
     accounts: expenseAccounts(accounts).map((account) => ({ id: account.id, label: accountLabel(account, locale) })),
     chartReadable: accounts.length > 0,
     rates: settings.rates,
@@ -639,6 +699,7 @@ export async function ExpenseNewView({ context, draftId }: { context: OwnerConte
           resolutions={choices.resolutions}
           defaultBuildingId={focusedBuilding(context)?.id}
           draft={draft}
+          links={choices.links}
         />
       )}
     </OwnerPage>

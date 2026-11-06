@@ -1,6 +1,6 @@
 {
   "extends": "./shared.json",
-  "$comment": "Juristic console (pack J, JW1a): the owner budgets (D-179) — initial JS ≤ 260 KB gz on every URL, LCP ≤ 2.5 s as a warning — measured signed in as the mock's juristic office (scripts/lhci.ts, persona `juristic`): overview, register (condo floors, estate plots), a unit, the transfer wizard, invite codes, resolutions, budgets with the rate builder, the new-budget form, cycles, rate plans and members; JW1b: receivables, a collection case, the ladder editor, payment rules, statements (list + paper), letters, plans (list + record), debt clearance (queue + record), auto-pay mandates, collection reports and the D-270 workspace. JW4: the gate admin (gates and tablets, guards, the visitor log read with a reason, gate settings). JW2a: the light GL — statements (income, balance sheet), journal list / record / new, chart of accounts, expenses (list, new form, record, 50 ทวิ, approval and WHT settings), funds (list, ledger, transfer), petty cash, the bank matching queue.",
+  "$comment": "Juristic console (pack J, JW1a): the owner budgets (D-179) — initial JS ≤ 260 KB gz on every URL, LCP ≤ 2.5 s as a warning — measured signed in as the mock's juristic office (scripts/lhci.ts, persona `juristic`): overview, register (condo floors, estate plots), a unit, the transfer wizard, invite codes, resolutions, budgets with the rate builder, the new-budget form, cycles, rate plans and members; JW1b: receivables, a collection case, the ladder editor, payment rules, statements (list + paper), letters, plans (list + record), debt clearance (queue + record), auto-pay mandates, collection reports and the D-270 workspace. JW4: the gate admin (gates and tablets, guards, the visitor log read with a reason, gate settings). JW2a: the light GL — statements (income, balance sheet), journal list / record / new, chart of accounts, expenses (list, new form, record, 50 ทวิ, approval and WHT settings), funds (list, ledger, transfer), petty cash, the bank matching queue. JW2b: vendors (list, record, form), service contracts (renewal queue, record with evaluations, editor, monthly evaluation), quotation rounds (list, an open round, a round awaiting approval).",
   "ci": {
     "collect": {
       "url": [
@@ -51,7 +51,17 @@
         "http://localhost:3200/juristic/funds/f0d0a001-0000-4000-8000-000000000001",
         "http://localhost:3200/juristic/funds/transfers/f7a0a001-0000-4000-8000-000000000090",
         "http://localhost:3200/juristic/petty-cash/9e770a01-0000-4000-8000-000000000001",
-        "http://localhost:3200/juristic/bank-statements/b5a7a001-0000-4000-8000-000000000001"
+        "http://localhost:3200/juristic/bank-statements/b5a7a001-0000-4000-8000-000000000001",
+        "http://localhost:3200/juristic/vendors",
+        "http://localhost:3200/juristic/vendors/7e9d0a01-0000-4000-8000-000000000003",
+        "http://localhost:3200/juristic/vendors/new",
+        "http://localhost:3200/juristic/contracts",
+        "http://localhost:3200/juristic/contracts/c0c7a001-0000-4000-8000-000000000001",
+        "http://localhost:3200/juristic/contracts/new",
+        "http://localhost:3200/juristic/contracts/c0c7a001-0000-4000-8000-000000000001/evaluate",
+        "http://localhost:3200/juristic/quotations",
+        "http://localhost:3200/juristic/quotations/9b0d0a01-0000-4000-8000-000000000001",
+        "http://localhost:3200/juristic/quotations/9b0d0a01-0000-4000-8000-000000000003"
       ],
       "numberOfRuns": 1,
       "settings": {

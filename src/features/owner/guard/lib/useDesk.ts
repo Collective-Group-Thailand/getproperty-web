@@ -169,7 +169,7 @@ export function useDesk(
       }
       if (parts.includes("detections")) {
         tasks.push(
-          get<PlateDetection[]>("/v1/guard/plate-detections?view=pending").then((result) => {
+          get<PlateDetection[]>("/v1/guard/plate-detections?view=recent").then((result) => {
             if (result.ok) patch({ detections: result.data });
           }),
         );

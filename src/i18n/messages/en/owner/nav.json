@@ -62,6 +62,9 @@
   "juristic_funds": "Funds and petty cash",
   "juristic_expenses": "Expenses and approvals",
   "juristic_bank_statements": "Bank reconciliation",
+  "juristic_vendors": "Vendors",
+  "juristic_vendor_contracts": "Service contracts",
+  "juristic_quotations": "Quotations",
   "gate": "Gate and visitors",
   "juristicGroup": {
     "daily": "Daily work",

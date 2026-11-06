@@ -436,7 +436,22 @@ export function initialGateWorld(juristic: MockJuristicWorld = state.juristic): 
         createdAt: at(-80 * DAY),
       },
     ],
-    detections: [],
+    // D-330: a read the camera took during a network outage, delivered late — history only (no entry, no barrier).
+    detections: [
+      {
+        id: gid("6a7e0b0b", 1),
+        gateId: GATE.main,
+        plate: { category: "3กษ", number: "5521", province: "กรุงเทพมหานคร" },
+        confidence: "0.91",
+        match: "resident_vehicle",
+        state: "historical",
+        unit: null,
+        visitId: null,
+        imageRef: null,
+        detectedAt: at(-22 * 60_000),
+        receivedAt: at(-3 * 60_000),
+      },
+    ],
     incidents: [
       {
         id: gid("6a7e0b0a", 1),
@@ -621,6 +636,8 @@ export function plateRead(input: {
   province?: string | null;
   confidence?: string;
   match?: Schemas["PlateMatch"];
+  /** D-330: the read reached the cloud late (queued during an outage) — kept as history, never claimable. */
+  lateMinutes?: number;
 }): Schemas["PlateDetectionDto"] {
   const detection: Schemas["PlateDetectionDto"] = {
     id: crypto.randomUUID(),
@@ -628,11 +645,11 @@ export function plateRead(input: {
     plate: { category: input.category, number: input.number, province: input.province ?? null },
     confidence: input.confidence ?? "0.82",
     match: input.match ?? "none",
-    state: "pending",
+    state: input.lateMinutes ? "historical" : "pending",
     unit: null,
     visitId: null,
     imageRef: null,
-    detectedAt: new Date().toISOString(),
+    detectedAt: new Date(Date.now() - (input.lateMinutes ?? 0) * 60_000).toISOString(),
     receivedAt: new Date().toISOString(),
   };
   g().detections.unshift(detection);
@@ -1045,7 +1062,13 @@ const guardHandlers: HttpHandler[] = [
     const ok = guardCall(request, "guard.plateDetections.list");
     if (ok instanceof Response) return ok;
     const view = query(request).get("view") ?? "pending";
-    return json(g().detections.filter((d) => d.gateId === ok.gateId && (view === "recent" || d.state === "pending")));
+    const hourAgo = Date.now() - 3600_000;
+    return json(
+      g().detections.filter(
+        (d) =>
+          d.gateId === ok.gateId && (view === "recent" ? Date.parse(d.receivedAt) >= hourAgo : d.state === "pending"),
+      ),
+    );
   }),
 
   ...(["claim", "dismiss"] as const).map((action) =>
@@ -1700,6 +1723,7 @@ export function gateControl(url: URL, method: string): { status: number; body: u
         province: p.get("province") ?? "กรุงเทพมหานคร",
         confidence: p.get("confidence") ?? "0.82",
         match: (p.get("match") ?? "none") as Schemas["PlateMatch"],
+        lateMinutes: p.get("late") ? Number(p.get("late")) || 15 : undefined,
       });
       return { status: 200, body: { id: detection.id } };
     }

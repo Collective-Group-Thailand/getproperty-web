@@ -468,7 +468,14 @@
     "cancelled": "เหตุผลที่ยกเลิก",
     "rejected": "เหตุผลที่ไม่อนุมัติ",
     "foot": "ยอดรวม ภาษี และยอดสุทธิคำนวณโดยระบบเมื่อบันทึก ผู้ขอเบิกอนุมัติรายการของตนเองไม่ได้",
-    "vatIncluded": "รวม VAT {amount}"
+    "vatIncluded": "รวม VAT {amount}",
+    "vendorLinks": "อ้างอิงผู้ให้บริการ",
+    "vendor": "ผู้ให้บริการ",
+    "vendorContract": "สัญญา",
+    "openContract": "เปิดสัญญา",
+    "quotationRound": "รอบใบเสนอราคา",
+    "openRound": "เปิดรอบใบเสนอราคา",
+    "payeeVendor": "ผู้ให้บริการที่ลงทะเบียน"
   },
   "expenseAction": {
     "submit": "ส่งขออนุมัติ",

@@ -9,6 +9,7 @@ import { notificationHandlers } from "./notifications";
 import { ownerHandlers } from "../owner";
 import { platformHandlers } from "../platform";
 import { r2Handlers } from "../r2";
+import { vendorPlanHandlers } from "../owner/vendors";
 import { publicHandlers } from "./public";
 import { realtimeHandlers } from "./realtime";
 import { rentRecordHandlers } from "./rent-records";
@@ -30,6 +31,8 @@ export function handlers(): HttpHandler[] {
     ...searchHandlers,
     ...telemetryHandlers,
     ...staffHandlers,
+    // The juristic tenant's preventive plans (JW2b) answer before the r2 world, which serves the apartment tenant.
+    ...vendorPlanHandlers,
     ...r2Handlers,
     ...ownerHandlers,
     ...platformHandlers,

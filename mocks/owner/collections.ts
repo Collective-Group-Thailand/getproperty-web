@@ -610,6 +610,35 @@ function settingsList(): Schemas["SettingDto"][] {
       "int",
       "D-329 (J2.1): bank statement matching window — a statement line matches a payment / paid expense / fund transfer of the same amount booked within this many days.",
     ),
+    s(
+      "juristic.quotation_threshold",
+      "50000.00",
+      "money",
+      "D-310 / D-331 (J2.2): above this amount a vendor purchase or service contract needs 3 quotations (or a recorded reason) and a quotation round awarded to the vendor.",
+    ),
+    s(
+      "juristic.contract_expiry_alert_days",
+      [90, 60, 30],
+      "json",
+      "D-331 (J2.2): days before a vendor contract ends when the office is alerted (in-app + LINE), once per threshold.",
+    ),
+    s(
+      "juristic.contract_instalment_lead_days",
+      7,
+      "int",
+      "D-331 (J2.2): days before an instalment is due when the hourly job submits it as an expense request.",
+    ),
+    s(
+      "juristic.vendor_evaluation_criteria",
+      [
+        { key: "quality", labelTh: "คุณภาพงาน", labelEn: "Quality of work" },
+        { key: "timeliness", labelTh: "ตรงต่อเวลา", labelEn: "Timeliness" },
+        { key: "communication", labelTh: "การติดต่อสื่อสาร", labelEn: "Communication" },
+        { key: "safety", labelTh: "ความปลอดภัย", labelEn: "Safety" },
+      ],
+      "json",
+      "D-331 (J2.2): criteria of the monthly vendor evaluation, each scored 1–5.",
+    ),
   ];
 }
 

@@ -48,7 +48,7 @@ export async function readGateSession(): Promise<{
       get<GuardVisit[]>("/v1/guard/visits?view=waiting"),
       get<GuardVisit[]>("/v1/guard/visits?view=inside"),
       get<GuardHardware[]>("/v1/guard/hardware"),
-      get<PlateDetection[]>("/v1/guard/plate-detections?view=pending"),
+      get<PlateDetection[]>("/v1/guard/plate-detections?view=recent"),
       get<GuardIncident[]>("/v1/guard/incidents?view=active"),
     ]);
     const snapshot =
