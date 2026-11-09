@@ -28,5 +28,7 @@ and headers exactly as against the real backend, and lets the suite read what th
   | support   | `support@example.com`                  | platform, already enrolled                               |
   | juristic  | `0810000010` or `juristic@example.com` | juristic office (condo + housing estate), Owner (pack J) |
   | committee | `0810000011`                           | the same juristic office, Committee (approves, adopts)   |
+  | pm        | `0810000012` or `pm@example.com`       | PM company (portfolio, staff board, contracts), Owner    |
+  | pmStaff   | `0810000013`                           | the same PM company, Staff (sees its own building only)  |
 
 - `state.ts` — the mock's memory; `server.ts` documents the `/__mock/*` control endpoints.

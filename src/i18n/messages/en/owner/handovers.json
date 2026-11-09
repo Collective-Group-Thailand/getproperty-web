@@ -1,0 +1,278 @@
+{
+  "problem": {
+    "notDue": {
+      "title": "The handover date has not come",
+      "body": "You can accept from the handover date the developer set. Review the details in the meantime.",
+      "next": ""
+    },
+    "unitOwned": {
+      "title": "A unit already has owners in the register",
+      "body": "A unit in this payload matches a unit that already has current owners, so nothing was recorded. Check the co-owner register, or reject so the developer sends a corrected one.",
+      "next": "Open the co-owner register"
+    },
+    "totalsMismatch": {
+      "title": "The recorded totals differ from the payload",
+      "body": "Nothing was recorded because the totals to record do not equal what the developer sent. Reject with a reason so the developer checks and sends it again.",
+      "next": ""
+    },
+    "invalid": {
+      "title": "The payload still has problems",
+      "body": "The developer must fix the problems on this page before it can be accepted. Reject and list what to fix.",
+      "next": ""
+    },
+    "invalidState": {
+      "title": "The state has changed",
+      "body": "Someone acted on this handover in the meantime. Reload to see where it stands.",
+      "next": "Reload"
+    },
+    "sharesExceeded": {
+      "title": "Shares over 100%",
+      "body": "With the existing register, some units' owners hold more than 100%. Reject so the developer fixes it.",
+      "next": ""
+    }
+  },
+  "accept": {
+    "button": "Accept handover",
+    "title": "Accept {building}",
+    "body": "Records {units, plural, one {# unit} other {# units}}, {owners, plural, one {# owner} other {# owners}} and the money sent in one go; {invoices, plural, one {# opening balance is} other {# opening balances are}} issued at once.",
+    "confirm": "Accept",
+    "done": "Handover accepted",
+    "legalFormNeeded": "The developer did not send the building's legal form. Choose it before accepting.",
+    "effect": {
+      "register": "The building, floors, units, co-owners and their shares are created",
+      "credits": "Advance common fees become each owner's credit, paying the next invoices — never set against debt brought forward",
+      "fund": "First fund contributions go to the building's sinking fund",
+      "opening": "Receivables brought forward are issued as opening balances with the normal due date"
+    },
+    "legalForm": "Legal form",
+    "legalFormHint": "Only when the developer did not send it",
+    "legalFormRequired": "Required: the developer did not send it",
+    "asSent": "As the developer sent it",
+    "form": {
+      "condo_act": "Condominium Act",
+      "land_allocation_act": "Land Allocation Act",
+      "voluntary": "Voluntary association",
+      "lease_contract": "Lease contract"
+    },
+    "kind": "Property kind",
+    "kindHint": "Optional: the building type sent is used",
+    "kindOf": {
+      "condo": "Condominium",
+      "village": "Housing estate",
+      "community": "Community",
+      "office": "Office building",
+      "retail": "Retail",
+      "industrial": "Industrial",
+      "mixed": "Mixed use",
+      "apartment": "Apartment"
+    },
+    "notify": "Send opening balances to their owners",
+    "notifyOn": "Owners receive their opening balance like a new invoice",
+    "notifyOff": "Opening balances are issued without telling the owners"
+  },
+  "reject": {
+    "button": "Reject handover",
+    "title": "Reject {building}",
+    "body": "Nothing is recorded. The reason goes back to the developer through getbuild so they can fix it and send it again.",
+    "confirm": "Reject",
+    "done": "Rejected — the reason goes to the developer",
+    "reason": "Reason",
+    "reasonHint": "5–1000 characters; say clearly what to fix"
+  },
+  "formed": {
+    "button": "Record the juristic person's registration",
+    "title": "Registration of the juristic person — {building}",
+    "bodyDeveloper": "Once recorded, the developer stops operating the building and the juristic office takes over. Residents, invoices and credits stay with the building.",
+    "body": "Record the registration date and number. This is recorded once.",
+    "submit": "Record",
+    "done": "Registration recorded",
+    "error": {
+      "required": "Enter the registration date",
+      "future": "The date cannot be after today ({date})",
+      "already": "The registration was already recorded. Reload the page."
+    },
+    "formedOn": "Registration date",
+    "formedOnHint": "Not after today",
+    "registrationNo": "Registration number",
+    "registrationNoHint": "Optional, up to 100 characters"
+  },
+  "list": {
+    "title": "Developer handovers",
+    "lede": "Buildings developers hand over through getbuild, with the co-owner register and the money the office takes over",
+    "tabs": "Handover state",
+    "tab": {
+      "pending": "Awaiting review",
+      "accepted": "Accepted",
+      "rejected": "Rejected",
+      "all": "All"
+    },
+    "empty": {
+      "pending": {
+        "title": "Nothing awaiting review",
+        "body": "When a developer hands a building over, it arrives here with the money to take over."
+      },
+      "accepted": {
+        "title": "No accepted handovers yet",
+        "body": "Accepted buildings appear here with what was recorded."
+      },
+      "rejected": {
+        "title": "No rejected handovers",
+        "body": "Rejected handovers appear here with their reason."
+      },
+      "all": {
+        "title": "No developer handovers yet",
+        "body": "When a developer hands a building over through getbuild, the co-owner register, advance common fees, fund contributions and debt brought forward arrive here for review."
+      },
+      "toAll": "See all handovers",
+      "toImport": "Import from a legacy system instead"
+    },
+    "col": {
+      "building": "Building",
+      "date": "Handover date",
+      "advance": "Advance common fees",
+      "fund": "First fund contributions",
+      "forward": "Brought forward",
+      "state": "State"
+    },
+    "register": "{units, plural, one {# unit} other {# units}} · {owners, plural, one {# owner} other {# owners}}",
+    "notDue": "Before the handover date",
+    "registerOnly": "Register only"
+  },
+  "review": {
+    "metaTitle": "Review a handover",
+    "title": "Handover of {building}",
+    "lede": "Sent {sent} · handover date {date}",
+    "back": "Developer handovers",
+    "figure": {
+      "label": "What was sent",
+      "units": "Units",
+      "unitsValue": "{count, plural, one {# unit} other {# units}}",
+      "advance": "Advance common fees",
+      "advanceHint": "{count, plural, one {# unit} other {# units}} with money",
+      "fund": "First fund contributions",
+      "forward": "Brought forward",
+      "forwardHint": "{count, plural, one {# item} other {# items}}",
+      "unitsHint": "{floors, plural, one {# floor} other {# floors}} · {owners, plural, one {# owner} other {# owners}}"
+    },
+    "panel": {
+      "reason": {
+        "notDue": "Can be accepted from {date}",
+        "problems": "The developer must fix {count, plural, one {# problem} other {# problems}} first"
+      },
+      "title": {
+        "pending": "Review the handover",
+        "formed": "The juristic office has taken over",
+        "accepted": "Accepted",
+        "rejected": "Rejected",
+        "other": "Replaced by a newer handover"
+      },
+      "body": {
+        "pending": "Accepting records everything in one go:",
+        "formed": "Registered on {date}, number {number}",
+        "developerOperates": "The developer operates the building until the juristic person is registered. Record the registration when you receive the certificate.",
+        "accepted": "The register and the money are recorded. Record the juristic person's registration when you receive the certificate.",
+        "rejectedDelivered": "The reason reached the developer on {date}. They may send a corrected handover.",
+        "rejectedWaiting": "Sending the reason back to the developer; it is retried until delivered.",
+        "superseded": "The developer sent a newer handover. Review the latest one."
+      },
+      "effect": {
+        "register": "The building, its units and co-owners",
+        "credits": "Advance common fees as owners' credit",
+        "fund": "First fund contributions into the sinking fund",
+        "opening": "Debt brought forward issued as opening balances"
+      },
+      "readOnly": "You can review the details; the office manager accepts or rejects.",
+      "noNumber": "—",
+      "toRegister": "Open the register of {building}"
+    },
+    "summary": {
+      "date": "Handover date",
+      "asOf": "Balances as of",
+      "none": "—",
+      "sent": "Received",
+      "payload": "Sent",
+      "registerOnly": "Register only",
+      "withMoney": "Register and money"
+    },
+    "registerOnly": "This handover carries the co-owner register only, no money. Debt and fund balances can be imported later from Data import.",
+    "rejected": {
+      "title": "Why it was rejected",
+      "at": "Rejected {date}"
+    },
+    "formedLine": "Juristic person registered on {date} · number {number}",
+    "units": {
+      "title": "By unit",
+      "lede": "Owners and money as of {date}",
+      "ledeNoDate": "The owners of each unit",
+      "filter": "Show units",
+      "show": {
+        "all": "All",
+        "owed": "With debt brought forward",
+        "problems": "With a problem"
+      },
+      "empty": "No units in this view",
+      "col": {
+        "unit": "Unit",
+        "owners": "Owners",
+        "advance": "Advance common fees",
+        "fund": "Fund",
+        "forward": "Brought forward"
+      },
+      "noOwner": "No owner named",
+      "share": "{share}%",
+      "period": "{from} – {to}",
+      "items": "{count, plural, one {# item} other {# items}}",
+      "showAll": "Show all units"
+    },
+    "privacy": "Contact details the developer sends encrypted are not kept. Owners link their own account through LINE later.",
+    "problems": {
+      "title": "{count, plural, one {# problem} other {# problems}} for the developer to fix",
+      "lede": "The handover can be accepted once none remain. Reject and list them; the developer sends a corrected one.",
+      "noUnit": "Whole payload",
+      "code": {
+        "owner_missing": "This unit holds money but has no owner",
+        "party_unknown": "Refers to an owner who is not in the list sent",
+        "unit_unknown": "Refers to a unit that is not in the register sent",
+        "floor_unknown": "Refers to a floor the building does not have",
+        "shares_exceeded": "The owners' shares add up to more than 100%",
+        "duplicate_unit_no": "The unit number appears twice in the same payload",
+        "receivable_after_as_of": "A receivable is dated after the as-of date"
+      },
+      "short": {
+        "owner_missing": "No owner",
+        "party_unknown": "Unknown owner",
+        "unit_unknown": "Unknown unit",
+        "floor_unknown": "Unknown floor",
+        "shares_exceeded": "Shares over 100%",
+        "duplicate_unit_no": "Duplicate number",
+        "receivable_after_as_of": "Dated after as-of"
+      }
+    },
+    "bank": {
+      "title": "Receiving account",
+      "lede": "Where the developer transfers the advance fees and fund money, beside the juristic office's own accounts",
+      "none": "No receiving account: this handover carries no money.",
+      "fromDeveloper": "From the developer",
+      "bankCode": "Bank {code}",
+      "office": "Juristic office account",
+      "noMatch": "No account with the same bank and last four digits yet",
+      "matched": "Matches the office's account — entries post to it",
+      "unmatched": "No matching account — entries post to the office's main bank account instead",
+      "addAccount": "Add a bank account"
+    },
+    "owners": {
+      "title": "Co-owners",
+      "create": "Added as new people",
+      "attach": "Matched to people already listed",
+      "count": "{count}",
+      "rule": "No duplicates: an owner with the same LINE account, or from an earlier handover of the same developer, joins the existing record."
+    },
+    "applied": {
+      "title": "What was recorded",
+      "credits": "Owners' common-fee credit",
+      "fund": "Into the sinking fund",
+      "opening": "{count, plural, one {# opening balance} other {# opening balances}}",
+      "matches": "Equals what the developer sent"
+    }
+  }
+}

@@ -37,6 +37,8 @@ import { collectionsHandlers, resetCollectionsWorld } from "./collections";
 import { accountingHandlers, resetAccountingWorld } from "./accounting";
 import { resetVendorsWorld, vendorsHandlers } from "./vendors";
 import { importsHandlers, resetImportsWorld } from "./imports";
+import { handoversHandlers, resetHandoversWorld } from "./handovers";
+import { pmHandlers, resetPmWorld } from "./pm";
 import { gateHandlers, resetGateWorld } from "./gate";
 import { initialOwnerWorld, type OwnerWorld } from "./world";
 
@@ -46,6 +48,8 @@ export const ownerHandlers: HttpHandler[] = [
   ...accountingHandlers,
   ...vendorsHandlers,
   ...importsHandlers,
+  ...handoversHandlers,
+  ...pmHandlers,
   ...collectionsHandlers,
   ...gateHandlers,
   ...juristicHandlers,
@@ -185,8 +189,15 @@ export function resetOwnerWorld(part: string | null): boolean {
     resetAccountingWorld();
     resetVendorsWorld();
     resetImportsWorld();
+    resetHandoversWorld();
+    resetPmWorld();
     resetGateWorld();
     if (part) return true;
+  }
+  if (part === "pm") {
+    // The PM company (JW3b): portfolio, staff assignments, management contracts (shared with the juristic office).
+    resetPmWorld();
+    return true;
   }
   if (part === "gate") {
     // The estate's gate (JW4): tablets, guards, visits, incidents.

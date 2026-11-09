@@ -36,6 +36,8 @@
  *   POST /__mock/owner/vendors/job  the hourly `vendor-contracts` job (JW2b); GET /__mock/owner/vendors: the world
  *   POST /__mock/owner/imports/advance?to=validated|reconciled|explained|committed|compared|explained-all|live  moves
  *        อาคาร B's import job (JW3a); POST /__mock/owner/imports/flag?stale=1|blockRollback=1; GET /__mock/owner/imports
+ *   POST /__mock/owner/handovers/flag?unitOwned=1|mismatch=1  the next acceptance meets an owned unit / a totals mismatch
+ *        (JW3b); GET /__mock/owner/handovers · GET /__mock/owner/pm  the handovers, the PM company's world
  *   POST /__mock/gate/reset         reset the estate's gate (JW4); GET /__mock/gate: visits, incidents, received
  *   POST /__mock/gate/answer?visit=&answer=approve|deny|call-me   a house answers in LIFF (latest waiting visit)
  *   POST /__mock/gate/sos?kind=&unit=   a resident's SOS · POST /__mock/gate/lpr?category=&number=&match=[&late=min]  a camera read
@@ -109,6 +111,7 @@ import { listingPhotoBytes } from "./owner/listing-photos";
 import { gateControl } from "./owner/gate";
 import { runVendorJob } from "./owner/vendors";
 import { advanceImport, importFlags } from "./owner/imports";
+import { handoverFlags } from "./owner/handovers";
 import { BUILDING_A, BUILDING_B, buildingOf } from "./staff-world";
 import { expireAccessTokens, initialStaffWorld, resetState, state } from "./state";
 
@@ -277,6 +280,13 @@ function ownerControl(url: URL, req: IncomingMessage): { status: number; body: u
   if (req.method === "POST" && parts[0] === "imports" && parts[1] === "flag")
     return { status: 200, body: importFlags(url.searchParams) };
   if (req.method === "GET" && parts[0] === "imports" && parts.length === 1) return { status: 200, body: state.imports };
+  // JW3b: force the next handover acceptance to meet an owned unit / a totals mismatch; read the handovers, the PM world.
+  if (req.method === "POST" && parts[0] === "handovers" && parts[1] === "flag")
+    return { status: 200, body: handoverFlags(url.searchParams) };
+  if (req.method === "GET" && parts[0] === "handovers" && parts.length === 1)
+    return { status: 200, body: state.handovers };
+  if (req.method === "GET" && parts[0] === "pm" && parts.length === 1)
+    return { status: 200, body: { ...state.pm, charges: Object.fromEntries(state.pm.charges) } };
   // G1 storage: the founder publishes a package price (O-022), Finance records a purchase's payment, the
   // platform admin overrides the sample tenant's free quota.
   if (req.method === "POST" && parts[0] === "storage" && parts[1] === "price") {

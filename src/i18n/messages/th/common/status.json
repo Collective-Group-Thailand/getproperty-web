@@ -637,5 +637,21 @@
     "match": "ตรงกัน",
     "mismatch": "ต้องอธิบายส่วนต่าง",
     "no_statement": "ไม่พบ statement"
+  },
+  "handover": {
+    "received": "ได้รับแล้ว",
+    "pending_review": "รอตรวจรับ",
+    "accepted": "รับมอบแล้ว",
+    "rejected": "ปฏิเสธแล้ว",
+    "superseded": "มีฉบับใหม่แทน"
+  },
+  "managementContract": {
+    "draft": "ร่าง",
+    "offered": "เสนอแล้ว รอตอบรับ",
+    "active": "มีผลอยู่",
+    "declined": "ปฏิเสธข้อเสนอ",
+    "cancelled": "ยกเลิกข้อเสนอ",
+    "ended": "สิ้นสุดตามกำหนด",
+    "terminated": "บอกเลิกแล้ว"
   }
 }

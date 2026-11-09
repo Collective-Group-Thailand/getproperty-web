@@ -107,6 +107,20 @@ export const TENANTS = {
     },
     subscription: { plan: null, state: "active", readOnly: false },
   },
+  /**
+   * A property-management company (pack J, JW3b, D-334): manages buildings of juristic offices under management
+   * contracts — its portfolio, staff board and contracts. One of its buildings is the juristic mock's อาคาร A.
+   */
+  pm: {
+    profile: {
+      id: "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c99",
+      displayName: "บริษัท ศรีนคร พร็อพเพอร์ตี้ แมเนจเมนท์ จำกัด",
+      type: "pm_company",
+      status: "active",
+      role: "owner",
+    },
+    subscription: { plan: "pm_portfolio", state: "active", readOnly: false },
+  },
 } as const satisfies Record<string, MockTenant>;
 
 export type TenantKey = keyof typeof TENANTS;
@@ -207,6 +221,8 @@ const JURISTIC_MENU_BY_ROLE: Record<Schemas["TenantRole"], string[]> = {
     "privacy",
     "audit_log",
     "subscription",
+    "juristic_handovers",
+    "juristic_management_contracts",
   ],
   manager: [
     "dashboard",
@@ -235,6 +251,8 @@ const JURISTIC_MENU_BY_ROLE: Record<Schemas["TenantRole"], string[]> = {
     "juristic_gate",
     "members",
     "settings",
+    "juristic_handovers",
+    "juristic_management_contracts",
   ],
   accountant: [
     "dashboard",
@@ -251,6 +269,7 @@ const JURISTIC_MENU_BY_ROLE: Record<Schemas["TenantRole"], string[]> = {
     "juristic_vendors",
     "juristic_vendor_contracts",
     "juristic_quotations",
+    "juristic_management_contracts",
   ],
   staff: [
     "juristic_register",
@@ -287,6 +306,8 @@ const JURISTIC_MENU_BY_ROLE: Record<Schemas["TenantRole"], string[]> = {
     "juristic_import",
     "juristic_gate",
     "settings",
+    "juristic_handovers",
+    "juristic_management_contracts",
   ],
   auditor: [
     "dashboard",
@@ -314,7 +335,18 @@ const JURISTIC_MENU_BY_ROLE: Record<Schemas["TenantRole"], string[]> = {
     "juristic_import",
     "settings",
     "audit_log",
+    "juristic_handovers",
+    "juristic_management_contracts",
   ],
+};
+/** A PM company's own keys per role (`pm.portfolio.read` · `pm.staff.read` · `pm.contract.read`, D-334). */
+const PM_MENU_BY_ROLE: Record<Schemas["TenantRole"], string[]> = {
+  owner: ["pm_portfolio", "pm_staff", "pm_contracts"],
+  manager: ["pm_portfolio", "pm_staff", "pm_contracts"],
+  accountant: ["pm_portfolio", "pm_contracts"],
+  staff: ["pm_portfolio", "pm_staff"],
+  committee: [],
+  auditor: [],
 };
 /** Staff PWA menu keys per role (`STAFF_MENU` of the API's `src/core/rbac/menu.ts`, D-180). */
 const STAFF_MENU_BY_ROLE: Record<Schemas["TenantRole"], Schemas["StaffMenuKey"][]> = {
@@ -345,6 +377,9 @@ export function menuFor(
 ): string[] {
   if (surface === "owner" && tenantType === "juristic") return JURISTIC_MENU_BY_ROLE[role];
   const menu = (surface === "owner" ? OWNER_MENU_BY_ROLE : STAFF_MENU_BY_ROLE)[role];
+  // JW3b (D-334): a PM company leads with the buildings it manages, its staff board and its management contracts.
+  if (surface === "owner" && tenantType === "pm_company")
+    return [...PM_MENU_BY_ROLE[role], ...menu.filter((key) => !key.startsWith("juristic_"))];
   if (surface !== "owner" || (tenantType !== "landlord" && tenantType !== "agency")) return menu;
   const rest = menu.filter((key) => !BUILDING_OPERATOR_ONLY.has(key));
   // G2 (D-293): landlords see their mandates and deals; an agency works from its mandated units.
@@ -507,6 +542,32 @@ export const OPERATORS: OperatorPersona[] = [
       lineLinked: false,
     },
     memberships: [{ tenant: "juristic", role: "committee" }],
+  },
+  {
+    // The PM company's managing director (JW3b, D-334): portfolio, staff board, management contracts.
+    key: "pm",
+    user: {
+      id: "3b241101-e2bb-4255-8caf-4136c566a912",
+      displayName: "ธนพล ผู้จัดการพอร์ต",
+      phone: "+66810000012",
+      email: "pm@example.com",
+      language: "th",
+      lineLinked: false,
+    },
+    memberships: [{ tenant: "pm", role: "owner" }],
+  },
+  {
+    // A building manager of the PM company (`staff`): sees only the buildings he is assigned to today.
+    key: "pmStaff",
+    user: {
+      id: "3b241101-e2bb-4255-8caf-4136c566a913",
+      displayName: "อรุณี ผู้จัดการอาคาร",
+      phone: "+66810000013",
+      email: null,
+      language: "th",
+      lineLinked: false,
+    },
+    memberships: [{ tenant: "pm", role: "staff" }],
   },
 ];
 
@@ -740,6 +801,16 @@ const TENANT_KEYS = [
   "juristic.import.read",
   "juristic.import.manage",
   "juristic.export.run",
+  // J3.2 / J3.3 (D-333, D-334, rbac at api 1e364785).
+  "juristic.handover.read",
+  "juristic.handover.manage",
+  "juristic.management_contract.read",
+  "juristic.management_contract.manage",
+  "pm.portfolio.read",
+  "pm.contract.read",
+  "pm.contract.manage",
+  "pm.staff.read",
+  "pm.staff.manage",
   "gate.read",
   "gate.manage",
   "gate.guard.manage",
@@ -796,6 +867,8 @@ const TENANT_PERMISSIONS: Record<Schemas["TenantRole"], string[]> = {
     "juristic.expense.request",
     "juristic.petty_cash.spend",
     "juristic.vendor.read",
+    "pm.portfolio.read",
+    "pm.staff.read",
   ],
   accountant: [
     "tenant.read",
@@ -827,6 +900,9 @@ const TENANT_PERMISSIONS: Record<Schemas["TenantRole"], string[]> = {
     "juristic.expense.pay",
     "juristic.vendor.read",
     "juristic.vendor.manage",
+    "juristic.management_contract.read",
+    "pm.portfolio.read",
+    "pm.contract.read",
   ],
   committee: [
     "tenant.read",
@@ -860,6 +936,8 @@ const TENANT_PERMISSIONS: Record<Schemas["TenantRole"], string[]> = {
     "juristic.vendor.read",
     "juristic.vendor.evaluate",
     "juristic.import.read",
+    "juristic.handover.read",
+    "juristic.management_contract.read",
   ],
   auditor: [
     "tenant.read",
@@ -885,6 +963,8 @@ const TENANT_PERMISSIONS: Record<Schemas["TenantRole"], string[]> = {
     "juristic.expense.read",
     "juristic.vendor.read",
     "juristic.import.read",
+    "juristic.handover.read",
+    "juristic.management_contract.read",
   ],
 };
 
