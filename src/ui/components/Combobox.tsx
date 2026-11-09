@@ -28,6 +28,8 @@ export interface ComboboxProps {
   inputSize?: "sm" | "md" | "lg";
   /** Override the default label match — e.g. match a room code and its resident's name. */
   filter?: (option: ComboboxOption, query: string) => boolean;
+  /** Remote search: called with the typed text (debounce in the caller); the options are then shown unfiltered. */
+  onQueryChange?: (query: string) => void;
   className?: string;
 }
 
@@ -49,6 +51,7 @@ export function Combobox({
   listLabel,
   inputSize = "md",
   filter = defaultFilter,
+  onQueryChange,
   className,
 }: ComboboxProps) {
   const field = useFieldProps();
@@ -62,7 +65,10 @@ export function Combobox({
   const [active, setActive] = useState(0);
 
   const text = query ?? selected?.label ?? "";
-  const visible = useMemo(() => (query ? options.filter((o) => filter(o, query)) : options), [options, query, filter]);
+  const visible = useMemo(
+    () => (query && !onQueryChange ? options.filter((o) => filter(o, query)) : options),
+    [options, query, filter, onQueryChange],
+  );
   const activeOption = visible[Math.min(active, visible.length - 1)];
 
   const choose = (option: ComboboxOption | undefined) => {
@@ -114,6 +120,7 @@ export function Combobox({
           setQuery(event.target.value);
           setOpen(true);
           setActive(0);
+          onQueryChange?.(event.target.value);
           if (event.target.value === "") onChange(null);
         }}
         onFocus={() => setOpen(true)}

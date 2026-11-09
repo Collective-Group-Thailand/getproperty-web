@@ -53,6 +53,8 @@ test("visitor loop: notify the house, the answer arrives on the stream, let in o
 }) => {
   await enrolAndSignIn(page);
   await expectAxeClean(page);
+  // J-CR: the list carries `overstayedAt` — the contractor inside since yesterday is marked without a stream event.
+  await expect(page.getByTestId("inside-row").filter({ hasText: "3200" }).getByTestId("overstayed")).toBeVisible();
   await typePlate(page, ["1", "ก", "ข", "next", "4", "5", "2", "1"]);
   await page.getByTestId("kind-guest").click();
   await chooseHouse(page, "99/12");
@@ -64,9 +66,11 @@ test("visitor loop: notify the house, the answer arrives on the stream, let in o
   const row = page.getByTestId("waiting-row").filter({ hasText: "1กข 4521" });
   await expect(row).toHaveAttribute("data-state", "requested");
   await control("/__mock/gate/answer?answer=call-me");
-  await expect(row.getByTestId("call-back")).toBeVisible();
+  // J-CR: `callBackName` (first name) comes with the list.
+  await expect(row.getByTestId("call-back")).toContainText("ขอให้โทรกลับ");
   await control("/__mock/gate/answer?answer=approve");
   await expect(row).toHaveAttribute("data-state", "approved");
+  await expect(row.getByTestId("decided-by")).toContainText("อนุญาตเมื่อ");
 
   await row.getByTestId("let-in").click();
   await expect(page.getByTestId("notice")).toContainText("ไม้กั้น");
@@ -166,6 +170,12 @@ test("PIN: a wrong PIN says so, and five wrong ones lock the guard until the API
   }
   await expect(page.getByTestId("pin-step")).toContainText("ลองใหม่ได้ใน");
   await expect(page.locator('[data-testid="pin-step"] [data-key="1"]')).toBeDisabled();
+
+  // J-CR: the roster carries `lockedUntil` — after a reload the guard reads when the lock ends, and the pad opens closed.
+  await page.reload();
+  await expect(page.getByTestId("roster-guard").filter({ hasText: "วิทยา" })).toContainText("ล็อกถึง");
+  await page.getByTestId("roster-guard").filter({ hasText: "วิทยา" }).click();
+  await expect(page.getByTestId("pin-step")).toContainText("ลองใหม่ได้ใน");
 });
 
 test("office: a new tablet's code is shown once; the visitor log asks for a reason first", async ({ page }) => {

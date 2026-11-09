@@ -77,6 +77,8 @@ export interface MockGateWorld {
   received: { op: string; body: unknown; idempotencyKey: string | null }[];
   /** Answers by Idempotency-Key (guard creates). */
   replays: Record<string, unknown>;
+  /** Setting `gate.tablet.auto_lock_minutes` (J-CR): minutes idle before the tablet locks (`GuardMeDto`). */
+  autoLockMinutes: number;
 }
 
 const PRIVACY: Schemas["PrivacyNoticeDto"] = {
@@ -135,6 +137,12 @@ function guardUnit(u: ReturnType<typeof villageUnits>[number]): Schemas["GuardUn
   };
 }
 
+/** D-315: the gate shows residents by first name only. */
+function firstName(name: string | undefined): string | null {
+  const first = name?.replace(/^คุณ/, "").trim().split(/\s+/)[0];
+  return first ? first : null;
+}
+
 function makeVisit(
   n: number,
   input: Partial<MockVisit> & Pick<MockVisit, "kind" | "state" | "createdAt">,
@@ -158,7 +166,9 @@ function makeVisit(
     callBackName: null,
     cancelledAt: null,
     decidedAt: null,
+    decidedByName: null,
     decisionReason: null,
+    overstayedAt: null,
     enteredAt: null,
     entryBasis: null,
     exitedAt: null,
@@ -294,6 +304,7 @@ export function initialGateWorld(juristic: MockJuristicWorld = state.juristic): 
         respondBy: at(-30_000),
         timeoutAction: "allow_and_log",
         decidedAt: at(-40_000),
+        decidedByName: "สมศรี",
         entryBasis: "approval",
         plate: plate("2ขพ", "4410"),
       },
@@ -330,6 +341,7 @@ export function initialGateWorld(juristic: MockJuristicWorld = state.juristic): 
         state: "entered",
         createdAt: at(-26 * 3600_000),
         enteredAt: at(-26 * 3600_000),
+        overstayedAt: at(-2 * 3600_000),
         entryBasis: "invite",
         plate: plate("บท", "3200", "นนทบุรี"),
       },
@@ -366,6 +378,7 @@ export function initialGateWorld(juristic: MockJuristicWorld = state.juristic): 
   ];
 
   return {
+    autoLockMinutes: 5,
     gates,
     devices,
     guards,
@@ -539,9 +552,8 @@ function visitEvent(v: MockVisit, kind: Schemas["VisitEventKind"], actorKind: Sc
 // ── helpers ────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 function listDto(v: MockVisit): Schemas["GuardVisitDto"] {
-  const { events: _events, callBackName: _callBack, photoUrl: _photo, propertyId: _property, ...rest } = v;
+  const { events: _events, photoUrl: _photo, propertyId: _property, ...rest } = v;
   void _events;
-  void _callBack;
   void _photo;
   void _property;
   return rest;
@@ -619,12 +631,13 @@ export function houseAnswers(visitId: string | null, answer: "approve" | "deny" 
   if (!v || v.state !== "requested") return null;
   if (answer === "call-me") {
     v.callMeAt = new Date().toISOString();
-    v.callBackName = ownersOf(v.unitId ?? "")[0] ?? "เจ้าของบ้าน";
+    v.callBackName = firstName(ownersOf(v.unitId ?? "")[0]) ?? "เจ้าของบ้าน";
     visitEvent(v, "answered", "resident", "gate.visit.answered");
     return v;
   }
   v.state = answer === "approve" ? "approved" : "denied";
   v.decidedAt = new Date().toISOString();
+  v.decidedByName = firstName(ownersOf(v.unitId ?? "")[0]);
   if (answer === "approve") v.entryBasis = "approval";
   visitEvent(v, "answered", "resident", "gate.visit.answered");
   return v;
@@ -724,6 +737,7 @@ const guardHandlers: HttpHandler[] = [
           guardId: guard.id,
           displayName: guard.displayName,
           locked: Boolean(guard.lockedUntil && Date.parse(guard.lockedUntil) > Date.now()),
+          lockedUntil: guard.lockedUntil && Date.parse(guard.lockedUntil) > Date.now() ? guard.lockedUntil : null,
         })),
     } satisfies Schemas["GuardRosterDto"]);
   }),
@@ -789,6 +803,7 @@ const guardHandlers: HttpHandler[] = [
       shiftId: ok.shiftId,
       startedAt: g().shifts[ok.shiftId]!.startedAt,
       privacyNotice: PRIVACY,
+      autoLockMinutes: g().autoLockMinutes,
     } satisfies Schemas["GuardMeDto"]);
   }),
 
@@ -1621,9 +1636,8 @@ const ownerHandlers: HttpHandler[] = [
     if (bad) return bad;
     const v = g().visits.find((candidate) => candidate.id === params.visitId);
     if (!v) return problem(op, "http.not_found");
-    const { propertyId: _property, callBackName: _cb, photoUrl: _photo, ...rest } = v;
+    const { propertyId: _property, photoUrl: _photo, ...rest } = v;
     void _property;
-    void _cb;
     void _photo;
     return json(rest satisfies Schemas["VisitLogDetailDto"]);
   }),
@@ -1735,6 +1749,7 @@ export function gateControl(url: URL, method: string): { status: number; body: u
         g().visits.find((candidate) => candidate.id === p.get("visit")) ??
         g().visits.find((c) => c.kind === "contractor" && c.state === "entered");
       if (!v) return { status: 404, body: { error: "no visit" } };
+      v.overstayedAt = new Date().toISOString();
       visitEvent(v, "overstayed", "system", "gate.visit.overstayed");
       return { status: 200, body: { id: v.id } };
     }

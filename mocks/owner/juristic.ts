@@ -340,7 +340,16 @@ export function initialJuristicWorld(): MockJuristicWorld {
       adoptedAt: iso(-39),
       voidedAt: null,
       voidReason: null,
-      documents: [{ documentId: jid("d0c0a001", 2), kind: "minutes", createdAt: iso(-39) }],
+      documents: [
+        {
+          documentId: jid("d0c0a001", 2),
+          kind: "minutes",
+          title: "รายงานการประชุมใหญ่สามัญประจำปี 1-2569.pdf",
+          mimeType: "application/pdf",
+          sizeBytes: 482_304,
+          createdAt: iso(-39),
+        },
+      ],
       nextActions: ["void", "add_document"],
       version: 2,
       createdAt: iso(-42),
@@ -781,6 +790,11 @@ function registerRow(u: JuristicUnit): Schemas["RegisterUnitDto"] {
     landAreaSqwa: u.dto.landAreaSqwa,
     plotNo: u.dto.plotNo,
     titleDeedNo: u.titleDeedNo,
+    // J-CR: the floor and property travel with the row.
+    propertyId: building.propertyId,
+    floorId: u.dto.floorId,
+    floorLevel: u.dto.floorLevel,
+    floorName: j().floors.find((floor) => floor.id === u.dto.floorId)?.name ?? null,
     owners: owners.map(ownerDto),
     sharesTotal: total,
     incomplete: Number(total) < 100,
@@ -1065,6 +1079,7 @@ export const juristicHandlers: HttpHandler[] = [
       .filter(
         (u) =>
           (!params.get("buildingId") || u.buildingId === params.get("buildingId")) &&
+          (!params.get("propertyId") || u.propertyId === params.get("propertyId")) &&
           (!params.get("floorId") || u.floorId === params.get("floorId")) &&
           (!q || u.unitNo.toLowerCase().includes(q)),
       );
@@ -1110,6 +1125,42 @@ export const juristicHandlers: HttpHandler[] = [
     if (ok instanceof Response) return ok;
     const cycle = j().cycles.find((candidate) => candidate.id === params.billingCycleId);
     return cycle ? json(cycleStatus(cycle)) : problem(op, "http.not_found");
+  }),
+  // J-CR (D-303, D-335): the month-by-month recognition of an advance cycle's income.
+  http.get("*/v1/owner/billing-cycles/:billingCycleId/revenue-schedule", ({ request, params }) => {
+    const op = "owner.billingCycles.revenueSchedule";
+    const ok = juristicCall(request, op);
+    if (!ok) return;
+    if (ok instanceof Response) return ok;
+    const cycle = j().cycles.find((candidate) => candidate.id === params.billingCycleId);
+    if (!cycle) return problem(op, "http.not_found");
+    const months: string[] = [];
+    const end = cycle.periodEnd.slice(0, 7);
+    for (let month = cycle.periodStart.slice(0, 7); month <= end && months.length < 12;) {
+      months.push(month);
+      const [y, m] = month.split("-").map(Number) as [number, number];
+      month = m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, "0")}`;
+    }
+    const total = typeof cycle.stats?.total === "string" ? Math.round(Number(cycle.stats.total) * 100) : 0;
+    const each = months.length ? Math.floor(total / months.length) : 0;
+    const now = date().slice(0, 7);
+    const rows = months.map((month, index) => {
+      const cents = index === months.length - 1 ? total - each * (months.length - 1) : each;
+      const done = month < now && cycle.status !== "open";
+      return {
+        month,
+        amount: (cents / 100).toFixed(2),
+        recognised: done ? (cents / 100).toFixed(2) : "0.00",
+        credited: "0.00",
+        fullyRecognised: done,
+      };
+    });
+    return json({
+      billingCycleId: cycle.id,
+      frequency: cycle.frequency,
+      months: cycle.frequency === "monthly" ? [] : rows,
+      total: cycle.frequency === "monthly" ? "0.00" : (total / 100).toFixed(2),
+    } satisfies Schemas["RevenueScheduleDto"]);
   }),
   http.get("*/v1/owner/rate-plans", ({ request }) => {
     const ok = juristicCall(request, "owner.ratePlans.list");
@@ -1314,6 +1365,7 @@ export const juristicHandlers: HttpHandler[] = [
       .map(registerRow)
       .filter(
         (row) =>
+          (!params.get("propertyId") || row.propertyId === params.get("propertyId")) &&
           (params.get("incomplete") !== "true" || row.incomplete) &&
           (!q ||
             row.unitNo.toLowerCase().includes(q) ||
@@ -1321,6 +1373,45 @@ export const juristicHandlers: HttpHandler[] = [
             row.owners.some((o) => o.party.displayName.toLowerCase().includes(q))),
       );
     return json(paged(rows, request));
+  }),
+  // J-CR (D-335): today's co-owners for pickers, one row per unit × owner, by owner name.
+  http.get("*/v1/owner/juristic/register/owners", ({ request }) => {
+    const op = "owner.juristicRegister.owners";
+    const ok = owner(request, op);
+    if (ok instanceof Response) return ok;
+    if (ok.tenantId !== JURISTIC_TENANT) return json({ data: [] });
+    const params = query(request);
+    const q = params.get("q")?.toLowerCase().trim();
+    const limit = Math.min(Math.max(Number(params.get("limit")) || 20, 1), 100);
+    const data: Schemas["RegisterOwnerPickDto"][] = j()
+      .units.map(registerRow)
+      .filter(
+        (row) =>
+          (!params.get("buildingId") || row.buildingId === params.get("buildingId")) &&
+          (!params.get("propertyId") || row.propertyId === params.get("propertyId")),
+      )
+      .flatMap((row) =>
+        row.owners.map((o) => ({
+          unitId: row.unitId,
+          unitNo: row.unitNo,
+          buildingId: row.buildingId,
+          buildingName: row.buildingName,
+          partyId: o.party.id,
+          partyName: o.party.displayName,
+          plotNo: row.plotNo,
+        })),
+      )
+      .filter(
+        (pick) =>
+          !q ||
+          pick.partyName.toLowerCase().includes(q) ||
+          pick.unitNo.toLowerCase().includes(q) ||
+          (pick.plotNo ?? "").includes(q),
+      )
+      .sort((a, b) => a.partyName.localeCompare(b.partyName, "th"))
+      .slice(0, limit)
+      .map(({ plotNo: _plot, ...pick }) => pick);
+    return json({ data } satisfies Schemas["RegisterOwnerPickListDto"]);
   }),
   http.get("*/v1/owner/juristic/register/units/:unitId", ({ request, params }) => {
     const op = "owner.juristicRegister.get";
@@ -1685,7 +1776,16 @@ export const juristicHandlers: HttpHandler[] = [
     const input = await body<Schemas["ResolutionDocumentAddDto"]>(request);
     record(op, request, input);
     if (!input.documentId) return validation(op, "documentId", "required");
-    row.documents.push({ documentId: input.documentId, kind: input.kind, createdAt: iso() });
+    // J-CR: the file's title, type and size travel with the document.
+    const file = state.staff.files.get(input.documentId)?.file;
+    row.documents.push({
+      documentId: input.documentId,
+      kind: input.kind,
+      title: file?.title ?? null,
+      mimeType: file?.mimeType ?? "application/pdf",
+      sizeBytes: file?.sizeBytes ?? 0,
+      createdAt: iso(),
+    });
     return json(row);
   }),
   http.delete("*/v1/owner/juristic/resolutions/:resolutionId/documents/:documentId", ({ request, params }) => {

@@ -100,8 +100,8 @@ export function isDirty(step: LadderStep, draft: StepDraft): boolean {
 
 /**
  * The editor's own words for the two refusals of the PATCH (J1.2b): a legal measure whose gate is closed (the reason is
- * the step's `gateClosedReason`, re-read after the refusal — the problem's params stay on the server), or an approval
- * that may not be dropped. Anything else falls back to the standard problem notice.
+ * the problem's `gateClosedReason` since J-CR, `refusedGateReason`), or an approval that may not be dropped. Anything
+ * else falls back to the standard problem notice.
  */
 export function ladderRefusal(error: unknown): "legal" | "approval" | null {
   if (!isApiError(error)) return null;
@@ -123,4 +123,10 @@ export const GATE_REASONS = [
 export function gateReasonKey(reason: string | null): (typeof GATE_REASONS)[number] | "unknown" | null {
   if (reason === null) return null;
   return (GATE_REASONS as readonly string[]).includes(reason) ? (reason as (typeof GATE_REASONS)[number]) : "unknown";
+}
+
+/** Why the legal gate refused the change (`collections.legal_review_required` → `gateClosedReason`, J-CR, D-335). */
+export function refusedGateReason(error: unknown): string | null {
+  if (!isApiError(error) || error.code !== "collections.legal_review_required") return null;
+  return error.problem.gateClosedReason ?? null;
 }

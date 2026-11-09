@@ -273,8 +273,9 @@ export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
       },
     ],
   },
-  // JW1b (J1.2a / J1.2b): money collection. Reports and auto-pay mandates have no menu key of their own (contract
-  // request) and live under the receivables section; letters under statements; payment settings under the ladder.
+  // JW1b (J1.2a / J1.2b): money collection. Reports and auto-pay mandates live under the receivables section (their own
+  // keys since J-CR open them for members without receivables); letters under statements; payment settings under the
+  // ladder.
   juristic_receivables: {
     href: "/juristic/receivables",
     icon: IconWallet,
@@ -341,7 +342,7 @@ export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
     ],
   },
   // JW2a (J2.1, D-329): the light GL. Statements, journals and the chart live under accounting; petty cash under funds
-  // (staff reach petty cash through `juristic_funds`, which the API grants for `juristic.petty_cash.spend`); 50 ทวิ
+  // (spenders without `juristic.accounting.read` get `juristic_petty_cash` alone — J-CR, see `juristicLayout`); 50 ทวิ
   // certificates and the approval / WHT settings under expenses.
   juristic_accounting: {
     href: "/juristic/accounting",
@@ -408,6 +409,13 @@ export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
     ],
   },
   juristic_bank_statements: { href: "/juristic/bank-statements", icon: IconSpreadsheet, group: "money" },
+  // J-CR (D-335): keys for pages that so far lived only inside a section. Where the section is also granted the rail
+  // shows the section (its sub-page covers the key, `juristicLayout`); alone they are entries of their own.
+  juristic_overview: { href: "/juristic", icon: IconDashboard, group: "operations" },
+  juristic_resolutions: { href: "/juristic/resolutions", icon: IconSign, group: "settings" },
+  juristic_reports: { href: "/juristic/reports", icon: IconChart, group: "money" },
+  juristic_payment_mandates: { href: "/juristic/payment-mandates", icon: IconPayment, group: "money" },
+  juristic_petty_cash: { href: "/juristic/petty-cash", icon: IconWallet, group: "money" },
   // JW2b (J2.2, D-331): vendors, their service contracts (the renewal queue first) and quotation rounds. Preventive
   // plans stay under repairs (`service_requests` › /maintenance); a contract lists the plans it runs.
   juristic_vendors: { href: "/juristic/vendors", icon: IconVendor, group: "operations" },
@@ -449,6 +457,7 @@ export type JuristicMenuGroup = (typeof JURISTIC_MENU_GROUPS)[number];
 
 export const JURISTIC_MENU_ORDER: Readonly<Record<JuristicMenuGroup, readonly string[]>> = {
   daily: [
+    "juristic_overview",
     "dashboard",
     "juristic_receivables",
     "juristic_register",
@@ -463,16 +472,17 @@ export const JURISTIC_MENU_ORDER: Readonly<Record<JuristicMenuGroup, readonly st
     "readings",
     "devices",
     "utility_loss",
-    "leases",
-    "deposits",
   ],
   finance: [
     "juristic_cycles",
     "juristic_statements",
     "juristic_debt_clearances",
     "juristic_payment_plans",
+    "juristic_payment_mandates",
+    "juristic_reports",
     "juristic_accounting",
     "juristic_funds",
+    "juristic_petty_cash",
     "juristic_expenses",
     "juristic_bank_statements",
     "invoices",
@@ -483,6 +493,7 @@ export const JURISTIC_MENU_ORDER: Readonly<Record<JuristicMenuGroup, readonly st
   vendors: ["juristic_vendors", "juristic_vendor_contracts", "juristic_management_contracts", "juristic_quotations"],
   system: [
     "juristic_budgets",
+    "juristic_resolutions",
     "juristic_collection_ladder",
     "juristic_import",
     "juristic_handovers",
@@ -508,23 +519,53 @@ export const JURISTIC_LABEL_KEYS: ReadonlySet<string> = new Set(["parties"]);
 const JURISTIC_HREF: Readonly<Record<string, string>> = { dashboard: "/juristic" };
 
 /**
- * Re-groups and re-orders entitled items for a juristic tenant (pure: unit-tested). Items keep their labels and
- * children; `dashboard` points at the juristic overview.
+ * Entries a juristic member does not see in the rail although the API grants them (J-CR, pure):
+ * - `dashboard` when `juristic_overview` is granted (both open the overview);
+ * - `juristic_funds` for a petty-cash spender without `juristic.accounting.read` who has `juristic_petty_cash` (the
+ *   API still grants funds to spenders; funds are the accountant's page);
+ * - a key whose page is already a sub-page of another granted section (`juristic_reports` under receivables,
+ *   `juristic_resolutions` under budgets, `juristic_petty_cash` under funds …), so the rail shows it once.
  */
-export function juristicLayout<Item extends { key: string; href: string; group: string }>(
+function juristicVisible<Item extends { key: string; href: string; children?: readonly { href: string }[] }>(
   items: readonly Item[],
-  prefix: (href: string) => string = (href) => href,
+  permissions: readonly string[] | undefined,
 ): Item[] {
+  const keys = new Set(items.map((item) => item.key));
+  const hidden = new Set<string>();
+  if (keys.has("juristic_overview")) hidden.add("dashboard");
+  if (permissions && keys.has("juristic_petty_cash") && !permissions.includes("juristic.accounting.read"))
+    hidden.add("juristic_funds");
+  const shown = items.filter((item) => !hidden.has(item.key));
+  const sectionPages = new Map<string, string>();
+  for (const item of shown)
+    for (const child of item.children ?? []) if (child.href !== item.href) sectionPages.set(child.href, item.key);
+  return shown.filter((item) => {
+    const owner = sectionPages.get(item.href);
+    return !owner || owner === item.key;
+  });
+}
+
+/**
+ * Re-groups and re-orders entitled items for a juristic tenant (pure: unit-tested). Items keep their labels and
+ * children; `dashboard` points at the juristic overview. `permissions` (the member's) let the rail drop funds for a
+ * petty-cash spender (`juristicVisible`).
+ */
+export function juristicLayout<
+  Item extends { key: string; href: string; group: string; children?: readonly { href: string }[] },
+>(items: readonly Item[], prefix: (href: string) => string = (href) => href, permissions?: readonly string[]): Item[] {
   const rank = new Map<string, [number, number]>();
   JURISTIC_MENU_GROUPS.forEach((group, g) => JURISTIC_MENU_ORDER[group].forEach((key, k) => rank.set(key, [g, k])));
-  const placed = items.map((item, index) => {
+  const rewritten = items.map((item) => {
+    const href = JURISTIC_HREF[item.key];
+    return href ? { ...item, href: prefix(href) } : item;
+  });
+  const placed = juristicVisible(rewritten, permissions).map((item, index) => {
     const [group, position] = rank.get(item.key) ?? [
       JURISTIC_MENU_GROUPS.indexOf(JURISTIC_GROUP_OF_OWNER_GROUP[item.group] ?? "daily"),
       1000 + index,
     ];
-    const href = JURISTIC_HREF[item.key];
     return {
-      item: { ...item, group: JURISTIC_MENU_GROUPS[group]!, ...(href ? { href: prefix(href) } : {}) },
+      item: { ...item, group: JURISTIC_MENU_GROUPS[group]! },
       group,
       position,
     };
@@ -562,6 +603,7 @@ export const OWNER_BOTTOM_NAV = [
 
 /** A juristic office's phone bottom nav: this morning, the register, bills, money in (each when entitled). */
 export const JURISTIC_BOTTOM_NAV = [
+  { key: "juristic_overview", labelKey: "today" },
   { key: "dashboard", labelKey: "today" },
   { key: "juristic_register", labelKey: "register" },
   { key: "invoices", labelKey: "invoices" },

@@ -100,3 +100,18 @@ export function rankSuggestions<S extends Suggestion>(suggestions: readonly S[])
   const clear = first !== null && (list.length === 1 || (first.referenceHit && !list[1]!.referenceHit));
   return { list, best: clear ? first : null };
 }
+
+/**
+ * Where a candidate lives in the console, built from its kind and id (J-CR answer: the API sends no `href`):
+ * a payment's record, an expense request, a fund transfer.
+ */
+export function candidatePath(kind: "payment" | "expense" | "fund_transfer", id: string): string {
+  switch (kind) {
+    case "payment":
+      return `/payments/${id}`;
+    case "expense":
+      return `/juristic/expenses/${id}`;
+    case "fund_transfer":
+      return `/juristic/funds/transfers/${id}`;
+  }
+}

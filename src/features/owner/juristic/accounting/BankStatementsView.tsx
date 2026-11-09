@@ -27,6 +27,7 @@ import { ownerPath, withQuery } from "../../shared/links";
 import { ownerCan, pageParam, param, readOnly, section, type OwnerContext } from "../../shared/server";
 import { IgnoreButton, ImportStatementButton, MatchButton, UnmatchButton } from "./BankActions";
 import {
+  candidatePath,
   direction,
   lineState,
   nextLineAfter,
@@ -420,7 +421,13 @@ async function LineDetail({
                   >
                     <div className="flex items-start justify-between gap-3">
                       <span className="flex min-w-0 flex-col">
-                        <span className="font-medium break-words">{suggestion.label}</span>
+                        <a
+                          href={ownerPath(locale, candidatePath(suggestion.kind, suggestion.id))}
+                          className="text-primary font-medium break-words underline-offset-4 hover:underline"
+                          data-testid="queue-candidate-link"
+                        >
+                          {suggestion.label}
+                        </a>
                         <span className="text-muted text-sm">
                           {t(`kind.${suggestion.kind}`)} · {formatDate(suggestion.bookedOn, locale)} ·{" "}
                           {suggestion.days === 0 ? t("sameDay") : t("days", { count: suggestion.days })}

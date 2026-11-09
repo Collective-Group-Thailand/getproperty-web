@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 import { FormDialog, invalidField, text } from "@/features/shared/console/FormDialog";
+import { SearchPicker } from "@/features/shared/console/SearchPicker";
 import { LEGAL_FORMS, PROPERTY_KINDS } from "@/domain/juristic/vocabulary";
 import { browserApi } from "@/lib/api/browser";
 import { unwrap } from "@/lib/api/client";
@@ -32,8 +33,8 @@ export interface OperatorOption {
 /**
  * A juristic person takes over a stub building (D-280): the condo (or a housing estate's soi) its landlords created
  * before the office joined. The property's kind and the building's legal form are named here (default condominium /
- * Condominium Act); the landlords keep their units and leases. The stub's id comes from support (no stub list yet —
- * contract request).
+ * Condominium Act); the landlords keep their units and leases. The stub is searched by name, project or address
+ * (`GET /v1/admin/buildings/stubs`, J-CR).
  */
 export function ClaimStubButton({
   tenant,
@@ -48,6 +49,16 @@ export function ClaimStubButton({
   const t = useTranslations("admin.tenants.buildings");
   const kinds = useTranslations("admin.tenants.buildings.kindName");
   const forms = useTranslations("admin.tenants.buildings.legalFormName");
+  const searchStubs = (q: string) =>
+    unwrap(
+      browserApi().GET("/v1/admin/buildings/stubs", { params: { query: { perPage: 20, ...(q ? { q } : {}) } } }),
+    ).then((page) =>
+      page.data.map((stub) => ({
+        value: stub.id,
+        label: stub.name === stub.propertyName ? stub.name : `${stub.propertyName} · ${stub.name}`,
+        description: t("stubDescription", { units: stub.landlordUnits, address: stub.address ?? "—" }),
+      })),
+    );
   return (
     <FormDialog
       label={t("claim")}
@@ -78,12 +89,13 @@ export function ClaimStubButton({
       {(errors) => (
         <>
           <Field label={t("buildingId")} hint={t("buildingIdHint")} required error={errors.buildingId}>
-            <Input
+            <SearchPicker
               name="buildingId"
-              required
-              autoComplete="off"
-              className="font-mono"
-              data-testid="claim-building-id"
+              search={searchStubs}
+              placeholder={t("stubPick")}
+              emptyLabel={t("stubNoMatch")}
+              listLabel={t("buildingId")}
+              testId="claim-building-id"
             />
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">

@@ -13,6 +13,17 @@ export async function chartOfAccounts(api: ApiClient): Promise<Schemas["AccountD
     .catch(() => []);
 }
 
+/**
+ * Active expense accounts for a request, a petty-cash spend or a contract (J-CR, D-335): `GET …/expense-accounts`,
+ * readable with `juristic.expense.request`, so staff need not read the chart (`juristic.accounting.read`). Falls back
+ * to the chart for a member who may read it but not request; empty when neither is readable.
+ */
+export async function expenseAccountList(api: ApiClient): Promise<Schemas["AccountDto"][]> {
+  return unwrap(api.GET("/v1/owner/juristic/expense-accounts"))
+    .then((list) => list.data)
+    .catch(() => chartOfAccounts(api).then((all) => all.filter((acc) => acc.type === "expense" && acc.isActive)));
+}
+
 /** Adopted resolutions (the only ones a fund movement may cite), as picker options. */
 export async function adoptedResolutions(
   api: ApiClient,

@@ -26,39 +26,10 @@ import { IconReceipt } from "@/ui/icons/glyphs/receipt";
 import { DocumentButton } from "../../shared/DocumentButton";
 import { ownerPath, withQuery } from "../../shared/links";
 import { ownerCan, pageParam, param, readOnly, section, type OwnerContext } from "../../shared/server";
-import {
-  IssueClearanceButton,
-  NewClearanceButton,
-  RefuseClearanceButton,
-  type ClearanceOwner,
-} from "./ClearanceActions";
+import { IssueClearanceButton, NewClearanceButton, RefuseClearanceButton } from "./ClearanceActions";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 const STATES: Schemas["DebtClearanceState"][] = ["requested", "issued", "refused"];
-
-/** Co-owners today, unit by unit, from the register of every building the office runs (first 100 units each). */
-async function currentOwners(context: OwnerContext): Promise<ClearanceOwner[]> {
-  const pages = await Promise.all(
-    context.buildings.map((building) =>
-      unwrap(
-        context.api.GET("/v1/owner/juristic/register", {
-          params: { query: { buildingId: building.id, perPage: 100 } },
-        }),
-      ).catch(() => null),
-    ),
-  );
-  return pages.flatMap((page) =>
-    (page?.data ?? []).flatMap((unit) =>
-      unit.owners.map((owner) => ({
-        unitId: unit.unitId,
-        unitNo: unit.unitNo,
-        partyId: owner.party.id,
-        partyName: owner.party.displayName,
-        building: unit.buildingName,
-      })),
-    ),
-  );
-}
 
 /**
  * Debt clearance (JW1b, D-306): requests waiting first — issue once the fee is paid and nothing is owed, or refuse with
@@ -72,7 +43,7 @@ export async function ClearancesView({ context, searchParams }: { context: Owner
   const page = pageParam(searchParams.page);
   const base = ownerPath(locale, "/juristic/debt-clearance");
   const canManage = !readOnly(me) && ownerCan(me, "juristic.collections.manage");
-  const [list, requested, owners] = await Promise.all([
+  const [list, requested] = await Promise.all([
     section(
       unwrap(
         api.GET("/v1/owner/juristic/debt-clearances", {
@@ -85,7 +56,6 @@ export async function ClearancesView({ context, searchParams }: { context: Owner
         api.GET("/v1/owner/juristic/debt-clearances", { params: { query: { state: "requested", perPage: 1 } } }),
       ).then((result) => result.meta.total),
     ),
-    canManage ? currentOwners(context) : Promise.resolve([]),
   ]);
   const tabHref = (value: string | undefined) => withQuery(base, { state: value, q });
   return (
@@ -93,7 +63,7 @@ export async function ClearancesView({ context, searchParams }: { context: Owner
       <PageHeader
         title={t("title")}
         description={t("lede")}
-        actions={canManage ? <NewClearanceButton owners={owners} today={formatIsoDate(currentTime())} /> : undefined}
+        actions={canManage ? <NewClearanceButton today={formatIsoDate(currentTime())} /> : undefined}
       />
       <ListToolbar
         tabs={

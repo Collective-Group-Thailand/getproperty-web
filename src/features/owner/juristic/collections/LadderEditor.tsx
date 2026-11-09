@@ -31,6 +31,7 @@ import {
   gateReasonKey,
   isDirty,
   ladderRefusal,
+  refusedGateReason,
   stepErrors,
   stepLocks,
   stepPatch,
@@ -74,6 +75,7 @@ export function LadderStepRow({
   const locks = stepLocks(step);
   const errors = touched ? stepErrors(draft, previous, next) : {};
   const refusal = ladderRefusal(action.error);
+  const refusedGate = gateReasonKey(refusedGateReason(action.error));
   const gate = gateReasonKey(step.gateClosedReason);
   const look = ACTION_LOOK[step.action];
 
@@ -275,7 +277,8 @@ export function LadderStepRow({
             />
             {refusal === "legal" ? (
               <Callout tone="neutral" title={t("ladder.refusedLegalTitle")}>
-                {t("ladder.refusedLegal")}
+                <p>{t("ladder.refusedLegal")}</p>
+                {refusedGate ? <p data-testid="ladder-refused-gate">{t(`gate.${refusedGate}`)}</p> : null}
               </Callout>
             ) : refusal === "approval" ? (
               <Callout tone="neutral" title={t("ladder.refusedApprovalTitle")}>

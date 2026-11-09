@@ -41,6 +41,7 @@ import { uploadOwnerFile, whenScanned } from "../../shared/upload";
 import { ExportButton } from "../../shared/ExportButton";
 import {
   importProblem,
+  rollbackBlocker,
   normaliseDeclared,
   NOTE_MAX,
   problemStep,
@@ -105,10 +106,14 @@ export function ImportProblem({
   if (!error) return null;
   const mapped = isApiError(error) ? importProblem(error.code) : null;
   if (!mapped) return <ProblemNotice error={error} />;
+  const problem = isApiError(error) ? error.problem : {};
+  // J-CR (D-335): `import.job_open` names the open job, `import.rollback_blocked` the table that still refers to it.
+  const openJob = problem.jobId ?? openJobId ?? null;
+  const blocker = mapped.key === "rollback_blocked" ? rollbackBlocker(problem.table) : null;
   const step = problemStep(mapped.next);
   const href =
-    mapped.next === "open_job" && openJobId
-      ? jobPath(locale, openJobId)
+    mapped.next === "open_job" && openJob
+      ? jobPath(locale, openJob)
       : step && jobId
         ? jobPath(
             locale,
@@ -119,12 +124,23 @@ export function ImportProblem({
           ? jobPath(locale, jobId)
           : null;
   return (
-    <div role="alert" data-testid="import-problem" data-code={isApiError(error) ? error.code : undefined}>
+    <div
+      role="alert"
+      data-testid="import-problem"
+      data-code={isApiError(error) ? error.code : undefined}
+      data-blocker={blocker ?? undefined}
+    >
       <Callout tone={mapped.next === null ? "danger" : "warning"} title={t(`${mapped.key}.title`)}>
-        <p>{t(`${mapped.key}.body`)}</p>
+        <p>
+          {blocker
+            ? t("rollback_blocked.blockedBy", { what: t(`rollback_blocked.table.${blocker}`) })
+            : t(`${mapped.key}.body`)}
+        </p>
         {href ? (
           <a className="text-primary mt-1 inline-block font-medium underline-offset-4 hover:underline" href={href}>
-            {t(`${mapped.key}.next`)}
+            {mapped.key === "job_open" && problem.jobNumber !== undefined
+              ? t("job_open.nextNumbered", { number: problem.jobNumber })
+              : t(`${mapped.key}.next`)}
           </a>
         ) : null}
         {isApiError(error) && error.requestId ? (

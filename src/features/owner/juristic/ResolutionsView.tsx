@@ -8,7 +8,7 @@ import { OwnerPage, PageHeader } from "@/features/shared/console/PageHeader";
 import { SectionError } from "@/features/shared/console/SectionError";
 import { enumParam } from "@/features/shared/console/params";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
-import { formatDate, formatDateTime } from "@/i18n/format";
+import { formatBytes, formatDate, formatDateTime } from "@/i18n/format";
 import { unwrap } from "@/lib/api/client";
 import { isApiError } from "@/lib/api/errors";
 import type { Schemas } from "@/lib/api/types";
@@ -263,20 +263,31 @@ export async function ResolutionView({ context, resolutionId }: { context: Owner
                   className="flex flex-wrap items-center justify-between gap-3 py-2.5"
                   data-testid="resolution-document"
                 >
-                  <span className="flex flex-col">
-                    <span className="font-medium">{t(`documentKind.${document.kind}`)}</span>
+                  <span className="flex min-w-0 flex-col">
+                    <span className="font-medium break-words">
+                      {document.title ?? t(`documentKind.${document.kind}`)}
+                    </span>
                     <span className="text-muted text-sm">
-                      {t("attachedOn", { date: formatDate(document.createdAt, locale) })}
+                      {[
+                        document.title ? t(`documentKind.${document.kind}`) : null,
+                        document.sizeBytes > 0 ? formatBytes(document.sizeBytes, locale) : null,
+                        t("attachedOn", { date: formatDate(document.createdAt, locale) }),
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
                     </span>
                   </span>
                   <span className="flex items-center gap-2">
                     <DocumentButton
                       document={{ kind: "file", id: document.documentId }}
                       label={t("openDocument")}
-                      title={t("documentTitle", {
-                        kind: t(`documentKind.${document.kind}`),
-                        number: resolution.number,
-                      })}
+                      title={
+                        document.title ??
+                        t("documentTitle", {
+                          kind: t(`documentKind.${document.kind}`),
+                          number: resolution.number,
+                        })
+                      }
                       variant="ghost"
                     />
                     {canManage && draft ? (

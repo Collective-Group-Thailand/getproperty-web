@@ -28,7 +28,7 @@ import { accountLabel, expenseAccounts } from "./accounts";
 import { decimalSatang, isZero } from "./money";
 import { FundsNav, memberName } from "./parts";
 import { CountButton, NewPettyCashButton, SpendButton, TopUpButton } from "./PettyCashActions";
-import { chartOfAccounts, officeMembers } from "./shared";
+import { expenseAccountList, officeMembers } from "./shared";
 
 /** The balance's share of the float, for the thin line only (two API figures compared, nothing summed). */
 function floatShare(balance: string, float: string): number {
@@ -158,7 +158,7 @@ export async function PettyCashView({ context, pettyCashId }: { context: OwnerCo
     if (isApiError(error) && error.status === 404) notFound();
     throw error;
   }
-  const [members, accounts] = await Promise.all([officeMembers(api), chartOfAccounts(api)]);
+  const [members, accounts] = await Promise.all([officeMembers(api), expenseAccountList(api)]);
   const money = (value: string) => formatTHB(value, locale);
   const today = formatIsoDate(currentTime());
   const isCustodian = petty.custodianUserId === me.user.id;

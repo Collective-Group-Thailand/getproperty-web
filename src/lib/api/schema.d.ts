@@ -138,6 +138,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/buildings/stubs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Stub buildings to claim
+         * @description Condo stubs that landlords created before the juristic person joined (status `external`, D-251), by building / project name or address (`q`), with the number of units landlords put in each — to pick the stub to hand over with `claim-stub` instead of pasting its id (J-CR, D-335; D-280).
+         *
+         *     Implements: D-280, D-335.
+         */
+        get: operations["admin.buildings.stubs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/compliance/rules": {
         parameters: {
             query?: never;
@@ -4549,7 +4571,7 @@ export interface paths {
         };
         /**
          * Find a destination unit
-         * @description Units of the gate’s property by number (`q`), with whether anyone of the house can be asked in LINE (no names) and the house policy. `hasArrears` appears only while `gate.show_arrears` is on (⚖ O-038, off by default) — otherwise no arrears data at all (D-315).
+         * @description Units of the gate’s property by house number or soi / building name (`q`, J-CR), with whether anyone of the house can be asked in LINE (no names) and the house policy. `hasArrears` appears only while `gate.show_arrears` is on (⚖ O-038, off by default) — otherwise no arrears data at all (D-315).
          *
          *     Implements: D-315, D-327.
          */
@@ -5230,6 +5252,28 @@ export interface paths {
          *     Implements: D-031, D-035, D-208.
          */
         post: operations["owner.billingCycles.requestReadings"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/billing-cycles/{billingCycleId}/revenue-schedule": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Unearned schedule of an advance cycle
+         * @description Quarterly / semiannual / annual cycles: Σ per month of the revenue schedule of the cycle’s issued invoice lines (money billed in advance is recognised month by month), with what the ledger recognised and what credit notes took back; a monthly cycle answers no months. Another tenant’s cycle → 404 (J-CR, D-335; D-303).
+         *
+         *     Implements: D-303, D-335.
+         */
+        get: operations["owner.billingCycles.revenueSchedule"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -9482,6 +9526,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/owner/juristic/expense-accounts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Expense accounts to request against
+         * @description The active expense accounts of the chart, for whoever may request an expense or spend petty cash (staff, accountant) without reading the whole chart (`juristic.accounting.read`). Juristic tenants only (404 otherwise) (J-CR, D-335; D-311, D-329).
+         *
+         *     Implements: D-311, D-329, D-335.
+         */
+        get: operations["owner.juristicExpenseAccounts.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/owner/juristic/expense-requests": {
         parameters: {
             query?: never;
@@ -11140,6 +11206,28 @@ export interface paths {
          *     Implements: D-302, D-307, D-324.
          */
         get: operations["owner.juristicRegister.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/owner/juristic/register/owners": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Co-owners for a picker
+         * @description Today’s co-owners of the tenant’s units, one row per unit × owner, by owner name — for the debt-clearance and statement pickers without reading the whole register. `q` matches the owner name, unit or plot number; `buildingId` / `propertyId` narrow it (another tenant’s building or property → 404); at most `limit` (≤ 100) rows (J-CR, D-335; D-306, D-324).
+         *
+         *     Implements: D-335, D-306, D-324.
+         */
+        get: operations["owner.juristicRegister.owners"];
         put?: never;
         post?: never;
         delete?: never;
@@ -20549,7 +20637,7 @@ export interface paths {
         };
         /**
          * My units and what I am there
-         * @description Every unit of my `unit:` scopes across tenants — units I live in (occupancy) **or** own (co-owner in the register, D-309) — with my roles today (`co_owner`, `tenant`, `co_tenant`, `family`, `payer`; source `ownership`, `occupancy` or `lease`) and the navigation `capabilities` of each unit (D-322). A lease alone never adds a unit; a former owner’s unit disappears on the ownership’s end date. `unitsHash` changes with any role; `refreshRequired` = my token’s unit scopes differ from today’s units (refresh before switching unit).
+         * @description Every unit of my `unit:` scopes across tenants (with the register’s measures and whether auto-pay can be set up, J-CR) — units I live in (occupancy) **or** own (co-owner in the register, D-309) — with my roles today (`co_owner`, `tenant`, `co_tenant`, `family`, `payer`; source `ownership`, `occupancy` or `lease`) and the navigation `capabilities` of each unit (D-322). A lease alone never adds a unit; a former owner’s unit disappears on the ownership’s end date. `unitsHash` changes with any role; `refreshRequired` = my token’s unit scopes differ from today’s units (refresh before switching unit).
          *
          *     Implements: D-025, D-309, D-322.
          */
@@ -21284,6 +21372,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/resident/statements/{statementId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One of my statements
+         * @description The statement a LINE message links (`/statements/{id}`); a statement of a party not linked to my login is a 404 (J-CR, D-335; D-307, D-326).
+         *
+         *     Implements: D-307, D-326, D-335.
+         */
+        get: operations["resident.statements.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/resident/statements/{statementId}/document": {
         parameters: {
             query?: never;
@@ -21466,6 +21576,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/resident/units/{unitId}/debt-clearances/{debtClearanceId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One of my debt clearance certificates
+         * @description A request or certificate of mine on this unit (the LINE message links it; the verify code is never shown again); another unit’s or another party’s is a 404 (J-CR, D-335; D-306).
+         *
+         *     Implements: D-306, D-335.
+         */
+        get: operations["resident.units.debtClearance"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/resident/units/{unitId}/debt-clearances/{debtClearanceId}/document": {
         parameters: {
             query?: never;
@@ -21604,6 +21736,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/resident/units/{unitId}/payment-plan-requests/options": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * What a payment-plan request may ask
+         * @description The instalment range (2 … `juristic.plan_max_instalments`), the first due date window (today … +92 days, default the 1st of next month) and what would be split now (`proposedPrincipal`, the open balance of my billed party on the unit); `available` false = nothing to split. Same rules as the request (J-CR, D-335; D-308, D-325).
+         *
+         *     Implements: D-308, D-325, D-335.
+         */
+        get: operations["resident.units.paymentPlanOptions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/resident/units/{unitId}/payment-plans": {
         parameters: {
             query?: never;
@@ -21618,6 +21772,28 @@ export interface paths {
          *     Implements: D-325.
          */
         get: operations["resident.units.paymentPlans"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/units/{unitId}/payment-plans/{planId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One of my payment plans
+         * @description A plan of mine on this unit with its instalments (the LINE message links it); another unit’s or another party’s plan is a 404 (J-CR, D-335; D-325).
+         *
+         *     Implements: D-325, D-335.
+         */
+        get: operations["resident.units.paymentPlan"];
         put?: never;
         post?: never;
         delete?: never;
@@ -21792,6 +21968,28 @@ export interface paths {
          *     Implements: D-315, D-327.
          */
         post: operations["resident.units.createVisitInvite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/resident/units/{unitId}/visit-invites/{inviteId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * One invite of my house
+         * @description The invite with its uses and state (the token is never shown again). An invite of another unit — or a unit not mine — is a 404 (J-CR, D-335; D-315).
+         *
+         *     Implements: D-315, D-335.
+         */
+        get: operations["resident.units.visitInvite"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -24923,6 +25121,32 @@ export interface components {
             tenants: number;
             /** @example 8808038400 */
             usedBytes: string;
+        };
+        AdminStubBuildingDto: {
+            /**
+             * @description The project’s address as landlords entered it.
+             * @example ถนนสุขุมวิท พระโขนง คลองเตย กรุงเทพมหานคร 10110
+             */
+            address: string | null;
+            /**
+             * Format: uuid
+             * @example 5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c
+             */
+            id: string;
+            /**
+             * @description Units landlords put in the stub.
+             * @example 7
+             */
+            landlordUnits: number;
+            /** @example ไลฟ์ สุขุมวิท 48 */
+            name: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            propertyId: string;
+            /** @example ไลฟ์ สุขุมวิท 48 */
+            propertyName: string;
         };
         AdminVerificationDetailDto: {
             /** @example ไอดีโอ โมบิ อารีย์ */
@@ -28122,12 +28346,20 @@ export interface components {
              * @example true
              */
             granted: boolean | null;
-            /** @example 1 */
+            /**
+             * @description Version of my last answer (a grant or a withdrawal — see `lastGranted`).
+             * @example 1
+             */
             grantedVersion: number | null;
             /** @example resident.service */
             key: string;
             /** @example th */
             language: string;
+            /**
+             * @description My last answer on file, whatever its version: true granted, false withdrawn, null never answered (J-CR, LIFF #39). With `granted: null` and `lastGranted: false` the purpose was withdrawn under an earlier version — nothing to stop.
+             * @example true
+             */
+            lastGranted: boolean | null;
             /** @example true */
             required: boolean;
             /** @example การใช้ข้อมูลเพื่อให้บริการผู้พักอาศัย */
@@ -31125,6 +31357,27 @@ export interface components {
         };
         /** @enum {string} */
         ExpensePaymentMethod: "bank_transfer" | "cheque" | "cash" | "fund";
+        ExpenseRequestCountsDto: {
+            /** @example 12 */
+            all: number;
+            /** @example 2 */
+            approved: number;
+            /**
+             * @description Submitted requests my role may approve, not requested nor decided by me.
+             * @example 2
+             */
+            awaitingMe: number;
+            /** @example 1 */
+            cancelled: number;
+            /** @example 1 */
+            draft: number;
+            /** @example 4 */
+            paid: number;
+            /** @example 1 */
+            rejected: number;
+            /** @example 3 */
+            submitted: number;
+        };
         ExpenseRequestDto: {
             /**
              * @description Σ lines. Unit: THB, decimal string (D-046).
@@ -32702,6 +32955,11 @@ export interface components {
         GuardIncidentView: "active" | "recent";
         GuardMeDto: {
             /**
+             * @description Minutes without a touch before the tablet locks to the PIN pad (`gate.tablet.auto_lock_minutes` of the property; J-CR, D-335).
+             * @example 5
+             */
+            autoLockMinutes: number;
+            /**
              * Format: uuid
              * @example 3b241101-e2bb-4255-8caf-4136c566a962
              */
@@ -32766,7 +33024,8 @@ export interface components {
              *       {
              *         "displayName": "สมศักดิ์",
              *         "guardId": "3b241101-e2bb-4255-8caf-4136c566a962",
-             *         "locked": false
+             *         "locked": false,
+             *         "lockedUntil": null
              *       }
              *     ]
              */
@@ -32784,6 +33043,12 @@ export interface components {
             guardId: string;
             /** @example false */
             locked: boolean;
+            /**
+             * Format: date-time
+             * @description While `locked`: when the guard may enter the PIN again (J-CR, D-335).
+             * @example null
+             */
+            lockedUntil: string | null;
         };
         GuardSignInDto: {
             /**
@@ -32846,7 +33111,7 @@ export interface components {
         };
         GuardVisitDetailDto: {
             /**
-             * @description Name of the resident who asked to be called (the guard calls the house number on file).
+             * @description First name of the resident who asked the guard to call (the guard calls the house number on file; D-315, J-CR).
              * @example null
              */
             callBackName: string | null;
@@ -32877,6 +33142,11 @@ export interface components {
              * @example null
              */
             decidedAt: string | null;
+            /**
+             * @description First name of the resident who approved or denied (first names only, D-315; J-CR, D-335).
+             * @example เกริก
+             */
+            decidedByName: string | null;
             /**
              * @description `timeout`, `nobody_reachable`, `blacklisted`, `no_destination` or the guard override reason.
              * @example null
@@ -32922,6 +33192,12 @@ export interface components {
             /** @example null */
             note: string | null;
             /**
+             * Format: date-time
+             * @description When the visit was found inside longer than the estate allows (`gate.visit.overstayed`) — survives a reload (J-CR, D-335).
+             * @example null
+             */
+            overstayedAt: string | null;
+            /**
              * @description 5-minute link to the photo.
              * @example null
              */
@@ -32962,6 +33238,11 @@ export interface components {
         };
         GuardVisitDto: {
             /**
+             * @description First name of the resident who asked the guard to call (the guard calls the house number on file; D-315, J-CR).
+             * @example null
+             */
+            callBackName: string | null;
+            /**
              * Format: date-time
              * @description A resident asked the guard to call.
              * @example null
@@ -32988,6 +33269,11 @@ export interface components {
              * @example null
              */
             decidedAt: string | null;
+            /**
+             * @description First name of the resident who approved or denied (first names only, D-315; J-CR, D-335).
+             * @example เกริก
+             */
+            decidedByName: string | null;
             /**
              * @description `timeout`, `nobody_reachable`, `blacklisted`, `no_destination` or the guard override reason.
              * @example null
@@ -33030,6 +33316,12 @@ export interface components {
             kind: components["schemas"]["VisitKind"];
             /** @example null */
             note: string | null;
+            /**
+             * Format: date-time
+             * @description When the visit was found inside longer than the estate allows (`gate.visit.overstayed`) — survives a reload (J-CR, D-335).
+             * @example null
+             */
+            overstayedAt: string | null;
             /**
              * @example {
              *       "category": "1กข",
@@ -36236,10 +36528,20 @@ export interface components {
         };
         JuristicReconcileItemDto: {
             /**
+             * @description Bank items: the account the row names (J-CR, D-335); null on the receivables item and on reconciliations recorded before.
+             * @example operating
+             */
+            accountType: components["schemas"]["ReconcileAccountType"] | null;
+            /**
              * @description imported − reference. Unit: THB, decimal string (D-046).
              * @example 0.00
              */
             difference: string | null;
+            /**
+             * @description Fund items: the fund’s name (from the row or the building’s fund).
+             * @example null
+             */
+            fundName: string | null;
             /**
              * @description What the import brings. Unit: THB, decimal string (D-046).
              * @example 845210.50
@@ -36250,6 +36552,11 @@ export interface components {
             kind: components["schemas"]["ReconcileKind"];
             /** @example receivables */
             label: string;
+            /**
+             * @description Bank items: the last four digits.
+             * @example 4012
+             */
+            last4: string | null;
             /**
              * @description The declared total, or the bank statement balance (null: no statement). Unit: THB, decimal string (D-046).
              * @example 845210.50
@@ -40969,7 +41276,7 @@ export interface components {
          * @description Menu entitlements of the owner console (keys of the web routes).
          * @enum {string}
          */
-        OwnerMenuKey: "portfolio" | "listings" | "leads" | "mandated_units" | "mandates" | "co_broke" | "deals" | "dashboard" | "buildings" | "units" | "parties" | "leases" | "deposits" | "readings" | "devices" | "rate_plans" | "invoices" | "payments" | "reports" | "utility_loss" | "service_requests" | "access" | "parcels" | "announcements" | "juristic_register" | "juristic_cycles" | "juristic_budgets" | "juristic_payment_plans" | "juristic_debt_clearances" | "juristic_receivables" | "juristic_statements" | "juristic_collection_ladder" | "juristic_accounting" | "juristic_expenses" | "juristic_funds" | "juristic_bank_statements" | "juristic_vendors" | "juristic_vendor_contracts" | "juristic_quotations" | "juristic_import" | "juristic_handovers" | "juristic_management_contracts" | "pm_portfolio" | "pm_staff" | "pm_contracts" | "juristic_workspace_invitations" | "juristic_gate" | "gate" | "members" | "bank_accounts" | "settings" | "notifications" | "privacy" | "access_grants" | "support_access" | "audit_log" | "subscription";
+        OwnerMenuKey: "portfolio" | "listings" | "leads" | "mandated_units" | "mandates" | "co_broke" | "deals" | "dashboard" | "buildings" | "units" | "parties" | "leases" | "deposits" | "readings" | "devices" | "rate_plans" | "invoices" | "payments" | "reports" | "utility_loss" | "service_requests" | "access" | "parcels" | "announcements" | "juristic_overview" | "juristic_register" | "juristic_cycles" | "juristic_budgets" | "juristic_resolutions" | "juristic_payment_plans" | "juristic_debt_clearances" | "juristic_receivables" | "juristic_statements" | "juristic_collection_ladder" | "juristic_reports" | "juristic_payment_mandates" | "juristic_accounting" | "juristic_expenses" | "juristic_funds" | "juristic_petty_cash" | "juristic_bank_statements" | "juristic_vendors" | "juristic_vendor_contracts" | "juristic_quotations" | "juristic_import" | "juristic_handovers" | "juristic_management_contracts" | "pm_portfolio" | "pm_staff" | "pm_contracts" | "juristic_workspace_invitations" | "juristic_gate" | "gate" | "members" | "bank_accounts" | "settings" | "notifications" | "privacy" | "access_grants" | "support_access" | "audit_log" | "subscription";
         OwnerReviewDto: {
             body: string | null;
             /** Format: uuid */
@@ -41853,6 +42160,11 @@ export interface components {
              * @example 3b241101-e2bb-4255-8caf-4136c566a962
              */
             partyId: string;
+            /**
+             * @description Whose mandate it is: the party’s display name (J-CR, D-335).
+             * @example ผู้เช่า ทดสอบ
+             */
+            partyName: string;
             /** @example fake */
             provider: string;
             /**
@@ -42029,6 +42341,41 @@ export interface components {
             seq: number;
             /** @example scheduled */
             state: components["schemas"]["InstalmentState"];
+        };
+        PaymentPlanOptionsDto: {
+            /**
+             * @description Something can be split now.
+             * @example true
+             */
+            available: boolean;
+            /**
+             * Format: date
+             * @description The 1st of next month.
+             * @example 2027-02-01
+             */
+            defaultFirstDueOn: string;
+            /**
+             * Format: date
+             * @example 2027-01-15
+             */
+            earliestFirstDueOn: string;
+            /**
+             * Format: date
+             * @example 2027-04-17
+             */
+            latestFirstDueOn: string;
+            /**
+             * @description `juristic.plan_max_instalments`.
+             * @example 12
+             */
+            maxInstalments: number;
+            /** @example 2 */
+            minInstalments: number;
+            /**
+             * @description What would be split now (open balance of my billed party). Unit: THB, decimal string (D-046).
+             * @example 10000.00
+             */
+            proposedPrincipal: string;
         };
         PaymentPlanRequestDto: {
             /**
@@ -43778,12 +44125,28 @@ export interface components {
              */
             evaluationId?: string;
             /**
+             * @description `collections.legal_review_required` only (J-CR, D-335): why the step’s legal gate is closed — the same value as the step’s `gateClosedReason`
+             * @example surcharge_disabled
+             */
+            gateClosedReason?: string;
+            /**
              * @description `storage.legal_hold` only (D-286): the requested documents held until their retention date
              * @example [
              *       "3b241101-e2bb-4255-8caf-4136c566a962"
              *     ]
              */
             heldDocumentIds?: string[];
+            /**
+             * Format: uuid
+             * @description `import.job_open` only (J-CR, D-335): the building’s open or committed import job
+             * @example 0199f2a0-0000-7000-8000-0000000000ab
+             */
+            jobId?: string;
+            /**
+             * @description `import.job_open` only (J-CR, D-335): that job’s number
+             * @example 3
+             */
+            jobNumber?: number;
             /**
              * @description `compliance.*` only: the legal reference of the refused rule (D-020)
              * @example ประกาศคณะกรรมการว่าด้วยสัญญา เรื่อง ให้ธุรกิจการให้เช่าอาคารเพื่ออยู่อาศัยเป็นธุรกิจที่ควบคุมสัญญา พ.ศ. 2568 ข้อ 4
@@ -43853,6 +44216,11 @@ export interface components {
             status: number;
             /** @description `storage.allowance_exceeded` only (G1, D-285): what is stored, the quota (free + packages) and where to buy more space */
             storage?: components["schemas"]["ProblemStoragePosition"];
+            /**
+             * @description `import.rollback_blocked` only (J-CR, D-335): the table whose rows still refer to what the import created (e.g. `ops.invoice` — an issued invoice, `ops.payment`, `juristic.journal`)
+             * @example ops.invoice
+             */
+            table?: string;
             /** @example Bill line above the utility tariff cap */
             title: string;
             /** @example https://errors.getproperty.co/compliance.tariff_cap */
@@ -44821,6 +45189,23 @@ export interface components {
             /** @example บริษัท ลิฟต์ไทย เซอร์วิส จำกัด */
             vendorName: string;
         };
+        QuotationRoundCountsDto: {
+            /** @example 7 */
+            all: number;
+            /** @example 1 */
+            awaitingApproval: number;
+            /**
+             * @description Awards my role may approve that I did not ask for.
+             * @example 1
+             */
+            awaitingMe: number;
+            /** @example 3 */
+            awarded: number;
+            /** @example 1 */
+            cancelled: number;
+            /** @example 2 */
+            open: number;
+        };
         QuotationRoundCreateDto: {
             /**
              * Format: uuid
@@ -45692,6 +46077,8 @@ export interface components {
         /** @enum {string} */
         ReceivableSort: "balance" | "days_overdue" | "unit";
         ReceivablesPageDto: {
+            /** @description Rows of each tab for the same search and building (J-CR, D-335) — the tab badges. */
+            counts: components["schemas"]["ReceivableTabCountsDto"];
             data: components["schemas"]["ReceivableRowDto"][];
             meta: components["schemas"]["PageMeta"];
             totals: components["schemas"]["JuristicReceivableTotalsDto"];
@@ -45700,6 +46087,16 @@ export interface components {
         ReceivablesSort: "amount" | "age";
         /** @enum {string} */
         ReceivablesTab: "all" | "at_step" | "plan" | "dispute";
+        ReceivableTabCountsDto: {
+            /** @example 42 */
+            all: number;
+            /** @example 17 */
+            atStep: number;
+            /** @example 1 */
+            dispute: number;
+            /** @example 3 */
+            plan: number;
+        };
         ReceivableTotalsDto: {
             aging: components["schemas"]["AgingDto"];
             /** @example 84210.00 */
@@ -45794,6 +46191,11 @@ export interface components {
             consentVersion?: number;
             preferences: components["schemas"]["AudiencePreferencesInputDto"];
         };
+        /**
+         * @description Bank items: the account the row names (J-CR, D-335); null on the receivables item and on reconciliations recorded before.
+         * @enum {string}
+         */
+        ReconcileAccountType: "operating" | "fund";
         /** @enum {string} */
         ReconcileKind: "receivables" | "bank";
         /** @enum {string} */
@@ -45936,6 +46338,32 @@ export interface components {
              */
             validTo: string | null;
         };
+        RegisterOwnerPickDto: {
+            /**
+             * Format: uuid
+             * @example 5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c
+             */
+            buildingId: string;
+            /** @example อาคาร A */
+            buildingName: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            partyId: string;
+            /** @example ผู้เช่า ทดสอบ */
+            partyName: string;
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            unitId: string;
+            /** @example A-201 */
+            unitNo: string;
+        };
+        RegisterOwnerPickListDto: {
+            data: components["schemas"]["RegisterOwnerPickDto"][];
+        };
         RegisterPartyDto: {
             /** @example ผู้เช่า ทดสอบ */
             displayName: string;
@@ -45980,6 +46408,22 @@ export interface components {
             buildingId: string;
             /** @example อาคาร A */
             buildingName: string;
+            /**
+             * Format: uuid
+             * @description J-CR (D-335).
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            floorId: string | null;
+            /**
+             * @description The floor’s level (J-CR, D-335).
+             * @example 12
+             */
+            floorLevel: number | null;
+            /**
+             * @description The floor’s name (J-CR, D-335).
+             * @example ชั้น 12
+             */
+            floorName: string | null;
             /** @description Every ownership row of the unit, oldest first. */
             history: components["schemas"]["RegisterOwnerDto"][];
             /**
@@ -46006,6 +46450,12 @@ export interface components {
              * @example null
              */
             plotNo: string | null;
+            /**
+             * Format: uuid
+             * @description The building’s property (J-CR, D-335).
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            propertyId: string;
             /**
              * @description Σ of the current owners’ shares.
              * @example 100.0000
@@ -46051,6 +46501,22 @@ export interface components {
             /** @example อาคาร A */
             buildingName: string;
             /**
+             * Format: uuid
+             * @description J-CR (D-335).
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            floorId: string | null;
+            /**
+             * @description The floor’s level (J-CR, D-335).
+             * @example 12
+             */
+            floorLevel: number | null;
+            /**
+             * @description The floor’s name (J-CR, D-335).
+             * @example ชั้น 12
+             */
+            floorName: string | null;
+            /**
              * @description Σ shares < 100 %: the register misses an owner; common-fee drafts of the unit are not issuable (`ownership_shares_incomplete`, D-323).
              * @example false
              */
@@ -46074,6 +46540,12 @@ export interface components {
              * @example null
              */
             plotNo: string | null;
+            /**
+             * Format: uuid
+             * @description The building’s property (J-CR, D-335).
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            propertyId: string;
             /**
              * @description Σ of the current owners’ shares.
              * @example 100.0000
@@ -46219,6 +46691,13 @@ export interface components {
             destination: components["schemas"]["RelocationDestinationOutDto"] | null;
             /** @description Listings I enquired about from this offer. */
             enquiredListingIds: string[];
+            /**
+             * @description The same listings by slug (as `listings[].slug`) — to mark which places I already asked about (J-CR, LIFF #37).
+             * @example [
+             *       "condo-1br-0a1b2c3d4e"
+             *     ]
+             */
+            enquiredListingSlugs: string[];
             /** Format: uuid */
             id: string;
             /**
@@ -46975,6 +47454,11 @@ export interface components {
              */
             gates: components["schemas"]["GateRefDto"][];
             /**
+             * @description Longest window of an invite (`gate.invite_max_days` of the estate; J-CR, D-335).
+             * @example 30
+             */
+            inviteMaxDays: number;
+            /**
              * @example {
              *       "action": "guard_calls",
              *       "custom": false,
@@ -46993,6 +47477,11 @@ export interface components {
              *     }
              */
             privacyNotice: components["schemas"]["PrivacyNoticeDto"];
+            /**
+             * @description Days a remembered car stays valid (`gate.remember_days` of the estate; J-CR, D-335).
+             * @example 30
+             */
+            rememberDays: number;
             /**
              * Format: uuid
              * @example 3b241101-e2bb-4255-8caf-4136c566a962
@@ -47332,6 +47821,11 @@ export interface components {
              * @example true
              */
             contractAvailable: boolean;
+            /**
+             * @description sha256 (hex) of the contract PDF a signature would bind — the same value `GET …/contract` answers; null until the contract is rendered (J-CR, LIFF #38).
+             * @example 9f2c1a0e5b7d4c3a8e6f1b2d0c9a7e5f3b1d8c6a4e2f0b9d7c5a3e1f8b6d4c2a
+             */
+            contractSha256: string | null;
             /** @example THB */
             currency: string;
             /**
@@ -47523,6 +48017,11 @@ export interface components {
         };
         ResidentMeUnitDto: {
             /**
+             * @description Floor area m² (J-CR, D-335).
+             * @example 34.77
+             */
+            areaSqm: string | null;
+            /**
              * Format: uuid
              * @example 5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c
              */
@@ -47543,6 +48042,11 @@ export interface components {
              */
             capabilities: components["schemas"]["ResidentUnitCapability"][];
             /**
+             * @description Land area in ตารางวา (J-CR).
+             * @example null
+             */
+            landAreaSqwa: string | null;
+            /**
              * @description Leases in force on this unit that I am a party of.
              * @example []
              */
@@ -47553,6 +48057,16 @@ export interface components {
              */
             legalForm: components["schemas"]["BuildingLegalForm"] | null;
             /**
+             * @description อัตราส่วนกรรมสิทธิ์ as the register keeps it (6 decimals; J-CR, D-335).
+             * @example 0.012345
+             */
+            ownershipRatio: string | null;
+            /**
+             * @description Plot number (housing estates; J-CR).
+             * @example null
+             */
+            plotNo: string | null;
+            /**
              * Format: uuid
              * @example 3b241101-e2bb-4255-8caf-4136c566a962
              */
@@ -47562,6 +48076,11 @@ export interface components {
              * @example condo
              */
             propertyKind: components["schemas"]["PropertyKind"] | null;
+            /**
+             * @description Auto-pay can be set up here now: a recurring channel is configured (O-020) and I hold a role that may set it up (co-owner, payer, tenant). False → hide the link (J-CR, D-335).
+             * @example false
+             */
+            recurringAvailable: boolean;
             /** @description Every role I hold on the unit today. */
             roles: components["schemas"]["ResidentUnitRoleDto"][];
             /**
@@ -48081,7 +48600,7 @@ export interface components {
          * @description Navigation for this unit (D-322): notices, parcels, facilities, rules, contacts and service requests for every role; `invoices` for co-owners, tenants, co-tenants and payers (bills addressed to me); `usage` and `access` only where I live (occupancy); `lease` only as a party of a lease in force on the unit. The tenant’s modules still gate the tiles (`/me` `entitlements`).
          * @enum {string}
          */
-        ResidentUnitCapability: "notices" | "parcels" | "facilities" | "rules" | "contacts" | "service_requests" | "invoices" | "usage" | "access" | "lease";
+        ResidentUnitCapability: "notices" | "parcels" | "facilities" | "rules" | "contacts" | "service_requests" | "invoices" | "usage" | "access" | "lease" | "gate";
         ResidentUnitDto: {
             /**
              * Format: uuid
@@ -48510,6 +49029,21 @@ export interface components {
             documentId: string;
             /** @example minutes */
             kind: components["schemas"]["ResolutionDocumentKind"];
+            /**
+             * @description J-CR (D-335).
+             * @example application/pdf
+             */
+            mimeType: string;
+            /**
+             * @description Bytes (J-CR, D-335).
+             * @example 482113
+             */
+            sizeBytes: number;
+            /**
+             * @description The file’s title (J-CR, D-335).
+             * @example รายงานการประชุมใหญ่สามัญประจำปี 2569.pdf
+             */
+            title: string | null;
         };
         /** @enum {string} */
         ResolutionDocumentKind: "minutes" | "attachment" | "notice";
@@ -48690,6 +49224,48 @@ export interface components {
              * @example ตรวจสอบตัวตนก่อนทำสัญญา
              */
             purpose: string;
+        };
+        RevenueScheduleDto: {
+            /**
+             * Format: uuid
+             * @example 3b241101-e2bb-4255-8caf-4136c566a962
+             */
+            billingCycleId: string;
+            /** @example annual */
+            frequency: components["schemas"]["BillingFrequency"];
+            months: components["schemas"]["RevenueScheduleMonthDto"][];
+            /**
+             * @description Σ of the months. Unit: THB, decimal string (D-046).
+             * @example 28800.00
+             */
+            total: string;
+        };
+        RevenueScheduleMonthDto: {
+            /**
+             * @description Σ scheduled for the month over the cycle’s invoice lines. Unit: THB, decimal string (D-046).
+             * @example 2400.00
+             */
+            amount: string;
+            /**
+             * @description Σ taken back by credit notes. Unit: THB, decimal string (D-046).
+             * @example 0.00
+             */
+            credited: string;
+            /**
+             * @description Every line of the month was recognised.
+             * @example true
+             */
+            fullyRecognised: boolean;
+            /**
+             * @description YYYY-MM (Bangkok).
+             * @example 2027-02
+             */
+            month: string;
+            /**
+             * @description Σ recognised by the ledger job so far. Unit: THB, decimal string (D-046).
+             * @example 2400.00
+             */
+            recognised: string;
         };
         /** @enum {string} */
         ReviewDecision: "accept" | "correct" | "reject";
@@ -54183,6 +54759,28 @@ export interface components {
         };
         /** @enum {string} */
         VendorCategory: "security" | "cleaning" | "gardening" | "lift" | "pump" | "fire_system" | "electrical" | "plumbing" | "pest_control" | "pool" | "cctv" | "waste" | "building_works" | "professional" | "insurance" | "other";
+        VendorContractCountsDto: {
+            /** @example 6 */
+            active: number;
+            /** @example 9 */
+            all: number;
+            /** @example 1 */
+            draft: number;
+            /**
+             * @description Active contracts ending within `endingWithinDays`.
+             * @example 2
+             */
+            endingSoon: number;
+            /**
+             * @description The query’s `endingWithinDays`, else the largest threshold of `juristic.contract_expiry_alert_days`.
+             * @example 90
+             */
+            endingWithinDays: number;
+            /** @example 1 */
+            expired: number;
+            /** @example 1 */
+            terminated: number;
+        };
         VendorContractCreateDto: {
             /**
              * Format: uuid
@@ -54525,6 +55123,14 @@ export interface components {
              */
             version?: number;
             whtKey?: string | null;
+        };
+        VendorCountsDto: {
+            /** @example 13 */
+            active: number;
+            /** @example 14 */
+            all: number;
+            /** @example 1 */
+            blocked: number;
         };
         VendorCreateDto: {
             /**
@@ -55082,6 +55688,11 @@ export interface components {
         };
         VisitCreatedDto: {
             /**
+             * @description First name of the resident who asked the guard to call (the guard calls the house number on file; D-315, J-CR).
+             * @example null
+             */
+            callBackName: string | null;
+            /**
              * Format: date-time
              * @description A resident asked the guard to call.
              * @example null
@@ -55108,6 +55719,11 @@ export interface components {
              * @example null
              */
             decidedAt: string | null;
+            /**
+             * @description First name of the resident who approved or denied (first names only, D-315; J-CR, D-335).
+             * @example เกริก
+             */
+            decidedByName: string | null;
             /**
              * @description `timeout`, `nobody_reachable`, `blacklisted`, `no_destination` or the guard override reason.
              * @example null
@@ -55150,6 +55766,12 @@ export interface components {
             kind: components["schemas"]["VisitKind"];
             /** @example null */
             note: string | null;
+            /**
+             * Format: date-time
+             * @description When the visit was found inside longer than the estate allows (`gate.visit.overstayed`) — survives a reload (J-CR, D-335).
+             * @example null
+             */
+            overstayedAt: string | null;
             /**
              * @example {
              *       "category": "1กข",
@@ -55492,6 +56114,11 @@ export interface components {
         VisitKind: "guest" | "delivery" | "contractor" | "resident_vehicle" | "other";
         VisitLogDetailDto: {
             /**
+             * @description First name of the resident who asked the guard to call (the guard calls the house number on file; D-315, J-CR).
+             * @example null
+             */
+            callBackName: string | null;
+            /**
              * Format: date-time
              * @description A resident asked the guard to call.
              * @example null
@@ -55518,6 +56145,11 @@ export interface components {
              * @example null
              */
             decidedAt: string | null;
+            /**
+             * @description First name of the resident who approved or denied (first names only, D-315; J-CR, D-335).
+             * @example เกริก
+             */
+            decidedByName: string | null;
             /**
              * @description `timeout`, `nobody_reachable`, `blacklisted`, `no_destination` or the guard override reason.
              * @example null
@@ -55562,6 +56194,12 @@ export interface components {
             kind: components["schemas"]["VisitKind"];
             /** @example null */
             note: string | null;
+            /**
+             * Format: date-time
+             * @description When the visit was found inside longer than the estate allows (`gate.visit.overstayed`) — survives a reload (J-CR, D-335).
+             * @example null
+             */
+            overstayedAt: string | null;
             /**
              * @example {
              *       "category": "1กข",
@@ -57164,6 +57802,114 @@ export interface operations {
                 };
             };
             /** @description Problem: `idempotency.key_reused`, `portfolio.claimant_invalid`, `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "admin.buildings.stubs": {
+        parameters: {
+            query?: {
+                order?: components["schemas"]["SortOrder"];
+                page?: number;
+                perPage?: number;
+                /** @description Free-text search */
+                q?: string;
+                /** @description Sort field; each endpoint validates it against its own allow-list. */
+                sort?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One page of results */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "address": "ถนนสุขุมวิท พระโขนง คลองเตย กรุงเทพมหานคร 10110",
+                     *           "id": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *           "landlordUnits": 7,
+                     *           "name": "ไลฟ์ สุขุมวิท 48",
+                     *           "propertyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "propertyName": "ไลฟ์ สุขุมวิท 48"
+                     *         }
+                     *       ],
+                     *       "meta": {
+                     *         "page": 1,
+                     *         "perPage": 25,
+                     *         "total": 1
+                     *       }
+                     *     }
+                     */
+                    "application/json": {
+                        data: components["schemas"]["AdminStubBuildingDto"][];
+                        meta: components["schemas"]["PageMeta"];
+                    };
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -77270,7 +78016,8 @@ export interface operations {
                      *         {
                      *           "displayName": "สมศักดิ์",
                      *           "guardId": "3b241101-e2bb-4255-8caf-4136c566a962",
-                     *           "locked": false
+                     *           "locked": false,
+                     *           "lockedUntil": null
                      *         }
                      *       ],
                      *       "propertyName": "หมู่บ้านตัวอย่าง"
@@ -81622,11 +82369,13 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "callBackName": null,
                      *       "callMeAt": null,
                      *       "cancelledAt": null,
                      *       "clientRef": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "createdAt": "2026-11-05T18:00:00+07:00",
                      *       "decidedAt": null,
+                     *       "decidedByName": null,
                      *       "decisionReason": null,
                      *       "enteredAt": null,
                      *       "entryBasis": "invite",
@@ -81639,6 +82388,7 @@ export interface operations {
                      *       "idLast4": "1234",
                      *       "kind": "guest",
                      *       "note": null,
+                     *       "overstayedAt": null,
                      *       "plate": {
                      *         "category": "1กข",
                      *         "number": "1234",
@@ -81764,6 +82514,7 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "autoLockMinutes": 5,
                      *       "gateDeviceId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "gateDeviceName": "แท็บเล็ตป้อมหน้า",
                      *       "gateId": "3b241101-e2bb-4255-8caf-4136c566a962",
@@ -82521,11 +83272,13 @@ export interface operations {
                     /**
                      * @example [
                      *       {
+                     *         "callBackName": null,
                      *         "callMeAt": null,
                      *         "cancelledAt": null,
                      *         "clientRef": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *         "createdAt": "2026-11-05T18:00:00+07:00",
                      *         "decidedAt": null,
+                     *         "decidedByName": null,
                      *         "decisionReason": null,
                      *         "enteredAt": null,
                      *         "entryBasis": null,
@@ -82538,6 +83291,7 @@ export interface operations {
                      *         "idLast4": "1234",
                      *         "kind": "guest",
                      *         "note": null,
+                     *         "overstayedAt": null,
                      *         "plate": {
                      *           "category": "1กข",
                      *           "number": "1234",
@@ -82640,11 +83394,13 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "callBackName": null,
                      *       "callMeAt": null,
                      *       "cancelledAt": null,
                      *       "clientRef": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "createdAt": "2026-11-05T18:00:00+07:00",
                      *       "decidedAt": null,
+                     *       "decidedByName": null,
                      *       "decisionReason": null,
                      *       "enteredAt": null,
                      *       "entryBasis": null,
@@ -82657,6 +83413,7 @@ export interface operations {
                      *       "idLast4": "1234",
                      *       "kind": "guest",
                      *       "note": null,
+                     *       "overstayedAt": null,
                      *       "plate": {
                      *         "category": "1กข",
                      *         "number": "1234",
@@ -82790,6 +83547,7 @@ export interface operations {
                      *       "clientRef": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "createdAt": "2026-11-05T18:00:00+07:00",
                      *       "decidedAt": null,
+                     *       "decidedByName": null,
                      *       "decisionReason": null,
                      *       "enteredAt": null,
                      *       "entryBasis": null,
@@ -82803,6 +83561,7 @@ export interface operations {
                      *       "idLast4": "1234",
                      *       "kind": "guest",
                      *       "note": null,
+                     *       "overstayedAt": null,
                      *       "photoUrl": null,
                      *       "plate": {
                      *         "category": "1กข",
@@ -82917,11 +83676,13 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "callBackName": null,
                      *       "callMeAt": null,
                      *       "cancelledAt": null,
                      *       "clientRef": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "createdAt": "2026-11-05T18:00:00+07:00",
                      *       "decidedAt": null,
+                     *       "decidedByName": null,
                      *       "decisionReason": null,
                      *       "enteredAt": null,
                      *       "entryBasis": null,
@@ -82934,6 +83695,7 @@ export interface operations {
                      *       "idLast4": "1234",
                      *       "kind": "guest",
                      *       "note": null,
+                     *       "overstayedAt": null,
                      *       "plate": {
                      *         "category": "1กข",
                      *         "number": "1234",
@@ -83067,11 +83829,13 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "callBackName": null,
                      *       "callMeAt": null,
                      *       "cancelledAt": null,
                      *       "clientRef": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "createdAt": "2026-11-05T18:00:00+07:00",
                      *       "decidedAt": null,
+                     *       "decidedByName": null,
                      *       "decisionReason": null,
                      *       "enteredAt": null,
                      *       "entryBasis": null,
@@ -83084,6 +83848,7 @@ export interface operations {
                      *       "idLast4": "1234",
                      *       "kind": "guest",
                      *       "note": null,
+                     *       "overstayedAt": null,
                      *       "plate": {
                      *         "category": "1กข",
                      *         "number": "1234",
@@ -83213,11 +83978,13 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "callBackName": null,
                      *       "callMeAt": null,
                      *       "cancelledAt": null,
                      *       "clientRef": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "createdAt": "2026-11-05T18:00:00+07:00",
                      *       "decidedAt": null,
+                     *       "decidedByName": null,
                      *       "decisionReason": null,
                      *       "enteredAt": null,
                      *       "entryBasis": null,
@@ -83230,6 +83997,7 @@ export interface operations {
                      *       "idLast4": "1234",
                      *       "kind": "guest",
                      *       "note": null,
+                     *       "overstayedAt": null,
                      *       "plate": {
                      *         "category": "1กข",
                      *         "number": "1234",
@@ -83360,11 +84128,13 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "callBackName": null,
                      *       "callMeAt": null,
                      *       "cancelledAt": null,
                      *       "clientRef": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "createdAt": "2026-11-05T18:00:00+07:00",
                      *       "decidedAt": null,
+                     *       "decidedByName": null,
                      *       "decisionReason": null,
                      *       "enteredAt": null,
                      *       "entryBasis": null,
@@ -83377,6 +84147,7 @@ export interface operations {
                      *       "idLast4": "1234",
                      *       "kind": "guest",
                      *       "note": null,
+                     *       "overstayedAt": null,
                      *       "plate": {
                      *         "category": "1กข",
                      *         "number": "1234",
@@ -87236,6 +88007,131 @@ export interface operations {
             };
             /** @description Problem: `billing_cycle.invalid_state` */
             409: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.billingCycles.revenueSchedule": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path: {
+                billingCycleId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Schedule */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "billingCycleId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "frequency": "annual",
+                     *       "months": [
+                     *         {
+                     *           "amount": "2400.00",
+                     *           "credited": "0.00",
+                     *           "fullyRecognised": true,
+                     *           "month": "2027-01",
+                     *           "recognised": "2400.00"
+                     *         },
+                     *         {
+                     *           "amount": "2400.00",
+                     *           "credited": "0.00",
+                     *           "fullyRecognised": false,
+                     *           "month": "2027-02",
+                     *           "recognised": "0.00"
+                     *         }
+                     *       ],
+                     *       "total": "4800.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RevenueScheduleDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
                     [name: string]: unknown;
@@ -94171,6 +95067,7 @@ export interface operations {
                      *         "grantedVersion": 1,
                      *         "key": "operator.terms",
                      *         "language": "th",
+                     *         "lastGranted": true,
                      *         "required": true,
                      *         "title": "ข้อกำหนดการใช้งาน getproperty",
                      *         "version": 1
@@ -94272,6 +95169,7 @@ export interface operations {
                      *           "grantedVersion": 1,
                      *           "key": "operator.terms",
                      *           "language": "th",
+                     *           "lastGranted": true,
                      *           "required": true,
                      *           "title": "ข้อกำหนดการใช้งาน getproperty",
                      *           "version": 1
@@ -106167,11 +107065,13 @@ export interface operations {
                      * @example {
                      *       "data": [
                      *         {
+                     *           "callBackName": null,
                      *           "callMeAt": null,
                      *           "cancelledAt": null,
                      *           "clientRef": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *           "createdAt": "2026-11-05T18:00:00+07:00",
                      *           "decidedAt": null,
+                     *           "decidedByName": null,
                      *           "decisionReason": null,
                      *           "enteredAt": null,
                      *           "entryBasis": null,
@@ -106184,6 +107084,7 @@ export interface operations {
                      *           "idLast4": "1234",
                      *           "kind": "guest",
                      *           "note": null,
+                     *           "overstayedAt": null,
                      *           "plate": {
                      *             "category": "1กข",
                      *             "number": "1234",
@@ -106304,11 +107205,13 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "callBackName": null,
                      *       "callMeAt": null,
                      *       "cancelledAt": null,
                      *       "clientRef": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "createdAt": "2026-11-05T18:00:00+07:00",
                      *       "decidedAt": null,
+                     *       "decidedByName": null,
                      *       "decisionReason": null,
                      *       "enteredAt": null,
                      *       "entryBasis": null,
@@ -106322,6 +107225,7 @@ export interface operations {
                      *       "idLast4": "1234",
                      *       "kind": "guest",
                      *       "note": null,
+                     *       "overstayedAt": null,
                      *       "plate": {
                      *         "category": "1กข",
                      *         "number": "1234",
@@ -117639,6 +118543,116 @@ export interface operations {
             };
         };
     };
+    "owner.juristicExpenseAccounts.list": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Expense accounts by code */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "bankAccountId": null,
+                     *           "code": "5100",
+                     *           "fundId": null,
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "isActive": true,
+                     *           "isSystem": true,
+                     *           "nameEn": "Common fee income",
+                     *           "nameTh": "รายได้ค่าส่วนกลาง",
+                     *           "role": "income_common_fee",
+                     *           "type": "expense",
+                     *           "used": true,
+                     *           "version": 1
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["AccountListDto"];
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "owner.juristicExpenses.list": {
         parameters: {
             query?: {
@@ -117678,6 +118692,16 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "counts": {
+                     *         "all": 12,
+                     *         "approved": 2,
+                     *         "awaitingMe": 2,
+                     *         "cancelled": 1,
+                     *         "draft": 1,
+                     *         "paid": 4,
+                     *         "rejected": 1,
+                     *         "submitted": 3
+                     *       },
                      *       "data": [
                      *         {
                      *           "amount": "42800.00",
@@ -117773,6 +118797,8 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
+                        /** @description Requests per state and awaiting me for the same building and kind, whatever `state` / `awaitingMe` ask (J-CR, D-335). */
+                        counts: components["schemas"]["ExpenseRequestCountsDto"];
                         data: components["schemas"]["ExpenseRequestDto"][];
                         meta: components["schemas"]["PageMeta"];
                     };
@@ -122043,6 +123069,8 @@ export interface operations {
         parameters: {
             query?: {
                 buildingId?: string;
+                /** @description true: only jobs that block a new one (draft, validated, reconciled, committed); false: only the others (J-CR, D-335). */
+                open?: boolean;
                 order?: components["schemas"]["SortOrder"];
                 page?: number;
                 perPage?: number;
@@ -122115,12 +123143,27 @@ export interface operations {
                      *             "explanationRequired": false,
                      *             "items": [
                      *               {
+                     *                 "accountType": null,
                      *                 "difference": "0.00",
+                     *                 "fundName": null,
                      *                 "imported": "845210.50",
                      *                 "key": "receivables",
                      *                 "kind": "receivables",
                      *                 "label": "receivables",
+                     *                 "last4": null,
                      *                 "reference": "845210.50",
+                     *                 "status": "match"
+                     *               },
+                     *               {
+                     *                 "accountType": "operating",
+                     *                 "difference": "0.00",
+                     *                 "fundName": null,
+                     *                 "imported": "120000.00",
+                     *                 "key": "bank:2",
+                     *                 "kind": "bank",
+                     *                 "label": "operating ••4012",
+                     *                 "last4": "4012",
+                     *                 "reference": "120000.00",
                      *                 "status": "match"
                      *               }
                      *             ],
@@ -122453,12 +123496,27 @@ export interface operations {
                      *         "explanationRequired": false,
                      *         "items": [
                      *           {
+                     *             "accountType": null,
                      *             "difference": "0.00",
+                     *             "fundName": null,
                      *             "imported": "845210.50",
                      *             "key": "receivables",
                      *             "kind": "receivables",
                      *             "label": "receivables",
+                     *             "last4": null,
                      *             "reference": "845210.50",
+                     *             "status": "match"
+                     *           },
+                     *           {
+                     *             "accountType": "operating",
+                     *             "difference": "0.00",
+                     *             "fundName": null,
+                     *             "imported": "120000.00",
+                     *             "key": "bank:2",
+                     *             "kind": "bank",
+                     *             "label": "operating ••4012",
+                     *             "last4": "4012",
+                     *             "reference": "120000.00",
                      *             "status": "match"
                      *           }
                      *         ],
@@ -122630,12 +123688,27 @@ export interface operations {
                      *         "explanationRequired": false,
                      *         "items": [
                      *           {
+                     *             "accountType": null,
                      *             "difference": "0.00",
+                     *             "fundName": null,
                      *             "imported": "845210.50",
                      *             "key": "receivables",
                      *             "kind": "receivables",
                      *             "label": "receivables",
+                     *             "last4": null,
                      *             "reference": "845210.50",
+                     *             "status": "match"
+                     *           },
+                     *           {
+                     *             "accountType": "operating",
+                     *             "difference": "0.00",
+                     *             "fundName": null,
+                     *             "imported": "120000.00",
+                     *             "key": "bank:2",
+                     *             "kind": "bank",
+                     *             "label": "operating ••4012",
+                     *             "last4": "4012",
+                     *             "reference": "120000.00",
                      *             "status": "match"
                      *           }
                      *         ],
@@ -122836,12 +123909,27 @@ export interface operations {
                      *         "explanationRequired": false,
                      *         "items": [
                      *           {
+                     *             "accountType": null,
                      *             "difference": "0.00",
+                     *             "fundName": null,
                      *             "imported": "845210.50",
                      *             "key": "receivables",
                      *             "kind": "receivables",
                      *             "label": "receivables",
+                     *             "last4": null,
                      *             "reference": "845210.50",
+                     *             "status": "match"
+                     *           },
+                     *           {
+                     *             "accountType": "operating",
+                     *             "difference": "0.00",
+                     *             "fundName": null,
+                     *             "imported": "120000.00",
+                     *             "key": "bank:2",
+                     *             "kind": "bank",
+                     *             "label": "operating ••4012",
+                     *             "last4": "4012",
+                     *             "reference": "120000.00",
                      *             "status": "match"
                      *           }
                      *         ],
@@ -123038,12 +124126,27 @@ export interface operations {
                      *         "explanationRequired": false,
                      *         "items": [
                      *           {
+                     *             "accountType": null,
                      *             "difference": "0.00",
+                     *             "fundName": null,
                      *             "imported": "845210.50",
                      *             "key": "receivables",
                      *             "kind": "receivables",
                      *             "label": "receivables",
+                     *             "last4": null,
                      *             "reference": "845210.50",
+                     *             "status": "match"
+                     *           },
+                     *           {
+                     *             "accountType": "operating",
+                     *             "difference": "0.00",
+                     *             "fundName": null,
+                     *             "imported": "120000.00",
+                     *             "key": "bank:2",
+                     *             "kind": "bank",
+                     *             "label": "operating ••4012",
+                     *             "last4": "4012",
+                     *             "reference": "120000.00",
                      *             "status": "match"
                      *           }
                      *         ],
@@ -123235,12 +124338,27 @@ export interface operations {
                      *         "explanationRequired": false,
                      *         "items": [
                      *           {
+                     *             "accountType": null,
                      *             "difference": "0.00",
+                     *             "fundName": null,
                      *             "imported": "845210.50",
                      *             "key": "receivables",
                      *             "kind": "receivables",
                      *             "label": "receivables",
+                     *             "last4": null,
                      *             "reference": "845210.50",
+                     *             "status": "match"
+                     *           },
+                     *           {
+                     *             "accountType": "operating",
+                     *             "difference": "0.00",
+                     *             "fundName": null,
+                     *             "imported": "120000.00",
+                     *             "key": "bank:2",
+                     *             "kind": "bank",
+                     *             "label": "operating ••4012",
+                     *             "last4": "4012",
+                     *             "reference": "120000.00",
                      *             "status": "match"
                      *           }
                      *         ],
@@ -123437,12 +124555,27 @@ export interface operations {
                      *         "explanationRequired": false,
                      *         "items": [
                      *           {
+                     *             "accountType": null,
                      *             "difference": "0.00",
+                     *             "fundName": null,
                      *             "imported": "845210.50",
                      *             "key": "receivables",
                      *             "kind": "receivables",
                      *             "label": "receivables",
+                     *             "last4": null,
                      *             "reference": "845210.50",
+                     *             "status": "match"
+                     *           },
+                     *           {
+                     *             "accountType": "operating",
+                     *             "difference": "0.00",
+                     *             "fundName": null,
+                     *             "imported": "120000.00",
+                     *             "key": "bank:2",
+                     *             "kind": "bank",
+                     *             "label": "operating ••4012",
+                     *             "last4": "4012",
+                     *             "reference": "120000.00",
                      *             "status": "match"
                      *           }
                      *         ],
@@ -123630,12 +124763,27 @@ export interface operations {
                      *         "explanationRequired": false,
                      *         "items": [
                      *           {
+                     *             "accountType": null,
                      *             "difference": "0.00",
+                     *             "fundName": null,
                      *             "imported": "845210.50",
                      *             "key": "receivables",
                      *             "kind": "receivables",
                      *             "label": "receivables",
+                     *             "last4": null,
                      *             "reference": "845210.50",
+                     *             "status": "match"
+                     *           },
+                     *           {
+                     *             "accountType": "operating",
+                     *             "difference": "0.00",
+                     *             "fundName": null,
+                     *             "imported": "120000.00",
+                     *             "key": "bank:2",
+                     *             "kind": "bank",
+                     *             "label": "operating ••4012",
+                     *             "last4": "4012",
+                     *             "reference": "120000.00",
                      *             "status": "match"
                      *           }
                      *         ],
@@ -123936,12 +125084,27 @@ export interface operations {
                      *         "explanationRequired": false,
                      *         "items": [
                      *           {
+                     *             "accountType": null,
                      *             "difference": "0.00",
+                     *             "fundName": null,
                      *             "imported": "845210.50",
                      *             "key": "receivables",
                      *             "kind": "receivables",
                      *             "label": "receivables",
+                     *             "last4": null,
                      *             "reference": "845210.50",
+                     *             "status": "match"
+                     *           },
+                     *           {
+                     *             "accountType": "operating",
+                     *             "difference": "0.00",
+                     *             "fundName": null,
+                     *             "imported": "120000.00",
+                     *             "key": "bank:2",
+                     *             "kind": "bank",
+                     *             "label": "operating ••4012",
+                     *             "last4": "4012",
+                     *             "reference": "120000.00",
                      *             "status": "match"
                      *           }
                      *         ],
@@ -124130,12 +125293,27 @@ export interface operations {
                      *         "explanationRequired": false,
                      *         "items": [
                      *           {
+                     *             "accountType": null,
                      *             "difference": "0.00",
+                     *             "fundName": null,
                      *             "imported": "845210.50",
                      *             "key": "receivables",
                      *             "kind": "receivables",
                      *             "label": "receivables",
+                     *             "last4": null,
                      *             "reference": "845210.50",
+                     *             "status": "match"
+                     *           },
+                     *           {
+                     *             "accountType": "operating",
+                     *             "difference": "0.00",
+                     *             "fundName": null,
+                     *             "imported": "120000.00",
+                     *             "key": "bank:2",
+                     *             "kind": "bank",
+                     *             "label": "operating ••4012",
+                     *             "last4": "4012",
+                     *             "reference": "120000.00",
                      *             "status": "match"
                      *           }
                      *         ],
@@ -129706,6 +130884,14 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "counts": {
+                     *         "all": 7,
+                     *         "awaitingApproval": 1,
+                     *         "awaitingMe": 1,
+                     *         "awarded": 3,
+                     *         "cancelled": 1,
+                     *         "open": 2
+                     *       },
                      *       "data": [
                      *         {
                      *           "aboveThreshold": true,
@@ -129776,6 +130962,8 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
+                        /** @description Rounds per state for the same building, whatever `state` / `awaitingMe` ask, and the awards awaiting me (J-CR, D-335). */
+                        counts: components["schemas"]["QuotationRoundCountsDto"];
                         data: components["schemas"]["QuotationRoundDto"][];
                         meta: components["schemas"]["PageMeta"];
                     };
@@ -131090,6 +132278,12 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "counts": {
+                     *         "all": 1,
+                     *         "atStep": 1,
+                     *         "dispute": 0,
+                     *         "plan": 0
+                     *       },
                      *       "data": [
                      *         {
                      *           "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
@@ -131351,6 +132545,8 @@ export interface operations {
                 order?: components["schemas"]["SortOrder"];
                 page?: number;
                 perPage?: number;
+                /** @description Every building (soi) of this property — a housing estate in one list (J-CR, D-335). */
+                propertyId?: string;
                 /** @description Free-text search */
                 q?: string;
                 /** @description Sort field; each endpoint validates it against its own allow-list. */
@@ -131385,6 +132581,9 @@ export interface operations {
                      *           "billTo": [],
                      *           "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
                      *           "buildingName": "อาคาร A",
+                     *           "floorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "floorLevel": 12,
+                     *           "floorName": "ชั้น 12",
                      *           "incomplete": true,
                      *           "landAreaSqwa": null,
                      *           "legalForm": "condo_act",
@@ -131408,6 +132607,7 @@ export interface operations {
                      *           ],
                      *           "ownershipRatio": "0.012345",
                      *           "plotNo": null,
+                     *           "propertyId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *           "sharesTotal": "60.0000",
                      *           "titleDeedNo": null,
                      *           "type": "condo_unit",
@@ -131427,6 +132627,126 @@ export interface operations {
                         data: components["schemas"]["RegisterUnitDto"][];
                         meta: components["schemas"]["PageMeta"];
                     };
+                };
+            };
+            /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
+            400: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience`, `tenant.not_in_scope`, `tenant.read_only` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "owner.juristicRegister.owners": {
+        parameters: {
+            query?: {
+                buildingId?: string;
+                limit?: number;
+                propertyId?: string;
+                /** @description Owner name, unit number or plot number (contains). */
+                q?: string;
+            };
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+                /** @description Tenant context (the SaaS customer organisation, D-151) for operators who belong to several tenants (contract §8): must be one of the `tenant:<uuid>` scopes of the token. Not a uuid → 400 `tenant.context_invalid`; not in the token → 403 `tenant.not_in_scope`; omitted with several tenants → 400 `tenant.context_required`. Single-tenant users never need it. */
+                "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Owners */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "data": [
+                     *         {
+                     *           "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+                     *           "buildingName": "อาคาร A",
+                     *           "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "partyName": "ผู้เช่า ทดสอบ",
+                     *           "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "unitNo": "A-201"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["RegisterOwnerPickListDto"];
                 };
             };
             /** @description Problem: `tenant.context_invalid`, `tenant.context_required` */
@@ -131535,6 +132855,9 @@ export interface operations {
                      *       "billToHistory": [],
                      *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
                      *       "buildingName": "อาคาร A",
+                     *       "floorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "floorLevel": 12,
+                     *       "floorName": "ชั้น 12",
                      *       "history": [
                      *         {
                      *           "ownershipId": "3b241101-e2bb-4255-8caf-4136c566a962",
@@ -131576,6 +132899,7 @@ export interface operations {
                      *       ],
                      *       "ownershipRatio": "0.012345",
                      *       "plotNo": null,
+                     *       "propertyId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "sharesTotal": "60.0000",
                      *       "titleDeedNo": null,
                      *       "transfers": [
@@ -131719,6 +133043,9 @@ export interface operations {
                      *       "billToHistory": [],
                      *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
                      *       "buildingName": "อาคาร A",
+                     *       "floorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "floorLevel": 12,
+                     *       "floorName": "ชั้น 12",
                      *       "history": [
                      *         {
                      *           "ownershipId": "3b241101-e2bb-4255-8caf-4136c566a962",
@@ -131760,6 +133087,7 @@ export interface operations {
                      *       ],
                      *       "ownershipRatio": "0.012345",
                      *       "plotNo": null,
+                     *       "propertyId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "sharesTotal": "60.0000",
                      *       "titleDeedNo": null,
                      *       "transfers": [
@@ -131913,6 +133241,9 @@ export interface operations {
                      *       "billToHistory": [],
                      *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
                      *       "buildingName": "อาคาร A",
+                     *       "floorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "floorLevel": 12,
+                     *       "floorName": "ชั้น 12",
                      *       "history": [
                      *         {
                      *           "ownershipId": "3b241101-e2bb-4255-8caf-4136c566a962",
@@ -131954,6 +133285,7 @@ export interface operations {
                      *       ],
                      *       "ownershipRatio": "0.012345",
                      *       "plotNo": null,
+                     *       "propertyId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "sharesTotal": "60.0000",
                      *       "titleDeedNo": null,
                      *       "transfers": [
@@ -132098,6 +133430,9 @@ export interface operations {
                      *       "billToHistory": [],
                      *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
                      *       "buildingName": "อาคาร A",
+                     *       "floorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "floorLevel": 12,
+                     *       "floorName": "ชั้น 12",
                      *       "history": [
                      *         {
                      *           "ownershipId": "3b241101-e2bb-4255-8caf-4136c566a962",
@@ -132139,6 +133474,7 @@ export interface operations {
                      *       ],
                      *       "ownershipRatio": "0.012345",
                      *       "plotNo": null,
+                     *       "propertyId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "sharesTotal": "60.0000",
                      *       "titleDeedNo": null,
                      *       "transfers": [
@@ -132282,6 +133618,9 @@ export interface operations {
                      *       "billToHistory": [],
                      *       "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
                      *       "buildingName": "อาคาร A",
+                     *       "floorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "floorLevel": 12,
+                     *       "floorName": "ชั้น 12",
                      *       "history": [
                      *         {
                      *           "ownershipId": "3b241101-e2bb-4255-8caf-4136c566a962",
@@ -132323,6 +133662,7 @@ export interface operations {
                      *       ],
                      *       "ownershipRatio": "0.012345",
                      *       "plotNo": null,
+                     *       "propertyId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "sharesTotal": "60.0000",
                      *       "titleDeedNo": null,
                      *       "transfers": [
@@ -132596,6 +133936,9 @@ export interface operations {
                      *         "billToHistory": [],
                      *         "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
                      *         "buildingName": "อาคาร A",
+                     *         "floorId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "floorLevel": 12,
+                     *         "floorName": "ชั้น 12",
                      *         "history": [
                      *           {
                      *             "ownershipId": "3b241101-e2bb-4255-8caf-4136c566a962",
@@ -132637,6 +133980,7 @@ export interface operations {
                      *         ],
                      *         "ownershipRatio": "0.012345",
                      *         "plotNo": null,
+                     *         "propertyId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *         "sharesTotal": "60.0000",
                      *         "titleDeedNo": null,
                      *         "transfers": [
@@ -135539,6 +136883,15 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "counts": {
+                     *         "active": 6,
+                     *         "all": 9,
+                     *         "draft": 1,
+                     *         "endingSoon": 2,
+                     *         "endingWithinDays": 90,
+                     *         "expired": 1,
+                     *         "terminated": 1
+                     *       },
                      *       "data": [
                      *         {
                      *           "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
@@ -135569,6 +136922,8 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
+                        /** @description Contracts per state for the same vendor and building, whatever `state` asks, and the renewal queue (J-CR, D-335). */
+                        counts: components["schemas"]["VendorContractCountsDto"];
                         data: components["schemas"]["VendorContractDto"][];
                         meta: components["schemas"]["PageMeta"];
                     };
@@ -137801,9 +139156,13 @@ export interface operations {
     "owner.juristicVendors.list": {
         parameters: {
             query?: {
+                /** @description Vendors offering any of these categories (repeat the parameter or separate with commas; J-CR, D-335). Combined with `category` by AND. */
+                categories?: components["schemas"]["VendorCategory"][];
                 category?: components["schemas"]["VendorCategory"];
                 order?: components["schemas"]["SortOrder"];
                 page?: number;
+                /** @description The vendor of this party (a vendor per party; J-CR, D-335). */
+                partyId?: string;
                 perPage?: number;
                 /** @description Free-text search */
                 q?: string;
@@ -137834,6 +139193,11 @@ export interface operations {
                 content: {
                     /**
                      * @example {
+                     *       "counts": {
+                     *         "active": 13,
+                     *         "all": 14,
+                     *         "blocked": 1
+                     *       },
                      *       "data": [
                      *         {
                      *           "activeContracts": 1,
@@ -137866,6 +139230,8 @@ export interface operations {
                      *     }
                      */
                     "application/json": {
+                        /** @description Vendors per state for the same search and categories, whatever `state` asks (J-CR, D-335). */
+                        counts: components["schemas"]["VendorCountsDto"];
                         data: components["schemas"]["VendorDto"][];
                         meta: components["schemas"]["PageMeta"];
                     };
@@ -158757,6 +160123,7 @@ export interface operations {
                      *           "masked": "xxx-x-x1234-x",
                      *           "method": "direct_debit",
                      *           "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "partyName": "ผู้เช่า ทดสอบ",
                      *           "provider": "fake",
                      *           "scope": "advance_invoices",
                      *           "state": "active",
@@ -158880,6 +160247,7 @@ export interface operations {
                      *       "masked": "xxx-x-x1234-x",
                      *       "method": "direct_debit",
                      *       "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "partyName": "ผู้เช่า ทดสอบ",
                      *       "provider": "fake",
                      *       "scope": "advance_invoices",
                      *       "state": "revoked",
@@ -176036,6 +177404,8 @@ export interface operations {
                 order?: components["schemas"]["SortOrder"];
                 page?: number;
                 perPage?: number;
+                /** @description Units of every building of this property (a housing estate’s soi) — J-CR (D-335). */
+                propertyId?: string;
                 /** @description Free-text search */
                 q?: string;
                 /** @description Sort field; each endpoint validates it against its own allow-list. */
@@ -188399,6 +189769,7 @@ export interface operations {
                      *         "grantedVersion": 1,
                      *         "key": "resident.service",
                      *         "language": "th",
+                     *         "lastGranted": true,
                      *         "required": true,
                      *         "title": "การใช้ข้อมูลเพื่อให้บริการผู้พักอาศัย",
                      *         "version": 1
@@ -188488,6 +189859,7 @@ export interface operations {
                      *           "grantedVersion": 1,
                      *           "key": "resident.service",
                      *           "language": "th",
+                     *           "lastGranted": true,
                      *           "required": true,
                      *           "title": "การใช้ข้อมูลเพื่อให้บริการผู้พักอาศัย",
                      *           "version": 1
@@ -192820,6 +194192,7 @@ export interface operations {
                      *         "advanceRentAmount": "4500.00",
                      *         "buildingName": "อาคาร A",
                      *         "contractAvailable": true,
+                     *         "contractSha256": "9f2c1a0e5b7d4c3a8e6f1b2d0c9a7e5f3b1d8c6a4e2f0b9d7c5a3e1f8b6d4c2a",
                      *         "currency": "THB",
                      *         "depositAmount": "4500.00",
                      *         "endDate": "2027-10-31",
@@ -192940,6 +194313,7 @@ export interface operations {
                      *       "advanceRentAmount": "4500.00",
                      *       "buildingName": "อาคาร A",
                      *       "contractAvailable": true,
+                     *       "contractSha256": "9f2c1a0e5b7d4c3a8e6f1b2d0c9a7e5f3b1d8c6a4e2f0b9d7c5a3e1f8b6d4c2a",
                      *       "currency": "THB",
                      *       "depositAmount": "4500.00",
                      *       "endDate": "2027-10-31",
@@ -193196,6 +194570,7 @@ export interface operations {
                      *       "advanceRentAmount": "4500.00",
                      *       "buildingName": "อาคาร A",
                      *       "contractAvailable": true,
+                     *       "contractSha256": "9f2c1a0e5b7d4c3a8e6f1b2d0c9a7e5f3b1d8c6a4e2f0b9d7c5a3e1f8b6d4c2a",
                      *       "currency": "THB",
                      *       "depositAmount": "4500.00",
                      *       "endDate": "2027-10-31",
@@ -194268,6 +195643,7 @@ export interface operations {
                      *       "advanceRentAmount": "4500.00",
                      *       "buildingName": "อาคาร A",
                      *       "contractAvailable": true,
+                     *       "contractSha256": "9f2c1a0e5b7d4c3a8e6f1b2d0c9a7e5f3b1d8c6a4e2f0b9d7c5a3e1f8b6d4c2a",
                      *       "currency": "THB",
                      *       "depositAmount": "4500.00",
                      *       "endDate": "2027-10-31",
@@ -194433,6 +195809,7 @@ export interface operations {
                      *       "advanceRentAmount": "4500.00",
                      *       "buildingName": "อาคาร A",
                      *       "contractAvailable": true,
+                     *       "contractSha256": "9f2c1a0e5b7d4c3a8e6f1b2d0c9a7e5f3b1d8c6a4e2f0b9d7c5a3e1f8b6d4c2a",
                      *       "currency": "THB",
                      *       "depositAmount": "4500.00",
                      *       "endDate": "2027-10-31",
@@ -196075,6 +197452,7 @@ export interface operations {
                      *           "grantedVersion": 1,
                      *           "key": "resident.service",
                      *           "language": "th",
+                     *           "lastGranted": true,
                      *           "required": true,
                      *           "title": "การใช้ข้อมูลเพื่อให้บริการผู้พักอาศัย",
                      *           "version": 1
@@ -196946,6 +198324,7 @@ export interface operations {
                      *       "refreshRequired": false,
                      *       "units": [
                      *         {
+                     *           "areaSqm": "34.77",
                      *           "buildingId": "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
                      *           "buildingName": "อาคาร A",
                      *           "capabilities": [
@@ -196957,10 +198336,14 @@ export interface operations {
                      *             "service_requests",
                      *             "invoices"
                      *           ],
+                     *           "landAreaSqwa": null,
                      *           "leaseIds": [],
                      *           "legalForm": "condo_act",
+                     *           "ownershipRatio": "0.012345",
+                     *           "plotNo": null,
                      *           "propertyId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *           "propertyKind": "condo",
+                     *           "recurringAvailable": false,
                      *           "roles": [
                      *             {
                      *               "from": "2026-10-01",
@@ -198342,6 +199725,7 @@ export interface operations {
                      *             "province": "เชียงใหม่"
                      *           },
                      *           "enquiredListingIds": [],
+                     *           "enquiredListingSlugs": [],
                      *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *           "landlordName": "หอพักตัวอย่าง",
                      *           "leaseId": "0199f2a0-0000-7000-8000-0000000000d1",
@@ -198465,6 +199849,7 @@ export interface operations {
                      *       "createdAt": "2026-11-01T00:15:00+07:00",
                      *       "destination": null,
                      *       "enquiredListingIds": [],
+                     *       "enquiredListingSlugs": [],
                      *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "landlordName": "หอพักตัวอย่าง",
                      *       "leaseId": "0199f2a0-0000-7000-8000-0000000000d1",
@@ -198713,6 +200098,7 @@ export interface operations {
                      *         "province": "เชียงใหม่"
                      *       },
                      *       "enquiredListingIds": [],
+                     *       "enquiredListingSlugs": [],
                      *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "landlordName": "หอพักตัวอย่าง",
                      *       "leaseId": "0199f2a0-0000-7000-8000-0000000000d1",
@@ -201244,6 +202630,129 @@ export interface operations {
             };
         };
     };
+    "resident.statements.get": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                statementId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Statement */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "amountDue": "4500.00",
+                     *       "charges": "4500.00",
+                     *       "closing": "4500.00",
+                     *       "credits": "0.00",
+                     *       "deliveredVia": [
+                     *         "line"
+                     *       ],
+                     *       "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "issuedAt": "2026-11-01T00:15:00+07:00",
+                     *       "language": "th",
+                     *       "letterBatchId": null,
+                     *       "number": "STM-2027-00001",
+                     *       "openInvoices": [],
+                     *       "opening": "0.00",
+                     *       "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "partyName": "ผู้เช่า ทดสอบ",
+                     *       "paymentIds": [],
+                     *       "payments": "0.00",
+                     *       "period": "2027-01",
+                     *       "periodEnd": "2027-01-31",
+                     *       "periodStart": "2027-01-01",
+                     *       "units": [
+                     *         {
+                     *           "building": "อาคาร A",
+                     *           "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "unitNo": "A-101"
+                     *         }
+                     *       ]
+                     *     }
+                     */
+                    "application/json": components["schemas"]["StatementDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "resident.statements.document": {
         parameters: {
             query?: never;
@@ -202328,6 +203837,120 @@ export interface operations {
             };
         };
     };
+    "resident.units.debtClearance": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                debtClearanceId: string;
+                unitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Certificate */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "asOf": "2027-03-15",
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "documentId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "fee": "0.00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "issuedAt": "2026-11-01T00:15:00+07:00",
+                     *       "language": "th",
+                     *       "nextActions": [],
+                     *       "number": "DCL-2027-00001",
+                     *       "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "partyName": "ผู้เช่า ทดสอบ",
+                     *       "refuseReason": null,
+                     *       "requestedVia": "liff",
+                     *       "state": "issued",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "unitNo": "A-201",
+                     *       "validUntil": "2027-04-14",
+                     *       "verifyCode": null,
+                     *       "verifyCodeHint": "R7QX"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["DebtClearanceDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "resident.units.debtClearanceDocument": {
         parameters: {
             query?: never;
@@ -202461,6 +204084,7 @@ export interface operations {
                      *           "name": "ป้อมหน้า"
                      *         }
                      *       ],
+                     *       "inviteMaxDays": 30,
                      *       "policy": {
                      *         "action": "guard_calls",
                      *         "custom": false,
@@ -202474,6 +204098,7 @@ export interface operations {
                      *         "th": "นิติบุคคลเก็บทะเบียนรถ ชื่อ (ถ้าให้) เลขบัตร 4 ตัวท้าย (ถ้าให้) และรูปถ่าย (ถ้ามี) ของผู้มาติดต่อ …",
                      *         "version": 1
                      *       },
+                     *       "rememberDays": 30,
                      *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "unitNo": "88/12"
                      *     }
@@ -202576,6 +204201,7 @@ export interface operations {
                      * @example {
                      *       "canEdit": true,
                      *       "gates": [],
+                     *       "inviteMaxDays": 30,
                      *       "policy": {
                      *         "action": "guard_calls",
                      *         "custom": true,
@@ -202589,6 +204215,7 @@ export interface operations {
                      *         "th": "นิติบุคคลเก็บทะเบียนรถ ชื่อ (ถ้าให้) เลขบัตร 4 ตัวท้าย (ถ้าให้) และรูปถ่าย (ถ้ามี) ของผู้มาติดต่อ …",
                      *         "version": 1
                      *       },
+                     *       "rememberDays": 30,
                      *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
                      *       "unitNo": "88/12"
                      *     }
@@ -202704,6 +204331,7 @@ export interface operations {
                      *         "masked": "xxx-x-x1234-x",
                      *         "method": "direct_debit",
                      *         "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "partyName": "ผู้เช่า ทดสอบ",
                      *         "provider": "fake",
                      *         "scope": "advance_invoices",
                      *         "state": "active",
@@ -202820,6 +204448,7 @@ export interface operations {
                      *         "masked": null,
                      *         "method": "direct_debit",
                      *         "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *         "partyName": "ผู้เช่า ทดสอบ",
                      *         "provider": "fake",
                      *         "scope": "advance_invoices",
                      *         "state": "pending",
@@ -202950,6 +204579,7 @@ export interface operations {
                      *       "masked": "xxx-x-x1234-x",
                      *       "method": "direct_debit",
                      *       "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "partyName": "ผู้เช่า ทดสอบ",
                      *       "provider": "fake",
                      *       "scope": "advance_invoices",
                      *       "state": "revoked",
@@ -203183,6 +204813,107 @@ export interface operations {
             };
         };
     };
+    "resident.units.paymentPlanOptions": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                unitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Options */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "available": true,
+                     *       "defaultFirstDueOn": "2027-02-01",
+                     *       "earliestFirstDueOn": "2027-01-15",
+                     *       "latestFirstDueOn": "2027-04-17",
+                     *       "maxInstalments": 12,
+                     *       "minInstalments": 2,
+                     *       "proposedPrincipal": "10000.00"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PaymentPlanOptionsDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
     "resident.units.paymentPlans": {
         parameters: {
             query?: never;
@@ -203266,6 +204997,153 @@ export interface operations {
                      *     ]
                      */
                     "application/json": components["schemas"]["PaymentPlanDto"][];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.units.paymentPlan": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                planId: string;
+                unitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Plan */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "acceleratedChargeId": null,
+                     *       "approvedAt": "2026-11-01T00:15:00+07:00",
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "creditNoteIds": [
+                     *         "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *       ],
+                     *       "decidedReason": null,
+                     *       "defaultAfterDays": 30,
+                     *       "endedAt": null,
+                     *       "firstDueOn": "2027-02-01",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "instalmentCount": 3,
+                     *       "instalments": [
+                     *         {
+                     *           "amount": "3333.33",
+                     *           "dueOn": "2027-02-01",
+                     *           "invoiceChargeId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *           "paidAt": null,
+                     *           "seq": 1,
+                     *           "state": "billed"
+                     *         },
+                     *         {
+                     *           "amount": "3333.33",
+                     *           "dueOn": "2027-03-01",
+                     *           "invoiceChargeId": null,
+                     *           "paidAt": null,
+                     *           "seq": 2,
+                     *           "state": "scheduled"
+                     *         },
+                     *         {
+                     *           "amount": "3333.34",
+                     *           "dueOn": "2027-04-01",
+                     *           "invoiceChargeId": null,
+                     *           "paidAt": null,
+                     *           "seq": 3,
+                     *           "state": "scheduled"
+                     *         }
+                     *       ],
+                     *       "invoiceIds": [
+                     *         "3b241101-e2bb-4255-8caf-4136c566a962"
+                     *       ],
+                     *       "nextActions": [],
+                     *       "note": "ขอผ่อน 3 งวด",
+                     *       "partyId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "partyName": "ผู้เช่า ทดสอบ",
+                     *       "principal": "10000.00",
+                     *       "proposedBy": "resident",
+                     *       "proposedPrincipal": "10000.00",
+                     *       "state": "active",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "unitNo": "A-201",
+                     *       "version": 2
+                     *     }
+                     */
+                    "application/json": components["schemas"]["PaymentPlanDto"];
                 };
             };
             /** @description Problem: `auth.unauthenticated` */
@@ -204483,6 +206361,116 @@ export interface operations {
                 };
             };
             /** @description Problem: `idempotency.key_reused`, `validation.failed`, `visit_invite.window_too_long` */
+            422: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.too_many_requests` */
+            429: {
+                headers: {
+                    "Retry-After": components["headers"]["RetryAfter"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `internal.unexpected` */
+            500: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+        };
+    };
+    "resident.units.visitInvite": {
+        parameters: {
+            query?: never;
+            header?: {
+                /** @description Language of `title`/`detail` in problems and of generated documents: `th` (default) or `en` (resident surface also `my|km|lo|zh` in R2, D-064). */
+                "Accept-Language"?: components["parameters"]["AcceptLanguage"];
+            };
+            path: {
+                inviteId: string;
+                unitId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Invite */
+            200: {
+                headers: {
+                    "X-RateLimit-Limit": components["headers"]["RateLimitLimit"];
+                    "X-RateLimit-Remaining": components["headers"]["RateLimitRemaining"];
+                    "X-RateLimit-Reset": components["headers"]["RateLimitReset"];
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    /**
+                     * @example {
+                     *       "createdAt": "2026-11-01T00:15:00+07:00",
+                     *       "id": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "maxUses": 1,
+                     *       "note": null,
+                     *       "plate": null,
+                     *       "rejectReason": null,
+                     *       "state": "active",
+                     *       "unitId": "3b241101-e2bb-4255-8caf-4136c566a962",
+                     *       "unitNo": "88/12",
+                     *       "usage": "single",
+                     *       "uses": 0,
+                     *       "validFrom": "2026-11-06T09:00:00+07:00",
+                     *       "validTo": "2026-11-06T18:00:00+07:00",
+                     *       "visitorKind": "guest",
+                     *       "visitorName": "คุณแม่"
+                     *     }
+                     */
+                    "application/json": components["schemas"]["VisitInviteDto"];
+                };
+            };
+            /** @description Problem: `auth.unauthenticated` */
+            401: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `auth.forbidden`, `auth.wrong_audience` */
+            403: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `http.not_found` */
+            404: {
+                headers: {
+                    "X-Request-Id": components["headers"]["XRequestId"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetails"];
+                };
+            };
+            /** @description Problem: `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];

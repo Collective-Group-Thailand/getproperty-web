@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  candidatePath,
   direction,
   lineState,
   nextLineAfter,
@@ -66,5 +67,13 @@ describe("matching queue", () => {
     expect(rankSuggestions([s("a", 1, false), s("b", 0, false)]).best).toBeNull();
     expect(rankSuggestions([s("only", 2, false)]).best?.id).toBe("only");
     expect(rankSuggestions([]).best).toBeNull();
+  });
+});
+
+describe("candidatePath (J-CR: link from kind + id)", () => {
+  it("opens the record behind each candidate", () => {
+    expect(candidatePath("payment", "p1")).toBe("/payments/p1");
+    expect(candidatePath("expense", "e1")).toBe("/juristic/expenses/e1");
+    expect(candidatePath("fund_transfer", "t1")).toBe("/juristic/funds/transfers/t1");
   });
 });

@@ -37,7 +37,7 @@ import { ownerPath, withQuery } from "../../shared/links";
 import { focusedBuilding, ownerCan, pageParam, param, readOnly, section, type OwnerContext } from "../../shared/server";
 import { accountLabel, expenseAccounts } from "../accounting/accounts";
 import { memberName } from "../accounting/parts";
-import { adoptedResolutions, chartOfAccounts, officeMembers } from "../accounting/shared";
+import { adoptedResolutions, expenseAccountList, officeMembers } from "../accounting/shared";
 import { percentText } from "../accounting/wht";
 import {
   ActivateContractButton,
@@ -78,18 +78,14 @@ export async function ContractsView({ context, searchParams }: { context: OwnerC
       : which === "all"
         ? {}
         : { state: which };
-  const counts = await Promise.all(
-    tabs.map((which) =>
-      unwrap(
-        api.GET("/v1/owner/juristic/vendor-contracts", {
-          params: { query: { page: 1, perPage: 1, ...scope, ...queryOf(which) } },
-        }),
-      )
-        .then((answer) => answer.meta.total)
-        .catch(() => undefined),
-    ),
-  );
-  const renewalCount = window !== null ? counts[0] : 0;
+  // One probe of the renewal queue (or every contract when no window is set) answers the default tab and, through the
+  // page's `counts` (J-CR: per state and `endingSoon` for the window, by building — not by search), the tab badges.
+  const probe = await unwrap(
+    api.GET("/v1/owner/juristic/vendor-contracts", {
+      params: { query: { page: 1, perPage: 1, ...scope, ...queryOf(window !== null ? "renewal" : "all") } },
+    }),
+  ).catch(() => undefined);
+  const renewalCount = window !== null ? probe?.meta.total : 0;
   const requested = param(searchParams.tab);
   const tab = contractTab(requested === "renewal" && window === null ? "all" : requested, renewalCount);
   const list = await section(
@@ -98,6 +94,18 @@ export async function ContractsView({ context, searchParams }: { context: OwnerC
         params: { query: { page, perPage: 25, ...scope, ...queryOf(tab) } },
       }),
     ),
+  );
+  const tabCounts = probe?.counts;
+  const counts = tabs.map((which) =>
+    q
+      ? which === tab
+        ? list.data?.meta.total
+        : which === "renewal"
+          ? renewalCount
+          : undefined
+      : which === "renewal"
+        ? tabCounts?.endingSoon
+        : tabCounts?.[which],
   );
   const canManage = !readOnly(me) && ownerCan(me, "juristic.vendor.manage");
   const base = ownerPath(locale, "/juristic/contracts");
@@ -936,7 +944,7 @@ async function editorChoices(context: OwnerContext) {
   const [settings, vendors, accounts, rounds, resolutions] = await Promise.all([
     vendorSettings(context),
     vendorChoices(api, "active"),
-    chartOfAccounts(api),
+    expenseAccountList(api),
     awardedRounds(api, (round) => t("roundOption", { title: round.title })),
     adoptedResolutions(api, (row) => t("resolutionOption", { number: row.number, title: row.title })),
   ]);

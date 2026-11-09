@@ -8,6 +8,7 @@ import {
   gateReasonKey,
   isDirty,
   ladderRefusal,
+  refusedGateReason,
   offsetError,
   stepErrors,
   stepLocks,
@@ -96,5 +97,18 @@ describe("ladder editor (J-DESIGN §4)", () => {
     expect(gateReasonKey("surcharge_cap_unset")).toBe("surcharge_cap_unset");
     expect(gateReasonKey("something_new")).toBe("unknown");
     expect(gateReasonKey(null)).toBeNull();
+  });
+});
+
+describe("refusedGateReason (J-CR)", () => {
+  it("reads the problem's gateClosedReason of a legal refusal only", () => {
+    expect(
+      refusedGateReason(
+        problemError(422, { code: "collections.legal_review_required", gateClosedReason: "surcharge_disabled" }),
+      ),
+    ).toBe("surcharge_disabled");
+    expect(refusedGateReason(problemError(422, { code: "collections.legal_review_required" }))).toBeNull();
+    expect(refusedGateReason(problemError(409, { code: "collections.approval_required" }))).toBeNull();
+    expect(refusedGateReason(new Error("x"))).toBeNull();
   });
 });

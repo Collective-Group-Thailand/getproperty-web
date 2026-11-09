@@ -116,7 +116,8 @@ export async function ImportsView({ context, searchParams }: { context: OwnerCon
         }),
       ),
     ),
-    unwrap(api.GET("/v1/owner/juristic/imports", { params: { query: { perPage: 100 } } }))
+    // Every building's open or committed job (J-CR `?open=true`), not the first page of all jobs.
+    unwrap(api.GET("/v1/owner/juristic/imports", { params: { query: { open: true, perPage: 100 } } }))
       .then((answer) => answer.data)
       .catch(() => [] as Job[]),
   ]);

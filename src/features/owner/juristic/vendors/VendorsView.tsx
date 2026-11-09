@@ -72,24 +72,16 @@ export async function VendorsView({ context, searchParams }: { context: OwnerCon
   const page = pageParam(searchParams.page);
   const queryOf = (which: Tab) => (which === "all" ? {} : { state: which });
   const filters = { ...(q ? { q } : {}), ...(category ? { category } : {}) };
-  const [list, ...counts] = await Promise.all([
-    section(
-      unwrap(
-        api.GET("/v1/owner/juristic/vendors", {
-          params: { query: { page, perPage: 25, ...queryOf(tab), ...filters } },
-        }),
-      ),
+  const list = await section(
+    unwrap(
+      api.GET("/v1/owner/juristic/vendors", {
+        params: { query: { page, perPage: 25, ...queryOf(tab), ...filters } },
+      }),
     ),
-    ...TABS.map((which) =>
-      unwrap(
-        api.GET("/v1/owner/juristic/vendors", {
-          params: { query: { page: 1, perPage: 1, ...queryOf(which), ...filters } },
-        }),
-      )
-        .then((answer) => answer.meta.total)
-        .catch(() => undefined),
-    ),
-  ]);
+  );
+  // Tab badges from the page's `counts` (J-CR): per state for the same search and category.
+  const tabCounts = list.data?.counts;
+  const counts = TABS.map((which) => tabCounts?.[which]);
   const canManage = !readOnly(me) && ownerCan(me, "juristic.vendor.manage");
   const base = ownerPath(locale, "/juristic/vendors");
   const rows = list.data?.data ?? [];

@@ -9,7 +9,7 @@ import { SectionError } from "@/features/shared/console/SectionError";
 import { StatusBadgeOf } from "@/features/shared/status/StatusBadgeOf";
 import { formatDecimal, formatNumber } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
-import { unwrap, type ApiClient } from "@/lib/api/client";
+import { unwrap } from "@/lib/api/client";
 import type { Schemas } from "@/lib/api/types";
 import { Button } from "@/ui/components/Button";
 import { Card } from "@/ui/components/Card";
@@ -28,17 +28,6 @@ import { juristicScope } from "./scope";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 type Row = Schemas["RegisterUnitDto"];
-
-/** Every unit of a building with its floor (the register rows carry no floor yet — contract request), ≤ 5 pages. */
-async function floorsOf(api: ApiClient, buildingId: string): Promise<Map<string, { level: number | null }>> {
-  const map = new Map<string, { level: number | null }>();
-  for (let page = 1; page <= 5; page += 1) {
-    const result = await unwrap(api.GET("/v1/owner/units", { params: { query: { buildingId, perPage: 100, page } } }));
-    for (const unit of result.data) map.set(unit.id, { level: unit.floorLevel });
-    if (page * result.meta.perPage >= result.meta.total) break;
-  }
-  return map;
-}
 
 /**
  * The co-owner register (JW1a, D-307, D-323): every unit of a building with its current owners and their shares, the
@@ -96,7 +85,7 @@ export async function RegisterView({ context, searchParams }: { context: OwnerCo
   const building = scope.building;
   const plots = scope.traits.layout === "plots";
   const perPage = plots ? 50 : 100;
-  const [list, incompleteCount, floors] = await Promise.all([
+  const [list, incompleteCount] = await Promise.all([
     section(
       unwrap(
         api.GET("/v1/owner/juristic/register", {
@@ -119,7 +108,6 @@ export async function RegisterView({ context, searchParams }: { context: OwnerCo
         }),
       ).then((result) => result.meta.total),
     ),
-    plots ? Promise.resolve(null) : section(floorsOf(api, building.id)),
   ]);
   const canManage = !readOnly(me) && ownerCan(me, "juristic.register.manage");
   const canInvite = !readOnly(me) && ownerCan(me, "juristic.register.manage");
@@ -224,13 +212,7 @@ export async function RegisterView({ context, searchParams }: { context: OwnerCo
       ) : plots ? (
         <PlotTable rows={rows} locale={locale} kind={scope.kind} groupName={building.name} />
       ) : (
-        <FloorCards
-          rows={rows}
-          floors={floors?.data ?? null}
-          locale={locale}
-          kind={scope.kind}
-          ratio={scope.traits.ratio}
-        />
+        <FloorCards rows={rows} locale={locale} kind={scope.kind} ratio={scope.traits.ratio} />
       )}
 
       {list.data && list.data.meta.total > list.data.meta.perPage ? (
@@ -297,18 +279,16 @@ async function PlotTable({
 }
 
 /**
- * A condominium: one section per floor, a card per unit — the unit number, its owners (the second line: bill-to or
+ * A condominium: one section per floor (the row's `floorLevel` / `floorName`, J-CR), a card per unit — the unit number, its owners (the second line: bill-to or
  * "+1"), the ownership ratio and area, and the word "ยังไม่ครบ" when the shares do not reach 100 %.
  */
 async function FloorCards({
   rows,
-  floors,
   locale,
   kind,
   ratio,
 }: {
   rows: Row[];
-  floors: Map<string, { level: number | null }> | null;
   locale: Locale;
   kind: Schemas["PropertyKind"];
   ratio: boolean;
@@ -317,7 +297,7 @@ async function FloorCards({
   const words = vocabularyKeys(kind);
   const groups = new Map<number | null, Row[]>();
   for (const row of rows) {
-    const level = floors?.get(row.unitId)?.level ?? null;
+    const level = row.floorLevel;
     groups.set(level, [...(groups.get(level) ?? []), row]);
   }
   const levels = [...groups.keys()].sort((a, b) => (a ?? 9999) - (b ?? 9999));
@@ -326,11 +306,14 @@ async function FloorCards({
       {levels.map((level) => {
         const units = groups.get(level)!;
         const id = `floor-${level ?? "none"}`;
+        const name = units.find((unit) => unit.floorName)?.floorName;
         return (
           <section key={id} aria-labelledby={id} className="flex flex-col gap-3" data-testid="register-floor">
             <div className="flex items-baseline justify-between gap-3">
               <h2 id={id} className="text-base font-semibold">
-                {level === null ? t("register.noFloor") : t("register.floor", { level: formatNumber(level, locale) })}
+                {level !== null
+                  ? t("register.floor", { level: formatNumber(level, locale) })
+                  : (name ?? t("register.noFloor"))}
               </h2>
               <span className="text-muted text-sm tabular-nums">
                 {t("register.unitsOnFloor", { count: units.length, units: t(words.units) })}

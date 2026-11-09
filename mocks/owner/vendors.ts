@@ -1280,16 +1280,30 @@ const vendorHandlers: HttpHandler[] = [
     if (forbidden) return forbidden;
     const params = query(request);
     const q = params.get("q")?.toLowerCase();
-    const rows = w()
+    // J-CR: `categories` (repeated or comma-separated; any of) and `partyId`.
+    const categories = params
+      .getAll("categories")
+      .flatMap((value) => value.split(","))
+      .filter(Boolean);
+    const searched = w()
       .vendors.map((item) => item.dto)
       .filter(
         (dto) =>
-          (!params.get("state") || dto.state === params.get("state")) &&
           (!params.get("category") || dto.categories.includes(params.get("category") as Schemas["VendorCategory"])) &&
+          (!categories.length ||
+            categories.some((value) => dto.categories.includes(value as Schemas["VendorCategory"]))) &&
+          (!params.get("partyId") || dto.partyId === params.get("partyId")) &&
           (!q || dto.name.toLowerCase().includes(q)),
-      )
+      );
+    const rows = searched
+      .filter((dto) => !params.get("state") || dto.state === params.get("state"))
       .sort((a, b) => a.name.localeCompare(b.name, "th"));
-    return json(paged(rows, request));
+    const counts: Schemas["VendorCountsDto"] = {
+      all: searched.length,
+      active: searched.filter((dto) => dto.state === "active").length,
+      blocked: searched.filter((dto) => dto.state === "blocked").length,
+    };
+    return json({ ...paged(rows, request), counts });
   }),
   http.get("*/v1/owner/juristic/vendors/:id", ({ request, params }) => {
     const op = "owner.juristicVendors.get";
@@ -1388,18 +1402,34 @@ const contractHandlers: HttpHandler[] = [
     const params = query(request);
     const q = params.get("q")?.toLowerCase();
     const within = params.get("endingWithinDays");
-    const rows = w()
+    const scoped = w()
       .contracts.map(listView)
       .filter(
         (row) =>
           (!params.get("vendorId") || row.vendorId === params.get("vendorId")) &&
-          (!params.get("buildingId") || row.buildingId === params.get("buildingId")) &&
+          (!params.get("buildingId") || row.buildingId === params.get("buildingId")),
+      );
+    const rows = scoped
+      .filter(
+        (row) =>
           (!params.get("state") || row.state === params.get("state")) &&
           (within === null || (row.state === "active" && row.daysLeft >= 0 && row.daysLeft <= Number(within))) &&
           (!q || row.title.toLowerCase().includes(q) || row.vendorName.toLowerCase().includes(q)),
       )
       .sort((a, b) => a.endsOn.localeCompare(b.endsOn));
-    return json(paged(rows, request));
+    // J-CR tab badges: per state for the vendor / building (not the search) and the renewal queue.
+    const window = within === null ? 90 : Number(within);
+    const of = (state: Schemas["VendorContractState"]) => scoped.filter((row) => row.state === state).length;
+    const counts: Schemas["VendorContractCountsDto"] = {
+      all: scoped.length,
+      draft: of("draft"),
+      active: of("active"),
+      expired: of("expired"),
+      terminated: of("terminated"),
+      endingSoon: scoped.filter((row) => row.state === "active" && row.daysLeft <= window).length,
+      endingWithinDays: window,
+    };
+    return json({ ...paged(rows, request), counts });
   }),
   http.get("*/v1/owner/juristic/vendor-contracts/:id", ({ request, params }) => {
     const op = "owner.juristicVendorContracts.get";
@@ -1719,17 +1749,28 @@ const roundHandlers: HttpHandler[] = [
     if (forbidden) return forbidden;
     const params = query(request);
     const q = params.get("q")?.toLowerCase();
-    const rows = w()
+    const scoped = w()
       .rounds.map((item) => roundView(item, ok))
+      .filter((row) => !params.get("buildingId") || row.buildingId === params.get("buildingId"));
+    const rows = scoped
       .filter(
         (row) =>
           (!params.get("state") || row.state === params.get("state")) &&
-          (!params.get("buildingId") || row.buildingId === params.get("buildingId")) &&
           (params.get("awaitingMe") !== "true" || row.nextActions.includes("approve")) &&
           (!q || row.title.toLowerCase().includes(q)),
       )
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-    return json(paged(rows, request));
+    // J-CR tab badges: per state for the building (not the search) and the awards awaiting the caller.
+    const of = (state: Schemas["QuotationRoundState"]) => scoped.filter((row) => row.state === state).length;
+    const counts: Schemas["QuotationRoundCountsDto"] = {
+      all: scoped.length,
+      awaitingMe: scoped.filter((row) => row.nextActions.includes("approve")).length,
+      open: of("open"),
+      awaitingApproval: of("awaiting_approval"),
+      awarded: of("awarded"),
+      cancelled: of("cancelled"),
+    };
+    return json({ ...paged(rows, request), counts });
   }),
   http.get("*/v1/owner/juristic/quotation-rounds/:id", ({ request, params }) => {
     const op = "owner.juristicQuotations.get";

@@ -5,6 +5,7 @@ import type { Schemas } from "@/lib/api/types";
 
 import {
   isJuristicTenant,
+  JURISTIC_BOTTOM_NAV,
   isPmCompany,
   JURISTIC_LABEL_KEYS,
   JURISTIC_MENU_GROUPS,
@@ -92,13 +93,11 @@ describe("juristic rail (J-DESIGN §5)", () => {
     ]);
   });
 
-  it("hides nothing the API grants: apartment-word entries stay, last in the daily group", () => {
-    // The API (menu.ts at ed938f2) grants these to a juristic owner; the web only re-orders and re-labels them.
+  it("hides nothing the API grants: apartment-word entries stay; a key the table does not name ends its group", () => {
+    // The API (menu.ts at d33fed1) no longer grants `leases` / `deposits` to a juristic office (J-CR, D-335); were one
+    // granted, it would still show — last in the group its registry entry names.
     const granted = juristicLayout(
-      entitledMenu(
-        keys(["dashboard", "parties", "leases", "readings", "deposits", "juristic_receivables"]),
-        OWNER_MENU,
-      ),
+      entitledMenu(keys(["dashboard", "parties", "leases", "readings", "juristic_receivables"]), OWNER_MENU),
     );
     expect(granted.map((item) => item.key)).toEqual([
       "dashboard",
@@ -106,7 +105,6 @@ describe("juristic rail (J-DESIGN §5)", () => {
       "parties",
       "readings",
       "leases",
-      "deposits",
     ]);
     expect(JURISTIC_LABEL_KEYS.has("parties")).toBe(true);
   });
@@ -222,5 +220,65 @@ describe("JW3b keys (D-333, D-334)", () => {
     expect(isPmCompany("pm_company", ["pm_portfolio"])).toBe(true);
     expect(isPmCompany("pm_company", ["dashboard"])).toBe(false);
     expect(isPmCompany("landlord", ["pm_portfolio"])).toBe(false);
+  });
+});
+
+describe("J-CR keys (D-335)", () => {
+  const layout = (list: readonly string[], permissions?: readonly string[]) =>
+    juristicLayout(entitledMenu(keys(list), OWNER_MENU), (href) => href, permissions);
+
+  it("routes the five new keys to their pages", () => {
+    expect(OWNER_MENU.juristic_overview?.href).toBe("/juristic");
+    expect(OWNER_MENU.juristic_resolutions?.href).toBe("/juristic/resolutions");
+    expect(OWNER_MENU.juristic_reports?.href).toBe("/juristic/reports");
+    expect(OWNER_MENU.juristic_payment_mandates?.href).toBe("/juristic/payment-mandates");
+    expect(OWNER_MENU.juristic_petty_cash?.href).toBe("/juristic/petty-cash");
+  });
+
+  it("shows the overview once: `juristic_overview` replaces `dashboard`, first, and leads the phone nav", () => {
+    const placed = layout(["dashboard", "juristic_overview", "juristic_register"]);
+    expect(placed.map((item) => [item.key, item.href])).toEqual([
+      ["juristic_overview", "/juristic"],
+      ["juristic_register", "/juristic/register"],
+    ]);
+    expect(JURISTIC_BOTTOM_NAV[0]!.key).toBe("juristic_overview");
+  });
+
+  it("keeps a section's sub-page inside the section when both are granted", () => {
+    const placed = layout(
+      [
+        "juristic_receivables",
+        "juristic_reports",
+        "juristic_payment_mandates",
+        "juristic_budgets",
+        "juristic_resolutions",
+        "juristic_funds",
+        "juristic_petty_cash",
+      ],
+      ["juristic.accounting.read"],
+    );
+    expect(placed.map((item) => item.key)).toEqual(["juristic_receivables", "juristic_funds", "juristic_budgets"]);
+  });
+
+  it("gives the new keys entries of their own when the section is not granted", () => {
+    const placed = layout(["juristic_reports", "juristic_payment_mandates", "juristic_resolutions"]);
+    expect(placed.map((item) => [item.key, item.group])).toEqual([
+      ["juristic_payment_mandates", "finance"],
+      ["juristic_reports", "finance"],
+      ["juristic_resolutions", "system"],
+    ]);
+  });
+
+  it("shows a petty-cash spender petty cash, not the funds", () => {
+    const spender = ["juristic.petty_cash.spend", "juristic.expense.request"];
+    expect(layout(["juristic_funds", "juristic_petty_cash"], spender).map((item) => item.key)).toEqual([
+      "juristic_petty_cash",
+    ]);
+    // An accountant keeps funds with petty cash as its sub-page.
+    expect(
+      layout(["juristic_funds", "juristic_petty_cash"], ["juristic.accounting.read"]).map((item) => item.key),
+    ).toEqual(["juristic_funds"]);
+    // A tenant whose API still grants only funds keeps it.
+    expect(layout(["juristic_funds"], spender).map((item) => item.key)).toEqual(["juristic_funds"]);
   });
 });

@@ -63,7 +63,7 @@ export function OwnerShellFrame(props: OwnerShellFrameProps) {
   const [collapsed, toggleCollapsed] = useSidebarCollapsed("owner");
   const [moreOpen, setMoreOpen] = useState(false);
   const items = props.groups.flatMap((group) => group.items);
-  const home = items.find((item) => item.key === "dashboard");
+  const home = items.find((item) => item.key === "dashboard" || item.key === "juristic_overview");
 
   const bottom: NavItem[] = [
     ...props.bottomNav.map(({ item, label }) => ({

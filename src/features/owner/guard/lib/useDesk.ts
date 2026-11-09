@@ -11,7 +11,6 @@ import {
   type GuardMe,
   type GuardResult,
   type GuardVisit,
-  type GuardVisitDetail,
   type IncidentKind,
   type PlateDetection,
   type VisitCreate,
@@ -47,8 +46,6 @@ export interface DeskState {
   queue: GateQueueEntry[];
   /** Visits the API told this tablet were open too long (`gate.visit.overstayed`). */
   overstayed: string[];
-  /** Who in the house asked the guard to call back (from the visit record). */
-  callBack: Record<string, string | null>;
   network: Network;
   stream: StreamStatus;
   lastSync: number | null;
@@ -63,7 +60,6 @@ const INITIAL: DeskState = {
   incidents: [],
   queue: [],
   overstayed: [],
-  callBack: {},
   network: "online",
   stream: "connecting",
   lastSync: null,
@@ -132,18 +128,6 @@ export function useDesk(
 
   const get = useCallback(<T>(path: string) => guardFetch<T>(path).then(note), [note]);
 
-  const loadCallBacks = useCallback(
-    async (visits: GuardVisit[]) => {
-      const missing = visits.filter((visit) => visit.callMeAt && !(visit.id in stateRef.current.callBack));
-      for (const visit of missing) {
-        const detail = await get<GuardVisitDetail>(`/v1/guard/visits/${visit.id}`);
-        if (detail.ok)
-          patch((current) => ({ callBack: { ...current.callBack, [visit.id]: detail.data.callBackName } }));
-      }
-    },
-    [get, patch],
-  );
-
   const refresh = useCallback(
     async (parts: Part[] = ALL) => {
       const tasks: Promise<void>[] = [];
@@ -155,7 +139,6 @@ export function useDesk(
           ]).then(([waiting, inside]) => {
             if (waiting.ok && inside.ok) {
               patch({ waiting: waiting.data, inside: inside.data, lastSync: Date.now() });
-              void loadCallBacks(waiting.data);
             }
           }),
         );
@@ -184,7 +167,7 @@ export function useDesk(
       await Promise.all(tasks);
       patch({ loaded: true });
     },
-    [get, patch, loadCallBacks],
+    [get, patch],
   );
 
   const reloadQueue = useCallback(async () => {
