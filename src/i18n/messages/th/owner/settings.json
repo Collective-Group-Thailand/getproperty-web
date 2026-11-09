@@ -96,6 +96,7 @@
     "gate_device_enrol_hours": "รหัสลงทะเบียนแท็บเล็ตใช้ได้",
     "gate_pin_max_attempts": "ใส่ PIN ผิดได้",
     "gate_pin_lock_minutes": "ล็อก PIN นาน",
+    "gate_tablet_auto_lock_minutes": "แท็บเล็ตล็อกหน้าจอเมื่อไม่มีคนแตะนาน",
     "gate_lpr_min_confidence": "กล้อง LPR ต้องอ่านได้อย่างน้อย",
     "gate_lpr_pending_minutes": "ป้ายจากกล้องรอ รปภ. ได้",
     "gate_lpr_repeat_seconds": "ไม่นับป้ายเดิมซ้ำภายใน",

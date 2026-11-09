@@ -2239,6 +2239,7 @@ export function initialOwnerWorld(): OwnerWorld {
         granted: true,
         grantedVersion: 1,
         capturedAt: iso(-120),
+        lastGranted: true,
       },
       {
         key: "analytics.anonymised",
@@ -2251,6 +2252,7 @@ export function initialOwnerWorld(): OwnerWorld {
         granted: null,
         grantedVersion: null,
         capturedAt: null,
+        lastGranted: null,
       },
       {
         key: "operator_product_updates",
@@ -2263,6 +2265,7 @@ export function initialOwnerWorld(): OwnerWorld {
         granted: null,
         grantedVersion: null,
         capturedAt: null,
+        lastGranted: null,
       },
     ],
     assetGrants: [],

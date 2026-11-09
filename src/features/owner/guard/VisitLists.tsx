@@ -85,7 +85,6 @@ function PlateLine({ visit, unitLabel }: { visit: Pick<GuardVisit, "plate" | "un
 export function WaitingCard({
   visits,
   conflicts,
-  callBack,
   hasBarrier,
   dismissed,
   onLetIn,
@@ -96,7 +95,6 @@ export function WaitingCard({
 }: {
   visits: readonly GuardVisit[];
   conflicts: readonly GateQueueEntry[];
-  callBack: Record<string, string | null>;
   hasBarrier: boolean;
   dismissed: readonly string[];
   onLetIn: (visit: GuardVisit) => void;
@@ -219,19 +217,27 @@ export function WaitingCard({
                   <p className="text-sm font-medium">{t(`waiting.timedOut.${action}`)}</p>
                 ) : null}
                 {visit.state === "approved" && visit.decidedAt ? (
-                  <p className="text-muted text-sm">
-                    {t("waiting.approvedAt", { time: bangkokTime(visit.decidedAt) })}
+                  <p className="text-muted text-sm" data-testid="decided-by">
+                    {visit.decidedByName
+                      ? t("waiting.approvedBy", { name: visit.decidedByName, time: bangkokTime(visit.decidedAt) })
+                      : t("waiting.approvedAt", { time: bangkokTime(visit.decidedAt) })}
                   </p>
                 ) : null}
-                {visit.state === "denied" ? <p className="text-sm">{t("waiting.deniedLede")}</p> : null}
+                {visit.state === "denied" ? (
+                  <p className="text-sm">
+                    {visit.decidedByName
+                      ? t("waiting.deniedBy", { name: visit.decidedByName })
+                      : t("waiting.deniedLede")}
+                  </p>
+                ) : null}
                 {visit.callMeAt ? (
                   <p
                     className="text-info-subtle-fg flex items-center gap-2 text-base font-medium"
                     data-testid="call-back"
                   >
                     <Icon icon={IconPhone} size={20} />
-                    {callBack[visit.id]
-                      ? t("waiting.callBackName", { name: callBack[visit.id]! })
+                    {visit.callBackName
+                      ? t("waiting.callBackName", { name: visit.callBackName })
                       : t("waiting.callBack")}
                   </p>
                 ) : null}
@@ -335,7 +341,8 @@ export function InsideCard({
             </li>
           ))}
           {sorted.map((visit) => {
-            const over = overstayed.includes(visit.id);
+            // `overstayedAt` from the list (J-CR); the stream's `gate.visit.overstayed` marks it before the next read.
+            const over = visit.overstayedAt !== null || overstayed.includes(visit.id);
             return (
               <li
                 key={visit.id}

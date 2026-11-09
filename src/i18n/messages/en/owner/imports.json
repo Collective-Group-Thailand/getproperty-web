@@ -399,7 +399,8 @@
     "job_open": {
       "title": "This building has an import in progress",
       "body": "A building has one open import at a time. Finish, roll back or cancel it first",
-      "next": "Open the existing import"
+      "next": "Open the existing import",
+      "nextNumbered": "Open import #{number}"
     },
     "invalid_state": {
       "title": "The import has moved on",
@@ -424,7 +425,19 @@
     "rollback_blocked": {
       "title": "Cannot roll back",
       "body": "Other records now refer to what was imported — a payment, an issued document or a lease — so nothing was deleted. Undo those first, then try again",
-      "next": ""
+      "next": "",
+      "blockedBy": "A record still refers to what was imported ({what}), so nothing was deleted. Undo or reverse it first, then try again",
+      "table": {
+        "invoice": "an issued invoice",
+        "payment": "a payment",
+        "receipt": "an issued receipt",
+        "credit_note": "a credit note",
+        "lease": "a lease",
+        "journal": "a journal entry",
+        "debt_clearance": "a debt clearance letter",
+        "payment_plan": "a payment plan",
+        "statement": "a statement"
+      }
     },
     "parallel_cycle_missing": {
       "title": "No parallel cycle yet",

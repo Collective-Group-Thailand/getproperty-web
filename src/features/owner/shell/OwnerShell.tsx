@@ -72,7 +72,7 @@ export async function OwnerShell({
       testId: child.testId,
     })),
   }));
-  const items = juristic ? juristicLayout(entitled, prefix) : entitled;
+  const items = juristic ? juristicLayout(entitled, prefix, me.permissions) : entitled;
   const groups = juristic
     ? groupItems(
         items,

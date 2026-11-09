@@ -36,7 +36,7 @@ import { accountLabel, expenseAccounts } from "../accounting/accounts";
 import { bandRangeText } from "../accounting/ApprovalBand";
 import { approveBlock, bandIndexFor, bandRange } from "../accounting/bands";
 import { memberName } from "../accounting/parts";
-import { adoptedResolutions, chartOfAccounts, officeMembers } from "../accounting/shared";
+import { adoptedResolutions, expenseAccountList, officeMembers } from "../accounting/shared";
 import { ComparisonTable, QuoteRuleLine } from "./pieces";
 import {
   AddQuotationButton,
@@ -71,24 +71,27 @@ export async function QuotationsView({ context, searchParams }: { context: Owner
   const scope = { ...(building ? { buildingId: building.id } : {}), ...(q ? { q } : {}) };
   const queryOf = (which: Tab) =>
     which === "mine" ? { awaitingMe: true } : which === "all" ? {} : { state: which as Schemas["QuotationRoundState"] };
-  const [list, ...counts] = await Promise.all([
-    section(
-      unwrap(
-        api.GET("/v1/owner/juristic/quotation-rounds", {
-          params: { query: { page, perPage: 25, ...scope, ...queryOf(tab) } },
-        }),
-      ),
+  const list = await section(
+    unwrap(
+      api.GET("/v1/owner/juristic/quotation-rounds", {
+        params: { query: { page, perPage: 25, ...scope, ...queryOf(tab) } },
+      }),
     ),
-    ...visible.map((which) =>
-      unwrap(
-        api.GET("/v1/owner/juristic/quotation-rounds", {
-          params: { query: { page: 1, perPage: 1, ...scope, ...queryOf(which) } },
-        }),
-      )
-        .then((answer) => answer.meta.total)
-        .catch(() => undefined),
-    ),
-  ]);
+  );
+  // Tab badges from the page's `counts` (J-CR), which count the building, not the search: with a search only the
+  // open tab shows its total.
+  const tabCounts = list.data?.counts;
+  const COUNT_OF: Record<Tab, keyof Schemas["QuotationRoundCountsDto"]> = {
+    mine: "awaitingMe",
+    open: "open",
+    awaiting_approval: "awaitingApproval",
+    awarded: "awarded",
+    cancelled: "cancelled",
+    all: "all",
+  };
+  const counts = visible.map((which) =>
+    q ? (which === tab ? list.data?.meta.total : undefined) : tabCounts?.[COUNT_OF[which]],
+  );
   const canManage = !readOnly(me) && ownerCan(me, "juristic.vendor.manage");
   const base = ownerPath(locale, "/juristic/quotations");
   const rows = list.data?.data ?? [];
@@ -347,7 +350,7 @@ export async function QuotationRoundView({ context, roundId }: { context: OwnerC
     vendorSettings(context),
     officeMembers(api),
     can("add_quotation") ? vendorChoices(api, "active") : Promise.resolve([]),
-    can("award") ? chartOfAccounts(api) : Promise.resolve([]),
+    can("award") ? expenseAccountList(api) : Promise.resolve([]),
     can("award")
       ? adoptedResolutions(api, (row) => `${row.number} · ${row.title}`)
       : Promise.resolve([] as { id: string; buildingId: string; label: string }[]),

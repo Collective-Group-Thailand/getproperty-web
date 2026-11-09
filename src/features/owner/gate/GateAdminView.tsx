@@ -52,15 +52,20 @@ export type GateTab = (typeof GATE_TABS)[number];
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
-/** The units of a property: one page of 100 per building (the units list filters by building, not property). */
+/** The units of a property (`GET /v1/owner/units?propertyId=`, J-CR), page by page up to 1000. */
 async function propertyUnits(context: OwnerContext, propertyId: string) {
-  const buildings = context.buildings.filter((building) => building.propertyId === propertyId);
   return section(
-    Promise.all(
-      buildings.map((building) =>
-        unwrap(context.api.GET("/v1/owner/units", { params: { query: { buildingId: building.id, perPage: 100 } } })),
-      ),
-    ).then((pages) => ({ data: pages.flatMap((page) => page.data) })),
+    (async () => {
+      const data: Schemas["UnitDto"][] = [];
+      for (let page = 1; page <= 10; page += 1) {
+        const result = await unwrap(
+          context.api.GET("/v1/owner/units", { params: { query: { propertyId, perPage: 100, page } } }),
+        );
+        data.push(...result.data);
+        if (page * result.meta.perPage >= result.meta.total) break;
+      }
+      return { data };
+    })(),
   );
 }
 
@@ -77,7 +82,13 @@ export const GATE_SETTING_KEYS = {
     "gate.invite_max_days",
     "gate.open_visit_alert_hours",
   ],
-  tablet: ["gate.offline_max_hours", "gate.device_enrol_hours", "gate.pin_max_attempts", "gate.pin_lock_minutes"],
+  tablet: [
+    "gate.offline_max_hours",
+    "gate.device_enrol_hours",
+    "gate.pin_max_attempts",
+    "gate.pin_lock_minutes",
+    "gate.tablet.auto_lock_minutes",
+  ],
   hardware: [
     "gate.lpr.min_confidence",
     "gate.lpr.pending_minutes",

@@ -11,11 +11,18 @@ import { IconLock } from "@/ui/icons/glyphs/lock";
 import { cx as cn } from "@/ui/lib/cx";
 
 import { guardFetch, type GuardProblem, type Roster } from "./lib/api";
-import { canSubmit, INITIAL_PIN, PIN_MAX, pinReducer } from "./lib/pin";
-import { formatStopwatch, lockoutSecondsLeft } from "./lib/timers";
+import { canSubmit, INITIAL_PIN, PIN_MAX, pinReducer, type PinState } from "./lib/pin";
+import { bangkokTime, formatStopwatch, lockoutSecondsLeft } from "./lib/timers";
 import { useNow } from "./lib/useNow";
 
 type Guard = Roster["guards"][number];
+
+/** The pad's first state: closed with its countdown while the roster's `lockedUntil` is still ahead (J-CR). */
+function lockedPin(lockedUntil: string | null): PinState {
+  return lockedUntil && Date.parse(lockedUntil) > Date.now()
+    ? { ...INITIAL_PIN, error: "locked", lockedUntil }
+    : INITIAL_PIN;
+}
 
 /** `POST /bff/guard/session/sign-in` and what the pad should say about the answer. */
 export async function signIn(guardId: string, pin: string) {
@@ -40,7 +47,7 @@ export function PinStep({
   submitLabel,
   onDeviceGone,
 }: {
-  guard: Pick<Guard, "guardId" | "displayName"> & { locked?: boolean };
+  guard: Pick<Guard, "guardId" | "displayName"> & { locked?: boolean; lockedUntil?: string | null };
   onSignedIn: () => void;
   onBack?: () => void;
   backLabel: string;
@@ -50,7 +57,8 @@ export function PinStep({
   onDeviceGone: () => void;
 }) {
   const t = useTranslations("owner.guard.pin");
-  const [state, dispatch] = useReducer(pinReducer, INITIAL_PIN);
+  // A guard the roster shows as locked (`lockedUntil`, J-CR) opens on the closed pad with its countdown.
+  const [state, dispatch] = useReducer(pinReducer, guard.lockedUntil ?? null, lockedPin);
   const now = useNow(1000);
   const lockLeft = lockoutSecondsLeft(state.lockedUntil, now);
 
@@ -199,7 +207,9 @@ export function SignIn({ onSignedIn, onDeviceGone }: { onSignedIn: () => void; o
                   {guard.locked ? (
                     <span className="text-muted flex items-center gap-1.5 text-sm">
                       <Icon icon={IconLock} />
-                      {t("roster.locked")}
+                      {guard.lockedUntil
+                        ? t("roster.lockedUntil", { time: bangkokTime(guard.lockedUntil) })
+                        : t("roster.locked")}
                     </span>
                   ) : null}
                 </span>

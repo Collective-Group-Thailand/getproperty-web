@@ -639,6 +639,9 @@ export function initialImportsWorld(): MockImportsWorld {
             key: "receivables",
             kind: "receivables",
             label: "receivables",
+            accountType: null,
+            last4: null,
+            fundName: null,
             imported: "50212.50",
             reference: "50212.50",
             difference: "0.00",
@@ -813,6 +816,9 @@ function reconcileItems(job: MockJob, declared: string): Schemas["JuristicImport
       key: "receivables",
       kind: "receivables",
       label: "receivables",
+      accountType: null,
+      last4: null,
+      fundName: null,
       imported: totals.receivables,
       reference: baht(satang(declared)),
       difference: baht(satang(totals.receivables) - satang(declared)),
@@ -829,6 +835,9 @@ function reconcileItems(job: MockJob, declared: string): Schemas["JuristicImport
         kind: "bank",
         label:
           row.data.account_type === "operating" ? `operating ••${last4}` : `fund ${row.data.fund_name ?? ""}`.trim(),
+        accountType: row.data.account_type === "operating" ? "operating" : "fund",
+        last4: last4 || null,
+        fundName: row.data.account_type === "operating" ? null : (row.data.fund_name ?? null),
         imported: baht(satang(row.data.balance ?? "0")),
         reference: statement,
         difference: statement === null ? null : baht(satang(row.data.balance ?? "0") - satang(statement)),
@@ -1118,7 +1127,11 @@ export const importsHandlers: HttpHandler[] = [
       .jobs.filter(
         (job) =>
           (!params.get("buildingId") || job.dto.buildingId === params.get("buildingId")) &&
-          (!params.get("state") || job.dto.state === params.get("state")),
+          (!params.get("state") || job.dto.state === params.get("state")) &&
+          // J-CR `?open=`: draft · validated · reconciled · committed (true) or the others (false).
+          (params.get("open") === null ||
+            ["draft", "validated", "reconciled", "committed"].includes(job.dto.state) ===
+              (params.get("open") === "true")),
       )
       .sort((a, b) => b.dto.createdAt.localeCompare(a.dto.createdAt))
       .map((job) => view(ok, job));
@@ -1138,14 +1151,11 @@ export const importsHandlers: HttpHandler[] = [
     if (!input.asOfDate || !/^\d{4}-\d{2}-\d{2}$/.test(input.asOfDate))
       return validation(op, "asOfDate", "ระบุวันที่ตัดยอด");
     if (input.asOfDate > date()) return validation(op, "asOfDate", "วันที่ตัดยอดต้องไม่เกินวันนี้");
-    if (
-      w().jobs.some(
-        (job) =>
-          job.dto.buildingId === building.id &&
-          ["draft", "validated", "reconciled", "committed"].includes(job.dto.state),
-      )
-    )
-      return problem(op, "import.job_open");
+    const open = w().jobs.find(
+      (job) =>
+        job.dto.buildingId === building.id && ["draft", "validated", "reconciled", "committed"].includes(job.dto.state),
+    );
+    if (open) return problem(op, "import.job_open", { jobId: open.dto.id, jobNumber: open.dto.number });
     const id = crypto.randomUUID();
     const job: MockJob = {
       dto: jobDto(Math.max(...w().jobs.map((entry) => entry.dto.number)) + 1, id, building.id, building.name, {
@@ -1406,7 +1416,7 @@ export const importsHandlers: HttpHandler[] = [
       if (reason.length < 5 || reason.length > 1000)
         return validation(op, "reason", "เหตุผล 5–1000 ตัวอักษร", "length");
       if (job.dto.state !== "committed") return problem(op, "import.invalid_state");
-      if (w().blockRollback) return problem(op, "import.rollback_blocked");
+      if (w().blockRollback) return problem(op, "import.rollback_blocked", { table: "ops.invoice" });
       undoCommit(job);
       job.differences = [];
       job.dto.state = "rolled_back";

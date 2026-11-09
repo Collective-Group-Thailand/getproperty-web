@@ -8,6 +8,8 @@ import {
   differenceView,
   goLiveChecklist,
   importProblem,
+  reconcileAccount,
+  rollbackBlocker,
   importSettings,
   IMPORT_PROBLEMS,
   isNegative,
@@ -379,5 +381,33 @@ describe("rows table", () => {
     expect(rowsSheet(withErrors, "register")).toBe("register");
     expect(rowsSheet(withErrors, "legacy_bills")).toBe("opening_balance");
     expect(rowsSheet(job(), null)).toBeNull();
+  });
+});
+
+describe("J-CR answers in the wizard (D-335)", () => {
+  it("names the record that blocks a rollback from the problem's table", () => {
+    expect(rollbackBlocker("ops.invoice")).toBe("invoice");
+    expect(rollbackBlocker("juristic.journal")).toBe("journal");
+    expect(rollbackBlocker("ops.payment")).toBe("payment");
+    expect(rollbackBlocker("ops.something_new")).toBeNull();
+    expect(rollbackBlocker(undefined)).toBeNull();
+  });
+
+  it("reads the bank item's account from its fields, the label only for older reconciliations", () => {
+    expect(
+      reconcileAccount({ label: "operating ••4012", accountType: "operating", last4: "4012", fundName: null }),
+    ).toEqual({ fund: false, account: "••4012" });
+    expect(reconcileAccount({ label: "fund x", accountType: "fund", last4: "9911", fundName: "กองทุนสำรอง" })).toEqual({
+      fund: true,
+      account: "กองทุนสำรอง",
+    });
+    expect(reconcileAccount({ label: "fund กองทุนซ่อม", accountType: null, last4: null, fundName: null })).toEqual({
+      fund: true,
+      account: "กองทุนซ่อม",
+    });
+    expect(reconcileAccount({ label: "operating ••1234", accountType: null, last4: null, fundName: null })).toEqual({
+      fund: false,
+      account: "••1234",
+    });
   });
 });

@@ -415,6 +415,26 @@ export function importProblem(code: string | null | undefined): { key: string; n
   return code ? (IMPORT_PROBLEMS[code] ?? null) : null;
 }
 
+/** Tables `import.rollback_blocked` names (J-CR, D-335) that the wizard can say in words (`problem.rollback_blocked.table.<key>`). */
+const ROLLBACK_BLOCKERS = [
+  "invoice",
+  "payment",
+  "receipt",
+  "credit_note",
+  "lease",
+  "journal",
+  "debt_clearance",
+  "payment_plan",
+  "statement",
+] as const;
+export type RollbackBlocker = (typeof ROLLBACK_BLOCKERS)[number];
+
+/** The record kind that blocks a rollback, from the problem's `table` (`ops.invoice` → `invoice`); null when unknown. */
+export function rollbackBlocker(table: string | null | undefined): RollbackBlocker | null {
+  const name = table?.split(".").pop();
+  return ROLLBACK_BLOCKERS.find((entry) => entry === name) ?? null;
+}
+
 /** Where a refusal's next step leads inside the wizard (`?step=`), when it is a step. */
 export function problemStep(next: ProblemNext): StepKey | null {
   switch (next) {
@@ -457,4 +477,19 @@ export function rowsSheet(job: Pick<Job, "files">, requested: string | undefined
   const wanted = sheets.find((sheet) => sheet === requested);
   if (wanted) return wanted;
   return sheets.find((sheet) => (fileOf(job, sheet)?.errorCount ?? 0) > 0) ?? sheets[0] ?? null;
+}
+
+// --------------------------------------------------------------------------------------------- reconcile items
+
+/**
+ * Which account a bank reconcile item is and how to name it: the item's `accountType`, `last4` and `fundName` (J-CR);
+ * reconciliations stored before J-CR have them null, so the `label` ("operating ••4012", "fund กองทุนสำรอง") is read.
+ */
+export function reconcileAccount(
+  item: Pick<Schemas["JuristicReconcileItemDto"], "label" | "accountType" | "last4" | "fundName">,
+): { fund: boolean; account: string } {
+  const fromLabel = item.label.replace(/^(operating|fund)\s*/, "").trim();
+  const fund = item.accountType ? item.accountType === "fund" : item.label.startsWith("fund");
+  if (fund) return { fund, account: item.fundName ?? fromLabel };
+  return { fund, account: item.last4 ? `••${item.last4}` : fromLabel };
 }

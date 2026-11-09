@@ -41,6 +41,15 @@ export async function PartyDetail({ context, partyId }: { context: OwnerContext;
     throw error;
   }
   const role = context.me.currentTenant?.role;
+  // Leases are an apartment's (J-CR, D-335: a juristic office is no longer granted `leases`): no "new lease" there.
+  const leasing = context.me.menu.includes("leases");
+  const account = (variant: "primary" | "secondary") => (
+    <Button asChild variant={variant}>
+      <a href={ownerPath(locale, `/arrears/${party.id}`)} data-testid="party-account">
+        {t("account")}
+      </a>
+    </Button>
+  );
   const privileged = role === "owner" || role === "manager";
   const [leases, links, documents, requests] = await Promise.all([
     section(unwrap(api.GET("/v1/owner/leases", { params: { query: { partyId, perPage: 50 } } }))),
@@ -86,19 +95,17 @@ export async function PartyDetail({ context, partyId }: { context: OwnerContext;
               ...(leases.data ? [{ key: "leases", label: t("factLeases"), value: leases.data.meta.total }] : []),
             ]}
             primary={
-              <Button asChild iconStart={IconLease}>
-                <a href={ownerPath(locale, `/leases/new?party=${party.id}`)} data-testid="party-new-lease">
-                  {t("newLease")}
-                </a>
-              </Button>
+              leasing ? (
+                <Button asChild iconStart={IconLease}>
+                  <a href={ownerPath(locale, `/leases/new?party=${party.id}`)} data-testid="party-new-lease">
+                    {t("newLease")}
+                  </a>
+                </Button>
+              ) : (
+                account("primary")
+              )
             }
-            secondary={
-              <Button asChild variant="secondary">
-                <a href={ownerPath(locale, `/arrears/${party.id}`)} data-testid="party-account">
-                  {t("account")}
-                </a>
-              </Button>
-            }
+            secondary={leasing ? account("secondary") : undefined}
           />
         }
       >

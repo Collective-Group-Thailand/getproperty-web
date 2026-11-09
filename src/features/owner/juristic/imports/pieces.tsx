@@ -14,7 +14,15 @@ import { IconCheckCircle } from "@/ui/icons/glyphs/check-circle";
 import { IconInfo } from "@/ui/icons/glyphs/info";
 import { cn } from "@/ui/lib/cn";
 
-import { differenceKind, isNegative, isZero, MONEY_COLUMNS, ROW_COLUMNS, type GoLiveCheck } from "./wizard";
+import {
+  differenceKind,
+  isNegative,
+  isZero,
+  MONEY_COLUMNS,
+  reconcileAccount,
+  ROW_COLUMNS,
+  type GoLiveCheck,
+} from "./wizard";
 
 /**
  * Pieces of the import wizard that render the same on the server and in Storybook (JW3a): the summary facts, the
@@ -90,12 +98,8 @@ function Figure({
 export function ReconcileBlock({ item, locale }: { item: Schemas["JuristicReconcileItemDto"]; locale: Locale }) {
   const t = useTranslations("owner.imports.reconcile");
   const receivables = item.kind === "receivables";
-  const account = item.label.replace(/^(operating|fund)\s*/, "").trim();
-  const title = receivables
-    ? t("receivablesTitle")
-    : item.label.startsWith("fund")
-      ? t("fundTitle", { account })
-      : t("bankTitle", { account });
+  const { fund, account } = reconcileAccount(item);
+  const title = receivables ? t("receivablesTitle") : fund ? t("fundTitle", { account }) : t("bankTitle", { account });
   const imported = (
     <Figure
       label={receivables ? t("fromFile") : t("inFile")}

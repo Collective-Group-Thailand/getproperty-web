@@ -1921,6 +1921,19 @@ const chartHandlers: HttpHandler[] = [
     );
     return json({ data });
   }),
+  // J-CR (D-335): the active expense accounts for whoever may request an expense or spend petty cash.
+  http.get("*/v1/owner/juristic/expense-accounts", ({ request }) => {
+    const op = "owner.juristicExpenseAccounts.list";
+    const ok = owner(request, op);
+    if (ok instanceof Response) return ok;
+    if (!juristicOnly(ok)) return notFound(op);
+    const forbidden = allowed(ok, op, "juristic.expense.request");
+    if (forbidden) return forbidden;
+    const data = w()
+      .accounts.filter((acc) => acc.type === "expense" && acc.isActive)
+      .sort((a, b) => a.code.localeCompare(b.code, "en", { numeric: true }));
+    return json({ data } satisfies Schemas["AccountListDto"]);
+  }),
   http.post("*/v1/owner/juristic/accounts", async ({ request }) => {
     const op = "owner.juristicAccounts.create";
     const ok = mutating(request, op);
@@ -2263,12 +2276,14 @@ const expenseHandlers: HttpHandler[] = [
     if (forbidden) return forbidden;
     const params = query(request);
     const q = params.get("q")?.toLowerCase();
-    const rows = w()
-      .expenses.filter(
+    const scoped = w().expenses.filter(
+      (expense) => !params.get("buildingId") || expense.buildingId === params.get("buildingId"),
+    );
+    const rows = scoped
+      .filter(
         (expense) =>
           (!params.get("state") || expense.state === params.get("state")) &&
           (!params.get("kind") || expense.kind === params.get("kind")) &&
-          (!params.get("buildingId") || expense.buildingId === params.get("buildingId")) &&
           (params.get("awaitingMe") !== "true" || awaiting(expense, ok)) &&
           (!q ||
             expense.title.toLowerCase().includes(q) ||
@@ -2277,7 +2292,19 @@ const expenseHandlers: HttpHandler[] = [
       )
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
       .map((expense) => view(expense, ok));
-    return json(paged(rows, request));
+    // J-CR tab badges: per state for the building (not the search) and what waits for the caller.
+    const of = (state: Schemas["ExpenseState"]) => scoped.filter((expense) => expense.state === state).length;
+    const counts: Schemas["ExpenseRequestCountsDto"] = {
+      all: scoped.length,
+      awaitingMe: scoped.filter((expense) => awaiting(expense, ok)).length,
+      draft: of("draft"),
+      submitted: of("submitted"),
+      approved: of("approved"),
+      rejected: of("rejected"),
+      paid: of("paid"),
+      cancelled: of("cancelled"),
+    };
+    return json({ ...paged(rows, request), counts });
   }),
   http.get("*/v1/owner/juristic/expense-requests/:id", ({ request, params }) => {
     const op = "owner.juristicExpenses.get";

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 import { DateField } from "@/features/shared/console/DateField";
 import { FormDialog, text } from "@/features/shared/console/FormDialog";
+import { SearchPicker } from "@/features/shared/console/SearchPicker";
 import { formatTHB } from "@/i18n/format";
 import type { Locale } from "@/i18n/routing";
 import { browserApi } from "@/lib/api/browser";
@@ -16,7 +17,6 @@ import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Field } from "@/ui/components/Field";
 import { Textarea } from "@/ui/components/Input";
-import { NativeSelect } from "@/ui/components/NativeSelect";
 import { LazyDialog } from "@/ui/components/overlays";
 import { toast } from "@/ui/components/Toast";
 import { IconAdd } from "@/ui/icons/glyphs/add";
@@ -27,15 +27,6 @@ import { IconXCircle } from "@/ui/icons/glyphs/x-circle";
 import { ownerPath } from "../../shared/links";
 
 type Clearance = Schemas["DebtClearanceDto"];
-
-/** A co-owner of a unit today, as the register lists them. */
-export interface ClearanceOwner {
-  unitId: string;
-  unitNo: string;
-  partyId: string;
-  partyName: string;
-  building: string;
-}
 
 /**
  * The verification code of a certificate, shown once after it is issued (the API keeps a hash): the code, the public
@@ -100,11 +91,24 @@ function outstandingOf(error: unknown): string | null {
  * outstanding — otherwise the amount still owed is shown on the field and nothing is stored. With a fee the request
  * waits until the fee is paid; without one it is issued at once and its verification code is shown once.
  */
-export function NewClearanceButton({ owners, today }: { owners: ClearanceOwner[]; today: string }) {
+export function NewClearanceButton({ today }: { today: string }) {
   const t = useTranslations("owner.collections.clearance");
   const locale = useLocale() as Locale;
   const [code, setCode] = useState<string | null>(null);
   const [goTo, setGoTo] = useState<string | null>(null);
+  // Today's co-owners by owner name, unit or plot number (J-CR `register/owners`), not the whole register.
+  const searchOwners = (q: string) =>
+    unwrap(
+      browserApi().GET("/v1/owner/juristic/register/owners", {
+        params: { query: { limit: 20, ...(q ? { q } : {}) } },
+      }),
+    ).then((result) =>
+      result.data.map((pick) => ({
+        value: `${pick.partyId}:${pick.unitId}`,
+        label: t("ownerOption", { unit: pick.unitNo, owner: pick.partyName }),
+        description: pick.buildingName,
+      })),
+    );
   return (
     <>
       <FormDialog
@@ -115,9 +119,9 @@ export function NewClearanceButton({ owners, today }: { owners: ClearanceOwner[]
         title={t("newTitle")}
         description={t("newBody")}
         submitLabel={t("newSubmit")}
-        disabled={owners.length === 0}
         onSubmit={async (data, _ack, key) => {
-          const chosen = owners.find((owner) => `${owner.partyId}:${owner.unitId}` === text(data, "owner"));
+          const [partyId, unitId] = (text(data, "owner") ?? "").split(":");
+          const chosen = partyId && unitId ? { partyId, unitId } : null;
           if (!chosen)
             throw problemError(422, {
               code: "validation.failed",
@@ -155,14 +159,13 @@ export function NewClearanceButton({ owners, today }: { owners: ClearanceOwner[]
         {(errors) => (
           <>
             <Field label={t("owner")} hint={t("ownerHint")} required error={errors.owner}>
-              <NativeSelect
+              <SearchPicker
                 name="owner"
+                search={searchOwners}
                 placeholder={t("ownerPick")}
-                options={owners.map((owner) => ({
-                  value: `${owner.partyId}:${owner.unitId}`,
-                  label: t("ownerOption", { unit: owner.unitNo, owner: owner.partyName, building: owner.building }),
-                }))}
-                data-testid="clearance-owner"
+                emptyLabel={t("ownerNoMatch")}
+                listLabel={t("owner")}
+                testId="clearance-owner"
               />
             </Field>
             <Field label={t("asOf")} hint={t("asOfHint")} error={errors.asOf}>

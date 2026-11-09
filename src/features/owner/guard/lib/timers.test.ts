@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { INITIAL_PIN, canSubmit, isLocked, pinReducer, type PinState } from "./pin";
 import {
+  autoLockMinutes,
   bangkokTime,
   durationParts,
   formatStopwatch,
@@ -83,5 +84,21 @@ describe("PIN pad", () => {
     expect(isLocked(state, T0 + 15 * 60_000)).toBe(false);
     state = pinReducer(state, { type: "unlockedByTime" });
     expect(type(state, "1").digits).toBe("1");
+  });
+});
+
+describe("autoLockMinutes (gate.tablet.auto_lock_minutes, J-CR)", () => {
+  it("takes the estate's setting from the guard's me", () => {
+    expect(autoLockMinutes({ autoLockMinutes: 12 })).toBe(12);
+    expect(autoLockMinutes({ autoLockMinutes: 1 })).toBe(1);
+    expect(autoLockMinutes({ autoLockMinutes: 60 })).toBe(60);
+  });
+
+  it("falls back to the API's default outside 1–60 or when missing", () => {
+    expect(autoLockMinutes({})).toBe(5);
+    expect(autoLockMinutes({ autoLockMinutes: null })).toBe(5);
+    expect(autoLockMinutes({ autoLockMinutes: 0 })).toBe(5);
+    expect(autoLockMinutes({ autoLockMinutes: 61 })).toBe(5);
+    expect(autoLockMinutes({ autoLockMinutes: 2.5 })).toBe(5);
   });
 });

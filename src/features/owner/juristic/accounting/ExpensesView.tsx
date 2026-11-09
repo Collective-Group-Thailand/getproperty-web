@@ -43,7 +43,7 @@ import {
 import { isZero } from "./money";
 import { ExpensesNav, memberName } from "./parts";
 import { ExpenseForm } from "./ExpenseForm";
-import { adoptedResolutions, chartOfAccounts, officeMembers } from "./shared";
+import { adoptedResolutions, chartOfAccounts, expenseAccountList, officeMembers } from "./shared";
 import { awardedRounds, contractChoices, vendorChoices, vendorSettings } from "../vendors/shared";
 import { lineWht, parseWhtRates, percentText } from "./wht";
 
@@ -80,24 +80,18 @@ export async function ExpensesView({ context, searchParams }: { context: OwnerCo
   const queryOf = (which: Tab) =>
     which === "mine" ? { awaitingMe: true } : which === "all" ? {} : { state: which as Schemas["ExpenseState"] };
   const visibleTabs = TABS.filter((which) => which !== "mine" || canApprove);
-  const [list, ...counts] = await Promise.all([
-    section(
-      unwrap(
-        api.GET("/v1/owner/juristic/expense-requests", {
-          params: { query: { page, perPage: 25, ...scope, ...queryOf(tab), ...(q ? { q } : {}) } },
-        }),
-      ),
+  const list = await section(
+    unwrap(
+      api.GET("/v1/owner/juristic/expense-requests", {
+        params: { query: { page, perPage: 25, ...scope, ...queryOf(tab), ...(q ? { q } : {}) } },
+      }),
     ),
-    ...visibleTabs.map((which) =>
-      unwrap(
-        api.GET("/v1/owner/juristic/expense-requests", {
-          params: { query: { page: 1, perPage: 1, ...scope, ...queryOf(which) } },
-        }),
-      )
-        .then((answer) => answer.meta.total)
-        .catch(() => undefined),
-    ),
-  ]);
+  );
+  // Tab badges from the page's `counts` (J-CR): per state for the building (the search does not narrow them).
+  const tabCounts = list.data?.counts;
+  const counts = visibleTabs.map((which) =>
+    which === "mine" ? tabCounts?.awaitingMe : tabCounts?.[which as Exclude<Tab, "mine">],
+  );
   const canRequest = !readOnly(me) && ownerCan(me, "juristic.expense.request");
   const base = ownerPath(locale, "/juristic/expenses");
   const rows = list.data?.data ?? [];
@@ -585,7 +579,7 @@ async function formChoices(context: OwnerContext) {
   const [settings, accounts, parties, funds, resolutions, vendors, contracts, rounds, vendorConfig] = await Promise.all(
     [
       expenseSettings(context),
-      chartOfAccounts(api),
+      expenseAccountList(api),
       unwrap(api.GET("/v1/owner/parties", { params: { query: { perPage: 100 } } }))
         .then((list) => list.data)
         .catch(() => [] as Schemas["PartyDto"][]),

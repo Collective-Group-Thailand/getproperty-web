@@ -706,6 +706,7 @@ function mandate(
     unitId: unit.id,
     unitNo: unit.unitNo,
     partyId: entry.partyId,
+    partyName: partyName(entry.partyId),
     method: n % 2 ? "direct_debit" : "card_token",
     provider: "fake",
     masked: n % 2 ? `KBANK •••• ${String(4410 + n)}` : `VISA •••• ${String(8800 + n)}`,
@@ -916,9 +917,9 @@ const juristicOnly = (ok: Ok) => ok.tenantId === JURISTIC_TENANT;
 const randomCode = (length: number) =>
   Array.from({ length }, () => "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"[Math.floor(Math.random() * 32)]).join("");
 
-function rows(request: Request) {
+function rows(request: Request, only?: Schemas["ReceivablesTab"]) {
   const params = query(request);
-  const tab = (params.get("tab") ?? "all") as Schemas["ReceivablesTab"];
+  const tab = only ?? ((params.get("tab") ?? "all") as Schemas["ReceivablesTab"]);
   const q = params.get("q")?.trim().toLowerCase();
   const buildingId = params.get("buildingId");
   const sort = params.get("sort") === "age" ? "age" : "amount";
@@ -1017,9 +1018,12 @@ const receivableHandlers: HttpHandler[] = [
   http.get("*/v1/owner/juristic/receivables", ({ request }) => {
     const ok = owner(request, "owner.juristicReceivables.list");
     if (ok instanceof Response) return ok;
-    const list = juristicOnly(ok) ? rows(request) : [];
+    const juristic = juristicOnly(ok);
+    const list = juristic ? rows(request) : [];
+    const count = (tab: Schemas["ReceivablesTab"]) => (juristic ? rows(request, tab).length : 0);
     return json({
       ...paged(list, request),
+      counts: { all: count("all"), atStep: count("at_step"), plan: count("plan"), dispute: count("dispute") },
       totals: {
         outstanding: sum(list.map((row) => row.outstanding)),
         surcharge: sum(list.map((row) => row.surcharge)),
@@ -1160,7 +1164,7 @@ const ladderHandlers: HttpHandler[] = [
     if (input.requiresApproval === false && ["suspend_services", "lawyer_letter", "legal_action"].includes(step.action))
       return problem(op, "collections.approval_required");
     if (input.enabled === true && !step.enabled && step.gateClosedReason)
-      return problem(op, "collections.legal_review_required");
+      return problem(op, "collections.legal_review_required", { gateClosedReason: step.gateClosedReason });
     Object.assign(step, {
       ...(input.offsetDays !== undefined ? { offsetDays: input.offsetDays } : {}),
       ...(input.channels ? { channels: [...new Set(input.channels)] } : {}),

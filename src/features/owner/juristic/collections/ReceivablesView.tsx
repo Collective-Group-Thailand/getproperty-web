@@ -44,9 +44,8 @@ export async function ReceivablesView({
   const buildingId = param(searchParams.building);
   const base = ownerPath(locale, "/juristic/receivables");
   const scope = { ...(buildingId ? { buildingId } : {}) };
-  const count = (tab: (typeof RECEIVABLE_TABS)[number]) =>
-    section(unwrap(api.GET("/v1/owner/juristic/receivables", { params: { query: { ...scope, tab, perPage: 1 } } })));
-  const [list, all, atStep, plan, dispute, aging, rate, settings] = await Promise.all([
+  // The figures read the whole book (no search): its totals and `counts` (J-CR); the tabs count the list's own search.
+  const [list, all, aging, rate, settings] = await Promise.all([
     section(
       unwrap(
         api.GET("/v1/owner/juristic/receivables", {
@@ -64,10 +63,9 @@ export async function ReceivablesView({
         }),
       ),
     ),
-    count("all"),
-    count("at_step"),
-    count("plan"),
-    count("dispute"),
+    section(
+      unwrap(api.GET("/v1/owner/juristic/receivables", { params: { query: { ...scope, tab: "all", perPage: 1 } } })),
+    ),
     section(unwrap(api.GET("/v1/owner/juristic/reports/aging", { params: { query: scope } }))),
     section(unwrap(api.GET("/v1/owner/juristic/reports/collection-rate", { params: { query: scope } }))),
     section(unwrap(api.GET("/v1/owner/settings", { params: { query: {} } }))),
@@ -112,18 +110,17 @@ export async function ReceivablesView({
     figures.push({
       key: "accounts",
       label: t("figures.accounts"),
-      value: n(all.data.meta.total),
+      value: n(all.data.counts.all),
       hint: t("figures.accountsHint"),
     });
-  }
-  if (plan.data)
     figures.push({
       key: "plans",
       label: t("figures.plans"),
-      value: n(plan.data.meta.total),
+      value: n(all.data.counts.plan),
       hint: t("figures.plansHint"),
       href: withQuery(base, { tab: "plan" }),
     });
+  }
 
   const tiles = aging.data
     ? agingTiles(aging.data.overall.buckets, {
@@ -136,7 +133,13 @@ export async function ReceivablesView({
       })
     : [];
 
-  const counts = { all, at_step: atStep, plan, dispute };
+  const tabCounts = list.data?.counts;
+  const counts: Record<(typeof RECEIVABLE_TABS)[number], number | undefined> = {
+    all: tabCounts?.all,
+    at_step: tabCounts?.atStep,
+    plan: tabCounts?.plan,
+    dispute: tabCounts?.dispute,
+  };
   const rows: ReceivableRow[] = (list.data?.data ?? []).map((row) => ({
     ...row,
     href: row.caseId ? ownerPath(locale, `/juristic/receivables/${row.caseId}`) : null,
@@ -193,7 +196,7 @@ export async function ReceivablesView({
               tabs={RECEIVABLE_TABS.map((tab) => ({
                 href: tabHref(tab),
                 label: t(`tab.${tab}`),
-                count: counts[tab].data?.meta.total,
+                count: counts[tab],
                 testId: `receivables-tab-${tab}`,
               }))}
             />

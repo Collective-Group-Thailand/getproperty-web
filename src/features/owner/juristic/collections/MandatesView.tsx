@@ -97,7 +97,12 @@ export async function MandatesView({ context, searchParams }: { context: OwnerCo
             testId: "mandate-row",
             data: { state: mandate.state },
             cells: {
-              unit: <span className="font-mono font-medium">{mandate.unitNo}</span>,
+              unit: (
+                <span className="flex min-w-0 flex-col">
+                  <span className="font-mono font-medium">{mandate.unitNo}</span>
+                  {mandate.partyName ? <span className="text-muted text-sm">{mandate.partyName}</span> : null}
+                </span>
+              ),
               method: (
                 <span className="flex flex-col">
                   <span>{t(`method.${mandate.method}`)}</span>

@@ -33,6 +33,26 @@ const w = () => state.platform;
 const money = (value: number) => value.toFixed(2);
 const now = () => new Date().toISOString();
 
+/** Stub buildings (D-280) waiting for a juristic office to claim them. */
+const STUB_BUILDINGS: Schemas["AdminStubBuildingDto"][] = [
+  {
+    id: "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
+    name: "ไลฟ์ สุขุมวิท 48",
+    propertyId: "3b241101-e2bb-4255-8caf-4136c566a962",
+    propertyName: "ไลฟ์ สุขุมวิท 48",
+    address: "ถนนสุขุมวิท พระโขนง คลองเตย กรุงเทพมหานคร 10110",
+    landlordUnits: 7,
+  },
+  {
+    id: "8a1d4c2e-3f5b-4a6c-9d7e-0f1a2b3c4d5e",
+    name: "ซอย 3",
+    propertyId: "9e2f5d3a-4b6c-4d7e-8f9a-1b2c3d4e5f6a",
+    propertyName: "หมู่บ้านภัสสร รังสิต",
+    address: "ถนนรังสิต-นครนายก ธัญบุรี ปทุมธานี 12110",
+    landlordUnits: 3,
+  },
+];
+
 function tenantOf(id: string) {
   return w().tenants.find((tenant) => tenant.id === id);
 }
@@ -226,6 +246,18 @@ const tenantHandlers: HttpHandler[] = [
     const tenantId = String(params.tenantId);
     if (!tenantOf(tenantId)) return notFound(op);
     return json(adminBuildings(tenantId));
+  }),
+  // J-CR (D-335): stub buildings landlords created before a juristic office joined, for the claim picker.
+  http.get("*/v1/admin/buildings/stubs", ({ request }) => {
+    const ok = platform(request, "admin.buildings.stubs", "admin.building.manage");
+    if (ok instanceof Response) return ok;
+    const q = query(request).get("q");
+    return json(
+      paged(
+        STUB_BUILDINGS.filter((stub) => matches(q, stub.name, stub.propertyName, stub.address)),
+        request,
+      ),
+    );
   }),
   http.get("*/v1/admin/tenants/:tenantId/health", ({ request, params }) => {
     const ok = platform(request, "admin.tenants.health", "admin.tenant.read");

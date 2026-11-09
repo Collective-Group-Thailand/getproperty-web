@@ -174,6 +174,16 @@ export async function BillingWorkspace({
     );
   const autoIssue = (settings.data ?? []).find((setting) => setting.key === "billing.auto_issue");
   const advance = cycle.frequency !== "monthly";
+  // An advance cycle's income is recognised month by month (D-303): the schedule the ledger follows (J-CR).
+  const schedule = advance
+    ? await section(
+        unwrap(
+          api.GET("/v1/owner/billing-cycles/{billingCycleId}/revenue-schedule", {
+            params: { path: { billingCycleId: cycle.id } },
+          }),
+        ),
+      )
+    : null;
   const steps = advance ? ADVANCE_STEPS : STEPS;
   const stepIndex = Math.max(0, steps.indexOf(cycle.status));
 
@@ -272,6 +282,55 @@ export async function BillingWorkspace({
                   to: formatDate(cycle.periodEnd, locale),
                 })}
               />
+              {schedule?.data && schedule.data.months.length > 0 ? (
+                <div className="relative overflow-x-auto" data-testid="revenue-schedule">
+                  <table className="w-full min-w-[32rem] text-sm">
+                    <caption className="sr-only">{t("advance.scheduleTitle")}</caption>
+                    <thead>
+                      <tr className="border-border text-muted border-b">
+                        <th scope="col" className="py-2 text-start font-medium">
+                          {t("advance.month")}
+                        </th>
+                        <th scope="col" className="py-2 text-end font-medium">
+                          {t("advance.scheduled")}
+                        </th>
+                        <th scope="col" className="py-2 text-end font-medium">
+                          {t("advance.recognised")}
+                        </th>
+                        <th scope="col" className="py-2 text-end font-medium">
+                          {t("advance.credited")}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {schedule.data.months.map((month) => (
+                        <tr
+                          key={month.month}
+                          className="border-border border-b last:border-b-0"
+                          data-testid="revenue-month"
+                          data-recognised={month.fullyRecognised}
+                        >
+                          <th scope="row" className="py-2 text-start font-normal">
+                            {formatPeriodKey(month.month, locale)}
+                          </th>
+                          <td className="py-2 text-end tabular-nums">{formatTHB(month.amount, locale)}</td>
+                          <td className="py-2 text-end tabular-nums">{formatTHB(month.recognised, locale)}</td>
+                          <td className="text-muted py-2 text-end tabular-nums">{formatTHB(month.credited, locale)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr className="border-border border-t font-medium">
+                        <th scope="row" className="py-2 text-start">
+                          {t("advance.total")}
+                        </th>
+                        <td className="py-2 text-end tabular-nums">{formatTHB(schedule.data.total, locale)}</td>
+                        <td colSpan={2} />
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              ) : null}
             </Card>
           ) : null}
           {advance ? null : (

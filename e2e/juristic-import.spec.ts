@@ -166,6 +166,9 @@ test("rollback of a committed import: refused while referenced, then removes wha
   await typePhrase(dialog);
   await dialog.getByRole("button", { name: "ย้อนกลับการนำเข้า" }).click();
   await expect(dialog.getByTestId("import-problem")).toHaveAttribute("data-code", "import.rollback_blocked");
+  // J-CR: the problem's `table` names what still refers to the import.
+  await expect(dialog.getByTestId("import-problem")).toHaveAttribute("data-blocker", "invoice");
+  await expect(dialog.getByTestId("import-problem")).toContainText("ใบแจ้งหนี้ที่ออกแล้ว");
 
   await control("flag?blockRollback=0");
   await dialog.getByRole("button", { name: "ย้อนกลับการนำเข้า" }).click();

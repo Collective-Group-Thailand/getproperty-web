@@ -71,3 +71,13 @@ export function lockoutSecondsLeft(lockedUntil: string | null | undefined, now: 
   const until = Date.parse(lockedUntil);
   return Number.isFinite(until) ? Math.max(0, Math.ceil((until - now) / 1000)) : 0;
 }
+
+/**
+ * Minutes without a touch before the desk locks to the PIN pad (JW4 kiosk hygiene; paused while offline): the estate's
+ * setting `gate.tablet.auto_lock_minutes` as `GuardMeDto.autoLockMinutes` (J-CR), 1–60; the API's default (5) when the
+ * value is missing or out of range.
+ */
+export function autoLockMinutes(me: { autoLockMinutes?: number | null }): number {
+  const minutes = me.autoLockMinutes;
+  return typeof minutes === "number" && Number.isInteger(minutes) && minutes >= 1 && minutes <= 60 ? minutes : 5;
+}

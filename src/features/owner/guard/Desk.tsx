@@ -25,7 +25,7 @@ import {
 } from "./lib/api";
 import { isPlateEmpty, normalisePlate, type PlateField } from "./lib/plate";
 import { pendingCount } from "./lib/queue";
-import { isIdle } from "./lib/timers";
+import { autoLockMinutes, isIdle } from "./lib/timers";
 import { useDesk } from "./lib/useDesk";
 import type { GateSnapshot } from "./server";
 
@@ -40,9 +40,6 @@ const NoteDialog = dynamic(() => import("./Dialogs").then((module) => module.Not
 const ManageVisitDialog = dynamic(() => import("./Dialogs").then((module) => module.ManageVisitDialog), { ssr: false });
 const OpenBarrierDialog = dynamic(() => import("./Dialogs").then((module) => module.OpenBarrierDialog), { ssr: false });
 const PinStep = dynamic(() => import("./SignIn").then((module) => module.PinStep), { ssr: false });
-
-/** Minutes without a touch before the desk locks to the PIN pad (JW4 kiosk hygiene; paused while offline). */
-export const AUTO_LOCK_MINUTES = 5;
 
 type Dialog =
   | { kind: "plate"; field: PlateField }
@@ -89,7 +86,7 @@ function useWakeLock() {
 /**
  * The gate desk (J-DESIGN §3 gate-tablet): header; the SOS takeover above everything; the visitor entry on the left
  * (60 %) and the live lists on the right (40 %), stacked on a portrait tablet; the tablet's SOS at the foot. Locks to
- * the PIN pad after `AUTO_LOCK_MINUTES` without a touch — the lists, the stream and the SOS banner stay alive.
+ * the PIN pad after `autoLockMinutes` without a touch — the lists, the stream and the SOS banner stay alive.
  */
 export function Desk({
   me,
@@ -116,6 +113,7 @@ export function Desk({
   const [dismissed, setDismissed] = useState<string[]>([]);
   const [locked, setLocked] = useState(false);
   const lastActivity = useRef(0);
+  const lockAfter = autoLockMinutes(me);
   const hasBarrier = barrierOf(state.hardware) !== null;
   const offline = state.network === "offline";
 
@@ -132,11 +130,7 @@ export function Desk({
     window.addEventListener("pointerdown", touch, { passive: true });
     window.addEventListener("keydown", touch);
     const id = setInterval(() => {
-      if (
-        !locked &&
-        state.network === "online" &&
-        isIdle(lastActivity.current, Date.now(), AUTO_LOCK_MINUTES * 60_000)
-      ) {
+      if (!locked && state.network === "online" && isIdle(lastActivity.current, Date.now(), lockAfter * 60_000)) {
         setDialog(null);
         setLocked(true);
       }
@@ -146,7 +140,7 @@ export function Desk({
       window.removeEventListener("keydown", touch);
       clearInterval(id);
     };
-  }, [locked, state.network]);
+  }, [locked, state.network, lockAfter]);
 
   useEffect(() => {
     if (!notice) return;
@@ -294,7 +288,7 @@ export function Desk({
 
       {locked ? (
         <main className="flex flex-1 flex-col items-center justify-center gap-6 px-6 py-10" data-testid="lock-screen">
-          <p className="text-muted text-lg">{t("pin.lockedLede", { minutes: AUTO_LOCK_MINUTES })}</p>
+          <p className="text-muted text-lg">{t("pin.lockedLede", { minutes: lockAfter })}</p>
           <PinStep
             guard={{ guardId: me.guardId, displayName: me.guardName }}
             title={t("pin.lockedScreen")}
@@ -348,7 +342,6 @@ export function Desk({
                 <WaitingCard
                   visits={state.waiting}
                   conflicts={conflicts}
-                  callBack={state.callBack}
                   hasBarrier={hasBarrier}
                   dismissed={dismissed}
                   onLetIn={(visit) => void letIn(visit)}

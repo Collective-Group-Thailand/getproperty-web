@@ -361,6 +361,7 @@ export const assetHandlers: HttpHandler[] = [
     units = units.filter(
       (unit) =>
         (!params.get("buildingId") || unit.buildingId === params.get("buildingId")) &&
+        (!params.get("propertyId") || unit.propertyId === params.get("propertyId")) &&
         (!params.get("floorId") || unit.floorId === params.get("floorId")) &&
         (!params.get("status") || unit.status === params.get("status")) &&
         (!q || unit.unitNo.toLowerCase().includes(q)),

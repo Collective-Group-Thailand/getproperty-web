@@ -130,6 +130,12 @@
     "title": "Billed in advance",
     "body": "{period} bills common fees and funds for {from} – {to}; no meter readings. The income is recognised month by month.",
     "opens": "Opened",
-    "covers": "Bills for"
+    "covers": "Bills for",
+    "scheduleTitle": "Monthly revenue recognition",
+    "month": "Month",
+    "scheduled": "Scheduled",
+    "recognised": "Recognised",
+    "credited": "Credited",
+    "total": "Total"
   }
 }

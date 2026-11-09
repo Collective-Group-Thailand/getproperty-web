@@ -90,6 +90,7 @@ export function SettingValue({
       case "gate.sos.cancel_seconds":
         return t("seconds", { count: Number(value) });
       case "gate.pin_lock_minutes":
+      case "gate.tablet.auto_lock_minutes":
       case "gate.lpr.pending_minutes":
       case "gate.incident.visit_window_minutes":
         return t("minutes", { count: Number(value) });

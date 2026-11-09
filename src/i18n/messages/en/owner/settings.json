@@ -96,6 +96,7 @@
     "gate_device_enrol_hours": "Tablet registration codes last",
     "gate_pin_max_attempts": "Wrong PINs allowed",
     "gate_pin_lock_minutes": "PIN lock lasts",
+    "gate_tablet_auto_lock_minutes": "Tablet locks after no touch for",
     "gate_lpr_min_confidence": "LPR camera must read at least",
     "gate_lpr_pending_minutes": "Camera reads wait for a guard for",
     "gate_lpr_repeat_seconds": "Ignore the same plate again within",
