@@ -1,0 +1,40 @@
+{
+  "extends": "./shared.json",
+  "$comment": "PM company console (pack J, JW3b, D-334): the owner budgets (D-179) — initial JS ≤ 260 KB gz on every URL, LCP ≤ 2.5 s as a warning — measured signed in as the mock's PM company (scripts/lhci.ts, persona `pm`): the portfolio of managed buildings, a building, the staff board and its history, management contracts (list, an offer, a running contract with its fees).",
+  "ci": {
+    "collect": {
+      "url": [
+        "http://localhost:3200/portfolio",
+        "http://localhost:3200/portfolio/buildings/5c8e0a01-0000-4000-8000-000000000001",
+        "http://localhost:3200/portfolio/staff",
+        "http://localhost:3200/portfolio/staff?view=history",
+        "http://localhost:3200/portfolio/contracts",
+        "http://localhost:3200/portfolio/contracts/3c0a0c01-0000-4000-8000-000000000004",
+        "http://localhost:3200/portfolio/contracts/3c0a0c01-0000-4000-8000-000000000001"
+      ],
+      "numberOfRuns": 1,
+      "settings": {
+        "preset": "desktop",
+        "throttlingMethod": "simulate",
+        "blockedUrlPatterns": ["*/realtime/stream*"],
+        "maxWaitForLoad": 15000
+      }
+    },
+    "assert": {
+      "assertions": {
+        "largest-contentful-paint": [
+          "warn",
+          {
+            "maxNumericValue": 2500
+          }
+        ],
+        "resource-summary:script:size": [
+          "error",
+          {
+            "maxNumericValue": 266240
+          }
+        ]
+      }
+    }
+  }
+}

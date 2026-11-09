@@ -18,6 +18,8 @@ import { BUILDING_COOKIE } from "@/features/shared/shell/building";
 import {
   isJuristicTenant,
   JURISTIC_BOTTOM_NAV,
+  PM_BOTTOM_NAV,
+  isPmCompany,
   JURISTIC_LABEL_KEYS,
   JURISTIC_MENU_GROUPS,
   juristicLayout,
@@ -82,10 +84,13 @@ export async function OwnerShell({
         OWNER_MENU_GROUPS,
         Object.fromEntries(OWNER_MENU_GROUPS.map((group) => [group, t(`owner.nav.group.${group}`)])),
       );
-  const bottomNav = (juristic ? JURISTIC_BOTTOM_NAV : OWNER_BOTTOM_NAV).flatMap(({ key, labelKey }) => {
-    const item = items.find((candidate) => candidate.key === key);
-    return item ? [{ item, label: t(`owner.nav.bottom.${labelKey}`) }] : [];
-  });
+  const pm = isPmCompany(me.currentTenant.type, menu);
+  const bottomNav = (juristic ? JURISTIC_BOTTOM_NAV : pm ? PM_BOTTOM_NAV : OWNER_BOTTOM_NAV).flatMap(
+    ({ key, labelKey }) => {
+      const item = items.find((candidate) => candidate.key === key);
+      return item ? [{ item, label: t(`owner.nav.bottom.${labelKey}`) }] : [];
+    },
+  );
   const [list, jar] = await Promise.all([buildings(), cookies()]);
   const focus = jar.get(BUILDING_COOKIE)?.value;
   const readOnly = me.subscription?.readOnly ?? false;

@@ -42,7 +42,10 @@
     "money": "รับเงิน",
     "more": "เพิ่มเติม",
     "mandatedUnits": "ห้องที่ดูแล",
-    "register": "ทะเบียน"
+    "register": "ทะเบียน",
+    "managed": "อาคาร",
+    "staff": "ทีมงาน",
+    "contracts": "สัญญา"
   },
   "mandated_units": "ห้องที่ได้รับมอบหมาย",
   "mandates": "การมอบหมายนายหน้า",
@@ -66,6 +69,11 @@
   "juristic_vendor_contracts": "สัญญาผู้ให้บริการ",
   "juristic_quotations": "ใบเสนอราคา",
   "juristic_import": "นำเข้าข้อมูล",
+  "juristic_handovers": "รับมอบจากผู้พัฒนา",
+  "juristic_management_contracts": "สัญญาบริษัทบริหาร",
+  "pm_portfolio": "อาคารในความดูแล",
+  "pm_staff": "ทีมงานประจำอาคาร",
+  "pm_contracts": "สัญญาจ้างบริหาร",
   "gate": "ป้อมและผู้มาติดต่อ",
   "juristicGroup": {
     "daily": "งานประจำวัน",

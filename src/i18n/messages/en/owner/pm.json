@@ -1,0 +1,447 @@
+{
+  "problem": {
+    "invalidState": {
+      "title": "The contract has changed",
+      "body": "Someone acted on this contract in the meantime. Reload to see where it stands."
+    },
+    "offerExpired": {
+      "title": "The offer passed its start date",
+      "body": "An offer can be accepted until the contract starts. Ask {juristic} to offer it again."
+    },
+    "overlap": {
+      "title": "Another management contract covers these dates",
+      "body": "{building} has one manager at a time; another offered or active contract overlaps this term."
+    },
+    "resolutionRequired": {
+      "title": "A resolution appointing the manager is needed",
+      "body": "Attach the adopted resolution of {building} that appoints the company, then offer the contract."
+    },
+    "resolutionInvalid": {
+      "title": "The resolution cannot be used",
+      "body": "It must belong to {building} and be adopted."
+    },
+    "pmTenantInvalid": {
+      "title": "This PM company was not found",
+      "body": "Check the company code the PM company gave you."
+    },
+    "vendorBlocked": {
+      "title": "The vendor is blocked",
+      "body": "The PM company is blocked in the vendor register. Unblock it before offering."
+    },
+    "reload": "Reload"
+  },
+  "accept": {
+    "button": "Accept contract",
+    "title": "Accept the management contract for {building}",
+    "body": "Once accepted, the company sees the building's aggregate figures from {juristic} from {from} to {to}, read-only — never residents, invoices or ledger lines.",
+    "confirm": "Accept",
+    "done": "Contract accepted"
+  },
+  "decline": {
+    "button": "Decline offer",
+    "title": "Decline the offer for {building}",
+    "body": "The reason is shown to {juristic}; they may offer again.",
+    "confirm": "Decline",
+    "done": "Offer declined",
+    "reason": "Reason",
+    "reasonHint": "5–1000 characters"
+  },
+  "cancel": {
+    "button": "Cancel offer",
+    "title": "Cancel the management contract for {building}",
+    "body": "{pm} will no longer see this offer. An accepted contract is terminated instead.",
+    "confirm": "Cancel offer",
+    "done": "Cancelled",
+    "reason": "Reason",
+    "reasonHint": "5–1000 characters"
+  },
+  "offer": {
+    "button": "Offer contract",
+    "title": "Offer the contract to {pm}",
+    "body": "The PM company sees the offer and may accept it until the start date, {date}.",
+    "confirm": "Offer",
+    "done": "Contract offered"
+  },
+  "terminate": {
+    "button": "Terminate contract",
+    "title": "Terminate the management contract for {building}",
+    "bodyPm": "From the effective date the company no longer sees this building, fees stop at the last day of service and staff assignments end. The {fees, plural, one {# fee} other {# fees}} already requested stay.",
+    "bodyJuristic": "From the effective date the PM company no longer sees the building and fees stop at the last day of service. The {fees, plural, one {# request} other {# requests}} already made stay for approval as usual.",
+    "confirm": "Terminate",
+    "phrase": "terminate contract",
+    "done": "Contract terminated",
+    "effectiveOn": "First day without service",
+    "effectiveOnHint": "Between {from} and {to}",
+    "effectiveOnError": "Choose a date in the allowed range",
+    "reason": "Reason",
+    "reasonHint": "3–1000 characters"
+  },
+  "assign": {
+    "button": "Assign staff",
+    "title": "Assign staff to a building",
+    "body": "Choose the building, the person and the role. The assignment must fall within that building's management contract.",
+    "submit": "Assign",
+    "done": "Assigned",
+    "error": {
+      "building": "Choose a building",
+      "member": "Choose a person",
+      "role": "Choose a role",
+      "endBeforeStart": "The end must be after the start",
+      "notMember": "This person is not an active member of the company",
+      "outsideTerm": "Must fall within the contract, {from} to {to}",
+      "overlap": "This person is already assigned here on overlapping days",
+      "ended": "This assignment has ended"
+    },
+    "building": "Building",
+    "member": "Staff member",
+    "memberPick": "Choose a person",
+    "role": "Role",
+    "shift": "Shift / hours",
+    "shiftHint": "e.g. Mon–Fri 08:00–17:00",
+    "startsOn": "Starts",
+    "startsOnHint": "Empty = today, or the contract start",
+    "endsOn": "No longer assigned from",
+    "endsOnHint": "The first day off this building; empty = until the contract ends",
+    "note": "Note"
+  },
+  "role": {
+    "building_manager": "Building manager",
+    "assistant_manager": "Assistant manager",
+    "accountant": "Accountant",
+    "technician": "Technician",
+    "admin_officer": "Admin officer",
+    "security_supervisor": "Security supervisor",
+    "other": "Other"
+  },
+  "end": {
+    "button": "End",
+    "title": "End {name}'s assignment at {building}",
+    "body": "The date chosen is the first day no longer assigned.",
+    "submit": "Save",
+    "done": "Saved",
+    "ended": "This assignment has already ended. Reload the page.",
+    "endsOn": "No longer assigned from",
+    "endsOnHint": "Not before today"
+  },
+  "fee": {
+    "line": "{fee} per {period}, VAT {vat} included",
+    "per": {
+      "monthly": "month",
+      "quarterly": "quarter",
+      "annual": "year"
+    },
+    "lineIncl": "{fee} per {period}, VAT included"
+  },
+  "contract": {
+    "metaTitle": "Management contract",
+    "lede": "{building} · {counterpart}",
+    "backPm": "Management contracts",
+    "backJuristic": "Management contracts",
+    "terms": "Terms",
+    "reasonTitle": "Reason",
+    "scope": "Scope of work",
+    "fact": {
+      "juristic": "Juristic office",
+      "pm": "PM company",
+      "building": "Building",
+      "fee": "Fee",
+      "due": "Due",
+      "dueValue": "Day {day} of the month after each period",
+      "term": "Term",
+      "termValue": "{from} – {to}",
+      "feesRequested": "Requested",
+      "feesValue": "{count, plural, one {# period} other {# periods}}"
+    },
+    "panel": {
+      "expired": "Past the start date ({date}) — it can no longer be accepted",
+      "terminated": "Terminated by the {by}, effective {date}",
+      "by": {
+        "juristic": "juristic office",
+        "pm": "PM company"
+      },
+      "body": {
+        "offeredExpired": "This offer can no longer be accepted; the juristic office must offer it again.",
+        "offeredPm": "Can be accepted until the start date, {date}.",
+        "offeredJuristic": "Waiting for {pm} to accept.",
+        "draft": "This draft has not reached the PM company. It needs an adopted resolution appointing the manager before it can be offered.",
+        "offered": "Waiting for an answer.",
+        "activePm": "Running. Fees are requested automatically at the end of each period; the juristic office approves and pays through its own steps.",
+        "activeJuristic": "Running. At the end of each period an expense request for the fee is created for approval by band — nothing is paid automatically.",
+        "active": "Running.",
+        "declined": "The PM company declined this offer.",
+        "cancelled": "The juristic office cancelled this offer.",
+        "ended": "The contract ended as planned.",
+        "terminated": "Terminated."
+      },
+      "readOnly": "You can read the contract; the owner or a manager accepts or terminates it.",
+      "toBuilding": "See the building's figures",
+      "title": {
+        "draft": "Draft",
+        "offered": "Offer",
+        "active": "Running contract",
+        "declined": "Offer declined",
+        "cancelled": "Offer cancelled",
+        "ended": "Ended",
+        "terminated": "Terminated"
+      }
+    },
+    "access": {
+      "title": "Access to the building",
+      "active": "In force",
+      "inactive": "No access now",
+      "bodyPm": "The company sees the building's aggregate figures only (collection, arrears, budget, work), read-only.",
+      "bodyJuristic": "The PM company sees the building's aggregate figures only, read-only — never residents, invoices or ledger lines.",
+      "revoked": "Revoked {date}",
+      "window": "From {from} to {to}"
+    },
+    "charges": {
+      "title": "Fees requested",
+      "ledePm": "Requested at the end of each period; the juristic office approves and pays through its own steps.",
+      "ledeJuristic": "Each ended period is one expense request, approved by band and paid like any other expense.",
+      "empty": "No period has ended yet",
+      "emptyBody": "Fees are requested in arrears at the end of each period.",
+      "col": {
+        "period": "Period",
+        "days": "Days of service",
+        "amount": "Fee",
+        "due": "Due",
+        "request": "Expense request"
+      },
+      "full": "Full period",
+      "partial": "{days} of {of} days",
+      "vat": "VAT {vat}",
+      "request": "Expense request",
+      "state": {
+        "draft": "Draft",
+        "submitted": "Awaiting approval",
+        "approved": "Approved",
+        "paid": "Paid",
+        "rejected": "Rejected",
+        "cancelled": "Cancelled"
+      },
+      "toBuilding": "See the building's figures",
+      "toExpenses": "Open expense requests"
+    },
+    "staff": {
+      "title": "PM company staff",
+      "empty": "No staff assigned to this building yet",
+      "emptyBody": "The PM company assigns its staff.",
+      "col": {
+        "name": "Name",
+        "role": "Role",
+        "shift": "Shift",
+        "dates": "Dates"
+      },
+      "range": "{from} – {to}",
+      "since": "Since {from}",
+      "toList": "Back to all contracts"
+    }
+  },
+  "kpi": {
+    "collectedLabel": "Collected {rate}",
+    "lastCycle": "{period}: {rate}",
+    "noBudget": "No approved budget",
+    "noBudgetLong": "This building has no approved budget for this year.",
+    "budgetUsed": "{pct} used",
+    "budgetOf": "{year} budget {amount}",
+    "requests": "{count, plural, one {# open request} other {# open requests}}",
+    "slaBreached": "{count} past SLA",
+    "slaOk": "None past SLA",
+    "workOrders": "{count, plural, one {# work order} other {# work orders}}",
+    "daysLeft": "{count, plural, one {# day left} other {# days left}}",
+    "vendorExpiring": "{count, plural, one {# vendor contract} other {# vendor contracts}} ending",
+    "units": "{count, plural, one {# unit} other {# units}}",
+    "accounts": "{count, plural, one {# account} other {# accounts}} overdue",
+    "over90": "Over 90 days {amount}",
+    "noStaff": "No staff assigned yet",
+    "moreStaff": "and {count} more"
+  },
+  "portfolio": {
+    "title": "Managed buildings",
+    "lede": "Figures as of {date} from each juristic office's books",
+    "ledeNoDate": "The buildings the company manages today",
+    "offers": "{count, plural, one {# contract offer} other {# contract offers}} waiting for an answer",
+    "offersOpen": "See offers",
+    "offersBody": "Each can be accepted until its start date.",
+    "figures": "All buildings",
+    "empty": {
+      "title": "No buildings under management today",
+      "body": "Buildings appear here once a management contract is running and the juristic office's access is in force. See the offers waiting.",
+      "bodyStaff": "Buildings appear here once you are assigned to one.",
+      "action": "See management contracts"
+    }
+  },
+  "figure": {
+    "buildings": "Buildings",
+    "units": "{count, plural, one {# unit} other {# units}}",
+    "unitsLabel": "Units",
+    "collected": "Collected, 12 months",
+    "collectedHint": "{amount} received",
+    "overdue": "Overdue now",
+    "overdueHint": "All buildings",
+    "requests": "Open requests",
+    "slaBreached": "{count} past SLA",
+    "expiring": "Contracts ending",
+    "expiringHint": "Vendor contracts",
+    "withinDays": "Within {days} days: {rate}"
+  },
+  "col": {
+    "building": "Building",
+    "collection": "Collection, 12 months",
+    "arrears": "Overdue",
+    "budget": "Budget",
+    "work": "Repairs",
+    "staff": "Staff today",
+    "contract": "Contract ends"
+  },
+  "privacy": "Aggregates only — no residents, invoices or ledger lines of the juristic office.",
+  "legalForm": {
+    "condo_act": "Condominium Act",
+    "land_allocation_act": "Land Allocation Act",
+    "voluntary": "Voluntary association",
+    "lease_contract": "Lease contract"
+  },
+  "building": {
+    "metaTitle": "Managed building",
+    "lede": "{juristic} · {form}",
+    "back": "Managed buildings",
+    "contractTitle": "Management contract",
+    "fee": "Fee",
+    "term": "Term",
+    "termValue": "{from} – {to}",
+    "daysLeft": "Contract ends",
+    "openContract": "Open the contract",
+    "collection": "Collection",
+    "collectionLede": "{from} – {to}",
+    "billed": "Billed",
+    "collected": "Collected",
+    "rate": "Collection rate",
+    "within": "Collected within {days} days of the due date",
+    "lastCycle": "Last cycle {period}",
+    "arrears": "Arrears",
+    "overdue": "Overdue now",
+    "over90": "Over 90 days",
+    "invoices": "Overdue invoices",
+    "accounts": "Overdue accounts",
+    "budget": "Expense budget",
+    "budgeted": "Budgeted expense and funds",
+    "actual": "Actual",
+    "used": "Used",
+    "budgetLede": "Approved budget for {year}",
+    "work": "Repairs",
+    "openRequests": "Open requests",
+    "slaBreached": "Past their SLA",
+    "workOrders": "Open work orders",
+    "expiring": "Vendor contracts ending soon",
+    "expiringLede": "Within {days} days",
+    "expiringNone": "No vendor contract ends soon",
+    "col": {
+      "contract": "Contract",
+      "vendor": "Vendor",
+      "ends": "Ends",
+      "left": "Left"
+    },
+    "staff": "Staff today",
+    "toBoard": "Open the staff board",
+    "noStaff": "No staff assigned to this building yet",
+    "noStaffBody": "Assign a building manager or staff from the side panel."
+  },
+  "staff": {
+    "title": "Building staff",
+    "lede": "Who works where, as of {date}",
+    "ledeNoDate": "Who works where",
+    "views": "View",
+    "view": {
+      "board": "Today",
+      "history": "All assignments"
+    },
+    "emptyTitle": "No buildings to staff yet",
+    "emptyBody": "Once a management contract is running, its building appears here for staffing.",
+    "count": "{count, plural, one {# person} other {# people}}",
+    "assignHere": "Assign here",
+    "until": "Until {date}",
+    "unassigned": "Not assigned to a building",
+    "unassignedLede": "Active members with no building today",
+    "assignPerson": "Assign",
+    "historyFilter": "Show",
+    "inForce": "In force today",
+    "allAssignments": "All",
+    "historyEmpty": "No assignments in this view",
+    "history": "Assignments",
+    "col": {
+      "name": "Name",
+      "building": "Building",
+      "role": "Role",
+      "dates": "Dates",
+      "state": "State",
+      "action": "Action"
+    },
+    "range": "{from} – {to}",
+    "since": "Since {from}",
+    "window": {
+      "current": "Assigned",
+      "scheduled": "Starts later",
+      "ended": "Ended"
+    },
+    "toBoard": "Back to today's board"
+  },
+  "tenantRole": {
+    "owner": "Owner",
+    "manager": "Manager",
+    "accountant": "Accountant",
+    "staff": "Staff",
+    "committee": "Committee",
+    "auditor": "Auditor"
+  },
+  "contracts": {
+    "title": "Management contracts",
+    "lede": "Offers from juristic offices and the contracts the company holds",
+    "tabs": "Contract state",
+    "tab": {
+      "offered": "Awaiting answer",
+      "active": "Running",
+      "all": "All"
+    },
+    "empty": {
+      "pm": {
+        "title": "No contracts in this view",
+        "body": "No {tab} contracts yet. Offers from juristic offices arrive here.",
+        "home": "Back to managed buildings"
+      },
+      "juristic": {
+        "title": "No management contracts in this view",
+        "body": "No {tab} contracts yet. The office's contracts with property management companies appear here.",
+        "home": "Open service contracts"
+      },
+      "toAll": "See all contracts"
+    },
+    "tabName": {
+      "offered": "offered",
+      "active": "running",
+      "all": "",
+      "draft": "draft"
+    },
+    "col": {
+      "title": "Contract",
+      "building": "Building",
+      "fee": "Fee",
+      "term": "Term",
+      "state": "State"
+    },
+    "term": "{from} – {to}",
+    "accessOn": "Building visible",
+    "accessOff": "Building not visible yet"
+  },
+  "juristic": {
+    "title": "Management contracts",
+    "metaRecord": "Management contract",
+    "lede": "Contracts with property management companies for every building; each period's fee is an expense request for approval",
+    "ledeBuilding": "Management contracts of {building}",
+    "tab": {
+      "active": "Running",
+      "offered": "Offered",
+      "draft": "Drafts",
+      "all": "All"
+    }
+  }
+}

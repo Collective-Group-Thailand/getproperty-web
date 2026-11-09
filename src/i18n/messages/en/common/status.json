@@ -637,5 +637,21 @@
     "match": "Matches",
     "mismatch": "Difference to explain",
     "no_statement": "No statement"
+  },
+  "handover": {
+    "received": "Received",
+    "pending_review": "Awaiting review",
+    "accepted": "Accepted",
+    "rejected": "Rejected",
+    "superseded": "Replaced by a newer one"
+  },
+  "managementContract": {
+    "draft": "Draft",
+    "offered": "Offered",
+    "active": "Active",
+    "declined": "Declined",
+    "cancelled": "Offer cancelled",
+    "ended": "Ended",
+    "terminated": "Terminated"
   }
 }

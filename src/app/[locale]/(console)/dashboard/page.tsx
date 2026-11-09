@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 
 import { DashboardView } from "@/features/owner/dashboard/DashboardView";
 import { ownerContext } from "@/features/owner/shared/server";
-import { isJuristicTenant } from "@/features/owner/shell/menu";
+import { isJuristicTenant, isPmCompany } from "@/features/owner/shell/menu";
 import { getPathname } from "@/i18n/navigation";
 import type { Locale } from "@/i18n/routing";
 
@@ -29,6 +29,13 @@ export default async function Dashboard({
   // An estate agency's home is the units owners mandated to it (G2, D-293).
   if (!context.me.menu.includes("dashboard") && context.me.menu.includes("mandated_units"))
     redirect(getPathname({ href: "/mandated-units", locale }));
+  // A PM company's home is the buildings it manages (JW3b, D-334) — unless it also operates buildings of its own.
+  if (
+    isPmCompany(context.me.currentTenant?.type, context.me.menu) &&
+    (!context.me.menu.includes("dashboard") ||
+      !context.buildings.some((building) => building.operatorTenantId === context.me.currentTenant?.id))
+  )
+    redirect(getPathname({ href: "/portfolio", locale }));
   // A juristic office's morning starts at its overview (pack J, J-DESIGN §1.1 — who still owes what).
   if (isJuristicTenant(context.me.currentTenant?.type)) redirect(getPathname({ href: "/juristic", locale }));
   return <DashboardView context={context} allTasks={query.tasks === "all"} />;

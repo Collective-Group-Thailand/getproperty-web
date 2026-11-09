@@ -82,6 +82,8 @@ const SESSIONS: Record<string, () => Promise<string>> = {
   owner: () => operatorSession("+66810000001"),
   // Pack J (JW1a): the juristic office of the mock (condominium + housing estate).
   juristic: () => operatorSession("+66810000010", "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c88"),
+  // Pack J (JW3b): the mock's PM company (portfolio, staff board, management contracts).
+  pm: () => operatorSession("+66810000012", "0d0c7a4e-5b0e-4c55-9d7c-3f2b8a1e6c99"),
   staff: () => operatorSession("+66810000004"),
   // JW4: the gate tablet — an enrolled device (mock code) and the guard สมชาย on shift (PIN 1234).
   gate: () => guardSession(),

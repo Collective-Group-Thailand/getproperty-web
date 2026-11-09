@@ -3,7 +3,15 @@ import { describe, expect, it } from "vitest";
 import { entitledMenu } from "@/features/shared/shell/menu";
 import type { Schemas } from "@/lib/api/types";
 
-import { isJuristicTenant, JURISTIC_LABEL_KEYS, JURISTIC_MENU_GROUPS, juristicLayout, OWNER_MENU } from "./menu";
+import {
+  isJuristicTenant,
+  isPmCompany,
+  JURISTIC_LABEL_KEYS,
+  JURISTIC_MENU_GROUPS,
+  juristicLayout,
+  OWNER_MENU,
+  PM_BOTTOM_NAV,
+} from "./menu";
 
 const keys = (list: readonly string[]) => list as Schemas["OwnerMenuKey"][];
 
@@ -178,5 +186,41 @@ describe("juristic rail (J-DESIGN §5)", () => {
     expect(href("juristic_vendors")).toBe("/juristic/vendors");
     expect(href("juristic_vendor_contracts")).toBe("/juristic/contracts");
     expect(href("juristic_quotations")).toBe("/juristic/quotations");
+  });
+});
+
+describe("JW3b keys (D-333, D-334)", () => {
+  it("puts handovers after the import and management contracts beside the service contracts", () => {
+    const placed = juristicLayout(
+      entitledMenu(
+        keys([
+          "juristic_handovers",
+          "juristic_import",
+          "juristic_management_contracts",
+          "juristic_vendor_contracts",
+          "juristic_vendors",
+          "settings",
+        ]),
+        OWNER_MENU,
+      ),
+    );
+    expect(placed.map((item) => [item.key, item.group])).toEqual([
+      ["juristic_vendors", "vendors"],
+      ["juristic_vendor_contracts", "vendors"],
+      ["juristic_management_contracts", "vendors"],
+      ["juristic_import", "system"],
+      ["juristic_handovers", "system"],
+      ["settings", "system"],
+    ]);
+  });
+
+  it("routes a PM company's keys to its portfolio pages and leads its phone nav with them", () => {
+    expect(OWNER_MENU.pm_portfolio?.href).toBe("/portfolio");
+    expect(OWNER_MENU.pm_staff?.href).toBe("/portfolio/staff");
+    expect(OWNER_MENU.pm_contracts?.href).toBe("/portfolio/contracts");
+    expect(PM_BOTTOM_NAV.map((entry) => entry.key).slice(0, 3)).toEqual(["pm_portfolio", "pm_staff", "pm_contracts"]);
+    expect(isPmCompany("pm_company", ["pm_portfolio"])).toBe(true);
+    expect(isPmCompany("pm_company", ["dashboard"])).toBe(false);
+    expect(isPmCompany("landlord", ["pm_portfolio"])).toBe(false);
   });
 });

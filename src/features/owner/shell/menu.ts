@@ -415,6 +415,14 @@ export const OWNER_MENU: MenuRegistry<Schemas["OwnerMenuKey"]> = {
   juristic_quotations: { href: "/juristic/quotations", icon: IconQuotation, group: "operations" },
   // JW3a (J3.1, D-332): the import wizard from a legacy system and the full export, under settings and system.
   juristic_import: { href: "/juristic/import", icon: IconImport, group: "settings" },
+  // JW3b (J3.2, D-333): the developer handovers from getbuild — review, accept or reject, the juristic person formed.
+  juristic_handovers: { href: "/juristic/handovers", icon: IconKey, group: "settings" },
+  // JW3b (J3.3, D-334): management contracts with PM companies, beside the service contracts.
+  juristic_management_contracts: { href: "/juristic/management-contracts", icon: IconSign, group: "operations" },
+  // JW3b (J3.3, D-334): a PM company's buildings under management, its staff board and its management contracts.
+  pm_portfolio: { href: "/portfolio", icon: IconBuilding, group: "operations" },
+  pm_staff: { href: "/portfolio/staff", icon: IconStaff, group: "operations" },
+  pm_contracts: { href: "/portfolio/contracts", icon: IconContract, group: "operations" },
   // D-270: a landlord invites its condo's juristic office for its units in a stub building.
   juristic_workspace_invitations: { href: "/juristic-office", icon: IconMail, group: "operations" },
   // JW4 (J4.1 / J4.2): the gate admin — gates and tablets, guards, house policies, blacklist, logs. `gate` is the same
@@ -472,8 +480,15 @@ export const JURISTIC_MENU_ORDER: Readonly<Record<JuristicMenuGroup, readonly st
     "rate_plans",
     "reports",
   ],
-  vendors: ["juristic_vendors", "juristic_vendor_contracts", "juristic_quotations"],
-  system: ["juristic_budgets", "juristic_collection_ladder", "juristic_import", "settings", "subscription"],
+  vendors: ["juristic_vendors", "juristic_vendor_contracts", "juristic_management_contracts", "juristic_quotations"],
+  system: [
+    "juristic_budgets",
+    "juristic_collection_ladder",
+    "juristic_import",
+    "juristic_handovers",
+    "settings",
+    "subscription",
+  ],
 };
 
 /** Where an unlisted key goes in the juristic rail: the registry's own group, renamed. */
@@ -552,3 +567,19 @@ export const JURISTIC_BOTTOM_NAV = [
   { key: "invoices", labelKey: "invoices" },
   { key: "payments", labelKey: "money" },
 ] as const;
+
+/**
+ * A PM company's phone bottom nav (JW3b, D-334): the buildings it manages, its staff board, its management contracts —
+ * the three things a property manager opens on the move (each when entitled), then the apartment tabs it also holds.
+ */
+export const PM_BOTTOM_NAV = [
+  { key: "pm_portfolio", labelKey: "managed" },
+  { key: "pm_staff", labelKey: "staff" },
+  { key: "pm_contracts", labelKey: "contracts" },
+  { key: "dashboard", labelKey: "today" },
+] as const;
+
+/** Whether the tenant is a PM company with its portfolio entitled (JW3b): its rail and bottom nav lead with it. */
+export function isPmCompany(type: string | null | undefined, menu: readonly string[]): boolean {
+  return type === "pm_company" && menu.includes("pm_portfolio");
+}
