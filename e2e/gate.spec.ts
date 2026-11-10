@@ -119,7 +119,17 @@ test("invite QR: a mocked camera reads the token and the visitor is in", async (
       }
     }
     Object.assign(window, { BarcodeDetector: FakeDetector });
+    // A camera always yields frames: a canvas that is never drawn on gives a stream whose video never starts playing.
     const canvas = document.createElement("canvas");
+    canvas.width = 64;
+    canvas.height = 48;
+    const paint = () => {
+      const context = canvas.getContext("2d")!;
+      context.fillStyle = `hsl(${Date.now() % 360} 50% 50%)`;
+      context.fillRect(0, 0, canvas.width, canvas.height);
+    };
+    paint();
+    setInterval(paint, 100);
     Object.defineProperty(navigator, "mediaDevices", {
       value: {
         getUserMedia: async () => (canvas as HTMLCanvasElement & { captureStream: () => MediaStream }).captureStream(),

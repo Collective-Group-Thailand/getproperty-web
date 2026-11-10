@@ -266,8 +266,8 @@ export function ExpenseForm({
     );
   };
 
-  const save = (
-    <Button onClick={submit} loading={action.busy} data-testid="expense-save">
+  const save = (testId: string) => (
+    <Button onClick={submit} loading={action.busy} data-testid={testId}>
       {draft ? t("saveEdit") : t("save")}
     </Button>
   );
@@ -303,7 +303,7 @@ export function ExpenseForm({
               },
               ...bands.map(bandRow),
             ]}
-            action={save}
+            action={save("expense-save")}
             note={t("summary.note")}
           />
         }
@@ -670,7 +670,9 @@ export function ExpenseForm({
         </FormSection>
         <ProblemNotice error={action.error} />
       </FormColumns>
-      <MobileActionBar summary={t("summary.mobile", { count: lines.length })}>{save}</MobileActionBar>
+      <MobileActionBar summary={t("summary.mobile", { count: lines.length })}>
+        {save("expense-save-mobile")}
+      </MobileActionBar>
     </div>
   );
 }

@@ -140,7 +140,8 @@ export function DatePicker({
         className={cn(
           controlVariants({ inputSize }),
           "flex items-center justify-between gap-2 text-start",
-          !value && "text-subtle",
+          // The empty state is text a reader must read ("From", "Pick a date"): muted, not subtle (4.5:1 on the field).
+          !value && "text-muted",
           className,
         )}
       >

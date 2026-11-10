@@ -113,9 +113,12 @@ export function RentalYieldTool() {
             value={ok?.paybackYears ? t("years", { value: formatDecimal(ok.paybackYears, locale, 1) }) : "—"}
           />
           <Row label={t("yearlyRent")} value={ok ? formatTHB(ok.yearlyRent, locale, { decimals: 0 }) : "—"} />
-          <div className="border-border border-t pt-3">
-            <Row strong label={t("netIncome")} value={ok ? formatTHB(ok.netIncome, locale, { decimals: 0 }) : "—"} />
-          </div>
+          <Row
+            strong
+            className="border-border border-t pt-3"
+            label={t("netIncome")}
+            value={ok ? formatTHB(ok.netIncome, locale, { decimals: 0 }) : "—"}
+          />
         </dl>
         {ok ? (
           <figure className="m-0 flex flex-col gap-2">
@@ -158,9 +161,20 @@ export function RentalYieldTool() {
   );
 }
 
-function Row({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
+/** One `<dt>`/`<dd>` group — the only thing a `<dl>` may hold (axe definition-list); a divider goes on the group. */
+function Row({
+  label,
+  value,
+  strong,
+  className,
+}: {
+  label: string;
+  value: string;
+  strong?: boolean;
+  className?: string;
+}) {
   return (
-    <div className="flex items-baseline justify-between gap-4">
+    <div className={`flex items-baseline justify-between gap-4 ${className ?? ""}`}>
       <dt className={strong ? "font-semibold" : "text-muted"}>{label}</dt>
       <dd className={`m-0 tabular-nums ${strong ? "text-lg font-semibold" : "font-medium"}`}>{value}</dd>
     </div>

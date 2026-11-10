@@ -56,17 +56,20 @@ export async function BudgetExpenseCard({ data, locale }: { data: Schemas["Budge
         title={<span id="budget-expense-title">{t("title")}</span>}
         description={t("hint", { date: formatDate(data.asOf, locale) })}
       />
-      <dl className="m-0 grid gap-4 sm:grid-cols-3">
-        <div className="flex flex-col gap-0.5">
-          <dt className="text-muted text-sm">{t("budgeted")}</dt>
-          <dd className="m-0 text-lg font-semibold tabular-nums">{money(data.budgetedExpense)}</dd>
-        </div>
-        <div className="flex flex-col gap-0.5">
-          <dt className="text-muted text-sm">{t("actual")}</dt>
-          <dd className="text-primary m-0 text-lg font-semibold tabular-nums" data-testid="budget-actual-expense">
-            {money(data.actualExpense)}
-          </dd>
-        </div>
+      {/* The usage bar is not a term of the list: it sits beside the <dl>, not in it (axe definition-list). */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <dl className="m-0 grid gap-4 sm:col-span-2 sm:grid-cols-2">
+          <div className="flex flex-col gap-0.5">
+            <dt className="text-muted text-sm">{t("budgeted")}</dt>
+            <dd className="m-0 text-lg font-semibold tabular-nums">{money(data.budgetedExpense)}</dd>
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <dt className="text-muted text-sm">{t("actual")}</dt>
+            <dd className="text-primary m-0 text-lg font-semibold tabular-nums" data-testid="budget-actual-expense">
+              {money(data.actualExpense)}
+            </dd>
+          </div>
+        </dl>
         <div className="flex flex-col justify-end gap-1.5">
           {total ? (
             <UsageBar
@@ -75,7 +78,7 @@ export async function BudgetExpenseCard({ data, locale }: { data: Schemas["Budge
             />
           ) : null}
         </div>
-      </dl>
+      </div>
       <SimpleTable
         caption={t("title")}
         minWidth="38rem"

@@ -34,25 +34,38 @@ async function asCommittee(browser: Browser) {
   return { page, close: () => context.close() };
 }
 
-async function pickDate(page: Page, field: string, iso: string) {
-  // The Thai date picker sends ISO through its hidden input; typing the day in the field is enough for the mock run.
-  await dialogOf(page)
-    .locator(`input[type="hidden"][name="${field}"]`)
-    .evaluate((input, value) => {
-      (input as HTMLInputElement).value = value;
-    }, iso);
+/**
+ * Picks a day with the console's date picker (its hidden input only carries the value — setting it directly is undone
+ * by the next render): opens the picker of the field `name`, goes `monthsAhead` months forward, clicks the day.
+ */
+async function pickDate(page: Page, field: string, monthsAhead: number, day: string) {
+  await dialogOf(page).locator(`input[type="hidden"][name="${field}"] + button`).click();
+  const calendar = page.getByRole("dialog", { name: "เลือกวันที่" });
+  for (let step = 0; step < monthsAhead; step += 1) await calendar.getByRole("button", { name: "เดือนถัดไป" }).click();
+  await calendar.getByRole("gridcell").getByRole("button", { name: day, exact: true }).click();
+  await expect(calendar).toHaveCount(0);
 }
 
 async function addQuotation(page: Page, vendor: string, amount: string) {
-  await page.getByTestId("round-add-quotation").click();
+  const before = await page.getByTestId("quote-row").count();
   const dialog = dialogOf(page);
-  await dialog.getByRole("combobox", { name: "ผู้ให้บริการ" }).fill(vendor);
+  const vendorField = dialog.getByRole("combobox", { name: "ผู้ให้บริการ" });
+  // The round's panel carries the primary action (the quotations section repeats it under its list). The panel is
+  // re-rendered by the refresh after the previous quotation, which can swallow a click made at that moment: retry it.
+  await expect(async () => {
+    if (!(await vendorField.isVisible()))
+      await page.getByTestId("round-panel").getByTestId("round-add-quotation").click();
+    await expect(vendorField).toBeVisible({ timeout: 2_000 });
+  }).toPass();
+  await vendorField.fill(vendor);
   await page.getByRole("option", { name: new RegExp(vendor) }).click();
   await dialog.getByTestId("quote-amount-input").fill(amount);
-  await pickDate(page, "validUntil", "2099-01-31");
+  await pickDate(page, "validUntil", 2, "28");
   await dialog.getByTestId("quote-document").locator('input[type="file"]').setInputFiles(pdf);
   await dialog.getByTestId("form-submit").click();
   await expect(dialog).toHaveCount(0);
+  // The page refreshes from the API: wait for the new row before the next action.
+  await expect(page.getByTestId("quote-row")).toHaveCount(before + 1);
 }
 
 test.beforeEach(reset);
@@ -69,7 +82,8 @@ test("a vendor wins a round by approval, its contract is activated and the first
   await page.getByTestId("vendor-name").fill("บริษัท สระสวย พูลแคร์ จำกัด");
   await page.getByTestId("vendor-tax-id").fill("0105563012345");
   await page.getByTestId("vendor-tax-id").blur();
-  await expect(page.getByText("เลขหลักสุดท้ายไม่ตรง")).toBeVisible();
+  // The field's own message (the error summary repeats it as a link to the field).
+  await expect(page.getByTestId("vendor-tax-id")).toHaveAccessibleDescription(/เลขหลักสุดท้ายไม่ตรง/);
   await page.getByTestId("vendor-tax-id").fill("0105563012343");
   await page.getByTestId("vendor-category-pool").click();
   await page.getByTestId("vendor-last4").fill("5521");
@@ -95,8 +109,8 @@ test("a vendor wins a round by approval, its contract is activated and the first
   // Award by approval: no reason field with three quotations; the owner asked, so the owner cannot approve.
   await page.getByTestId("round-award").click();
   await expect(page.getByTestId("award-reason")).toHaveCount(0);
-  await pickDate(page, "startsOn", "2099-01-01");
-  await pickDate(page, "endsOn", "2099-12-31");
+  await pickDate(page, "startsOn", 1, "1");
+  await pickDate(page, "endsOn", 13, "28");
   await dialogOf(page).getByTestId("form-submit").click();
   await expect(page.getByTestId("round-approve-block")).toHaveAttribute("data-block", "requester");
 
@@ -118,12 +132,13 @@ test("a round short of three quotations asks for a reason before the award", asy
   await expect(page.getByTestId("quote-rule")).toHaveAttribute("data-state", "short");
   await page.getByTestId("round-award").click();
   await expect(page.getByTestId("award-reason")).toBeVisible();
+  // The dates first: the dialog checks its fields in order and names one at a time.
+  await pickDate(page, "startsOn", 1, "1");
+  await pickDate(page, "endsOn", 13, "28");
   await page.getByTestId("award-reason").fill("สั้น");
   await dialogOf(page).getByTestId("form-submit").click();
-  await expect(dialogOf(page).getByText("เหตุผลอย่างน้อย 10 ตัวอักษร")).toBeVisible();
+  await expect(dialogOf(page).locator('[id$="-error"]', { hasText: "เหตุผลอย่างน้อย 10 ตัวอักษร" })).toBeVisible();
   await page.getByTestId("award-reason").fill("มีผู้ให้บริการลิฟต์ยี่ห้อนี้ในพื้นที่เพียง 2 ราย");
-  await pickDate(page, "startsOn", "2099-01-01");
-  await pickDate(page, "endsOn", "2099-12-31");
   await dialogOf(page).getByTestId("form-submit").click();
   await expect(page.getByTestId("round-fewer-reason")).toContainText("เพียง 2 ราย");
 });
@@ -132,6 +147,8 @@ test("an awarded contract draft is activated and the job requests its first inst
   await signIn(page);
   await gotoOwner(page, "/juristic/contracts?tab=draft");
   await page.getByTestId("contract-row").filter({ hasText: "บำรุงรักษาปั๊มน้ำรายไตรมาส" }).click();
+  await page.waitForURL(/\/juristic\/contracts\/[0-9a-f-]{36}/);
+  await hydrated(page);
   await page.getByTestId("contract-activate").click();
   await dialogOf(page).getByRole("button", { name: "เปิดใช้สัญญา" }).click();
   await expect(page.getByTestId("contract-instalment").first()).toHaveAttribute("data-state", "scheduled");
@@ -167,12 +184,15 @@ test("a contract in the renewal queue is renewed into a draft", async ({ page })
   await expect(page.getByTestId("contracts-tab-renewal")).toHaveAttribute("aria-current", "page");
   const fire = page.getByTestId("contract-row").filter({ hasText: "ระบบแจ้งเหตุเพลิงไหม้" });
   await expect(fire).toHaveAttribute("data-badge", /ending|notice/);
+  const renewals = (await received("owner.juristicVendorContracts.renew")).length;
   await fire.click();
+  await page.waitForURL(/\/juristic\/contracts\/[0-9a-f-]{36}/);
+  await hydrated(page);
   await page.getByTestId("contract-renew").click();
-  await pickDate(page, "endsOn", "2099-12-31");
+  await pickDate(page, "endsOn", 13, "28");
   await dialogOf(page).getByTestId("renew-value").fill("66000");
   await dialogOf(page).getByTestId("form-submit").click();
   await expect(page.getByTestId("juristic-contract")).toContainText("ร่างสัญญา");
   await expect(page.getByTestId("contract-activate")).toBeVisible();
-  expect(await received("owner.juristicVendorContracts.renew")).toHaveLength(1);
+  expect(await received("owner.juristicVendorContracts.renew")).toHaveLength(renewals + 1);
 });

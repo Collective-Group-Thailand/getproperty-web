@@ -78,7 +78,13 @@ test("a common-fee version needs an adopted resolution", async ({ page }) => {
   const dialog = page.getByRole("dialog");
   await dialog.getByTestId("version-amount").fill("8333.33");
   await dialog.getByTestId("form-submit").click();
-  await expect(dialog.getByText("เลือกมติที่ประชุมที่รับรองอัตรานี้")).toBeVisible();
+  // The resolution is a required field: the form is not sent without it (native validation, like every dialog field).
+  expect(
+    await dialog
+      .getByTestId("version-resolution")
+      .evaluate((select: HTMLSelectElement) => select.validity.valueMissing),
+  ).toBe(true);
+  expect(await received("owner.ratePlans.saveVersion")).toHaveLength(0);
   await dialog.getByTestId("version-resolution").selectOption("e5010a01-0000-4000-8000-000000000001");
   await dialog.getByTestId("form-submit").click();
   await expect(dialog).toBeHidden();

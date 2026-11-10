@@ -125,7 +125,12 @@ export async function InvoiceDetail({ context, invoiceId }: { context: AdminCont
           <PaperParties items={[{ key: "to", label: t("billedTo"), value: invoice.tenantName }]} />
           <PaperSection title={doc("lines")}>
             {/* Phones: each line as a block — description and amount, then its kind and "qty × price" (no sideways scroll). */}
-            <div className="relative -mx-1 px-1 md:overflow-x-auto">
+            <div
+              className="focus-visible:ring-focus-ring relative -mx-1 px-1 focus-visible:ring-2 focus-visible:outline-none md:overflow-x-auto"
+              tabIndex={0}
+              role="region"
+              aria-label={doc("lines")}
+            >
               <table className="w-full text-base max-md:block md:min-w-[34rem]" data-testid="pinv-lines">
                 <caption className="sr-only">{doc("lines")}</caption>
                 <thead className="max-md:sr-only">

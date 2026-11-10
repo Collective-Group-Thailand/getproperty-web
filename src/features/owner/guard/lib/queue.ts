@@ -129,12 +129,14 @@ function retriable(result: Extract<GuardResult<unknown>, { ok: false }>): boolea
 
 /**
  * Sends what is due, oldest first. Stops at the first network failure (everything after it would fail too) and at a
- * 401; a conflict does not stop the others. One replay at a time per page.
+ * 401; a conflict does not stop the others. One replay at a time per page. `ignoreBackoff` (the browser said the
+ * network is back) sends every pending entry now: the backoff only guessed when the network would return.
  */
 export async function replayGateQueue(
   gateId: string,
   send: GateSend,
   now: () => number = Date.now,
+  { ignoreBackoff = false }: { ignoreBackoff?: boolean } = {},
 ): Promise<ReplayOutcome> {
   if (replaying) return "busy";
   replaying = true;
@@ -144,7 +146,7 @@ export async function replayGateQueue(
       await discardGateEntry(stale.id);
     }
     for (const entry of entries) {
-      if (entry.state !== "pending" || entry.nextAttemptAt > now()) continue;
+      if (entry.state !== "pending" || (!ignoreBackoff && entry.nextAttemptAt > now())) continue;
       const outcome = await sendOne(entry, send, now);
       if (outcome !== "done") return outcome;
     }

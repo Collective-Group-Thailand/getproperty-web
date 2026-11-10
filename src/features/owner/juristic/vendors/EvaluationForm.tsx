@@ -92,8 +92,8 @@ export function EvaluationForm({
     );
   };
 
-  const save = (
-    <Button onClick={submit} loading={action.busy} data-testid="evaluation-save">
+  const save = (testId: string) => (
+    <Button onClick={submit} loading={action.busy} data-testid={testId}>
       {t("save")}
     </Button>
   );
@@ -123,7 +123,7 @@ export function EvaluationForm({
                 value: sla ? t("summary.breachesValue", { count: sla.breaches.length }) : "—",
               },
             ]}
-            action={save}
+            action={save("evaluation-save")}
             note={
               <span className="flex items-start gap-2">
                 <span>{t("summary.note")}</span>
@@ -272,7 +272,9 @@ export function EvaluationForm({
         </FormSection>
         <ProblemNotice error={action.error} />
       </FormColumns>
-      <MobileActionBar summary={t("summary.scoredValue", { scored, total: criteria.length })}>{save}</MobileActionBar>
+      <MobileActionBar summary={t("summary.scoredValue", { scored, total: criteria.length })}>
+        {save("evaluation-save-mobile")}
+      </MobileActionBar>
     </div>
   );
 }

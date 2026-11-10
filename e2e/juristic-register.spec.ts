@@ -39,15 +39,18 @@ test.afterAll(reset);
 
 test("the morning: figures, aging, this cycle, what is waiting", async ({ page }) => {
   await signInJuristic(page);
-  await expect(page.getByTestId("figure-outstanding")).toContainText("฿1,144,320.00");
+  // The aging comes from the receivables world (mocks/owner/collections.ts, JW1b) so every page agrees on the total.
+  await expect(page.getByTestId("figure-outstanding")).toContainText("฿474,275.00");
   await expect(page.getByTestId("aging-strip").getByRole("listitem")).toHaveCount(4);
   await expect(page.getByTestId("cycle-rail-item").first()).toContainText("ไตรมาส 1/2570");
   await expect(page.getByTestId("task-register")).toContainText("2");
-  // The rail: J-DESIGN §5 groups, no entry for the receivables pages of JW1b yet.
+  // The rail: J-DESIGN §5 groups, with the receivables JW1b added.
   await expect(
     page.getByRole("navigation", { name: /เมนูหลัก|Main/ }).getByRole("link", { name: "ทะเบียนเจ้าของร่วม" }),
   ).toBeVisible();
-  await expect(page.getByRole("link", { name: "ลูกหนี้ค่าส่วนกลาง" })).toHaveCount(0);
+  await expect(
+    page.getByRole("navigation", { name: /เมนูหลัก|Main/ }).getByRole("link", { name: "ลูกหนี้ค่าส่วนกลาง" }),
+  ).toBeVisible();
   await expectAxeClean(page);
 });
 

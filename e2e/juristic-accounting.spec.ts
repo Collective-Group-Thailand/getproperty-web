@@ -98,7 +98,7 @@ test("a manual journal saves only when balanced, then is reversed with a reason"
   await expect(page.getByTestId("journal-paper")).toBeVisible();
   await page.getByTestId("journal-reverse").click();
   await dialogOf(page).getByTestId("journal-reverse-reason").fill("บันทึกยอดผิดเดือน");
-  await dialogOf(page).getByRole("button", { name: "กลับรายการ" }).click();
+  await dialogOf(page).getByRole("button", { name: "กลับรายการ", exact: true }).click();
   await expect(page.getByTestId("journal-source")).toBeVisible(); // the reversal links back to the original
   expect(await received("owner.juristicJournals.reverse")).toHaveLength(1);
 });
@@ -119,6 +119,9 @@ test("a bank statement is imported and its open line matched from the queue", as
       ),
     });
   await dialogOf(page).getByTestId("form-submit").click();
+  // The import opens its statement with a full navigation: act once that page is hydrated.
+  await page.waitForURL(/\/juristic\/bank-statements\/[0-9a-f-]{36}/);
+  await hydrated(page);
   await expect(page.getByTestId("queue-progress")).toBeVisible();
   await expect(page.getByTestId("queue-line").first()).toBeVisible();
   await page.getByTestId("queue-candidate").first().getByTestId("line-match").click();

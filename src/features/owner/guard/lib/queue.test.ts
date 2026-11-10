@@ -90,6 +90,20 @@ describe("gate offline queue", () => {
     expect(keys).toEqual(["key-v1", "key-v1"]);
   });
 
+  it("sends at once when the network comes back, without waiting out the offline backoff", async () => {
+    await visit("v1");
+    const now = 1_000;
+    let online = false;
+    const send = (async () =>
+      online ? ok("v1") : { ok: false, status: 0, problem: null, offline: true }) as unknown as GateSend;
+    expect(await replayGateQueue(GATE, send, () => now)).toBe("offline");
+    online = true;
+    // The browser's `online` event: the backoff was only a guess at when the network returns.
+    expect(await replayGateQueue(GATE, send, () => now, { ignoreBackoff: true })).toBe("done");
+    const [entry] = await listGateQueue(GATE);
+    expect(entry!.state).toBe("sent");
+  });
+
   it("marks a refusal as a conflict with the API's problem and goes on with the next", async () => {
     await visit("v1", { createdAt: 1 });
     await visit("v2", { createdAt: 2 });

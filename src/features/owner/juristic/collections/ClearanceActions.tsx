@@ -1,6 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
@@ -189,11 +190,14 @@ export function NewClearanceButton({ today }: { today: string }) {
 export function IssueClearanceButton({ clearance }: { clearance: Clearance }) {
   const t = useTranslations("owner.collections.clearance");
   const locale = useLocale() as Locale;
+  const router = useRouter();
   const [code, setCode] = useState<string | null>(null);
   return (
     <>
       <ConfirmAction
         label={t("issue")}
+        // The issued certificate no longer offers "issue": a refresh now would unmount the code shown once with it.
+        refresh={false}
         icon={IconCheckCircle}
         block
         testId="clearance-issue"
@@ -216,9 +220,19 @@ export function IssueClearanceButton({ clearance }: { clearance: Clearance }) {
             }),
           )
         }
-        onDone={(result) => setCode((result as Clearance).verifyCode ?? null)}
+        onDone={(result) => {
+          const issued = (result as Clearance).verifyCode ?? null;
+          if (issued) setCode(issued);
+          else router.refresh();
+        }}
       />
-      <VerifyCodeDialog code={code} onClose={() => setCode(null)} />
+      <VerifyCodeDialog
+        code={code}
+        onClose={() => {
+          setCode(null);
+          router.refresh();
+        }}
+      />
     </>
   );
 }

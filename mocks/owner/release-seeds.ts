@@ -180,6 +180,18 @@ export function initialTm30(): Schemas["Tm30ExportDto"][] {
   ];
 }
 
+/**
+ * A moment of the last three days that stays inside the current Bangkok month — `share` 0 is the oldest, 1 is now — so
+ * the month's e-Tax summary (which opens on this month) holds every seeded document whatever the day of the month.
+ */
+function thisMonth(share: number): string {
+  const now = Date.now();
+  const bangkok = new Date(now + 7 * HOUR);
+  const monthStart = Date.UTC(bangkok.getUTCFullYear(), bangkok.getUTCMonth(), 1) - 7 * HOUR;
+  const from = Math.max(now - 3 * 24 * HOUR, monthStart);
+  return new Date(from + (now - from) * share).toISOString();
+}
+
 function etax(
   partial: Pick<Schemas["EtaxSubmissionDto"], "id" | "number" | "status"> & Partial<Schemas["EtaxSubmissionDto"]>,
 ): Schemas["EtaxSubmissionDto"] {
@@ -188,7 +200,7 @@ function etax(
     subjectType: "receipt",
     subjectId: id("9ece0000", 1),
     documentTypeCode: "T03",
-    issuedAt: iso(-2),
+    issuedAt: thisMonth(1 / 3),
     subtotal: "4205.61",
     vatAmount: "294.39",
     total: "4500.00",
@@ -199,7 +211,7 @@ function etax(
     sourceDocumentId: id("d0c0e7a0", 1),
     signedPdfDocumentId: null,
     signedXmlDocumentId: null,
-    submittedAt: iso(-2),
+    submittedAt: thisMonth(1 / 3),
     signedAt: null,
     error: null,
     nextActions: [],
@@ -216,8 +228,8 @@ export function initialEtax(): Schemas["EtaxSubmissionDto"][] {
       number: "RC2610-0003",
       status: "rejected",
       attempts: 3,
-      issuedAt: iso(-1),
-      submittedAt: iso(-1),
+      issuedAt: thisMonth(2 / 3),
+      submittedAt: thisMonth(2 / 3),
       error: "Buyer tax id 0105500000000 is not valid (checksum)",
       subjectId: id("9ece0000", 3),
     }),
@@ -235,9 +247,9 @@ export function initialEtax(): Schemas["EtaxSubmissionDto"][] {
       number: "RC2610-0001",
       status: "signed",
       providerDocId: "TX-20261019-0001",
-      issuedAt: iso(-3),
-      submittedAt: iso(-3),
-      signedAt: iso(-2.9),
+      issuedAt: thisMonth(0),
+      submittedAt: thisMonth(0),
+      signedAt: thisMonth(0.05),
       signedPdfDocumentId: id("d0c0e7a0", 11),
       signedXmlDocumentId: id("d0c0e7a0", 12),
     }),

@@ -51,6 +51,11 @@ export interface ConfirmActionProps {
   /** Toast after success. */
   successMessage?: string;
   onDone?: (result: unknown) => void;
+  /**
+   * Refresh the page from the API once done (default). Off when `onDone` shows something the refreshed page would
+   * unmount with this button (a code shown once) — the caller refreshes when that is closed.
+   */
+  refresh?: boolean;
   /** Its item inside an `ActionMenu` ("⋯"), where it differs from the button (defaults: `label`, red when destructive). */
   menuItem?: MenuItemOptions;
 }
@@ -75,13 +80,14 @@ export function ConfirmAction({
   explain,
   successMessage,
   onDone,
+  refresh = true,
   menuItem,
 }: ConfirmActionProps) {
   const t = useTranslations("console.confirm");
   const common = useTranslations("common");
   const [open, setOpen] = useState(false);
   const idempotency = useIdempotencyKey();
-  const action = useApiAction();
+  const action = useApiAction({ refresh });
   const explained = action.error && explain ? explain(action.error) : null;
 
   const start = () => {

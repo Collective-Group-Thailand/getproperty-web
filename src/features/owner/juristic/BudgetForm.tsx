@@ -120,8 +120,8 @@ export function BudgetForm({
   const remove = (kind: Kind, key: string) =>
     setLines((all) => ({ ...all, [kind]: all[kind].filter((line) => line.key !== key) }));
 
-  const save = (
-    <Button onClick={submit} loading={action.busy} data-testid="budget-save">
+  const save = (testId: string) => (
+    <Button onClick={submit} loading={action.busy} data-testid={testId}>
       {t("save")}
     </Button>
   );
@@ -143,7 +143,7 @@ export function BudgetForm({
               label: t(`section.${kind}`),
               value: t("summary.lines", { count: lines[kind].length }),
             }))}
-            action={save}
+            action={save("budget-save")}
             note={t("summary.note")}
           />
         }
@@ -243,7 +243,9 @@ export function BudgetForm({
         ))}
         <ProblemNotice error={action.error} />
       </FormColumns>
-      <MobileActionBar summary={t("summary.mobile", { count: flat.length })}>{save}</MobileActionBar>
+      <MobileActionBar summary={t("summary.mobile", { count: flat.length })}>
+        {save("budget-save-mobile")}
+      </MobileActionBar>
     </div>
   );
 }

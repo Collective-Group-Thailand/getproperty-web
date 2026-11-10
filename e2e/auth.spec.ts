@@ -87,7 +87,9 @@ test.describe("tenant switcher", () => {
     await signInWithOtp(page, HOSTS.owner, "0810000002");
     await expect(page).toHaveURL(`${HOSTS.owner}/select-tenant`);
     await page.getByRole("button", { name: `ทำงานใน ${TENANT.branch.name}` }).click();
-    await expectOnOwnerDashboard(page, TENANT.branch.name);
+    // The branch tenant is a PM company that operates no building of its own: its home is the portfolio (JW3b, D-334).
+    await expect(page).toHaveURL(`${HOSTS.owner}/portfolio`);
+    await expect(page.getByTestId("session-summary")).toContainText(TENANT.branch.name);
 
     const tenantCookie = (await context.cookies(HOSTS.owner)).find((cookie) => cookie.name === "__Host-gp_tenant");
     expect(tenantCookie?.value).toBe(TENANT.branch.id);

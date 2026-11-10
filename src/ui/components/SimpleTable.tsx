@@ -83,13 +83,18 @@ export function SimpleTable({
     pinned && index === 0 ? "sticky start-0 z-1 bg-surface group-hover:bg-bg-subtle" : undefined;
   const slot = (column: SimpleColumn, index: number) =>
     stackOnPhones ? SLOT[column.phone ?? (index === 0 ? "title" : "meta")] : undefined;
+  // A box that scrolls sideways must be reachable from the keyboard (WCAG 2.1.1, axe scrollable-region-focusable):
+  // rows that open a record already give it focusable links; otherwise the box itself is a named, focusable region.
+  const region = rows.some((row) => row.href) ? {} : ({ tabIndex: 0, role: "region", "aria-label": caption } as const);
   return (
     <div
       className={cn(
         "border-border bg-surface rounded-card shadow-card relative border",
         stackOnPhones ? "relative md:overflow-x-auto" : "relative overflow-x-auto",
+        "focus-visible:ring-focus-ring focus-visible:ring-2 focus-visible:outline-none",
         className,
       )}
+      {...region}
     >
       <table
         className={cn(

@@ -659,18 +659,22 @@ export function initialVendorsWorld(accounting: MockAccountingWorld): MockVendor
     version: 1,
   });
 
+  // The draft the e2e activates: its first instalment falls inside the job's lead time (7 days) whatever today is, and
+  // the term ends the day before a fifth one — four quarterly instalments, exactly the contract's value.
+  const pumpFirstDue = date(5);
+  const pumpDueDay = Math.min(Number(pumpFirstDue.slice(8, 10)), 28);
   const pumpPlan: Schemas["InstalmentPlanViewDto"] = {
     frequency: "quarterly",
-    dueDay: 15,
+    dueDay: pumpDueDay,
     amount: "24075.00",
     vatAmount: "1575.00",
-    firstDueOn: null,
+    firstDueOn: pumpFirstDue,
   };
   const pump = contract(VC.pump, V.pump, name(V.pump), {
     title: "บำรุงรักษาปั๊มน้ำรายไตรมาส",
     category: "pump",
-    startsOn: date(10),
-    endsOn: date(374),
+    startsOn: date(3),
+    endsOn: addDays(addMonths(pumpFirstDue, 12, pumpDueDay), -1),
     renewalNoticeDays: 45,
     value: "96300.00",
     state: "draft",
