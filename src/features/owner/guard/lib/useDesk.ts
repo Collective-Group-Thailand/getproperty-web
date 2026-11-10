@@ -178,13 +178,16 @@ export function useDesk(
     }
   }, [gateId, patch]);
 
-  const replay = useCallback(async () => {
-    const send = ((path: string, init: Parameters<GateSend>[1]) => guardFetch(path, init).then(note)) as GateSend;
-    const outcome = await replayGateQueue(gateId, send).catch(() => "offline" as const);
-    await reloadQueue();
-    if (outcome === "done") void refresh(["visits"]);
-    return outcome;
-  }, [gateId, note, refresh, reloadQueue]);
+  const replay = useCallback(
+    async (options?: { ignoreBackoff?: boolean }) => {
+      const send = ((path: string, init: Parameters<GateSend>[1]) => guardFetch(path, init).then(note)) as GateSend;
+      const outcome = await replayGateQueue(gateId, send, Date.now, options).catch(() => "offline" as const);
+      await reloadQueue();
+      if (outcome === "done") void refresh(["visits"]);
+      return outcome;
+    },
+    [gateId, note, refresh, reloadQueue],
+  );
 
   // Debounced refetch for bursts of stream events.
   const pending = useRef(new Set<Part>());
@@ -238,7 +241,7 @@ export function useDesk(
   useEffect(() => {
     const goOnline = () => {
       patch({ network: "online" });
-      void replay();
+      void replay({ ignoreBackoff: true });
       void refresh();
     };
     const goOffline = () => patch({ network: "offline" });

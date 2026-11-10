@@ -273,8 +273,8 @@ export function ContractForm({
     );
   };
 
-  const save = (
-    <Button onClick={submit} loading={action.busy} data-testid="contract-save">
+  const save = (testId: string) => (
+    <Button onClick={submit} loading={action.busy} data-testid={testId}>
       {contract ? t("saveEdit") : t("save")}
     </Button>
   );
@@ -327,7 +327,7 @@ export function ContractForm({
                 value: t("summary.slaCount", { count: slaCheck.terms.length }),
               },
             ]}
-            action={save}
+            action={save("contract-save")}
             note={
               threshold ? (
                 <span className="flex flex-col gap-2" data-testid="contract-rule">
@@ -728,7 +728,7 @@ export function ContractForm({
         </FormSection>
         <ProblemNotice error={action.error} />
       </FormColumns>
-      <MobileActionBar summary={vendor?.name ?? title}>{save}</MobileActionBar>
+      <MobileActionBar summary={vendor?.name ?? title}>{save("contract-save-mobile")}</MobileActionBar>
     </div>
   );
 }

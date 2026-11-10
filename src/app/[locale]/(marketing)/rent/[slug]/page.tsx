@@ -202,17 +202,18 @@ export default async function ListingPage({ params, searchParams }: PageProps) {
               data-testid="listing-facts"
             >
               {facts.map((fact) => (
-                <div key={fact.term} className="flex items-start gap-3">
-                  <span
-                    aria-hidden="true"
-                    className="bg-bg-subtle text-muted rounded-control grid size-9 shrink-0 place-items-center"
-                  >
-                    <Icon icon={fact.icon} className="text-lg" />
-                  </span>
-                  <div className="min-w-0">
-                    <dt className="text-muted text-sm">{fact.term}</dt>
-                    <dd className="m-0 font-semibold">{fact.value}</dd>
-                  </div>
+                // A <dl> group holds only its <dt> and <dd> (axe definition-list): the icon lives in the term, set in the gutter.
+                <div key={fact.term} className="relative min-h-9 min-w-0 ps-12">
+                  <dt className="text-muted text-sm">
+                    <span
+                      aria-hidden="true"
+                      className="bg-bg-subtle text-muted rounded-control absolute start-0 top-0 grid size-9 place-items-center"
+                    >
+                      <Icon icon={fact.icon} className="text-lg" />
+                    </span>
+                    {fact.term}
+                  </dt>
+                  <dd className="m-0 font-semibold">{fact.value}</dd>
                 </div>
               ))}
             </dl>

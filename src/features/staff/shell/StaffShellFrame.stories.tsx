@@ -35,6 +35,12 @@ const meta: Meta<typeof StaffShellFrame> = {
       { key: "inspections", href: "/inspections", icon: IconCamera, label: "ตรวจห้อง", group: "work" },
       { key: "installs", href: "/devices", icon: IconGateway, label: "อุปกรณ์", group: "work" },
     ],
+    // The top bar's building switcher (G7): the staff member's scope and the focused building.
+    buildings: [
+      { id: "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c", name: "อาคาร A" },
+      { id: "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b7d", name: "อาคาร B" },
+    ],
+    buildingId: "5c8e2a1f-6b3d-4e7a-9f0c-1d2e3f4a5b6c",
     todayLabel: "วันนี้",
     envBadge: "uat",
     brand: shellBrand().compact,

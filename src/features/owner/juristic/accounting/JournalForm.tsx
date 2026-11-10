@@ -129,8 +129,8 @@ export function JournalForm({
     );
   };
 
-  const save = (
-    <Button onClick={submit} loading={action.busy} disabled={!check.ok} data-testid="journal-save">
+  const save = (testId: string) => (
+    <Button onClick={submit} loading={action.busy} disabled={!check.ok} data-testid={testId}>
       {t("save")}
     </Button>
   );
@@ -176,7 +176,7 @@ export function JournalForm({
           </StatusText>
         )}
       </div>
-      <div className="hidden p-5 md:block [&>*]:w-full">{save}</div>
+      <div className="hidden p-5 md:block [&>*]:w-full">{save("journal-save")}</div>
       <p className="text-muted border-border border-t px-5 py-3 text-xs">{t("summary.note")}</p>
     </section>
   );
@@ -326,7 +326,9 @@ export function JournalForm({
         </FormSection>
         <ProblemNotice error={action.error} />
       </FormColumns>
-      <MobileActionBar summary={check.ok ? t("summary.balanced") : (blocked ?? undefined)}>{save}</MobileActionBar>
+      <MobileActionBar summary={check.ok ? t("summary.balanced") : (blocked ?? undefined)}>
+        {save("journal-save-mobile")}
+      </MobileActionBar>
     </div>
   );
 }

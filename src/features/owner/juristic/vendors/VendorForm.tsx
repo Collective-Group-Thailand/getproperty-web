@@ -142,8 +142,8 @@ export function VendorForm({ vendor, parties }: { vendor?: Schemas["VendorDto"];
     );
   };
 
-  const save = (
-    <Button onClick={submit} loading={action.busy} data-testid="vendor-save">
+  const save = (testId: string) => (
+    <Button onClick={submit} loading={action.busy} data-testid={testId}>
       {vendor ? t("saveEdit") : t("save")}
     </Button>
   );
@@ -181,7 +181,7 @@ export function VendorForm({ vendor, parties }: { vendor?: Schemas["VendorDto"];
                 value: last4 ? `····${last4}` : t("summary.none"),
               },
             ]}
-            action={save}
+            action={save("vendor-save")}
             note={t("summary.note")}
           />
         }
@@ -343,7 +343,9 @@ export function VendorForm({ vendor, parties }: { vendor?: Schemas["VendorDto"];
         </FormSection>
         <ProblemNotice error={action.error} />
       </FormColumns>
-      <MobileActionBar summary={(fromParty ? party?.name : name.trim()) || t("summary.none")}>{save}</MobileActionBar>
+      <MobileActionBar summary={(fromParty ? party?.name : name.trim()) || t("summary.none")}>
+        {save("vendor-save-mobile")}
+      </MobileActionBar>
     </div>
   );
 }

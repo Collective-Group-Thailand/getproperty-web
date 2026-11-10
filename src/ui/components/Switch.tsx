@@ -23,9 +23,10 @@ export function Switch({ label, description, className, disabled, ...props }: Sw
   const id = useId();
   const descriptionId = description ? `${id}-description` : undefined;
   return (
-    <div className={cn("flex items-center justify-between gap-4", disabled && "opacity-50", className)}>
+    <div className={cn("flex items-center justify-between gap-4", className)}>
       <div>
-        <label htmlFor={id} className="text-base">
+        {/* Disabled dims the label and the control only: the description often says why it is locked and stays readable. */}
+        <label htmlFor={id} className={cn("text-base", disabled && "opacity-50")}>
           {label}
         </label>
         {description ? (
@@ -38,7 +39,7 @@ export function Switch({ label, description, className, disabled, ...props }: Sw
         id={id}
         disabled={disabled}
         aria-describedby={descriptionId}
-        className="bg-border-strong data-[state=checked]:bg-primary duration-fast ease-standard relative h-7 w-12 shrink-0 rounded-full transition-colors"
+        className="bg-border-strong data-[state=checked]:bg-primary duration-fast ease-standard relative h-7 w-12 shrink-0 rounded-full transition-colors disabled:opacity-50"
         {...props}
       >
         <SwitchPrimitive.Thumb className="bg-surface shadow-card duration-fast ease-standard block size-6 translate-x-0.5 rounded-full transition-transform data-[state=checked]:translate-x-5.5" />

@@ -120,8 +120,15 @@ test("the juristic person's registration is recorded once", async ({ page }) => 
   const dialog = page.getByRole("dialog");
   await dialog.getByTestId("handover-registration-no").fill("นต.123/2569");
   await dialog.getByTestId("form-submit").click();
-  await expect(dialog.getByText("ระบุวันที่จดทะเบียน")).toBeVisible();
-  await dialog.locator('input[name="formedOn"]').fill(new Date().toISOString().slice(0, 10));
+  // The field's own message (the problem notice repeats the API's answer).
+  await expect(dialog.locator('[id$="-error"]', { hasText: "ระบุวันที่จดทะเบียน" })).toBeVisible();
+  // The date picker (the hidden input only carries its value): the 1st of this month is never in the future.
+  await dialog.getByRole("button", { name: /วันที่จดทะเบียน/ }).click();
+  await page
+    .getByRole("dialog", { name: "เลือกวันที่" })
+    .getByRole("gridcell")
+    .getByRole("button", { name: "1", exact: true })
+    .click();
   await dialog.getByTestId("form-submit").click();
   await expect(dialog).toHaveCount(0);
   await expect(page.getByText("นต.123/2569").first()).toBeVisible();

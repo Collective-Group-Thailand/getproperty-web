@@ -48,8 +48,11 @@ export async function PricePlansView({ context }: { context: AdminContext }) {
   const cell = "px-4 py-3 align-top max-md:p-0";
   return (
     <div
-      className="border-border bg-surface rounded-card shadow-card relative border md:overflow-x-auto"
+      className="border-border bg-surface rounded-card shadow-card focus-visible:ring-focus-ring relative border focus-visible:ring-2 focus-visible:outline-none md:overflow-x-auto"
       data-testid="price-plans"
+      tabIndex={0}
+      role="region"
+      aria-label={t("caption")}
     >
       <table className="w-full text-base max-md:block md:min-w-[56rem]">
         <caption className="sr-only">{t("caption")}</caption>

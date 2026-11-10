@@ -972,7 +972,7 @@ function compare(
         ? satang(computed) + 50_00
         : unitNo === "B-503"
           ? satang(computed) - 120_00
-          : unitNo === "B-708"
+          : unitNo === "B-706" // อาคาร B has six units a floor: B-708 would not be in the register
             ? satang(computed) + 35_50
             : satang(computed);
     const legacyAmount = legacy ? satang(legacyOf.get(unitNo) ?? "0") : fallback;
