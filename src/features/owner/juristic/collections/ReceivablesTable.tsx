@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { ConfirmAction } from "@/features/shared/console/ConfirmAction";
 import { DateField } from "@/features/shared/console/DateField";
@@ -28,7 +28,7 @@ import { IconPause } from "@/ui/icons/glyphs/pause";
 import { IconRepeat } from "@/ui/icons/glyphs/repeat";
 import { cn } from "@/ui/lib/cn";
 
-import { BULK_SKIP, runBulk, type BulkOutcome } from "./bulk";
+import { BULK_SKIP, keyedSend, runBulk, type BulkOutcome } from "./bulk";
 import { ChannelIcons, NextStepBadgeView } from "./parts";
 import { contextParts } from "./receivables";
 
@@ -60,6 +60,8 @@ export function ReceivablesTable({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [outcome, setOutcome] = useState<{ action: string; result: BulkOutcome<ReceivableRow> } | null>(null);
   const key = (row: ReceivableRow) => `${row.partyId}:${row.unitId}`;
+  // One Idempotency-Key per action × row (× what is sent) until the API answers it (review W5).
+  const keys = useRef(new Map<string, string>());
   const chosen = rows.filter((row) => selected.has(key(row)));
   const allChosen = rows.length > 0 && chosen.length === rows.length;
   const toggle = (row: ReceivableRow, on: boolean) =>
@@ -98,10 +100,12 @@ export function ReceivablesTable({
     ).then((page) => {
       const invoice = page.data[0];
       if (!invoice) throw problemError(409, { code: "invoice.nothing_due", detail: t("bulk.noInvoice") });
-      return unwrap(
-        browserApi().POST("/v1/owner/invoices/{invoiceId}/actions/send-reminder", {
-          params: { path: { invoiceId: invoice.id }, header: { "Idempotency-Key": crypto.randomUUID() } },
-        }),
+      return keyedSend(keys.current, `remind:${key(row)}:${invoice.id}`, (idempotencyKey) =>
+        unwrap(
+          browserApi().POST("/v1/owner/invoices/{invoiceId}/actions/send-reminder", {
+            params: { path: { invoiceId: invoice.id }, header: { "Idempotency-Key": idempotencyKey } },
+          }),
+        ),
       );
     });
 
@@ -194,17 +198,19 @@ export function ReceivablesTable({
                   const firstDueOn = text(data, "firstDueOn");
                   const note = text(data, "note");
                   return runBulk(chosen, BULK_SKIP.plan, (row) =>
-                    unwrap(
-                      browserApi().POST("/v1/owner/juristic/payment-plans", {
-                        params: { header: { "Idempotency-Key": crypto.randomUUID() } },
-                        body: {
-                          partyId: row.partyId,
-                          unitId: row.unitId,
-                          instalments: count,
-                          ...(firstDueOn ? { firstDueOn } : {}),
-                          ...(note ? { note } : {}),
-                        },
-                      }),
+                    keyedSend(keys.current, `plan:${key(row)}:${count}:${firstDueOn}:${note}`, (idempotencyKey) =>
+                      unwrap(
+                        browserApi().POST("/v1/owner/juristic/payment-plans", {
+                          params: { header: { "Idempotency-Key": idempotencyKey } },
+                          body: {
+                            partyId: row.partyId,
+                            unitId: row.unitId,
+                            instalments: count,
+                            ...(firstDueOn ? { firstDueOn } : {}),
+                            ...(note ? { note } : {}),
+                          },
+                        }),
+                      ),
                     ),
                   );
                 }}
@@ -250,11 +256,13 @@ export function ReceivablesTable({
                 ready={willPause > 0 && reason.trim().length >= 3}
                 onConfirm={() =>
                   runBulk(chosen, BULK_SKIP.dispute, (row) =>
-                    unwrap(
-                      browserApi().POST("/v1/owner/juristic/collection-cases/{caseId}/actions/open-dispute", {
-                        params: { path: { caseId: row.caseId! }, header: { "Idempotency-Key": crypto.randomUUID() } },
-                        body: { reason: reason.trim() },
-                      }),
+                    keyedSend(keys.current, `pause:${row.caseId}:${reason.trim()}`, (idempotencyKey) =>
+                      unwrap(
+                        browserApi().POST("/v1/owner/juristic/collection-cases/{caseId}/actions/open-dispute", {
+                          params: { path: { caseId: row.caseId! }, header: { "Idempotency-Key": idempotencyKey } },
+                          body: { reason: reason.trim() },
+                        }),
+                      ),
                     ),
                   )
                 }

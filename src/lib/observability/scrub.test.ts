@@ -32,3 +32,25 @@ describe("Sentry scrubbing of /handoff/<token> (review L4)", () => {
     expect(event.request!.url).toBe("https://getproperty.co/handoff/[redacted]");
   });
 });
+
+/** Review W6: the debt clearance verify code (D-306) is a capability in the path — whoever holds it reads the document. */
+describe("Sentry scrubbing of /verify/<code> (review W6)", () => {
+  it("masks the code on the public page and the API call, with or without a locale", () => {
+    expect(scrubUrl("https://getproperty.co/verify/DC-7KQ2M9XA")).toBe("https://getproperty.co/verify/[redacted]");
+    expect(scrubUrl("https://getproperty.co/en/verify/DC-7KQ2M9XA?utm_source=qr")).toBe(
+      "https://getproperty.co/en/verify/[redacted]?utm_source=qr",
+    );
+    expect(scrubUrl("http://api.internal/v1/public/documents/verify/DC-7KQ2M9XA")).toBe(
+      "http://api.internal/v1/public/documents/verify/[redacted]",
+    );
+    expect(scrubUrl("/verify/DC-7KQ2M9XA")).toBe("/verify/[redacted]");
+  });
+
+  it("masks the transaction and breadcrumbs of a verify page view", () => {
+    const event = scrubEvent({
+      transaction: "/th/verify/DC-7KQ2M9XA",
+      breadcrumbs: [{ data: { from: "/", to: "/th/verify/DC-7KQ2M9XA" } }],
+    });
+    expect(JSON.stringify(event)).not.toContain("DC-7KQ2M9XA");
+  });
+});

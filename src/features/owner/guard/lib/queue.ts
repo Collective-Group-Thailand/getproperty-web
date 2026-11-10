@@ -1,8 +1,9 @@
-import { openDB, type DBSchema, type IDBPDatabase } from "idb";
+import { deleteDB, openDB, type DBSchema, type IDBPDatabase } from "idb";
 
 import type { Schemas } from "@/lib/api/types";
 
 import type { GuardProblem, GuardResult, VisitCreate, VisitCreated } from "./api";
+import { UNITS_CACHE_KEY } from "./units";
 
 /**
  * The gate tablet's offline queue (JW4, D-327 "offline replay"). The guard never waits for the network: every visit
@@ -13,11 +14,15 @@ import type { GuardProblem, GuardResult, VisitCreate, VisitCreated } from "./api
  *   waiting for the visit goes next (`POST /v1/guard/visits/{id}/photo`), once;
  * - a refusal (4xx other than 401 / 408 / 429) → **conflict**, kept with the API's problem for the guard to see;
  *   never retried blindly;
- * - offline, 408, 429, 5xx → retried with backoff (2 s → 60 s);
+ * - offline, 408, 429, 5xx, 423 `gate.locked` → retried with backoff (2 s → 60 s);
  * - 401 → replay stops until a guard signs in again (nothing is dropped).
  *
  * Entries belong to the gate that recorded them (`gateId`): a tablet re-enrolled at another gate never sends them
- * there. Sent entries are kept `SENT_TTL_MS` so the lists can show what became of them, then pruned.
+ * there — and another gate's entries are deleted. Sent entries are kept `SENT_TTL_MS` so the lists can show what became
+ * of them, then pruned; pending and conflict entries are deleted after `OFFLINE_KEEP_MS` (PDPA, review W4): the API
+ * refuses an offline record older than `gate.offline_max_hours` (default 24), so the plate, name and ID digits would
+ * only sit on the tablet. Forgetting the tablet (or the API revoking it) deletes the whole database
+ * (`forgetGateTablet`).
  */
 
 export type GateQueueState = "pending" | "sent" | "conflict";
@@ -54,6 +59,11 @@ interface GateQueueDb extends DBSchema {
 
 export const GATE_QUEUE_DB = "gp-gate-queue";
 export const SENT_TTL_MS = 10 * 60_000;
+/**
+ * `gate.offline_max_hours` default (24, D-327). The guard surface does not return the setting (contract request
+ * CR-W4): a tenant may lower it, and the API then refuses older entries as conflicts, which are pruned here at 24 h.
+ */
+export const OFFLINE_KEEP_MS = 24 * 3600_000;
 export const BACKOFF_MS = [2_000, 5_000, 15_000, 30_000, 60_000];
 
 let dbPromise: Promise<IDBPDatabase<GateQueueDb>> | null = null;
@@ -71,6 +81,40 @@ function db(): Promise<IDBPDatabase<GateQueueDb>> {
 /** Tests: forget the open connection (a fresh fake IndexedDB per test). */
 export function resetGateQueueDb(): void {
   dbPromise = null;
+}
+
+/**
+ * Deletes what is past keeping (review W4): another gate's entries, sent ones after `SENT_TTL_MS`, pending and
+ * conflicts after `OFFLINE_KEEP_MS`.
+ */
+export async function pruneGateQueue(gateId: string, now: number = Date.now()): Promise<void> {
+  const database = await db();
+  const tx = database.transaction("entries", "readwrite");
+  for (const entry of await tx.store.getAll()) {
+    const age = now - entry.createdAt;
+    if (entry.gateId !== gateId || age > (entry.state === "sent" ? SENT_TTL_MS : OFFLINE_KEEP_MS)) {
+      await tx.store.delete(entry.id);
+    }
+  }
+  await tx.done;
+}
+
+/**
+ * The tablet is forgotten or revoked (review W4): the queue database and the cached houses go with it — nothing of
+ * the gate's visitors stays in this browser.
+ */
+export async function forgetGateTablet(
+  storage: Pick<Storage, "removeItem"> | undefined = globalThis.localStorage,
+): Promise<void> {
+  try {
+    storage?.removeItem(UNITS_CACHE_KEY);
+  } catch {
+    // storage blocked: nothing was cached either
+  }
+  const open = dbPromise;
+  dbPromise = null;
+  await open?.then((database) => database.close()).catch(() => undefined);
+  await deleteDB(GATE_QUEUE_DB).catch(() => undefined);
 }
 
 export async function enqueueGate(
@@ -123,7 +167,13 @@ let replaying = false;
 
 function retriable(result: Extract<GuardResult<unknown>, { ok: false }>): boolean {
   return (
-    result.offline || result.status === 0 || result.status === 408 || result.status === 429 || result.status >= 500
+    result.offline ||
+    result.status === 0 ||
+    result.status === 408 ||
+    result.status === 429 ||
+    result.status >= 500 ||
+    // The desk was locked between the record and its send (review W1): it goes once the PIN is in.
+    (result.status === 423 && result.problem?.code === "gate.locked")
   );
 }
 
@@ -141,10 +191,8 @@ export async function replayGateQueue(
   if (replaying) return "busy";
   replaying = true;
   try {
+    await pruneGateQueue(gateId, now());
     const entries = await listGateQueue(gateId);
-    for (const stale of entries.filter((entry) => entry.state === "sent" && now() - entry.createdAt > SENT_TTL_MS)) {
-      await discardGateEntry(stale.id);
-    }
     for (const entry of entries) {
       if (entry.state !== "pending" || (!ignoreBackoff && entry.nextAttemptAt > now())) continue;
       const outcome = await sendOne(entry, send, now);

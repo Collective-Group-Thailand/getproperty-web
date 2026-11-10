@@ -9,6 +9,7 @@ import {
   type GuardHardware,
   type GuardIncident,
   type GuardMe,
+  type GuardProblem,
   type GuardResult,
   type GuardVisit,
   type IncidentKind,
@@ -26,6 +27,7 @@ import {
   type GateQueueEntry,
   type GateQueueLabel,
   type GateSend,
+  type ReplayOutcome,
 } from "./queue";
 import { connectGateStream, type GateStreamEvent, type StreamStatus } from "./stream";
 
@@ -93,21 +95,32 @@ export interface RecordInput {
 export type RecordOutcome =
   | { kind: "sent"; visit: Pick<VisitCreated, "id" | "state" | "replayed" | "entryBasis" | "decisionReason"> }
   | { kind: "queued" }
-  | { kind: "conflict"; entry: GateQueueEntry };
+  | { kind: "conflict"; entry: GateQueueEntry }
+  /** No queue on this tablet (storage blocked) and the API refused it (review W3). */
+  | { kind: "refused"; problem: GuardProblem | null }
+  /** No queue on this tablet and no answer from the API: nothing was kept (review W3). */
+  | { kind: "unsaved" };
+
+/** The shortest wait before a due queued visit is tried again (a tight loop is never the answer). */
+const RETRY_FLOOR_MS = 1_000;
 
 export function useDesk(
   me: GuardMe,
   onUnauthorised: () => void,
   snapshot?: Pick<DeskState, "waiting" | "inside" | "hardware" | "detections" | "incidents"> | null,
+  /** `paused`: the desk is locked (review W1) — the queue waits for the PIN, nothing is sent from a locked tablet. */
+  { paused = false }: { paused?: boolean } = {},
 ) {
   const [state, setState] = useState<DeskState>(() =>
     snapshot ? { ...INITIAL, ...snapshot, loaded: true, lastSync: Date.now() } : INITIAL,
   );
   const stateRef = useRef(state);
   const unauthorised = useRef(onUnauthorised);
+  const pausedRef = useRef(paused);
   useEffect(() => {
     stateRef.current = state;
     unauthorised.current = onUnauthorised;
+    pausedRef.current = paused;
   });
   const gateId = me.gateId;
 
@@ -179,7 +192,8 @@ export function useDesk(
   }, [gateId, patch]);
 
   const replay = useCallback(
-    async (options?: { ignoreBackoff?: boolean }) => {
+    async (options?: { ignoreBackoff?: boolean }): Promise<ReplayOutcome> => {
+      if (pausedRef.current) return "busy";
       const send = ((path: string, init: Parameters<GateSend>[1]) => guardFetch(path, init).then(note)) as GateSend;
       const outcome = await replayGateQueue(gateId, send, Date.now, options).catch(() => "offline" as const);
       await reloadQueue();
@@ -268,6 +282,18 @@ export function useDesk(
     return () => clearInterval(id);
   }, [state.stream, get, refresh, replay]);
 
+  // Review W2: a visit waiting out its backoff (5xx, 429, 408, offline) is tried again when it is due — the poll above
+  // only runs while the stream is down, and an open stream says nothing about the queue. Held while locked (W1).
+  useEffect(() => {
+    if (paused) return;
+    const due = state.queue
+      .filter((entry) => entry.state === "pending")
+      .reduce((earliest, entry) => Math.min(earliest, entry.nextAttemptAt), Number.POSITIVE_INFINITY);
+    if (!Number.isFinite(due)) return;
+    const id = setTimeout(() => void replay(), Math.max(RETRY_FLOOR_MS, due - Date.now()));
+    return () => clearTimeout(id);
+  }, [state.queue, paused, replay]);
+
   // ── actions ────────────────────────────────────────────────────────────────────────────────────────────────────
 
   const record = useCallback(
@@ -288,7 +314,7 @@ export function useDesk(
         unitNo: input.unitNo ?? null,
         kind: input.kind,
       };
-      await enqueueGate({
+      const stored = await enqueueGate({
         id: clientRef,
         gateId,
         kind: "visit",
@@ -296,11 +322,16 @@ export function useDesk(
         body,
         label,
         ...(input.photo ? { photo: { contentBase64: input.photo.contentBase64, mimeType: input.photo.mimeType } } : {}),
-      }).catch(() => undefined);
-      await replay();
-      const entry = (await listGateQueue(gateId).catch(() => [])).find((candidate) => candidate.id === clientRef);
+      }).then(
+        () => true,
+        () => false,
+      );
+      if (stored) await replay();
+      const entry = stored
+        ? (await listGateQueue(gateId).catch(() => [])).find((candidate) => candidate.id === clientRef)
+        : undefined;
       if (!entry) {
-        // No IndexedDB: send directly once.
+        // No IndexedDB (private mode, storage blocked): send directly once, and say plainly what became of it.
         const result = await guardFetch<VisitCreated>("/v1/guard/visits", {
           method: "POST",
           body,
@@ -310,7 +341,15 @@ export function useDesk(
           void refresh(["visits"]);
           return { kind: "sent", visit: result.data };
         }
-        return { kind: "queued" };
+        if (
+          result.offline ||
+          result.status === 0 ||
+          result.status === 408 ||
+          result.status === 429 ||
+          result.status >= 500
+        )
+          return { kind: "unsaved" };
+        return { kind: "refused", problem: result.problem };
       }
       if (entry.result) {
         return { kind: "sent", visit: entry.result };
@@ -322,7 +361,10 @@ export function useDesk(
   );
 
   const scan = useCallback(
-    async (token: string, plate?: Schemas["PlateDto"]): Promise<GuardResult<VisitCreated> | { queued: true }> => {
+    async (
+      token: string,
+      plate?: Schemas["PlateDto"],
+    ): Promise<GuardResult<VisitCreated> | { queued: true } | { unsaved: true }> => {
       const clientRef = crypto.randomUUID();
       const body = { clientRef, token, ...(plate ? { plate } : {}) };
       const result = await guardFetch<VisitCreated>("/v1/guard/invites/actions/scan", {
@@ -331,16 +373,20 @@ export function useDesk(
         idempotencyKey: crypto.randomUUID(),
       }).then(note);
       if (!result.ok && result.offline) {
-        await enqueueGate({
+        const stored = await enqueueGate({
           id: clientRef,
           gateId,
           kind: "scan",
           idempotencyKey: crypto.randomUUID(),
           body,
           label: { plate: plate ? formatPlate(plate) : null, unitNo: null, kind: "invite" },
-        }).catch(() => undefined);
+        }).then(
+          () => true,
+          () => false,
+        );
         await reloadQueue();
-        return { queued: true };
+        // Review W3: no storage → the scan was neither sent nor kept.
+        return stored ? { queued: true } : { unsaved: true };
       }
       if (result.ok) void refresh(["visits"]);
       return result;

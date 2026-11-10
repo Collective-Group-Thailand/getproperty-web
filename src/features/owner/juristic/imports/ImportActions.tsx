@@ -18,6 +18,7 @@ import { Button } from "@/ui/components/Button";
 import { Callout } from "@/ui/components/Callout";
 import { Checkbox } from "@/ui/components/Checkbox";
 import { Field, useFieldProps } from "@/ui/components/Field";
+import { FieldError } from "@/ui/components/FieldError";
 import { FileDropzone } from "@/ui/components/FileDropzone";
 import { Input, Textarea } from "@/ui/components/Input";
 import { NativeSelect } from "@/ui/components/NativeSelect";
@@ -250,7 +251,9 @@ export function SheetUpload({
   const action = useApiAction<Job>();
   const replace = useRef<HTMLInputElement>(null);
   const [sending, setSending] = useState<string | null>(null);
+  const [tooLarge, setTooLarge] = useState(false);
   const send = (chosen: File) => {
+    setTooLarge(false);
     setSending(chosen.name);
     void action
       .run(async () => {
@@ -323,7 +326,10 @@ export function SheetUpload({
                 onChange={(event) => {
                   const chosen = event.target.files?.[0];
                   event.target.value = "";
-                  if (chosen && chosen.size <= MAX_BYTES) send(chosen);
+                  if (!chosen) return;
+                  // Review W7: a file over the limit is refused in words, never dropped silently.
+                  if (chosen.size > MAX_BYTES) setTooLarge(true);
+                  else send(chosen);
                 }}
                 data-testid="file-replace-input"
               />
@@ -375,6 +381,13 @@ export function SheetUpload({
       ) : (
         <p className="text-muted m-0 text-sm">{t("none")}</p>
       )}
+      {file && tooLarge ? (
+        <div data-testid="file-too-large">
+          <FieldError alert className="m-0">
+            {t("tooLarge")}
+          </FieldError>
+        </div>
+      ) : null}
       <ImportProblem error={action.error} jobId={jobId} />
     </div>
   );
@@ -444,6 +457,7 @@ export function ReconcileForm({
   const [declared, setDeclared] = useState(reconciliation?.declaredReceivables ?? "");
   const [note, setNote] = useState(reconciliation?.note ?? "");
   const [evidence, setEvidence] = useState<File | null>(null);
+  const [evidenceTooLarge, setEvidenceTooLarge] = useState(false);
   const [keptDocument, setKeptDocument] = useState<string | null>(reconciliation?.documentId ?? null);
   const [problem, setProblem] = useState<ReconcileProblem | null>(null);
   const [touched, setTouched] = useState(false);
@@ -461,7 +475,11 @@ export function ReconcileForm({
     touched && (problem === "note" || problem === "note_short" || problem === "note_long")
       ? t(`problem.${problem}`, { max: NOTE_MAX })
       : undefined;
-  const attachmentError = touched && problem === "attachment" ? t("problem.attachment") : undefined;
+  const attachmentError = evidenceTooLarge
+    ? t("attachTooLarge")
+    : touched && problem === "attachment"
+      ? t("problem.attachment")
+      : undefined;
   const submit = () => {
     setTouched(true);
     const found = check();
@@ -570,6 +588,8 @@ export function ReconcileForm({
                   inputRef={attach}
                   accept={EVIDENCE}
                   onFile={(chosen) => {
+                    // Review W7: over 10 MB is said on the field, never ignored.
+                    setEvidenceTooLarge(chosen.size > EVIDENCE_BYTES);
                     if (chosen.size > EVIDENCE_BYTES) return;
                     setEvidence(chosen);
                     setKeptDocument(null);

@@ -7,9 +7,11 @@
 const SECRET_PARAMS = ["token", "code", "invitation", "next", "enrollmentToken", "refreshToken"];
 /**
  * `/handoff/<token>` (with or without a locale prefix): the token lets a signed-in landlord claim the unit;
- * `/juristic/join/<code>` (D-270): the code lets an office take over a landlord's invitation.
+ * `/juristic/join/<code>` (D-270): the code lets an office take over a landlord's invitation;
+ * `/verify/<code>` (D-306, review W6): the public page and its API call `/v1/public/documents/verify/<code>` — whoever
+ * holds the code reads the debt clearance certificate.
  */
-const SECRET_PATHS = /(\/handoff\/|\/juristic\/join\/)[^/?#]+/g;
+const SECRET_PATHS = /(\/handoff\/|\/juristic\/join\/|\/verify\/)[^/?#]+/g;
 
 const scrubPath = (url: string) => url.replace(SECRET_PATHS, "$1[redacted]");
 

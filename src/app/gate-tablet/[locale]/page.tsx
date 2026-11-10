@@ -14,5 +14,5 @@ export default async function GatePage({ params }: { params: Promise<{ locale: L
   const { locale } = await params;
   setRequestLocale(locale);
   const session = await readGateSession();
-  return <GateApp enrolled={session.enrolled} me={session.me} snapshot={session.snapshot} />;
+  return <GateApp enrolled={session.enrolled} locked={session.locked} me={session.me} snapshot={session.snapshot} />;
 }

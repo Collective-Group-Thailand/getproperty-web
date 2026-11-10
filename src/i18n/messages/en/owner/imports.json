@@ -249,6 +249,7 @@
     "kept": "Evidence already attached",
     "removeAttachment": "Remove evidence",
     "attachHint": "PDF or image, up to 10 MB",
+    "attachTooLarge": "The file is over 10 MB; choose a smaller one",
     "heading": "Legacy system figures",
     "submit": "Reconcile",
     "again": "Reconcile again",
