@@ -3,7 +3,7 @@ import type { GuardUnit } from "./api";
 /**
  * The houses of the estate on the tablet (JW4): the API answers by house number (`GET /v1/guard/units?q=`, up to 100);
  * the desk keeps the last full list so the guard can still pick a house while offline — numbers, soi and the house
- * rule only (the household note is left out of storage).
+ * rule only (the household note and the arrears flag are left out of storage, review W4).
  */
 export const UNITS_CACHE_KEY = "gp.gate.units";
 export const UNITS_PAGE = 100;
@@ -46,7 +46,8 @@ export function writeCachedUnits(
   storage: Pick<Storage, "setItem"> | undefined = globalThis.localStorage,
 ): void {
   try {
-    const slim = units.map((unit) => ({ ...unit, policy: { ...unit.policy, householdNote: null } }));
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- left out of storage on purpose (O-038)
+    const slim = units.map(({ hasArrears, ...unit }) => ({ ...unit, policy: { ...unit.policy, householdNote: null } }));
     storage?.setItem(UNITS_CACHE_KEY, JSON.stringify({ gateId, units: slim }));
   } catch {
     // storage full / private mode: offline search simply has nothing to show

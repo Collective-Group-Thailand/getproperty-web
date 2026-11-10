@@ -8,12 +8,19 @@ import { ACCESS_EXPIRY_SKEW_SECONDS } from "./cookies";
  *   enrolment). It only ever travels to this app's server, which sends it to the API for the roster and the PIN
  *   sign-in; JavaScript in the page cannot read it (ADR-0004: no credential in browser storage).
  * - `__Host-gp_gat` / `__Host-gp_grt`: the guard's token pair (audience `guard`) of the open shift.
+ * - `__Host-gp_glock`: the desk is locked to the PIN pad (review W1). The server renders the lock screen while it is
+ *   there and the BFF refuses the desk's writes; only a PIN sign-in, sign-out or forgetting the tablet lifts it. The
+ *   shift's tokens stay, so the lists, the stream and the SOS banner keep running behind the lock.
  *
  * Same flags as every session cookie (`cookies.ts`): host-only, `Secure`, `HttpOnly`, `SameSite=Lax`, `Path=/`.
  */
 export const GUARD_DEVICE_COOKIE = "__Host-gp_gdev";
 export const GUARD_ACCESS_COOKIE = "__Host-gp_gat";
 export const GUARD_REFRESH_COOKIE = "__Host-gp_grt";
+export const GUARD_LOCK_COOKIE = "__Host-gp_glock";
+
+/** Longer than any guard refresh family (14 h): the lock outlives the shift it locks. */
+const LOCK_MAX_AGE = 24 * 60 * 60;
 
 /** Browsers cap a cookie's life at 400 days; the API revokes a device, not the cookie's age. */
 const DEVICE_MAX_AGE = 400 * 24 * 60 * 60;
@@ -72,9 +79,18 @@ export function guardSessionCookies(
   ];
 }
 
+export function lockCookie(): CookieSpec {
+  return { name: GUARD_LOCK_COOKIE, value: "1", options: { ...base, maxAge: LOCK_MAX_AGE } };
+}
+
+export function clearedLockCookie(): CookieSpec {
+  return { name: GUARD_LOCK_COOKIE, value: "", options: { ...base, maxAge: 0 } };
+}
+
+/** Ending the session (sign-out, refused refresh, device gone) lifts the lock too: the roster is next anyway. */
 export function clearedGuardCookies(options: { device?: boolean } = {}): CookieSpec[] {
   const names = options.device
-    ? [GUARD_ACCESS_COOKIE, GUARD_REFRESH_COOKIE, GUARD_DEVICE_COOKIE]
-    : [GUARD_ACCESS_COOKIE, GUARD_REFRESH_COOKIE];
+    ? [GUARD_ACCESS_COOKIE, GUARD_REFRESH_COOKIE, GUARD_LOCK_COOKIE, GUARD_DEVICE_COOKIE]
+    : [GUARD_ACCESS_COOKIE, GUARD_REFRESH_COOKIE, GUARD_LOCK_COOKIE];
   return names.map((name) => ({ name, value: "", options: { ...base, maxAge: 0 } }));
 }

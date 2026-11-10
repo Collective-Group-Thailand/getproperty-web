@@ -40,6 +40,31 @@ export async function runBulk<Row>(
   return outcome;
 }
 
+/**
+ * Sends one row's request with its own `Idempotency-Key`, kept in `keys` under `id` (action × row × what is sent)
+ * until the API has answered (review W5, like the invite sheet): a dropped connection, a 408 / 429 or a 5xx leaves the
+ * key, so running the bulk action again replays the request instead of reminding twice or opening a second plan; a
+ * success or a refusal drops it, and the next run is a new request.
+ */
+export async function keyedSend<T>(
+  keys: Map<string, string>,
+  id: string,
+  send: (key: string) => Promise<T>,
+): Promise<T> {
+  const key = keys.get(id) ?? crypto.randomUUID();
+  keys.set(id, key);
+  try {
+    const answer = await send(key);
+    keys.delete(id);
+    return answer;
+  } catch (error) {
+    const answered =
+      isApiError(error) && error.status !== 408 && error.status !== 429 && error.status < 500 && error.status > 0;
+    if (answered) keys.delete(id);
+    throw error;
+  }
+}
+
 /** The skip rules of the three bulk actions (J-DESIGN §3), from the row's own facts. */
 export const BULK_SKIP = {
   /** A reminder goes out on LINE: an owner reached only by e-mail or paper gets the statement instead. */

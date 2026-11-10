@@ -151,4 +151,10 @@ describe("destination units", async () => {
     expect(readCachedUnits("g1", storage)).toHaveLength(3);
     expect(readCachedUnits("g2", storage)).toEqual([]);
   });
+  it("never stores whether a house is in arrears (review W4, O-038)", () => {
+    const store = new Map<string, string>();
+    const storage = { setItem: (k: string, v: string) => void store.set(k, v) };
+    writeCachedUnits("g1", [{ ...unit("99/11", "ซอย 1"), hasArrears: true }], storage);
+    expect(store.get("gp.gate.units")).not.toContain("hasArrears");
+  });
 });

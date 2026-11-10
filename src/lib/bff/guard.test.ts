@@ -236,3 +236,56 @@ describe("guard BFF proxy", () => {
     expect(response.cookies.get("__Host-gp_gat")?.value).toBe("");
   });
 });
+
+/** Review W1: the kiosk lock lives in an httpOnly cookie, so a reload cannot skip the PIN. */
+describe("guard BFF kiosk lock (review W1)", () => {
+  const signedIn = { ...device, "__Host-gp_gat": "gat-1", "__Host-gp_grt": "grt-1" };
+  const locked = { ...signedIn, "__Host-gp_glock": "1" };
+
+  it("locking sets an httpOnly lock cookie and keeps the device and the shift's tokens", async () => {
+    const { response, api } = await call("/session/lock", { method: "POST", cookies: signedIn });
+    expect(response.status).toBe(200);
+    const cookie = response.cookies.get("__Host-gp_glock");
+    expect(cookie?.value).toBe("1");
+    expect(cookie?.httpOnly).toBe(true);
+    expect(response.cookies.get("__Host-gp_gat")).toBeUndefined();
+    expect(response.cookies.get("__Host-gp_gdev")).toBeUndefined();
+    expect(api.calls).toHaveLength(0);
+  });
+
+  it("a locked tablet reads (lists, stream) but writes nothing except answering an SOS", async () => {
+    const read = await call("/v1/guard/visits?view=waiting", { cookies: locked });
+    expect(read.response.status).toBe(200);
+    const write = await call("/v1/guard/visits", {
+      method: "POST",
+      cookies: locked,
+      body: { clientRef: "x", kind: "guest" },
+    });
+    expect(write.response.status).toBe(423);
+    expect(await write.response.json()).toMatchObject({ code: "gate.locked" });
+    expect(write.api.calls).toHaveLength(0);
+    const open = await call("/v1/guard/gates/g1/actions/open", { method: "POST", cookies: locked, body: {} });
+    expect(open.response.status).toBe(423);
+    const sos = await call("/v1/guard/incidents/i1/actions/acknowledge", { method: "POST", cookies: locked, body: {} });
+    expect(sos.response.status).toBe(200);
+  });
+
+  it("the PIN sign-in, sign-out and forget lift the lock", async () => {
+    const pin = await call("/session/sign-in", {
+      method: "POST",
+      cookies: locked,
+      body: { guardId: "g", pin: "1234" },
+    });
+    expect(pin.response.cookies.get("__Host-gp_glock")?.value).toBe("");
+    const wrong = await call("/session/sign-in", {
+      method: "POST",
+      cookies: locked,
+      body: { guardId: "g", pin: "0000" },
+    });
+    expect(wrong.response.cookies.get("__Host-gp_glock")).toBeUndefined();
+    const out = await call("/session/sign-out", { method: "POST", cookies: locked });
+    expect(out.response.cookies.get("__Host-gp_glock")?.value).toBe("");
+    const forget = await call("/session/forget", { method: "POST", cookies: locked });
+    expect(forget.response.cookies.get("__Host-gp_glock")?.value).toBe("");
+  });
+});

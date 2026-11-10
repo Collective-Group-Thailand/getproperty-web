@@ -8,11 +8,14 @@ import { clientIpFrom, FORWARDED_FOR_HEADER, requestIdFrom } from "@/lib/http/ed
 import type { CookieSpec } from "../auth/cookies";
 import {
   clearedGuardCookies,
+  clearedLockCookie,
   deviceCookie,
   GUARD_ACCESS_COOKIE,
   GUARD_DEVICE_COOKIE,
+  GUARD_LOCK_COOKIE,
   GUARD_REFRESH_COOKIE,
   guardSessionCookies,
+  lockCookie,
   readDevice,
 } from "../auth/guard-cookies";
 import { refreshTokens } from "../auth/refresh";
@@ -31,7 +34,9 @@ import { sameOrigin, upstreamPath } from "./handler";
  * - SSE (`/v1/guard/events`) streams through with `Last-Event-ID`;
  * - session actions under `/bff/guard/session/*` hold the device secret server-side: `enrol` stores it in the
  *   httpOnly device cookie, `roster` and `sign-in` read it from there, `sign-out` ends the shift, `forget` drops the
- *   device. No token or secret ever reaches the page.
+ *   device, `lock` locks the desk to the PIN pad (review W1). No token or secret ever reaches the page;
+ * - a locked desk (`__Host-gp_glock`) reads — lists, stream — but writes nothing (423 `gate.locked`) except answering
+ *   an SOS (`/v1/guard/incidents/{id}/actions/*`, the banner stays above the lock); a PIN sign-in lifts the lock.
  */
 
 export const GUARD_BFF_MAX_BODY_BYTES = 3 * 1024 * 1024;
@@ -52,6 +57,9 @@ const DROP_RESPONSE_HEADERS = new Set([
   "content-encoding",
   "content-length",
 ]);
+
+/** What a locked desk may still send: acknowledging / resolving an SOS from the banner above the lock screen. */
+const ALLOWED_WHILE_LOCKED = /^\/v1\/guard\/incidents\/[^/]+\/actions\/(acknowledge|resolve)$/;
 
 /** Problems the device answers with when it is no longer enrolled: the cookie is dropped so the tablet re-enrols. */
 const DEVICE_GONE = new Set(["gate.device_unknown", "gate.enrol_code_invalid"]);
@@ -200,6 +208,9 @@ export function createGuardBffHandler(options: GuardBffOptions = {}) {
             tenantName: enrolled.tenantName,
           });
         }
+        if (action === "lock") {
+          return withCookies(NextResponse.json({ ok: true }), [lockCookie()]);
+        }
         if (action === "forget") {
           return withCookies(NextResponse.json({ ok: true }), clearedGuardCookies({ device: true }));
         }
@@ -224,7 +235,7 @@ export function createGuardBffHandler(options: GuardBffOptions = {}) {
           });
           if (!upstream.ok) return relay(upstream, await deviceGone(upstream));
           const pair = (await upstream.json()) as Parameters<typeof guardSessionCookies>[0] & { subject?: unknown };
-          return relay(upstream, guardSessionCookies(pair), { subject: pair.subject });
+          return relay(upstream, [...guardSessionCookies(pair), clearedLockCookie()], { subject: pair.subject });
         }
         return problem(404, "http.not_found", "Not Found", requestId);
       }
@@ -232,6 +243,9 @@ export function createGuardBffHandler(options: GuardBffOptions = {}) {
       // ── the guard surface ──────────────────────────────────────────────────────────────────────────────────────
       const path = upstreamPath(segments);
       if (!path || !matchesPrefix(path, GUARD_UPSTREAM)) return problem(404, "http.not_found", "Not Found", requestId);
+      if (unsafe && request.cookies.get(GUARD_LOCK_COOKIE)?.value && !ALLOWED_WHILE_LOCKED.test(path)) {
+        return problem(423, "gate.locked", "The desk is locked: enter the PIN to continue", requestId);
+      }
 
       let access = request.cookies.get(GUARD_ACCESS_COOKIE)?.value;
       const refreshToken = request.cookies.get(GUARD_REFRESH_COOKIE)?.value;

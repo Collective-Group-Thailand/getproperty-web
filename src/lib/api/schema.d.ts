@@ -9007,7 +9007,7 @@ export interface paths {
         put?: never;
         /**
          * Match by hand
-         * @description An unmatched line (409 `bank_statement.line_not_open`) matched to a confirmed payment, a paid expense request or a posted fund transfer of the same signed amount (422 `bank_statement.amount_mismatch`) not matched to another line (409 `bank_statement.already_matched`). Audited. Requires `Idempotency-Key` (D-329).
+         * @description An unmatched line (409 `bank_statement.line_not_open`) matched to a confirmed payment, a paid expense request or a posted fund transfer of the same signed amount (422 `bank_statement.amount_mismatch`) on the bank account of the statement in this direction, as the suggestions (422 `bank_statement.account_mismatch`, D-336) not matched to another line (409 `bank_statement.already_matched`). Audited. Requires `Idempotency-Key` (D-329).
          *
          *     Implements: D-329.
          */
@@ -42899,7 +42899,10 @@ export interface components {
              * @example snap/2026-11-05/183000-1.jpg
              */
             imageRef: string | null;
-            /** @example none */
+            /**
+             * @description `low_confidence`: a known car read below gate.lpr.min_confidence, or read without a province (the same category + number may be another province — D-336); it waits for the guard with the unit pre-filled.
+             * @example none
+             */
             match: components["schemas"]["PlateMatch"];
             /**
              * @example {
@@ -42915,7 +42918,7 @@ export interface components {
              */
             receivedAt: string;
             /**
-             * @description `historical` (D-330, edge CR-017): the read reached the cloud more than gate.lpr.max_event_age_seconds after the camera read it (queued during an outage) — kept as a past read only: no entry, no barrier open, not claimable.
+             * @description `historical` (D-330, edge CR-017): the read reached the cloud more than gate.lpr.max_event_age_seconds after the camera read it (queued during an outage), or its read time is more than gate.lpr.max_clock_skew_seconds ahead of the cloud clock (gateway clock suspect, D-336) — kept as a past read only: no entry, no barrier open, not claimable.
              * @example pending
              */
             state: components["schemas"]["PlateDetectionState"];
@@ -42932,7 +42935,7 @@ export interface components {
             visitId: string | null;
         };
         /**
-         * @description `historical` (D-330, edge CR-017): the read reached the cloud more than gate.lpr.max_event_age_seconds after the camera read it (queued during an outage) — kept as a past read only: no entry, no barrier open, not claimable.
+         * @description `historical` (D-330, edge CR-017): the read reached the cloud more than gate.lpr.max_event_age_seconds after the camera read it (queued during an outage), or its read time is more than gate.lpr.max_clock_skew_seconds ahead of the cloud clock (gateway clock suspect, D-336) — kept as a past read only: no entry, no barrier open, not claimable.
          * @enum {string}
          */
         PlateDetectionState: "pending" | "matched" | "claimed" | "dismissed" | "expired" | "ignored" | "historical";
@@ -42955,7 +42958,10 @@ export interface components {
              */
             province: string;
         };
-        /** @enum {string} */
+        /**
+         * @description `low_confidence`: a known car read below gate.lpr.min_confidence, or read without a province (the same category + number may be another province — D-336); it waits for the guard with the unit pre-filled.
+         * @enum {string}
+         */
         PlateMatch: "resident_vehicle" | "remembered_vehicle" | "blacklisted" | "ambiguous" | "low_confidence" | "none";
         PlateReadDto: {
             /** @example 1กข */
@@ -114649,7 +114655,7 @@ export interface operations {
                     "application/problem+json": components["schemas"]["ProblemDetails"];
                 };
             };
-            /** @description Problem: `bank_statement.amount_mismatch`, `idempotency.key_reused`, `validation.failed` */
+            /** @description Problem: `bank_statement.account_mismatch`, `bank_statement.amount_mismatch`, `idempotency.key_reused`, `validation.failed` */
             422: {
                 headers: {
                     "X-Request-Id": components["headers"]["XRequestId"];
@@ -125237,7 +125243,7 @@ export interface operations {
             };
             path: {
                 importId: string;
-                sheet: string;
+                sheet: components["schemas"]["ImportSheet"];
             };
             cookie?: never;
         };
@@ -126172,7 +126178,7 @@ export interface operations {
                 "X-Tenant-Id"?: components["parameters"]["TenantIdHeader"];
             };
             path: {
-                sheet: string;
+                sheet: components["schemas"]["ImportSheet"];
             };
             cookie?: never;
         };

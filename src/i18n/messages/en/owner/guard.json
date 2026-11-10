@@ -41,6 +41,7 @@
     "otherGuard": "Someone else",
     "lockedScreen": "Screen locked",
     "lockedLede": "No activity for {minutes} minutes. Enter your PIN to continue.",
+    "lockedLedeManual": "The screen is locked. Enter your PIN to continue.",
     "submitting": "Checking"
   },
   "header": {
@@ -136,7 +137,8 @@
       "queued": "Recorded. Will send when back online.",
       "replayed": "This visit was already recorded",
       "blacklisted": "This plate is on the estate's blacklist",
-      "conflict": "Could not send"
+      "conflict": "Could not send",
+      "unsaved": "Not saved: this tablet cannot keep visits. Note it down and record it again when back online."
     }
   },
   "kind": {

@@ -2,7 +2,7 @@ import "server-only";
 
 import { cookies, headers } from "next/headers";
 
-import { GUARD_ACCESS_COOKIE, GUARD_DEVICE_COOKIE, readDevice } from "@/lib/auth/guard-cookies";
+import { GUARD_ACCESS_COOKIE, GUARD_DEVICE_COOKIE, GUARD_LOCK_COOKIE, readDevice } from "@/lib/auth/guard-cookies";
 import { serverEnv } from "@/lib/env/server";
 
 import type { GuardHardware, GuardIncident, GuardMe, GuardVisit, PlateDetection } from "./lib/api";
@@ -20,16 +20,19 @@ export interface GateSnapshot {
  * What the `/gate` page knows before the first paint (JW4): whether this browser holds an enrolled device, and — when
  * its guard access cookie is still good — the shift's `me`, so the desk renders at once. An expired access token is
  * left to the client: its first call through the guard BFF refreshes (the proxy refreshes operator cookies only).
+ * `locked`: the desk was locked to the PIN pad (httpOnly lock cookie, review W1) — a reload renders the lock screen.
  */
 export async function readGateSession(): Promise<{
   enrolled: boolean;
+  locked: boolean;
   me: GuardMe | null;
   snapshot: GateSnapshot | null;
 }> {
   const jar = await cookies();
   const enrolled = readDevice(jar.get(GUARD_DEVICE_COOKIE)?.value) !== null;
+  const locked = enrolled && !!jar.get(GUARD_LOCK_COOKIE)?.value;
   const access = jar.get(GUARD_ACCESS_COOKIE)?.value;
-  if (!enrolled || !access) return { enrolled, me: null, snapshot: null };
+  if (!enrolled || !access) return { enrolled, locked, me: null, snapshot: null };
   const language = (await headers()).get("accept-language");
   const get = async <T>(path: string): Promise<T | null> => {
     const response = await fetch(`${serverEnv().API_INTERNAL_URL}${path}`, {
@@ -55,8 +58,8 @@ export async function readGateSession(): Promise<{
       me && waiting && inside && hardware && detections && incidents
         ? { waiting, inside, hardware, detections, incidents }
         : null;
-    return { enrolled, me, snapshot };
+    return { enrolled, locked, me, snapshot };
   } catch {
-    return { enrolled, me: null, snapshot: null };
+    return { enrolled, locked, me: null, snapshot: null };
   }
 }

@@ -91,10 +91,13 @@ function useWakeLock() {
 export function Desk({
   me,
   snapshot,
+  initialLocked = false,
   onSessionEnded,
   onSessionRenewed,
 }: {
   me: GuardMe;
+  /** The server rendered a locked desk (lock cookie, review W1). */
+  initialLocked?: boolean;
   /** The lists as the server rendered them (`/gate` SSR), so nothing moves while the first fetch runs. */
   snapshot?: GateSnapshot | null;
   /** The session is over (401, shift ended): back to the roster. */
@@ -103,7 +106,9 @@ export function Desk({
   onSessionRenewed: () => void;
 }) {
   const t = useTranslations("owner.guard");
-  const { state, actions } = useDesk(me, () => onSessionEnded("unauthorised"), snapshot);
+  // "idle" (auto-lock) or "manual" (the lock button, or a locked desk restored after a reload).
+  const [locked, setLocked] = useState<false | "idle" | "manual">(initialLocked ? "manual" : false);
+  const { state, actions } = useDesk(me, () => onSessionEnded("unauthorised"), snapshot, { paused: !!locked });
   const [form, setFormState] = useState<EntryForm>(EMPTY_FORM);
   const [dialog, setDialog] = useState<Dialog>(null);
   const [result, setResult] = useState<EntryResult | null>(null);
@@ -111,7 +116,6 @@ export function Desk({
   const [submitting, setSubmitting] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [dismissed, setDismissed] = useState<string[]>([]);
-  const [locked, setLocked] = useState(false);
   const lastActivity = useRef(0);
   const lockAfter = autoLockMinutes(me);
   const hasBarrier = barrierOf(state.hardware) !== null;
@@ -120,6 +124,14 @@ export function Desk({
   useWakeLock();
 
   const setForm = useCallback((update: (current: EntryForm) => EntryForm) => setFormState(update), []);
+
+  // Review W1: the lock is the server's too (httpOnly cookie) — a reload opens on the PIN pad, and the BFF refuses the
+  // desk's writes until a PIN is entered. Locked here at once; the cookie follows.
+  const lock = useCallback((reason: "idle" | "manual") => {
+    setDialog(null);
+    setLocked(reason);
+    void guardFetch("/session/lock", { method: "POST" });
+  }, []);
 
   // Inactivity → lock. Offline the PIN cannot be checked by the API, so the desk stays open until it can.
   useEffect(() => {
@@ -131,8 +143,7 @@ export function Desk({
     window.addEventListener("keydown", touch);
     const id = setInterval(() => {
       if (!locked && state.network === "online" && isIdle(lastActivity.current, Date.now(), lockAfter * 60_000)) {
-        setDialog(null);
-        setLocked(true);
+        lock("idle");
       }
     }, 15_000);
     return () => {
@@ -140,7 +151,7 @@ export function Desk({
       window.removeEventListener("keydown", touch);
       clearInterval(id);
     };
-  }, [locked, state.network, lockAfter]);
+  }, [locked, state.network, lockAfter, lock]);
 
   useEffect(() => {
     if (!notice) return;
@@ -190,6 +201,18 @@ export function Desk({
     const outcome = await actions.record(input, offline);
     setSubmitting(false);
     const unit = input.unitNo ?? "—";
+    // Review W3: without storage on this tablet the form stays as typed — nothing was kept.
+    if (outcome.kind === "unsaved") {
+      setResult({ tone: "danger", text: t("entry.result.unsaved") });
+      return;
+    }
+    if (outcome.kind === "refused") {
+      setResult({
+        tone: "danger",
+        text: `${t("entry.result.conflict")}: ${outcome.problem?.detail ?? outcome.problem?.title ?? t("problem.generic")}`,
+      });
+      return;
+    }
     if (outcome.kind === "queued") {
       setResult({ tone: "info", text: t("entry.result.queued") });
     } else if (outcome.kind === "conflict") {
@@ -224,6 +247,7 @@ export function Desk({
       const plate = normalisePlate(form.plate);
       const outcome = await actions.scan(token, isPlateEmpty(plate) ? undefined : plate);
       if ("queued" in outcome) return { kind: "queued" };
+      if ("unsaved" in outcome) return { kind: "refused", message: t("entry.result.unsaved") };
       if (outcome.ok) return { kind: "ok", unitNo: outcome.data.unitNo, visitId: outcome.data.id };
       return { kind: "refused", message: problemText(outcome, t("problem.generic"), t("problem.offline")) };
     },
@@ -288,7 +312,9 @@ export function Desk({
 
       {locked ? (
         <main className="flex flex-1 flex-col items-center justify-center gap-6 px-6 py-10" data-testid="lock-screen">
-          <p className="text-muted text-lg">{t("pin.lockedLede", { minutes: lockAfter })}</p>
+          <p className="text-muted text-lg">
+            {locked === "idle" ? t("pin.lockedLede", { minutes: lockAfter }) : t("pin.lockedLedeManual")}
+          </p>
           <PinStep
             guard={{ guardId: me.guardId, displayName: me.guardName }}
             title={t("pin.lockedScreen")}
@@ -311,7 +337,7 @@ export function Desk({
             stream={state.stream}
             pending={pending}
             hardware={state.hardware}
-            onLock={() => setLocked(true)}
+            onLock={() => lock("manual")}
             onSwitchShift={() => setDialog({ kind: "switch" })}
           />
           <main className="grid flex-1 items-start gap-5 p-5 lg:min-h-0 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:grid-rows-1 lg:items-stretch">

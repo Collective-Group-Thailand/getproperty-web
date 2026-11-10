@@ -9,6 +9,7 @@ import { Desk } from "./Desk";
 const EnrolScreen = dynamic(() => import("./EnrolScreen").then((module) => module.EnrolScreen), { ssr: false });
 const SignIn = dynamic(() => import("./SignIn").then((module) => module.SignIn), { ssr: false });
 import { guardFetch, type GuardMe } from "./lib/api";
+import { forgetGateTablet } from "./lib/queue";
 import type { GateSnapshot } from "./server";
 
 type Phase =
@@ -20,13 +21,18 @@ type Phase =
  */
 export function GateApp({
   enrolled,
+  locked = false,
   me: initialMe,
   snapshot,
 }: {
   enrolled: boolean;
+  /** The server holds the lock cookie (review W1): the desk opens on the PIN pad, a reload never skips it. */
+  locked?: boolean;
   me: GuardMe | null;
   snapshot?: GateSnapshot | null;
 }) {
+  // Only until a PIN is entered: the next desk (a new shift token) opens unlocked.
+  const [restoreLock, setRestoreLock] = useState(locked);
   const [phase, setPhase] = useState<Phase>(
     initialMe ? { name: "desk", me: initialMe } : enrolled ? { name: "loading" } : { name: "enrol", revoked: false },
   );
@@ -43,7 +49,12 @@ export function GateApp({
     if (phase.name === "loading") void loadMe();
   }, [phase.name, loadMe]);
 
-  const deviceGone = useCallback(() => setPhase({ name: "enrol", revoked: true }), []);
+  // Forgotten or revoked (review W4): the offline queue and the cached houses are deleted with the device.
+  const deviceGone = useCallback(() => {
+    setRestoreLock(false);
+    void forgetGateTablet();
+    setPhase({ name: "enrol", revoked: true });
+  }, []);
 
   if (phase.name === "desk") {
     return (
@@ -52,7 +63,11 @@ export function GateApp({
         me={phase.me}
         snapshot={phase.me.shiftId === initialMe?.shiftId ? snapshot : null}
         onSessionEnded={(reason) => (reason === "device" ? deviceGone() : setPhase({ name: "sign-in" }))}
-        onSessionRenewed={() => void loadMe()}
+        initialLocked={restoreLock}
+        onSessionRenewed={() => {
+          setRestoreLock(false);
+          void loadMe();
+        }}
       />
     );
   }
@@ -62,7 +77,13 @@ export function GateApp({
       {phase.name === "enrol" ? (
         <EnrolScreen revoked={phase.revoked} onEnrolled={() => setPhase({ name: "sign-in" })} />
       ) : phase.name === "sign-in" ? (
-        <SignIn onSignedIn={() => void loadMe()} onDeviceGone={deviceGone} />
+        <SignIn
+          onSignedIn={() => {
+            setRestoreLock(false);
+            void loadMe();
+          }}
+          onDeviceGone={deviceGone}
+        />
       ) : (
         <span className="sr-only" aria-live="polite" />
       )}
