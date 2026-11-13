@@ -20,11 +20,21 @@ export function routePattern(pathname: string): string {
     .join("/");
 }
 
+/** Interactions that load the library: LCP is final at the first one, and INP's own entries are buffered. */
+const LOAD_EVENTS = ["pointerdown", "keydown", "touchstart"] as const;
+
+/**
+ * Starts RUM for a zone. The library (≈ 4 KB gz) is not part of a page's first load: it is fetched on the
+ * first interaction — its observers are buffered, so LCP, FCP, TTFB and CLS of the load and the first
+ * interaction's INP are still measured — or, on a visit without any, when the page is hidden, then
+ * reported at once and flushed. A metric is reported again as it changes; the queue keeps its latest value.
+ */
 export function startWebVitals(zone: Zone): void {
-  const queue: WebVital[] = [];
+  const queue = new Map<string, WebVital>();
   const flush = () => {
-    if (queue.length === 0) return;
-    const body = JSON.stringify({ metrics: queue.splice(0, queue.length) });
+    if (queue.size === 0) return;
+    const body = JSON.stringify({ metrics: [...queue.values()] });
+    queue.clear();
     void fetch(`/bff/v1/${zone}/telemetry/web-vitals`, {
       method: "POST",
       keepalive: true,
@@ -32,25 +42,43 @@ export function startWebVitals(zone: Zone): void {
       body,
     }).catch(() => undefined);
   };
-  void import("web-vitals").then(({ onCLS, onFCP, onINP, onLCP, onTTFB }) => {
-    const record = (metric: { name: string; value: number; rating: string; id: string; navigationType?: string }) => {
-      queue.push({
-        name: metric.name as WebVital["name"],
-        value: metric.value,
-        rating: metric.rating as WebVital["rating"],
-        id: metric.id,
-        route: routePattern(window.location.pathname),
-        navigationType: metric.navigationType as WebVital["navigationType"],
+  const record = (metric: { name: string; value: number; rating: string; id: string; navigationType?: string }) => {
+    queue.set(metric.id, {
+      name: metric.name as WebVital["name"],
+      value: metric.value,
+      rating: metric.rating as WebVital["rating"],
+      id: metric.id,
+      route: routePattern(window.location.pathname),
+      navigationType: metric.navigationType as WebVital["navigationType"],
+    });
+  };
+
+  let loading: Promise<void> | undefined;
+  const load = (reportAllChanges: boolean) => {
+    for (const type of LOAD_EVENTS) window.removeEventListener(type, onInteraction, true);
+    loading ??= import("web-vitals")
+      .then(({ onCLS, onFCP, onINP, onLCP, onTTFB }) => {
+        const options = { reportAllChanges };
+        onCLS(record, options);
+        onFCP(record, options);
+        onINP(record, options);
+        onLCP(record, options);
+        onTTFB(record, options);
+      })
+      .catch(() => {
+        loading = undefined;
       });
-    };
-    onCLS(record);
-    onFCP(record);
-    onINP(record);
-    onLCP(record);
-    onTTFB(record);
-  });
+    return loading;
+  };
+  function onInteraction() {
+    void load(false);
+  }
+  for (const type of LOAD_EVENTS) window.addEventListener(type, onInteraction, { capture: true, passive: true });
+
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") flush();
+    if (document.visibilityState !== "hidden") return;
+    if (loading) flush();
+    else void load(true).then(flush);
   });
   window.addEventListener("pagehide", flush);
 }

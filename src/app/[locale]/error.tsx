@@ -1,5 +1,5 @@
 "use client";
 
-import { ZoneError } from "@/features/shared/errors/ZoneError";
+import { LazyZoneError } from "@/features/shared/errors/LazyZoneError";
 
-export default ZoneError;
+export default LazyZoneError;
