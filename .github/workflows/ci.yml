@@ -242,15 +242,15 @@ jobs:
           path: getproperty-web
       - uses: actions/checkout@v5
         with:
-          repository: collective-group/getproperty-api
+          repository: Collective-Group-Thailand/getproperty-api
           path: getproperty-api
           fetch-depth: 0
-          token: ${{ secrets.SIBLING_REPOS_TOKEN }}
+          token: ${{ secrets.SIBLING_REPOS_TOKEN || secrets.ASSET_CORE_READ_TOKEN }}
       - uses: actions/checkout@v5
         with:
-          repository: collective-group/collective-asset-core
+          repository: Collective-Group-Thailand/collective-asset-core
           path: collective-asset-core
-          token: ${{ secrets.SIBLING_REPOS_TOKEN }}
+          token: ${{ secrets.SIBLING_REPOS_TOKEN || secrets.ASSET_CORE_READ_TOKEN }}
       - uses: pnpm/action-setup@v4
         with:
           package_json_file: getproperty-web/package.json
